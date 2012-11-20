@@ -1,0 +1,44 @@
+Copyright 2012 Chris Sweeney (cmsweeney@cs.ucsb.edu)
+UC Santa Barbara
+
+------------------------
+I. What is this library?
+------------------------
+
+
+------------------------
+II. How do I compile/install it?
+------------------------
+
+CMake is the build system used. From the base directory, execute the following
+commands:
+
+mkdir my_build
+cd my_build
+cmake ..
+make
+
+This should build the library with the proper configurations for you system. You
+can also run the unittests by executing the command "make test" from the
+my_build directory. You need to have google's gtest installed for the unittests.
+
+If you inspect the CMake files in each directory, you'll notice I have a
+particular strategy: every target is compiled as a static library. May not seem
+like the wisest choice, but it's one that I've thought a lot about in terms of
+making large amounts of code accessible, simple, and efficient to use and
+develop. I have built macros in the base CMakeLists.txt file to help make
+building the targest very simple. It also limits the cross dependencies between
+various parts of the code, which makes it more efficient for unittests and other
+applications.
+
+----------------
+Acknowledgements
+----------------
+Advisors Tobias Hollerer (holl@cs.ucsb.edu) and Matthew Turk (mturk@cs.ucsb.edu).
+
+-------------------
+Contact Information
+-------------------
+
+Questions, comments, and bug reports can be sent to Chris Sweeney at
+cmsweeney@cs.ucsb.edu.
