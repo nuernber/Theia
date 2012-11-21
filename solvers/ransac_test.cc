@@ -75,4 +75,49 @@ TEST(RansacTest, LineFitting) {
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }
 
+TEST(RansacTest, GetInliers) {
+ // Create a set of points along y=x with a small random pertubation.
+  vector<Point> input_points;
+  for (int i = 0; i < 100; ++i) {
+    double noise_x = RandDouble(-1,1);
+    double noise_y = RandDouble(-1,1);
+    input_points.push_back(Point(i + noise_x, i + noise_y));
+  }
+
+  LineEstimator line_estimator;
+  Line line;
+  double error_thresh = 0.3;
+  // Set an un-obtainable value for the inlier ratio (e.g. > 1.0)
+  Ransac<Point, Line> ransac_line(2, 0.7, 10000);
+  ransac_line.Compute(input_points, error_thresh, &line_estimator, &line);
+
+  // Ensure each inlier is actually an inlier.
+  vector<bool> inliers = ransac_line.GetInliers();
+  for (int i = 0; i < input_points.size(); i++) {
+    bool verified_inlier =
+        line_estimator.Error(input_points[i], line) < error_thresh;
+    ASSERT_EQ(verified_inlier, inliers[i]);    
+  }
+}
+
+TEST(RansacTest, TerminationNumInliers) {
+ // Create a set of points along y=x with a small random pertubation.
+  vector<Point> input_points;
+  for (int i = 0; i < 100; ++i) {
+    double noise_x = RandDouble(-1,1);
+    double noise_y = RandDouble(-1,1);
+    input_points.push_back(Point(i + noise_x, i + noise_y));
+  }
+
+  LineEstimator line_estimator;
+  Line line;
+  // Set an un-obtainable value for the inlier ratio (e.g. > 1.0)
+  Ransac<Point, Line> ransac_line(2, 2.0, 10000);
+  ransac_line.termination_num_inliers = 10;
+  ransac_line.Compute(input_points, 0.3, &line_estimator, &line);
+
+  int num_inliers = ransac_line.GetNumInliers();
+  ASSERT_GE(num_inliers, 10);
+}
+
 }  // namespace solvers
