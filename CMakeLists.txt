@@ -35,12 +35,14 @@ LIST(APPEND SEARCH_HEADERS /usr/local/include)
 LIST(APPEND SEARCH_HEADERS /usr/local/homebrew/include) # Mac OS X
 LIST(APPEND SEARCH_HEADERS /opt/local/include)
 
+# Set c++ standard to c++0x
+SET(CMAKE_CXX_FLAGS)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 # Multithreading using OpenMP
 OPTION(OPENMP
        "Enable thread solving (requires OpenMP)"
        ON)
-SET(CMAKE_CXX_FLAGS)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse3")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -50,7 +52,7 @@ IF (${OPENMP})
     MESSAGE("-- Found OpenMP.")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     ADD_DEFINITIONS(-DUSE_OPENMP)
-  ELSE(${OPENMP_FOUND})
+  ELSE ({$OPENMP_FOUND})
     MESSAGE("-- Can't find OpenMP. Continuing without it.")
   ENDIF(${OPENMP_FOUND})
 ENDIF (${OPENMP})

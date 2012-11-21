@@ -5,8 +5,6 @@
 #include <math.h>
 #include <vector>
 
-#include <iostream>
-
 using namespace std;
 
 #define RANSAC_PARAM_INVALID -1
@@ -62,6 +60,7 @@ class Ransac {
         error_thresh_(error_thresh),
         termination_inlier_ratio_(termination_inlier_ratio),
         max_iters_(max_iters),
+        num_threads_(1),
         termination_num_inliers(RANSAC_PARAM_INVALID) {}
 
   // Add point to be fitted to the model. Random samples come solely from data,
@@ -95,6 +94,8 @@ class Ransac {
   int termination_num_inliers;
 
  private:
+  void GetError(const Model& model, vector<double>* error) const;
+
   // Container for all data points.
   vector<Datum> data_;
 
@@ -102,7 +103,7 @@ class Ransac {
   Estimator<Datum, Model>* estimator_;
 
   Model best_model_;
-  
+
   // Error tolerance for a single measurement to be considered an inlier.
   double error_thresh_;
 
@@ -111,6 +112,9 @@ class Ransac {
 
   // Minimum samples size for an estimated model.
   int min_sample_size_;
+
+  // Number of threads for error calculation.
+  int num_threads_;
 
   // The percentage of inliers in which RANSAC terminates.
   double termination_inlier_ratio_;
@@ -125,6 +129,7 @@ bool Ransac<Datum, Model>::Compute(Model* best_model) {
   // Set termination_num_inliers based on the inlier ratio if not manually set.
   termination_num_inliers = (termination_num_inliers == RANSAC_PARAM_INVALID) ?
       ceil(termination_inlier_ratio_ * data_.size()) : termination_num_inliers;
+
 
   int best_consensus_size = 0;
   for (int iters = 0; iters < max_iters_; ++iters) {
@@ -148,24 +153,24 @@ bool Ransac<Datum, Model>::Compute(Model* best_model) {
 
     // Find all inliers for the estimated model.
     vector<Datum> temp_consensus_set;
-    for (const Datum& data_point : data_) {
-      if (estimator_->Error(data_point, temp_model) < error_thresh_) {
-        temp_consensus_set.push_back(data_point);
+    for (int i = 0; i < data_.size(); ++i) {
+      if(estimator_->Error(data_[i], temp_model) < error_thresh_) {
+        temp_consensus_set.push_back(data_[i]);
       }
     }
 
     // Update best model if error is the best we have seen.
     if (temp_consensus_set.size() > best_consensus_size) {
-      *best_model = temp_model;
-      best_consensus_size = temp_consensus_set.size();
+      {
+        *best_model = temp_model;
+        best_consensus_size = temp_consensus_set.size();
 
-      // If the inlier termination criterion is met, re-estimate the model based
-      // on all inliers and return;
-      if (best_consensus_size >= termination_num_inliers) {
-        estimator_->RefineModel(temp_consensus_set, best_model);
-        // Copy model locally (for use in other methods).
-        best_model_ = *best_model;
-        return true;
+        // If the inlier termination criterion is met, re-estimate the model
+        // based on all inliers and return;
+        if (best_consensus_size >= termination_num_inliers) {
+          estimator_->RefineModel(temp_consensus_set, best_model);
+          break;
+        }
       }
     }
   }
@@ -178,10 +183,10 @@ template<class Datum, class Model>
 vector<bool> Ransac<Datum, Model>::GetInliers() const {
   vector<bool> inliers(data_.size(), false);
   for (int i = 0; i < data_.size(); ++i) {
-    if (estimator_->Error(data_[i], best_model_) < error_thresh_) {
-      inliers[i] = true;
-    }
+    inliers[i] = estimator_->Error(data_[i], best_model_) < error_thresh_;
   }
+
+  return inliers;
 }
 
 }  // namespace solvers

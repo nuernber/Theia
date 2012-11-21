@@ -72,5 +72,5 @@ TEST(RansacTest, LineFitting) {
   ransac_line.Compute(&line);
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }
-}  // namespace solvers
 
+}  // namespace solvers
