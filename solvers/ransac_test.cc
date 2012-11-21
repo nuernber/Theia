@@ -27,13 +27,13 @@ class LineEstimator : public Estimator<Point, Line> {
   LineEstimator() {};
   ~LineEstimator() {};
 
-  bool EstimateModel(const vector<Point>& data, Line* model) const {
+  bool EstimateModel(const vector<Point>& data, Line* model) {
     model->m = (data[1].y - data[0].y)/(data[1].x - data[0].x);
     model->b = data[1].y - model->m*data[1].x;
     return true;
   }
   
-  double Error(const Point& point, const Line& line) const {
+  double Error(const Point& point, const Line& line) {
     double a = -1.0*line.m;
     double b = 1.0;
     double c = -1.0*line.b;
@@ -52,24 +52,26 @@ double RandDouble(double dMin, double dMax)
 
 TEST(RansacTest, NoInput) {
   LineEstimator line_estimator;
-  Ransac<Point, Line> ransac_line(&line_estimator, 2, 0.3, 0.7, 10000);
   Line line;
-  bool success = ransac_line.Compute(&line);
+  vector<Point> input_points;
+  Ransac<Point, Line> ransac_line(2, 0.7, 10000);
+  bool success = ransac_line.Compute(input_points, 0.3, &line_estimator, &line);
   ASSERT_FALSE(success);
 }
 
 TEST(RansacTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
-  LineEstimator line_estimator;
-  Ransac<Point, Line> ransac_line(&line_estimator, 2, 0.3, 0.7, 10000);
+  vector<Point> input_points;
   for (int i = 0; i < 100; ++i) {
     double noise_x = RandDouble(-1,1);
     double noise_y = RandDouble(-1,1);
-    ransac_line.AddDataPoint(Point(i + noise_x, i + noise_y));
+    input_points.push_back(Point(i + noise_x, i + noise_y));
   }
 
+  LineEstimator line_estimator;
   Line line;
-  ransac_line.Compute(&line);
+  Ransac<Point, Line> ransac_line(2, 0.7, 10000);
+  ransac_line.Compute(input_points, 0.3, &line_estimator, &line);
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }
 
