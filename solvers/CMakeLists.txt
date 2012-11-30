@@ -1,4 +1,4 @@
-# See CMakeLists.txt in base dir for macro definitions
+# See CMakeLists.txt in base dir for macro definition
 
 # Ransac target.
 HEADER_LIBRARY(ransac ransac.h)
