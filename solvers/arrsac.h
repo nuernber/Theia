@@ -7,6 +7,7 @@ void GenerateInitialHypothesisSet(vector<Model>* accepted_hypotheses) {
   int count_in = 0;
   int flag_in = 0;
   int max_inner_ransac_its = 10000;
+  double max_sprt_test = 0.0;
   while (k > m_prime) {
     Model hypothesis;
     if (flag_in == 0) {
@@ -17,27 +18,32 @@ void GenerateInitialHypothesisSet(vector<Model>* accepted_hypotheses) {
       hypothesis = GenerateHypothesisSampling();
       count_in++;
       if (count_in == max_inner_ransac_its) {
-        // reset count_in, flag_in
+        count_in = 0;
+        flag_in = 0;
       }
     }
 
     // evaluate hypothesis h(k) with SPRT
-    bool sprt_test = SPRT(hypothesis);
+    double sprt_test = SPRT(hypothesis);
     // if hypothesis h(k) is rejected:
-    if (!sprt_test) {
-      // ???
-      //   re-estimate params of SPRT (if required)
-    }
+    if (sprt_test == 0) {
+      //   re-estimate params of SPRT (if required) ???
+    } else if (sprt_test > max_sprt_test) {
+      // else if hypothesis h(k) is accepted and has the largest support so far
+      max_sprt_test = sprt_test;
+      //   flag_in = 1
+      flag_in = 1;
 
-    // else if hypothesis h(k) is accepted and has the largest support so far
-    //   flag_in = 1
-    //   count_in = 0
-    //   U_in = support of hypothesis h(k)
-    //   re-estimate params of SPRT
-    //   estimate inlier ratio e' and M_prime (eq 1) Cap M_prime at max of M
-    // k = k+1
+      //   count_in = 0
+      count_in = 0;
+
+      //   U_in = support of hypothesis h(k)
+      
+      //   re-estimate params of SPRT
+      //   estimate inlier ratio e' and M_prime (eq 1) Cap M_prime at max of M
+    }
+    k = k+1
   }
-  // return k, set with accepted hypotheses
 }
 
 void compute() {
