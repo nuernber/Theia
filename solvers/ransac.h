@@ -1,42 +1,17 @@
-#ifndef SOLVERS_RANSAC_H
-#define SOLVERS_RANSAC_H
+#ifndef SOLVERS_RANSAC_H_
+#define SOLVERS_RANSAC_H_
 
-#include <cstdlib>
 #include <math.h>
+#include <cstdlib>
 #include <vector>
 
-using namespace std;
+#include "solvers/estimator.h"
+
+using std::vector;
 
 #define RANSAC_PARAM_INVALID -1
 
 namespace solvers {
-// Templated class for estimating a model for RANSAC. This class is purely a
-// virtual class and should be implemented for the specific task that RANSAC is
-// being used for. Two methods must be implemented: EstimateModel and Error. All
-// other methods are optional, but will likely enhance the quality of the
-// RANSAC output.
-template <class Datum, class Model>
-class Estimator {
- public:
-  Estimator() {}
-  virtual ~Estimator() {}
-
-  // Given a set of data points, estimate the model. Users should implement this
-  // function appropriately for the task being solved. Returns true for
-  // successful model estimation (and outputs model), false for failed
-  // estimation.
-  virtual bool EstimateModel(const vector<Datum>& data, Model* model) = 0;
-
-  // Refine the model based on an updated subset of data, and a pre-computed
-  // model. Can be optionally implemented.
-  virtual bool RefineModel(const vector<Datum>& data, Model* model) {
-    return true;
-  };
-
-  // Given a model and a data point, calculate the error. Users should implement
-  // this function appropriately for the task being solved.
-  virtual double Error(const Datum& data, const Model& model) = 0;
-};
 
 template<class Datum, class Model>
 class Ransac {
@@ -70,14 +45,14 @@ class Ransac {
   // calculation fails and true (with the best_model output) if successful.
   // Params:
   //   data: the set from which to sample
+  //   estimator: The estimator used to estimate the model based on the Datum
+  //     and Model type
   //   error_thresh: The error threshold for determining when datum fits a model
-  //   estimator: The estimator (derived from the above Estimator class) used
-  //     to estimate the model based on the Datum and Model type
   //   best_model: The output parameter that will be filled with the best model
   //     estimated from RANSAC
   bool Compute(const vector<Datum>& data,
+               const Estimator<Datum, Model>& estimator,
                double error_thresh,
-               Estimator<Datum, Model>* estimator,
                Model* best_model);
 
   // Returns a bool vector with true for inliers, false for outliers.
@@ -115,7 +90,7 @@ class Ransac {
   }
 
   vector<bool> inliers_;
-  
+
   // Max number of iterations to perform before terminating RANSAC.
   int max_iters_;
 
@@ -128,10 +103,9 @@ class Ransac {
 
 template<class Datum, class Model>
 bool Ransac<Datum, Model>::Compute(const vector<Datum>& data,
+                                   const Estimator<Datum, Model>& estimator,
                                    double error_thresh,
-                                   Estimator<Datum, Model>* estimator,
                                    Model* best_model) {
-
   if (min_sample_size_ > data.size())
     return false;
 
@@ -156,13 +130,13 @@ bool Ransac<Datum, Model>::Compute(const vector<Datum>& data,
     // Estimate model from random subset. Skip to next iteration if the model
     // fails to estimate.
     Model temp_model;
-    if (!estimator->EstimateModel(data_random_subset, &temp_model))
+    if (!estimator.EstimateModel(data_random_subset, &temp_model))
       continue;
 
     // Count all inliers for the estimated model.
     vector<Datum> temp_consensus_set;
     for (int i = 0; i < data.size(); i++) {
-      if(estimator->Error(data[i], temp_model) < error_thresh) {
+      if (estimator.Error(data[i], temp_model) < error_thresh) {
         temp_consensus_set.push_back(data[i]);
       }
     }
@@ -175,7 +149,7 @@ bool Ransac<Datum, Model>::Compute(const vector<Datum>& data,
       // If the inlier termination criterion is met, re-estimate the model
       // based on all inliers and return;
       if (best_consensus_size >= termination_num_inliers) {
-        estimator->RefineModel(temp_consensus_set, best_model);
+        estimator.RefineModel(temp_consensus_set, best_model);
         break;
       }
     }
@@ -183,10 +157,10 @@ bool Ransac<Datum, Model>::Compute(const vector<Datum>& data,
 
   inliers_.resize(data.size());
   for (int i = 0; i < data.size(); ++i) {
-    inliers_[i] = estimator->Error(data[i], *best_model) < error_thresh;
+    inliers_[i] = estimator.Error(data[i], *best_model) < error_thresh;
   }
   return true;
 }
 }  // namespace solvers
 
-#endif  // SOLVERS_RANSAC_H
+#endif  // SOLVERS_RANSAC_H_

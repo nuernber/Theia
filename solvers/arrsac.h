@@ -46,7 +46,7 @@ void GenerateInitialHypothesisSet(vector<Model>* accepted_hypotheses) {
   }
 }
 
-void compute() {
+void Compute() {
   // Initialize:
   //   set values for M and B
   int max_candidate_hyps = 500;
