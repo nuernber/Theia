@@ -30,7 +30,19 @@ class Estimator {
   // Given a model and a data point, calculate the error. Users should implement
   // this function appropriately for the task being solved.
   virtual double Error(const Datum& data, const Model& model) const = 0;
+
+  // Returns the set inliers of the data set based on the error threshold
+  // provided.
+  vector<bool> GetInliers(const vector<Datum>& data,
+                          const Model& model,
+                          double error_threshold) const {
+    vector<bool> inliers;
+    for (const Datum& data_point : data)
+      inliers.push_back(Error(data, model) < error_threshold);
+    return inliers;
+  }
 };
+
 }  // namespace solvers
 
 #endif  // SOLVERS_ESTIMATOR_H_

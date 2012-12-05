@@ -5,6 +5,7 @@
 
 #include "solvers/estimator.h"
 
+namespace solvers {
 // Modified version of Wald's SPRT as Matas et. al. implement it in "Randomized
 // RANSAC with Sequential Probability Ratio Test"
 
@@ -42,7 +43,7 @@ bool SequentialProbabilityRatioTest::Test(
     double decision_threshold,
     double* observed_inlier_ratio);
 
-// ------------ Implementation -------------- //
+// ------------------------ Implementation  ------------------------ //
 
 double CalculateSPRTDecisionThreshold(double sigma,
                                       double epsilon,
@@ -78,29 +79,26 @@ bool SequentialProbabilityRatioTest(const vector<Datum>& data,
                                     double sigma,
                                     double epsilon,
                                     double decision_threshold,
-                                    double* observed_inlier_ratio) {
-  int observed_inliers = 0;
+                                    int* observed_num_inliers) {
+  *obserevd_num_inliers = 0;
   double likelihood_ratio = 1.0;
   for (int i = 0; i < data.size(); i++) {
     // Check whether i-th data point is consistent with the model. Update the
     // likelihood ratio accordingly.
     if (estimator.Error(data[i], model) < error_thresh) {
       likelihood_ratio *= sigma/epsilon;
-      observed_inliers++;
+      *observed_num_inliers += 1;
     } else {
       likelhood_ratio *= (1.0 - sigma)/(1.0 - epsilon);
     }
 
     // If likehood ratio exceeds our decision threshold we can terminate early.
     if (likelihood_ratio > decision_threshold) {
-      *observed_inlier_ratio = static_cast<double>(observed_inliers)/(i+1);
       return false;
     }
   }
-
-  *observed_inlier_ratio =
-      static_cast<double>(observed_inliers)/static_cast<double>(data.size());
   return true;
 }
 
+}  // namespace solvers
 #endif  // SOLVERS_SEQUENTIAL_PROBABILITY_RATIO_TEST_H_
