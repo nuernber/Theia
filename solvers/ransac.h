@@ -33,12 +33,12 @@ class Ransac {
   Ransac(int min_sample_size,
          double termination_inlier_ratio,
          double outlier_probability,
-         double fail_probability = 0.99)
+         double no_fail_probability = 0.99)
       : min_sample_size_(min_sample_size),
         termination_inlier_ratio_(termination_inlier_ratio),
         max_iters_(MaxItersFromOutlierProb(min_sample_size,
                                            outlier_probability,
-                                           fail_probability)),
+                                           no_fail_probability)),
         termination_num_inliers(RANSAC_PARAM_INVALID) {}
 
   // Computes the best-fitting model using RANSAC. Returns false if RANSAC
@@ -80,12 +80,12 @@ class Ransac {
   // Set the max iterations based on Eq. 4.18 in Hartley & Zisserman.
   //   min_sample_size: the min number of samples required to estimate a model.
   //   outlier_probability: prob that a given data point is an outlier
-  //   fail_probability: prob that at least one sample has no outliers
+  //   no_fail_probability: prob that at least one sample has no outliers
   //     (typically set to .99)
   int MaxItersFromOutlierProb(int min_sample_size,
                               double outlier_probability,
-                              double fail_probability = 0.99) {
-    return ceil(log(1 - fail_probability) /
+                              double no_fail_probability = 0.99) {
+    return ceil(log(1 - no_fail_probability) /
                 log(1.0 - pow(1.0 - outlier_probability, min_sample_size)));
   }
 

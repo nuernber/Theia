@@ -60,9 +60,9 @@ TEST(RansacTest, NoInput) {
 TEST(RansacTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
-  for (int i = 0; i < 100; ++i) {
-    double noise_x = RandDouble(-1, 1);
-    double noise_y = RandDouble(-1, 1);
+  for (int i = 0; i < 10000; ++i) {
+    double noise_x = RandDouble(-1.0, 1.0);
+    double noise_y = RandDouble(-1.0, 1.0);
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
 
@@ -76,7 +76,7 @@ TEST(RansacTest, LineFitting) {
 TEST(RansacTest, GetInliers) {
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < 10000; ++i) {
     double noise_x = RandDouble(-1, 1);
     double noise_y = RandDouble(-1, 1);
     input_points.push_back(Point(i + noise_x, i + noise_y));
@@ -101,7 +101,7 @@ TEST(RansacTest, GetInliers) {
 TEST(RansacTest, TerminationNumInliers) {
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < 10000; ++i) {
     double noise_x = RandDouble(-1, 1);
     double noise_y = RandDouble(-1, 1);
     input_points.push_back(Point(i + noise_x, i + noise_y));
