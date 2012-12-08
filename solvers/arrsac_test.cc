@@ -9,6 +9,19 @@ using std::vector;
 
 namespace solvers {
 namespace {
+
+// Create a testable instance of ARRSAC (i.e. move protected methods to public
+// so that we can easily test it).
+template<class Datum, class Model>
+class TestableArrsac : public Arrsac<Datum, Model> {
+ public:
+  TestableArrsac(int min_sample_size,
+                 int max_candidate_hyps = 500,
+                 int block_size = 100)
+      : Arrsac<Datum, Model>(min_sample_size, max_candidate_hyps, block_size) {}
+  using Arrsac<Datum, Model>::GenerateInitialHypothesisSet;
+};
+
 struct Point {
   double x;
   double y;
@@ -70,7 +83,7 @@ TEST(ArrsacTest, InitializeHypothesisSet) {
   double epsilon = 0.6;
 
   vector<Line> initial_hypothesis;
-  Arrsac<Point, Line> arrsac_line(2);
+  TestableArrsac<Point, Line> arrsac_line(2);
   int num_iterations =
       arrsac_line.GenerateInitialHypothesisSet(input_points,
                                                input_quality,
@@ -99,7 +112,7 @@ TEST(ArrsacTest, Compute) {
   double epsilon = 0.8;
 
   Line fitted_line;
-  Arrsac<Point, Line> arrsac_line(2);
+  TestableArrsac<Point, Line> arrsac_line(2);
   bool success = arrsac_line.Compute(input_points,
                                      input_quality,
                                      estimator,
@@ -137,7 +150,7 @@ TEST(ArrsacTest, ComputeWithQuality) {
   double epsilon = 0.8;
 
   Line fitted_line;
-  Arrsac<Point, Line> arrsac_line(2);
+  TestableArrsac<Point, Line> arrsac_line(2);
   bool success = arrsac_line.Compute(input_points,
                                      input_quality,
                                      estimator,

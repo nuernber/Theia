@@ -63,9 +63,9 @@ ENDIF (${OPENMP})
 #       which has been compiled as target: myclass then calling
 #       GTEST(myclass_test myclass) will create a test executable myclass_test
 #       by automatically compiling myclass_test.cc and linking the mytest target
-MACRO (GTEST NAME USED_LIBS)
+MACRO (GTEST NAME)
   ADD_EXECUTABLE(${NAME} ${NAME}.cc)
-  TARGET_LINK_LIBRARIES(${NAME} gtest gtest_main ${USEDLIBS})
+  TARGET_LINK_LIBRARIES(${NAME} gtest gtest_main ${ARGN})
   ADD_TEST(NAME ${NAME}
            COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${NAME}
            --test_srcdir
@@ -73,17 +73,12 @@ MACRO (GTEST NAME USED_LIBS)
 ENDMACRO (GTEST)
 
 # Macro for CC Libraries. If the target is header-only, use HEADER_LIBRARY macro
-MACRO (CC_LIBRARY NAME SRCS USED_LIBS)
+MACRO (CC_LIBRARY NAME SRCS)
   get_filename_component(TARGETDIR ${CMAKE_CURRENT_LIST_DIR} NAME)
-  ADD_LIBRARY(${TARGETDIR}/${NAME} STATIC ${TARGETDIR}/${SRCS})
+  ADD_LIBRARY(${TARGETDIR}/${NAME} STATIC ${SRCS})
   SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY OUTPUT_NAME ${NAME})
-  TARGET_LINK_LIBRARIES(${TARGETDIR}/${NAME} ${USED_LIBS})
+  TARGET_LINK_LIBRARIES(${TARGETDIR}/${NAME} ${ARGN})
 ENDMACRO (CC_LIBRARY)
-
-# Macro for header-only libraries
-MACRO (HEADER_LIBRARY NAME SRCS)
-  ADD_CUSTOM_TARGET(${NAME} SOURCES ${SRCS})
-ENDMACRO (HEADER_LIBRARY)
 
 ADD_SUBDIRECTORY(solvers)
 
