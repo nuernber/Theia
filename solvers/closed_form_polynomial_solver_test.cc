@@ -67,6 +67,16 @@ TEST(SolveCubicPolynomial, test1) {
 }
 
 TEST(SolveQuarticPolynomial, test1) {
+  double a = 3.0;
+  double b = 6.0;
+  double c = -123.0;
+  double d = -126.0;
+  double e = 1080.0;
 
+  double roots[4];
+  int num_roots = SolveQuarticReals(a, b, c, d, e, roots);
+  std::cout << "num roots: " << num_roots << std::endl;
+  for (int i = 0; i < 4; i++)
+    std::cout << roots[i] << std::endl;
 }
 }  // namespace solvers
