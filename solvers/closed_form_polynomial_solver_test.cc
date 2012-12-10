@@ -53,7 +53,7 @@ TEST(SolveQuadraticPolynomial, SolveComplex) {
   EXPECT_TRUE(roots[1].imag() == 2.0 || roots[1].imag() == -2.0);
 }
 
-TEST(SolveCubicPolynomial, test1) {
+TEST(SolveCubicPolynomial, SolveReals) {
   // x^3 - 6x^2 + 11x - 6 = 0
   double a = 1.0;
   double b = -6.0;
@@ -66,7 +66,8 @@ TEST(SolveCubicPolynomial, test1) {
     std::cout << roots[i] << std::endl;
 }
 
-TEST(SolveQuarticPolynomial, test1) {
+TEST(SolveQuarticPolynomial, SolveReals) {
+  // y = 3x^4 + 6x^3 - 123x^2 - 126x + 1080 = 0
   double a = 3.0;
   double b = 6.0;
   double c = -123.0;
