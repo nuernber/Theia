@@ -1,7 +1,6 @@
 #include "solvers/closed_form_polynomial_solver.h"
 
 #include <complex>
-#include <iostream>
 using std::complex;
 
 // Number within the error threshold of zero.
@@ -106,12 +105,9 @@ int SolveQuartic(double a, double b, double c, double d, double e,
   using std::pow;
   using std::sqrt;
   double alpha = (-3.0*b*b)/(8.0*a*a) + c/a;
-  std::cout << "alpha = " << alpha << std::endl;
   double beta = (b*b*b)/(8.0*a*a*a) - (b*c)/(2.0*a*a) + d/a;
-  std::cout << "beta = " << beta << std::endl;
   double gamma = (-3.0*b*b*b*b)/(256.0*a*a*a*a) + (c*b*b)/(16.0*a*a*a) -
       (b*d)/(4.0*a*a) + e/a;
-  std::cout << "gamma = " << gamma << std::endl;
 
   if (beta == 0.0) {
     double tmp = alpha*alpha - 4.0*gamma;
