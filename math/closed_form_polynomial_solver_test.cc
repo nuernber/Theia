@@ -1,11 +1,11 @@
 #include <complex>
 
 #include "gtest/gtest.h"
-#include "solvers/closed_form_polynomial_solver.h"
+#include "math/closed_form_polynomial_solver.h"
 
 using std::complex;
 
-namespace solvers {
+namespace math {
 
 TEST(SolveQuadraticPolynomial, DegenerateSolution) {
   // - 2x + 1 = 0
@@ -80,4 +80,4 @@ TEST(SolveQuarticPolynomial, SolveReals) {
   for (int i = 0; i < 4; i++)
     std::cout << roots[i] << std::endl;
 }
-}  // namespace solvers
+}  // namespace math

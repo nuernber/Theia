@@ -1,12 +1,14 @@
-#include "solvers/closed_form_polynomial_solver.h"
+#include "math/closed_form_polynomial_solver.h"
 
 #include <complex>
+#include <cmath>
+#include <iostream>
 using std::complex;
 
 // Number within the error threshold of zero.
 #define kEpsilon 1e-6
 
-namespace solvers {
+namespace math {
 namespace {
 // Solve depressed cubic using Cardano's method.
 int SolveDepressedCubic(double p, double q, complex<double>* roots) {
@@ -92,58 +94,76 @@ int SolveQuarticReals(double a, double b, double c, double d, double e,
   int num_complex_solutions = SolveQuartic(a, b, c, d, e, complex_roots);
   int num_real_solutions = 0;
   for (int i = 0; i < num_complex_solutions; i++) {
-    if (complex_roots[i].imag() < kEpsilon)
+    if (std::abs(complex_roots[i].imag()) < kEpsilon) {
       roots[num_real_solutions++] = complex_roots[i].real();
+    }
   }
   return num_real_solutions;
 }
 
-// Using Ferrari's method of solution for general quartics (Wikipedia).
-// http://en.wikipedia.org/wiki/Quartic_function#Summary_of_Ferrari.27s_method
+// Solve with a cubic transformation.
+// http://mathforum.org/dr.math/faq/faq.cubic.equations.html
 int SolveQuartic(double a, double b, double c, double d, double e,
                  complex<double>* roots) {
   using std::pow;
   using std::sqrt;
-  double alpha = (-3.0*b*b)/(8.0*a*a) + c/a;
-  double beta = (b*b*b)/(8.0*a*a*a) - (b*c)/(2.0*a*a) + d/a;
-  double gamma = (-3.0*b*b*b*b)/(256.0*a*a*a*a) + (c*b*b)/(16.0*a*a*a) -
-      (b*d)/(4.0*a*a) + e/a;
+  using std::abs;
 
-  if (beta == 0.0) {
-    double tmp = alpha*alpha - 4.0*gamma;
-    complex<double> sqrt_val = sqrt(tmp);
-    roots[0] = (-1.0*b)/(4.0*a) + sqrt((-1.0*alpha + sqrt_val)/2.0);
-    roots[1] = (-1.0*b)/(4.0*a) + sqrt((-1.0*alpha - sqrt_val)/2.0);
-    roots[2] = (-1.0*b)/(4.0*a) - sqrt((-1.0*alpha + sqrt_val)/2.0);
-    roots[3] = (-1.0*b)/(4.0*a) - sqrt((-1.0*alpha - sqrt_val)/2.0);
+  // Solve by transforming the equation in two ways. First, divide the quartic
+  // by a so that the leading coefficient is now 1 (i.e. x^4 + a'x^3 + b'x^2 +
+  // c'x + d' = 0). Next, substitute x = y - a'/4. We can relate this new
+  // depressed quartic to an auxillary cubic equation, and solve that equation
+  // directly.
+  double a1 = b/a;
+  double b1 = c/a;
+  double c1 = d/a;
+  double d1 = e/a;
+  double e1 = b1 - (3.0*a1*a1)/8.0;
+  double f1 = c1 + (a1*a1*a1)/8.0 - (a1*b1)/2.0;
+  double g1 = d1 - (3.0*a1*a1*a1*a1)/256.0 + (a1*a1*b1)/16.0 - (a1*c1)/4.0;
+  if (g1 == 0.0) {
+    // Function is a really a cubic. Roots are the 3 cubic roots and x = -a1/4.
+    int num_sols = SolveCubic(1.0, 0.0, e1, f1, roots);
+    if (num_sols == 0)
+      return 0;
+    roots[0] -= a1/4.0;
+    roots[1] -= a1/4.0;
+    roots[2] -= a1/4.0;
+    roots[3] = (-1.0*a1)/4.0;
+    return 4;
+  } else if (f1 == 0.0) {
+    // The function is actually a quadratic on y^2
+    complex<double> quad_roots[2];
+    int num_sols = SolveQuadratic(1.0, e1, g1, quad_roots);
+    if (num_sols = 0)
+      return 0;
+    roots[0] = sqrt(quad_roots[0]);
+    roots[1] = -1.0*roots[0];
+    roots[2] = sqrt(quad_roots[1]);
+    roots[3] - -1.0*roots[1];
+    roots[0] -= a1/4.0;
+    roots[1] -= a1/4.0;
+    roots[2] -= a1/4.0;
+    roots[3] -= a1/4.0;
+    return 4;
+  } else {
+    // Solve the cubic per normal and plug the solution back in to retrieve the
+    // quartic roots.
+    complex<double> cubic_roots[3];
+    double coeff1 = e1/2.0;
+    double coeff2 = (e1*e1 - 4.0*g1)/16.0;
+    double coeff3 = (-1.0*f1*f1)/64.0;
+    int num_sols = SolveCubic(1.0, coeff1, coeff2, coeff3, cubic_roots);
+    if (num_sols = 0)
+      return 0;
+    complex<double> p = sqrt(cubic_roots[0]);
+    complex<double> q = sqrt(cubic_roots[1]);
+    complex<double> r = (-1.0*f1)/(8.0*p*q);
+    roots[0] = p + q + r - a1/4.0;
+    roots[1] = p - q - r - a1/4.0;
+    roots[2] = -1.0*p + q - r - a1/4.0;
+    roots[3] = -1.0*p - q + r - a1/4.0;
     return 4;
   }
-  
-  double p = (-1.0*alpha*alpha)/12.0 - gamma;
-  double q = (-1.0*alpha*alpha*alpha)/108.0 + (alpha*gamma)/3.0 -
-      (beta*beta)/8.0;
-
-  double r_temp = (q*q)/4.0 + (p*p*p)/27.0;
-  // Either sign of the sqrt of r will be sufficient (we choose +).
-  complex<double> r = (-1.0*q)/2.0 + sqrt(r_temp);
-  complex<double> u = pow(r, 1.0/3.0);
-  complex<double> y = (-5.0*alpha)/6.0 + u;
-  if (abs(u) < kEpsilon)
-    y -= p/(3.0*u);
-  else
-    y -= pow(q, 1.0/3.0);
-
-  complex<double> w = sqrt(alpha + 2.0*y);
-  
-  complex<double> temp_plus = -1.0*(3.0*alpha + 2.0*y + (2.0*beta)/w);
-  complex<double> sqrt_plus = sqrt(temp_plus);
-  complex<double> temp_minus = -1.0*(3.0*alpha + 2.0*y - (2.0*beta)/w);
-  complex<double> sqrt_minus = sqrt(temp_minus);
-
-  roots[0] = (-1.0*b)/(4.0*a) + (w + sqrt_plus)/2.0;
-  roots[1] = (-1.0*b)/(4.0*a) + (w - sqrt_plus)/2.0;
-  roots[2] = (-1.0*b)/(4.0*a) + (-1.0*w + sqrt_minus)/2.0;
-  roots[3] = (-1.0*b)/(4.0*a) + (-1.0*w + sqrt_minus)/2.0;
-  return 4;
 }
-}  // namespace solvers
+}  // namespace math
