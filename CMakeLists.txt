@@ -36,9 +36,25 @@ LIST(APPEND SEARCH_HEADERS /usr/local/include)
 LIST(APPEND SEARCH_HEADERS /usr/local/homebrew/include) # Mac OS X
 LIST(APPEND SEARCH_HEADERS /opt/local/include)
 
+# Locations to search for Eigen
+SET(EIGEN_SEARCH_HEADERS ${SEARCH_HEADERS})
+LIST(APPEND EIGEN_SEARCH_HEADERS /usr/include/eigen3) # Ubuntu 10.04's default location.
+LIST(APPEND EIGEN_SEARCH_HEADERS /usr/local/include/eigen3)
+LIST(APPEND EIGEN_SEARCH_HEADERS /usr/local/homebrew/include/eigen3)  # Mac OS X
+LIST(APPEND EIGEN_SEARCH_HEADERS /opt/local/var/macports/software/eigen3/opt/local/include/eigen3) # Mac OS X
+
 # Set c++ standard to c++0x
 SET(CMAKE_CXX_FLAGS)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
+# Eigen
+MESSAGE("-- Check for Eigen 3.0")
+FIND_PATH(EIGEN_INCLUDE NAMES Eigen/Core PATHS ${EIGEN_SEARCH_HEADERS})
+IF (NOT EXISTS ${EIGEN_INCLUDE})
+  MESSAGE(FATAL_ERROR "Can't find Eigen. Try passing -DEIGEN_INCLUDE=...")
+ENDIF (NOT EXISTS ${EIGEN_INCLUDE})
+MESSAGE("-- Found Eigen 3.0: ${EIGEN_INCLUDE}")
+INCLUDE_DIRECTORIES(${EIGEN_INCLUDE})
 
 # Multithreading using OpenMP
 OPTION(OPENMP
@@ -57,6 +73,19 @@ IF (${OPENMP})
     MESSAGE("-- Can't find OpenMP. Continuing without it.")
   ENDIF(${OPENMP_FOUND})
 ENDIF (${OPENMP})
+
+IF (CMAKE_BUILD_TYPE STREQUAL "Release")
+  IF (CMAKE_COMPILER_IS_GNUCXX)
+    # Linux
+    IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+      SET (CERES_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
+    ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    # Mac OS X
+    IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+      SET (CERES_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -msse3")
+    ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  ENDIF (CMAKE_COMPILER_IS_GNUCXX)
+ENDIF (CMAKE_BUILD_TYPE STREQUAL "Release")
 
 # Macro for tests
 #   Ex: Your test is written in myclass_test.cc  and uses a class in myclass.cc

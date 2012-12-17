@@ -7,13 +7,13 @@ namespace pose {
 TEST(PerspectiveThreePoint, test1) {
   //World coordinates of the 3 control points
   double world_points[3][3] = {{0.105, 0.07245, 0},
-                           {-0.105, 0.07425, 0},
-                           {-0.105, -0.07425, 0}};
+                               {-0.105, 0.07425, 0},
+                               {-0.105, -0.07425, 0}};
 
   //Image coordinates of the 3 points
   double image_points[3][2] = {{256, 218},
-                           {591, 224},
-                           {588, 461}};
+                               {591, 224},
+                               {588, 461}};
 
   //Intrinsic parameters of camera
   double focal_length[] = {990.08190, 991.42390};
@@ -22,7 +22,7 @@ TEST(PerspectiveThreePoint, test1) {
   double rotation[4][3][3];
   double translation[4][3];
   clock_t t = clock();
-  int num_solutions = PoseThreePoints2(image_points,
+  int num_solutions = PoseThreePoints(image_points,
                                       world_points,
                                       focal_length,
                                       principle_point,

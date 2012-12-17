@@ -135,7 +135,7 @@ int SolveQuartic(double a, double b, double c, double d, double e,
     // The function is actually a quadratic on y^2
     complex<double> quad_roots[2];
     int num_sols = SolveQuadratic(1.0, e1, g1, quad_roots);
-    if (num_sols = 0)
+    if (num_sols == 0)
       return 0;
     roots[0] = sqrt(quad_roots[0]);
     roots[1] = -1.0*roots[0];
@@ -154,7 +154,7 @@ int SolveQuartic(double a, double b, double c, double d, double e,
     double coeff2 = (e1*e1 - 4.0*g1)/16.0;
     double coeff3 = (-1.0*f1*f1)/64.0;
     int num_sols = SolveCubic(1.0, coeff1, coeff2, coeff3, cubic_roots);
-    if (num_sols = 0)
+    if (num_sols == 0)
       return 0;
     complex<double> p = sqrt(cubic_roots[0]);
     complex<double> q = sqrt(cubic_roots[1]);

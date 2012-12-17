@@ -26,13 +26,6 @@ int PoseThreePoints(const double image_points[3][2],
                     double rotation[][3][3],
                     double translation[][3]);
 
-int PoseThreePoints2(const double image_points[3][2],
-                    const double world_points[3][3],
-                    const double focal_length[2],
-                    const double principle_point[2],
-                    double rotation[][3][3],
-                    double translation[][3]);
-
 // Computes pose using three point algorithm (method above). The fourth
 // correspondence is used to determine the best solution of the (up to 4)
 // candidate solutions. Same parameters as above, except only the best solution
