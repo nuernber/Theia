@@ -2,7 +2,6 @@
 
 #include <complex>
 #include <cmath>
-#include <iostream>
 using std::complex;
 
 // Number within the error threshold of zero.
@@ -37,7 +36,7 @@ int SolveQuadraticReals(double a, double b, double c, double* roots) {
   int num_complex_solutions = SolveQuadratic(a, b, c, complex_roots);
   int num_real_solutions = 0;
   for (int i = 0; i < num_complex_solutions; i++) {
-    if (complex_roots[i].imag() < kEpsilon)
+    if (std::abs(complex_roots[i].imag()) < kEpsilon)
       roots[num_real_solutions++] = complex_roots[i].real();
   }
   return num_real_solutions;
@@ -65,14 +64,14 @@ int SolveCubicReals(double a, double b, double c, double d, double* roots) {
   int num_complex_solutions = SolveCubic(a, b, c, d, complex_roots);
   int num_real_solutions = 0;
   for (int i = 0; i < num_complex_solutions; i++) {
-    if (complex_roots[i].imag() < kEpsilon)
+    if (std::abs(complex_roots[i].imag()) < kEpsilon)
       roots[num_real_solutions++] = complex_roots[i].real();
   }
   return num_real_solutions;
 }
 
 int SolveCubic(double a, double b, double c, double d, complex<double>* roots) {
-  if(a == 0.0)
+  if (a == 0.0)
     return SolveQuadratic(b, c, d, roots);
 
   // Solve by first reducing the problem to a depressed cubic.
@@ -120,26 +119,26 @@ int SolveQuartic(double a, double b, double c, double d, double e,
   double alpha_pw2 = alpha*alpha;
   double alpha_pw3 = alpha_pw2*alpha;
 
-  std::complex<double> P (-alpha_pw2/12-gamma,0);
-  std::complex<double> Q (-alpha_pw3/108+alpha*gamma/3-pow(beta,2)/8,0);
-  std::complex<double> R = -Q/2.0+sqrt(pow(Q,2.0)/4.0+pow(P,3.0)/27.0);
+  complex<double> P(-alpha_pw2/12 - gamma, 0);
+  complex<double> Q(-alpha_pw3/108 + alpha*gamma/3 - pow(beta, 2)/8, 0);
+  complex<double> R = -Q/2.0 + sqrt(pow(Q, 2)/4.0+pow(P, 3.0)/27.0);
 
-  std::complex<double> U = pow(R,(1.0/3.0));
-  std::complex<double> y;
+  complex<double> U = pow(R, (1.0/3.0));
+  complex<double> y;
 
   if (U.real() == 0)
-    y = -5.0*alpha/6.0-pow(Q,(1.0/3.0));
+    y = -5.0*alpha/6.0 - pow(Q, (1.0/3.0));
   else
-    y = -5.0*alpha/6.0-P/(3.0*U)+U;
+    y = -5.0*alpha/6.0 - P/(3.0*U) + U;
 
-  std::complex<double> w = sqrt(alpha+2.0*y);
+  complex<double> w = sqrt(alpha + 2.0*y);
 
-  std::complex<double> temp;
+  complex<double> temp;
 
-  roots[0] = -b/(4.0*a) + 0.5*(w+sqrt(-(3.0*alpha+2.0*y+2.0*beta/w)));
-  roots[1] = -b/(4.0*a) + 0.5*(w-sqrt(-(3.0*alpha+2.0*y+2.0*beta/w)));
-  roots[2] = -b/(4.0*a) + 0.5*(-w+sqrt(-(3.0*alpha+2.0*y-2.0*beta/w)));
-  roots[3] = -b/(4.0*a) + 0.5*(-w-sqrt(-(3.0*alpha+2.0*y-2.0*beta/w)));
+  roots[0] = -b/(4.0*a) + 0.5*(w + sqrt(-(3.0*alpha + 2.0*y + 2.0*beta/w)));
+  roots[1] = -b/(4.0*a) + 0.5*(w - sqrt(-(3.0*alpha + 2.0*y + 2.0*beta/w)));
+  roots[2] = -b/(4.0*a) + 0.5*(-w + sqrt(-(3.0*alpha + 2.0*y - 2.0*beta/w)));
+  roots[3] = -b/(4.0*a) + 0.5*(-w - sqrt(-(3.0*alpha + 2.0*y - 2.0*beta/w)));
 
   return 4;
 }

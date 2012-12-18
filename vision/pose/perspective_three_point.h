@@ -11,7 +11,7 @@ namespace pose {
 // Params:
 //   image_points: Location of features on the image plane (x[i][*] = i-th image
 //     point)
-//   world_points: 3D location of features. Must correspond to the image_point 
+//   world_points: 3D location of features. Must correspond to the image_point
 //     of the same index (x[i][*] = i-th world point)
 //   focal_length: x, then y focal length (expressed in pixels).
 //   principle point: x, then y image optical center point (in pixels).

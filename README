@@ -5,10 +5,18 @@ UC Santa Barbara
 I. What is this library?
 ------------------------
 
+Theia is the goddess of sight and as such, this library aims to provide a swiss
+army knife for computer vision tasks. Many algorithms and methods are
+implemented in-house, and outside dependencies are limited and only used when
+neccessary for performance or simplicity.
 
 ------------------------
 II. How do I compile/install it?
 ------------------------
+
+Theia depends on the following libraries:
+Eigen: http://eigen.tuxfamily.org/
+Googletest: http://code.google.com/p/googletest/ (only if testing is enabled)
 
 CMake is the build system used. From the base directory, execute the following
 commands:
@@ -34,6 +42,7 @@ applications.
 ----------------
 Acknowledgements
 ----------------
+
 Advisors Tobias Hollerer (holl@cs.ucsb.edu) and Matthew Turk (mturk@cs.ucsb.edu).
 
 -------------------

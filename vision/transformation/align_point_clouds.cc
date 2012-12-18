@@ -18,15 +18,11 @@ void AlignPointClouds(const double left[][3],
                       double rotation[3][3],
                       double translation[3]) {
   // Compute centroids.
-  Eigen::Vector3d left_vector[num_points];
-  Eigen::RowVector3d right_vector[num_points];
   Eigen::Vector3d left_centroid(0.0, 0.0, 0.0);
   Eigen::RowVector3d right_centroid(0.0, 0.0, 0.0);
   for (int i = 0; i < num_points; i++) {
-    left_vector[i] = Eigen::Vector3d(left[i][0], left[i][1], left[i][2]);
-    right_vector[i] = Eigen::RowVector3d(right[i][0], right[i][1], right[i][2]);
-    left_centroid += left_vector[i];
-    right_centroid += right_vector[i];
+    left_centroid += Eigen::Vector3d(left[i][0], left[i][1], left[i][2]);
+    right_centroid += Eigen::RowVector3d(right[i][0], right[i][1], right[i][2]);
   }
 
   left_centroid /= static_cast<double>(num_points);
@@ -36,8 +32,10 @@ void AlignPointClouds(const double left[][3],
   // centroid.
   Eigen::Matrix3d cross_correlation = Eigen::Matrix3d::Zero();
   for (int i = 0; i < num_points; i++) {
+    Eigen::Vector3d left_vector(left[i][0], left[i][1], left[i][2]);
+    Eigen::RowVector3d right_vector(right[i][0], right[i][1], right[i][2]);
     cross_correlation +=
-        (left_vector[i] - left_centroid)*(right_vector[i] - right_centroid);
+        (left_vector - left_centroid)*(right_vector - right_centroid);
   }
 
   // Compute SVD decomposition of the cross correlation. This is excessive for 3

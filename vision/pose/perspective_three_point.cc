@@ -1,8 +1,8 @@
 #include "vision/pose/perspective_three_point.h"
 
+#include <math.h>
 #include <algorithm>
 #include <Eigen/Dense>
-#include <math.h>
 #include "math/closed_form_polynomial_solver.h"
 
 namespace vision {
@@ -23,10 +23,11 @@ void ProjectPoint(const double camera_matrix[3][3],
   using Eigen::Vector4d;
 
   // Specifying the matrices this way reduces memory overhead.
-  Map<Matrix<double, 3, 3, RowMajor> > camera_mat((double *)(&camera_matrix[0]));
+  Map<Matrix<double, 3, 3, RowMajor> >
+      camera_mat((double *)(&camera_matrix[0]));
   Map<Matrix<double, 3, 3, RowMajor> > rotation_mat((double *)(&rotation[0]));
   Map<Vector3d> translation_mat((double *)(&translation[0]));
-  
+
   Matrix<double, 3, 4> transformation;
   transformation << rotation_mat, translation_mat;
 
@@ -177,7 +178,7 @@ int PoseThreePoints(const double image_points[3][2],
                                               factors[4],
                                               real_roots);
   // Backsubstitution of each solution
-  for(int i = 0; i < num_solutions; i++) {
+  for (int i = 0; i < num_solutions; i++) {
     double cot_alpha = (-f_1*p_1/f_2-real_roots[i]*p_2 + d_12*b)/
         (-f_1*real_roots[i]*p_2/f_2 + p_1-d_12);
 
@@ -210,7 +211,7 @@ int PoseThreePoints(const double image_points[3][2],
     memcpy(translation[i], c.data(), sizeof(double)*9);
   }
 
-  return num_solutions;;
+  return num_solutions;
 }
 
 // Computes pose using three point algorithm. The fourth correspondence is used

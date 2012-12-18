@@ -1,12 +1,15 @@
-#include "gtest/gtest.h"
-#include "vision/pose/perspective_three_point.h"
 #include <math.h>
 #include <Eigen/Core>
-
-using namespace Eigen;
+#include "gtest/gtest.h"
+#include "vision/pose/perspective_three_point.h"
 
 namespace vision {
 namespace pose {
+using Eigen::Matrix3d;
+using Eigen::Matrix;
+using Eigen::Vector3d;
+using Eigen::Vector4d;
+
 namespace {
 double kEpsilon = 1e-9;
 
@@ -31,8 +34,8 @@ TEST(PerspectiveThreePoint, Sanity) {
   transformation << 1, 0, 0, 0,
       0, -1, 0, 0,
       0, 0, -1, 8;
-  
-  //Intrinsic parameters of camera
+
+  // Intrinsic parameters of camera.
   double focal_length[] = {800, 800};
   double principle_point[] = {320, 240};
 
@@ -51,7 +54,7 @@ TEST(PerspectiveThreePoint, Sanity) {
     image_points[i][0] = proj_point[0]/proj_point[2];
     image_points[i][1] = proj_point[1]/proj_point[2];
   }
-    
+
   double rotation[4][3][3];
   double translation[4][3];
   clock_t t = clock();
@@ -62,7 +65,7 @@ TEST(PerspectiveThreePoint, Sanity) {
                                       rotation,
                                       translation);
   ASSERT_GT(num_solutions, 0);
-  
+
   double best_rotation[3][3];
   double best_translation[3];
   bool solved = PoseFourPoints(image_points,
@@ -71,12 +74,12 @@ TEST(PerspectiveThreePoint, Sanity) {
                                principle_point,
                                best_rotation,
                                best_translation);
-  
+
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
-      ASSERT_LT(std::abs(best_rotation[i][j] - transformation(i,j)), kEpsilon);
+      ASSERT_LT(std::abs(best_rotation[i][j] - transformation(i, j)), kEpsilon);
     }
-    ASSERT_LT(std::abs(best_translation[i] - transformation(i,3)), kEpsilon);
+    ASSERT_LT(std::abs(best_translation[i] - transformation(i, 3)), kEpsilon);
   }
 }
 }  // namespace pose
