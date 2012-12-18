@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "math/closed_form_polynomial_solver.h"
-
+#include <time.h>
 using std::complex;
 
 namespace math {

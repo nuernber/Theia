@@ -101,69 +101,46 @@ int SolveQuarticReals(double a, double b, double c, double d, double e,
   return num_real_solutions;
 }
 
-// Solve with a cubic transformation.
-// http://mathforum.org/dr.math/faq/faq.cubic.equations.html
 int SolveQuartic(double a, double b, double c, double d, double e,
                  complex<double>* roots) {
   using std::pow;
   using std::sqrt;
-  using std::abs;
 
-  // Solve by transforming the equation in two ways. First, divide the quartic
-  // by a so that the leading coefficient is now 1 (i.e. x^4 + a'x^3 + b'x^2 +
-  // c'x + d' = 0). Next, substitute x = y - a'/4. We can relate this new
-  // depressed quartic to an auxillary cubic equation, and solve that equation
-  // directly.
-  double a1 = b/a;
-  double b1 = c/a;
-  double c1 = d/a;
-  double d1 = e/a;
-  double e1 = b1 - (3.0*a1*a1)/8.0;
-  double f1 = c1 + (a1*a1*a1)/8.0 - (a1*b1)/2.0;
-  double g1 = d1 - (3.0*a1*a1*a1*a1)/256.0 + (a1*a1*b1)/16.0 - (a1*c1)/4.0;
-  if (g1 == 0.0) {
-    // Function is a really a cubic. Roots are the 3 cubic roots and x = -a1/4.
-    int num_sols = SolveCubic(1.0, 0.0, e1, f1, roots);
-    if (num_sols == 0)
-      return 0;
-    roots[0] -= a1/4.0;
-    roots[1] -= a1/4.0;
-    roots[2] -= a1/4.0;
-    roots[3] = (-1.0*a1)/4.0;
-    return 4;
-  } else if (f1 == 0.0) {
-    // The function is actually a quadratic on y^2
-    complex<double> quad_roots[2];
-    int num_sols = SolveQuadratic(1.0, e1, g1, quad_roots);
-    if (num_sols == 0)
-      return 0;
-    roots[0] = sqrt(quad_roots[0]);
-    roots[1] = -1.0*roots[0];
-    roots[2] = sqrt(quad_roots[1]);
-    roots[3] - -1.0*roots[1];
-    roots[0] -= a1/4.0;
-    roots[1] -= a1/4.0;
-    roots[2] -= a1/4.0;
-    roots[3] -= a1/4.0;
-    return 4;
-  } else {
-    // Solve the cubic per normal and plug the solution back in to retrieve the
-    // quartic roots.
-    complex<double> cubic_roots[3];
-    double coeff1 = e1/2.0;
-    double coeff2 = (e1*e1 - 4.0*g1)/16.0;
-    double coeff3 = (-1.0*f1*f1)/64.0;
-    int num_sols = SolveCubic(1.0, coeff1, coeff2, coeff3, cubic_roots);
-    if (num_sols == 0)
-      return 0;
-    complex<double> p = sqrt(cubic_roots[0]);
-    complex<double> q = sqrt(cubic_roots[1]);
-    complex<double> r = (-1.0*f1)/(8.0*p*q);
-    roots[0] = p + q + r - a1/4.0;
-    roots[1] = p - q - r - a1/4.0;
-    roots[2] = -1.0*p + q - r - a1/4.0;
-    roots[3] = -1.0*p - q + r - a1/4.0;
-    return 4;
-  }
+  double a_pw2 = a*a;
+  double b_pw2 = b*b;
+  double a_pw3 = a_pw2*a;
+  double b_pw3 = b_pw2*b;
+  double a_pw4 = a_pw3*a;
+  double b_pw4 = b_pw3*b;
+
+  double alpha = -3*b_pw2/(8*a_pw2)+c/a;
+  double beta = b_pw3/(8*a_pw3)-b*c/(2*a_pw2)+d/a;
+  double gamma = -3*b_pw4/(256*a_pw4)+b_pw2*c/(16*a_pw3)-b*d/(4*a_pw2)+e/a;
+
+  double alpha_pw2 = alpha*alpha;
+  double alpha_pw3 = alpha_pw2*alpha;
+
+  std::complex<double> P (-alpha_pw2/12-gamma,0);
+  std::complex<double> Q (-alpha_pw3/108+alpha*gamma/3-pow(beta,2)/8,0);
+  std::complex<double> R = -Q/2.0+sqrt(pow(Q,2.0)/4.0+pow(P,3.0)/27.0);
+
+  std::complex<double> U = pow(R,(1.0/3.0));
+  std::complex<double> y;
+
+  if (U.real() == 0)
+    y = -5.0*alpha/6.0-pow(Q,(1.0/3.0));
+  else
+    y = -5.0*alpha/6.0-P/(3.0*U)+U;
+
+  std::complex<double> w = sqrt(alpha+2.0*y);
+
+  std::complex<double> temp;
+
+  roots[0] = -b/(4.0*a) + 0.5*(w+sqrt(-(3.0*alpha+2.0*y+2.0*beta/w)));
+  roots[1] = -b/(4.0*a) + 0.5*(w-sqrt(-(3.0*alpha+2.0*y+2.0*beta/w)));
+  roots[2] = -b/(4.0*a) + 0.5*(-w+sqrt(-(3.0*alpha+2.0*y-2.0*beta/w)));
+  roots[3] = -b/(4.0*a) + 0.5*(-w-sqrt(-(3.0*alpha+2.0*y-2.0*beta/w)));
+
+  return 4;
 }
 }  // namespace math

@@ -4,8 +4,9 @@
 namespace vision {
 namespace pose {
 // Computes camera pose using the three point algorithm and returns all possible
-// solutions (up to 4). Follows steps from the overview at
-// http://iplimage.com/blog/p3p-perspective-point-overview/
+// solutions (up to 4). Follows steps from the paper "A Novel Parameterization
+// of the Perspective-Three-Point Problem for a direct computation of Absolute
+// Camera position and Orientation" by Kneip et. al.
 //
 // Params:
 //   image_points: Location of features on the image plane (x[i][*] = i-th image
