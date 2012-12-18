@@ -78,11 +78,11 @@ IF (CMAKE_BUILD_TYPE STREQUAL "Release")
   IF (CMAKE_COMPILER_IS_GNUCXX)
     # Linux
     IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-      SET (CERES_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
     ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Mac OS X
     IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-      SET (CERES_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -msse3")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -msse3")
     ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   ENDIF (CMAKE_COMPILER_IS_GNUCXX)
 ENDIF (CMAKE_BUILD_TYPE STREQUAL "Release")

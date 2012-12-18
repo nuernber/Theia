@@ -2,9 +2,7 @@
 
 #include <algorithm>
 #include <Eigen/Dense>
-#include <iostream>
 #include <math.h>
-
 #include "math/closed_form_polynomial_solver.h"
 
 namespace vision {
@@ -18,7 +16,24 @@ void ProjectPoint(const double camera_matrix[3][3],
                   const double translation[3],
                   const double world_point[3],
                   double projected_point[3]) {
+  using Eigen::Map;
+  using Eigen::Matrix;
+  using Eigen::RowMajor;
+  using Eigen::Vector3d;
+  using Eigen::Vector4d;
 
+  // Specifying the matrices this way reduces memory overhead.
+  Map<Matrix<double, 3, 3, RowMajor> > camera_mat((double *)(&camera_matrix[0]));
+  Map<Matrix<double, 3, 3, RowMajor> > rotation_mat((double *)(&rotation[0]));
+  Map<Vector3d> translation_mat((double *)(&translation[0]));
+  
+  Matrix<double, 3, 4> transformation;
+  transformation << rotation_mat, translation_mat;
+
+  Vector4d world_vec(world_point[0], world_point[1], world_point[2], 1.0);
+  Vector3d proj_vec = camera_mat*transformation*world_vec;
+  projected_point[0] = proj_vec[0]/proj_vec[2];
+  projected_point[1] = proj_vec[1]/proj_vec[2];
 }
 }  // namespace
 
@@ -32,7 +47,7 @@ int PoseThreePoints(const double image_points[3][2],
                     double translation[][3]) {
   using Eigen::Matrix3d;
   using Eigen::Vector3d;
-  
+
   // World points
   Vector3d p1(world_points[0][0], world_points[0][1], world_points[0][2]);
   Vector3d p2(world_points[1][0], world_points[1][1], world_points[1][2]);
@@ -46,14 +61,15 @@ int PoseThreePoints(const double image_points[3][2],
   Vector3d f1((image_points[0][0] - principle_point[0])/focal_length[0],
               (image_points[0][1] - principle_point[1])/focal_length[1],
               1.0);
-  f1.normalize();
+
   Vector3d f2((image_points[1][0] - principle_point[0])/focal_length[0],
               (image_points[1][1] - principle_point[1])/focal_length[1],
               1.0);
-  f2.normalize();
   Vector3d f3((image_points[2][0] - principle_point[0])/focal_length[0],
               (image_points[2][1] - principle_point[1])/focal_length[1],
               1.0);
+  f1.normalize();
+  f2.normalize();
   f3.normalize();
 
   // Create intermediate camera frame.
@@ -160,7 +176,6 @@ int PoseThreePoints(const double image_points[3][2],
                                               factors[3],
                                               factors[4],
                                               real_roots);
-
   // Backsubstitution of each solution
   for(int i = 0; i < num_solutions; i++) {
     double cot_alpha = (-f_1*p_1/f_2-real_roots[i]*p_2 + d_12*b)/
@@ -190,12 +205,9 @@ int PoseThreePoints(const double image_points[3][2],
 
     r = n.transpose()*r.transpose()*t;
 
-    for (int j = 0; j < 3; j++) {
-      translation[i][j] = c[j];
-      for (int k = 0; k < 3; k++) {
-        rotation[i][j][k] = r(j,k);
-      }
-    }
+    // Copy solution output variable.
+    memcpy(rotation[i], r.data(), sizeof(double)*9);
+    memcpy(translation[i], c.data(), sizeof(double)*9);
   }
 
   return num_solutions;;
@@ -209,21 +221,10 @@ bool PoseFourPoints(const double image_points[4][2],
                     const double principle_point[2],
                     double rotation[3][3],
                     double translation[3]) {
-  double first_three_image_points[3][2];
-  double first_three_world_points[3][3];
-  for (int i = 0; i < 3; i++) {
-    first_three_image_points[i][0] = image_points[i][0];
-    first_three_image_points[i][1] = image_points[i][1];
-    first_three_image_points[i][2] = image_points[i][2];
-
-    first_three_world_points[i][0] = world_points[i][0];
-    first_three_world_points[i][1] = world_points[i][1];
-  }
-
   double candidate_rotation[4][3][3];
   double candidate_translation[4][3];
-  int num_valid_poses = PoseThreePoints(first_three_image_points,
-                                        first_three_world_points,
+  int num_valid_poses = PoseThreePoints(image_points,
+                                        world_points,
                                         focal_length,
                                         principle_point,
                                         candidate_rotation,
@@ -233,7 +234,7 @@ bool PoseFourPoints(const double image_points[4][2],
   double camera_matrix[3][3] = {{focal_length[0], 0, principle_point[0]},
                                 {0, focal_length[1], principle_point[1]},
                                 {0, 0, 1.0}};
-  double min_reprojection_error = 0;
+  double min_reprojection_error = 1e9;
   int best_pose_index = 0;
   for (int i = 0; i < num_valid_poses; i++) {
     double projected_point[2];
@@ -252,8 +253,10 @@ bool PoseFourPoints(const double image_points[4][2],
       best_pose_index = i;
     }
   }
-  rotation = candidate_rotation[best_pose_index];
-  translation = candidate_translation[best_pose_index];
+
+  // Copy solution to output variables.
+  memcpy(rotation, candidate_rotation[best_pose_index], sizeof(double)*9);
+  memcpy(translation, candidate_translation[best_pose_index], sizeof(double)*3);
   return true;
 }
 }  // pose
