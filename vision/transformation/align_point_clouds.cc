@@ -51,7 +51,7 @@ void AlignPointClouds(const double left[][3],
   // efficient and prevents any memory scope errors (same concept used for
   // translation below).
   Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor> >
-      rotation_mat((double*)(&rotation[0]));
+      rotation_mat(reinterpret_cast<double*>(&rotation[0]));
   rotation_mat = svd.matrixV()*(svd.matrixU().transpose());
 
   // Rotation is solved for, but the optimal translation is the difference of

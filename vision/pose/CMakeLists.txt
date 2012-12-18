@@ -1,7 +1,7 @@
 # See CMakeLists.txt in base dir for macro definition
 
 # Perspective Three Point Algorithm
-CC_LIBRARY(perspective_three_point perspective_three_point.cc  math/closed_form_polynomial_solver vision/transformation/align_point_clouds)
+CC_LIBRARY(perspective_three_point perspective_three_point.cc  math/closed_form_polynomial_solver)
 
 # Tests:
 IF (${BUILD_TESTING})

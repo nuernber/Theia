@@ -1,8 +1,8 @@
 #include "vision/pose/perspective_three_point.h"
 
 #include <math.h>
-#include <algorithm>
 #include <Eigen/Dense>
+#include <algorithm>
 #include "math/closed_form_polynomial_solver.h"
 
 namespace vision {
@@ -23,10 +23,12 @@ void ProjectPoint(const double camera_matrix[3][3],
   using Eigen::Vector4d;
 
   // Specifying the matrices this way reduces memory overhead.
-  Map<Matrix<double, 3, 3, RowMajor> >
-      camera_mat((double *)(&camera_matrix[0]));
-  Map<Matrix<double, 3, 3, RowMajor> > rotation_mat((double *)(&rotation[0]));
-  Map<Vector3d> translation_mat((double *)(&translation[0]));
+  Map<const Matrix<double, 3, 3, RowMajor> >
+      camera_mat(reinterpret_cast<const double*>(&camera_matrix[0]));
+  Map<const Matrix<double, 3, 3, RowMajor> >
+      rotation_mat(reinterpret_cast<const double*>(&rotation[0]));
+  Map<const Vector3d>
+      translation_mat(reinterpret_cast<const double*>(&translation[0]));
 
   Matrix<double, 3, 4> transformation;
   transformation << rotation_mat, translation_mat;
@@ -207,8 +209,8 @@ int PoseThreePoints(const double image_points[3][2],
     r = n.transpose()*r.transpose()*t;
 
     // Copy solution output variable.
-    memcpy(rotation[i], r.data(), sizeof(double)*9);
-    memcpy(translation[i], c.data(), sizeof(double)*9);
+    memcpy(rotation[i], r.data(), sizeof(r(0, 0))*9);
+    memcpy(translation[i], c.data(), sizeof(c(0))*9);
   }
 
   return num_solutions;
@@ -256,8 +258,12 @@ bool PoseFourPoints(const double image_points[4][2],
   }
 
   // Copy solution to output variables.
-  memcpy(rotation, candidate_rotation[best_pose_index], sizeof(double)*9);
-  memcpy(translation, candidate_translation[best_pose_index], sizeof(double)*3);
+  memcpy(rotation,
+         candidate_rotation[best_pose_index],
+         sizeof(candidate_rotation[0][0][0])*9);
+  memcpy(translation,
+         candidate_translation[best_pose_index],
+         sizeof(candidate_translation[0][0])*3);
   return true;
 }
 }  // pose
