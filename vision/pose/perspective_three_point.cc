@@ -133,7 +133,7 @@ int PoseThreePoints(const double image_points[3][2],
   double p_2 = p3(1);
 
   double cos_beta = f1.dot(f2);
-  double b = 1.0/(1.0 - pow(cos_beta, 2)) - 1.0;
+  double b = 1.0/(1.0 - cos_beta*cos_beta) - 1.0;
 
   if (cos_beta < 0)
     b = -sqrt(b);
@@ -141,16 +141,16 @@ int PoseThreePoints(const double image_points[3][2],
     b = sqrt(b);
 
   // Definition of temporary variables for avoiding multiple computation
-  double f_1_pw2 = pow(f_1, 2);
-  double f_2_pw2 = pow(f_2, 2);
-  double p_1_pw2 = pow(p_1, 2);
+  double f_1_pw2 = f_1*f_1;
+  double f_2_pw2 = f_2*f_2;
+  double p_1_pw2 = p_1*p_1;
   double p_1_pw3 = p_1_pw2*p_1;
   double p_1_pw4 = p_1_pw3*p_1;
-  double p_2_pw2 = pow(p_2, 2);
+  double p_2_pw2 = p_2*p_2;
   double p_2_pw3 = p_2_pw2*p_2;
   double p_2_pw4 = p_2_pw3*p_2;
-  double d_12_pw2 = pow(d_12, 2);
-  double b_pw2 = pow(b, 2);
+  double d_12_pw2 = d_12*d_12;
+  double b_pw2 = b*b;
 
   // Computation of factors of 4th degree polynomial.
   double factors[5];
@@ -185,9 +185,9 @@ int PoseThreePoints(const double image_points[3][2],
         (-f_1*real_roots[i]*p_2/f_2 + p_1-d_12);
 
     double cos_theta = real_roots[i];
-    double sin_theta = sqrt(1 - pow(real_roots[i], 2));
-    double sin_alpha = sqrt(1/(pow(cot_alpha, 2) + 1));
-    double cos_alpha = sqrt(1 - pow(sin_alpha, 2));
+    double sin_theta = sqrt(1 - real_roots[i]*real_roots[i]);
+    double sin_alpha = sqrt(1/(cot_alpha*cot_alpha + 1));
+    double cos_alpha = sqrt(1 - sin_alpha*sin_alpha);
 
     if (cot_alpha < 0)
       cos_alpha = -cos_alpha;
