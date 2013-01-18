@@ -1,6 +1,9 @@
 #ifndef VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_
 #define VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_
 
+#include "vision/models/essential_matrix.h"
+#include <vector>
+
 namespace vision {
 namespace pose {
 // Computes the relative pose between two cameras using 5 corresponding
@@ -12,11 +15,10 @@ namespace pose {
 //     image point)
 //   image2_points: Location of features on the image plane (x[i][*] = i-th
 //     image point)
-//   essential_matrix: Output candidate solutions of the 5 point algorithm.
-// Return: the number of poses computed.
-int FivePointRelativePose(const double image1_points[3][2],
-                          const double image2_points[3][2],
-                          double essential_matrix[][3][3]);
+// Return: essential_matrix: Output all solutions of the 5 point algorithm.
+std::vector<vision::models::EssentialMatrix> FivePointRelativePose(
+    const double image1_points[3][2],
+    const double image2_points[3][2]);
 }  // pose
 }  // vision
 

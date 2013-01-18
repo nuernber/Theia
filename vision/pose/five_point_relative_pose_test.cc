@@ -1,13 +1,20 @@
 #include "vision/pose/five_point_relative_pose.h"
+
+#include "vision/models/essential_matrix.h"
 #include "gtest/gtest.h"
 #include <Eigen/Core>
+#include <vector>
+
 #include <iostream>
+#include <ctime>
 
 namespace vision {
 namespace pose {
 using Eigen::Matrix3d;
+using vision::models::EssentialMatrix;
 
 TEST(FivePointRelativePose, Sanity) {
+
   // Ground truth essential matrix.
   Matrix3d essential_mat;
   essential_mat << 21.36410238362200, -6.45974435705903, -12.57571428668080,
@@ -25,10 +32,23 @@ TEST(FivePointRelativePose, Sanity) {
                      {0.14221131487001, 0.03902000959363},
                      {0.09012597508721, 0.11407993279726},
                      {0.15373963107017, 0.02622710108650}};
-  double estimated_essential_mat[11][3][3];
-  int num_solutions = FivePointRelativePose(m1, m2, estimated_essential_mat);
-  std::cout << "Num solutions found = " << num_solutions << std::endl;
 
+  clock_t t = clock();
+  std::vector<EssentialMatrix> essential_matrices =
+      FivePointRelativePose(m1, m2);
+  t = clock() - t;
+  printf ("My version took me %d clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
+
+  std::cout << "Num solutions found = " << essential_matrices.size() << std::endl;
+  for (int i = 0; i < essential_matrices.size(); i++) {
+    const Matrix3d& essential_matrix = essential_matrices[i].GetMatrix();
+    std::cout << "Essential Matrix =\n" << essential_matrix << std::endl;
+    // Use Map.
+    Eigen::Vector3d u(m1[i][0], m1[i][1], 1.0);
+    Eigen::Vector3d u_prime(m2[i][0], m2[i][1], 1.0);
+    double epipolar_constraint = (u_prime.transpose())*essential_matrix*u;
+    std::cout << "Epipolar constraint = " << epipolar_constraint << std::endl;
+  }
 }
 
 }  // namespace pose

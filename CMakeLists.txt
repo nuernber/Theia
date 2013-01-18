@@ -17,7 +17,6 @@ OPTION(BUILD_TESTING
        ON)
 ENABLE_TESTING()
 IF (${BUILD_TESTING})
-  # TODO(cmsweeney): change this or include gtest in the distribution
   ADD_SUBDIRECTORY(libraries/gtest)
   INCLUDE_DIRECTORIES(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 ENDIF (${BUILD_TESTING})
@@ -79,7 +78,7 @@ IF (CMAKE_BUILD_TYPE STREQUAL "Release")
     ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Mac OS X
     IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -msse3")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -msse4 -msse3 -msse2")
     ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   ENDIF (CMAKE_COMPILER_IS_GNUCXX)
 ENDIF (CMAKE_BUILD_TYPE STREQUAL "Release")
