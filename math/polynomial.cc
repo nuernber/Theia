@@ -14,19 +14,25 @@ inline bool SignOf(const double& d ){
 
 class SturmChain {
  public:
-  explicit SturmChain(const std::vector<double>& coeffs) {
-    f_.resize(coeffs.size());
-    q_.resize(coeffs.size());
+  explicit SturmChain(const Polynomial& poly) {
+    q_.resize(poly.GetDegree() + 1);
 
     // Create Sturm Chain.
-    f_[f_.size() - 1] = Polynomial(coeffs);
-    f_[f_.size() - 2] = f_[f_.size() - 1].Differentiate();
+    std::vector<Polynomial> f_(poly.GetDegree() + 1);
+    coeffs_ = Polynomial(poly);
+    derivitive_ = coeffs_.Differentiate();
+
+    Polynomial f_i_plus_2 = coeffs_;
+    Polynomial f_i_plus_1 = derivitive_;
+    Polynomial f_current;
     for (int i = f_.size() - 3; i >= 0; i--) {
-      std::pair<Polynomial, Polynomial> div_result =
-          f_[i+2].Divide(f_[i+1]);
-      f_[i] = -div_result.second;
-      q_[i+2] = div_result.first;
+      std::tie(q_[i+2], f_current) =
+          f_i_plus_2.Divide(f_i_plus_1);
+      f_i_plus_2 = f_i_plus_1;
+      f_i_plus_1 = -f_current;
     }
+    q_[1] = f_i_plus_2;
+    q_[0] = f_i_plus_1;
   }
   ~SturmChain() {}
 
@@ -34,13 +40,13 @@ class SturmChain {
   int EvalAt(double val) const {
     int sign_changes = 0;
 
-    double f_minus_2 = f_[0].EvalAt(val);
-    double f_minus_1 = f_[1].EvalAt(val);
+    double f_minus_2 = q_[0].EvalAt(val);
+    double f_minus_1 = q_[1].EvalAt(val);
     // If different signs.
     if (SignOf(f_minus_2) != SignOf(f_minus_1))
       sign_changes++;
 
-    for (int i = 2; i < f_.size(); i++) {
+    for (int i = 2; i < q_.size(); i++) {
       // Evaluate poly at current sturm chain term.
       double f_current = q_[i].EvalAt(val)*f_minus_1 - f_minus_2;
       // If there was a sign change.
@@ -55,13 +61,13 @@ class SturmChain {
   // Sturm chain evaluation at infinity.
   int EvalAtInfinity() const {
     int sign_changes = 0;
-    bool f_minus_2 = SignOf(f_[0][0]);
-    bool f_minus_1 = SignOf(f_[1][1]);
+    bool f_minus_2 = SignOf(q_[0][0]);
+    bool f_minus_1 = SignOf(q_[1][1]);
     // If different signs.
     if (f_minus_2 != f_minus_1)
       sign_changes++;
 
-    for (int i = 2; i < f_.size(); i++) {
+    for (int i = 2; i < q_.size(); i++) {
       // Evaluate poly at current sturm chain term. Only the sign of the second
       // term matters.
       bool f_current = f_minus_1 != SignOf(q_[i][1]);
@@ -76,13 +82,13 @@ class SturmChain {
   // Sturm chain evalution at negative infinity.
   int EvalAtNegInfinity() const {
     int sign_changes = 0;
-    bool f_minus_2 = SignOf(f_[0][0]);
-    bool f_minus_1 = !SignOf(f_[1][1]);
+    bool f_minus_2 = SignOf(q_[0][0]);
+    bool f_minus_1 = !SignOf(q_[1][1]);
     // If different signs.
     if (f_minus_2 != f_minus_1)
       sign_changes++;
 
-    for (int i = 2; i < f_.size(); i++) {
+    for (int i = 2; i < q_.size(); i++) {
       // Evaluate poly at current sturm chain term. Only the sign of the second
       // term matters.
       bool f_current = f_minus_1 != !SignOf(q_[i][1]);
@@ -96,17 +102,18 @@ class SturmChain {
 
   // Evaluate the polynomial at x.
   double PolyEval(double x) const {
-    return f_[f_.size() - 1].EvalAt(x);
+    return coeffs_.EvalAt(x);
   }
 
   // Evaluate the derivitive at x.
   double DerivEval(double x) const {
-    return f_[f_.size() - 2].EvalAt(x);
+    return derivitive_.EvalAt(x);
   }
 
  private:
   // Array of polynomials f0, ..., fn
-  std::vector<Polynomial> f_;
+  Polynomial coeffs_;
+  Polynomial derivitive_;
   // Array of quotients of the form mx + b (m and x are saved).
   std::vector<Polynomial> q_;
 
@@ -291,7 +298,7 @@ Polynomial Polynomial::operator -() {
 // Solve for real roots using Sturm Chain.
 std::vector<double> Polynomial::RealRoots() const {
   // Initialize Sturm Chain.
-  SturmChain sturm(coeffs_);
+  SturmChain sturm(*this);
 
   // Evaluate sturm at -infinity, infinity to determine total # of roots.
   int positive_sturm_eval = sturm.EvalAtInfinity();

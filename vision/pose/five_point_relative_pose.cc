@@ -267,10 +267,27 @@ std::vector<EssentialMatrix> FivePointRelativePose(
   Matrix<double, 1, 11> n = MultiplyPoly(p1, b31) + MultiplyPoly(p2, b32) +
       MultiplyPoly(p3, b33);
 
+  std::vector<EssentialMatrix> essential_matrices;
+  math::Polynomial determinant_poly(10, n.data());
+  std::vector<double> roots = determinant_poly.RealRoots();
+  for (double z : roots) {
+    double x = EvaluatePoly(p1, z)/EvaluatePoly(p3, z);
+    double y = EvaluatePoly(p2, z)/EvaluatePoly(p3, z);
+    Matrix<double, 9, 1> temp_sum = x*null_space.col(0) +
+        y*null_space.col(1) + z*null_space.col(2) + null_space.col(3);
+    // Need to do it like this because temp_sum is a row vector and recasting
+    // it as a 3x3 will load it column-major.
+    Eigen::Matrix3d candidate_essential_mat;
+    candidate_essential_mat << temp_sum.head(3).transpose(),
+        temp_sum.segment(3, 3).transpose(),
+        temp_sum.tail(3).transpose();
+    essential_matrices.push_back(candidate_essential_mat);
+  }
   // Step 5. Extract roots of n (the 10th degree polynomial).
   // You can solve the 10 deg polynomial as a sturn sequence, or as an
   // eigen-decomposition of a companion matrix. We choose the latter because of
   // the efficiency and convenience of the Eigen library.
+  /*
   Matrix<double, 10, 10> companion = Matrix<double, 10, 10>::Zero();
   // Scale n so that the 10th deg coefficient = 1.
   n /= n(10);
@@ -299,7 +316,7 @@ std::vector<EssentialMatrix> FivePointRelativePose(
       essential_matrices.push_back(candidate_essential_mat);
     }
   }
-
+  */
   return essential_matrices;
 
 }
