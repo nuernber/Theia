@@ -18,10 +18,10 @@ void GaussJordan(Eigen::MatrixBase<Derived>* input, int max_rows = 99999) {
     int swap_row = i;
     double max_val = 0.0;
     for (int j = i+1; j < input->rows(); j++) {
-      double temp_max_val = std::abs((*input)(j,i));
+      double temp_max_val = std::abs((*input)(j, i));
       if (temp_max_val > max_val) {
         max_val = temp_max_val;
-        swap_row = j;                           
+        swap_row = j;
       }
     }
     input->row(swap_row).swap(input->row(i));
@@ -29,7 +29,7 @@ void GaussJordan(Eigen::MatrixBase<Derived>* input, int max_rows = 99999) {
     // Eliminate all values in the column of the pivot.
     for (int j = 0; j < input->rows(); j++) {
       if (j != i) {
-        input->row(j) -= ((*input)(j, i)/(*input)(i,i))*input->row(i);
+        input->row(j) -= ((*input)(j, i)/(*input)(i, i))*input->row(i);
         (*input)(j, i) = 0.0;
       }
     }
@@ -39,7 +39,7 @@ void GaussJordan(Eigen::MatrixBase<Derived>* input, int max_rows = 99999) {
     // Scale current row so that leading value is 1.0. Leading value should be
     // along the diagonal as we proceed with gauss-jordan.
     input->row(i) *= 1.0/(*input)(i, i);
-    (*input)(i,i) = 1.0;
+    (*input)(i, i) = 1.0;
   }
 }
 }  // namespace matrix

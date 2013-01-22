@@ -1,12 +1,12 @@
 #include "vision/pose/five_point_relative_pose.h"
 
-#include "vision/models/essential_matrix.h"
-#include "gtest/gtest.h"
 #include <Eigen/Core>
 #include <vector>
-
 #include <iostream>
 #include <ctime>
+
+#include "vision/models/essential_matrix.h"
+#include "gtest/gtest.h"
 
 namespace vision {
 namespace pose {
@@ -14,7 +14,6 @@ using Eigen::Matrix3d;
 using vision::models::EssentialMatrix;
 
 TEST(FivePointRelativePose, Sanity) {
-
   // Ground truth essential matrix.
   Matrix3d essential_mat;
   essential_mat << 21.36410238362200, -6.45974435705903, -12.57571428668080,
@@ -37,9 +36,12 @@ TEST(FivePointRelativePose, Sanity) {
   std::vector<EssentialMatrix> essential_matrices =
       FivePointRelativePose(m1, m2);
   t = clock() - t;
-  printf ("My version took me %d clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
+  printf("My version took me %d clicks (%f seconds).\n",
+         t,
+         ((float)t)/CLOCKS_PER_SEC);
 
-  std::cout << "Num solutions found = " << essential_matrices.size() << std::endl;
+  std::cout << "Num solutions found = " <<
+      essential_matrices.size() << std::endl;
   for (int i = 0; i < essential_matrices.size(); i++) {
     const Matrix3d& essential_matrix = essential_matrices[i].GetMatrix();
     std::cout << "Essential Matrix =\n" << essential_matrix << std::endl;

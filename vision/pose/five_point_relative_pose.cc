@@ -1,13 +1,12 @@
 #include "vision/pose/five_point_relative_pose.h"
 
-#include "math/matrix/gauss_jordan.h"
-#include "vision/models/essential_matrix.h"
-#include <cmath>
 #include <Eigen/Dense>
 #include <vector>
+#include <cmath>
 
-#include <iostream>
-#include <time.h>
+#include "math/matrix/gauss_jordan.h"
+#include "math/polynomial.h"
+#include "vision/models/essential_matrix.h"
 
 namespace vision {
 namespace pose {
@@ -22,9 +21,9 @@ Matrix<double, 1, n1 + n2 - 1> MultiplyPoly(const Matrix<double, 1, n1>& a,
                                             const Matrix<double, 1, n2>& b) {
   Matrix<double, 1, n1 + n2 - 1> poly =
       Matrix<double, 1, n1 + n2 -1>::Zero();
-  for(int i = 0; i < a.cols(); i++)
-    for(int j = 0; j < b.cols(); j++)
-      poly[i + j] += a[i] * b[j];
+  for (int i = 0; i < a.cols(); i++)
+    for (int j = 0; j < b.cols(); j++)
+      poly[i + j] += a[i]*b[j];
 
   return poly;
 }
@@ -33,7 +32,7 @@ Matrix<double, 1, n1 + n2 - 1> MultiplyPoly(const Matrix<double, 1, n1>& a,
 template<int n> double EvaluatePoly(const Matrix<double, 1, n>& poly,
                                     double x) {
   double val = 0;
-  for(int i = poly.cols() - 1; i > 0; i--) {
+  for (int i = poly.cols() - 1; i > 0; i--) {
     val += poly[i];
     val *= x;
   }
@@ -87,44 +86,6 @@ Matrix<double, 1, 20> MultiplyDegTwoDegOnePoly(const Matrix<double, 1, 10>& a,
   output(18) = a(8)*b(3) + a(9)*b(2);
   output(19) = a(9)*b(3);
   return output;
-}
-
-void TestPolyMultipliers() {
-  double eps = 1e-9;
-  for (int i = 0; i < 1000; i++) {
-    RowVector4d a = RowVector4d::Random();
-    RowVector4d b = RowVector4d::Random();
-    RowVector4d c = RowVector4d::Random();
-    RowVector4d sols = RowVector4d::Random();
-    sols[3] = 1.0;
-    double x = sols[0];
-    double y = sols[1];
-    double z = sols[2];
-
-    // Check deg one poly multiplier.
-    Matrix<double, 1, 10> mult = MultiplyDegOnePoly(a, b);
-    double sol1 = (a.dot(sols))*(b.dot(sols));
-    Matrix<double, 1, 10> sols2;
-    sols2 << x*x, y*y, z*z, x*y, x*z, y*z, x, y, z, 1;
-    double sol2 = mult.dot(sols2);
-
-    if (std::abs(sol1 - sol2) > eps) {
-      std::cout << "Deg1 = " << sol1 << " their mult = " << sol2 << std::endl;
-      break;
-    }
-
-    // Check deg 2, deg 1 poly multiplier.
-    Matrix<double, 1, 20> deg2mult = MultiplyDegTwoDegOnePoly(mult, c);
-    double mysol = sol1*(c.dot(sols));
-    Matrix<double, 1, 20> sols3;
-    sols3 << x*x*x, y*y*y, x*x*y, x*y*y, x*x*z, x*x, y*y*z, y*y, x*y*z, x*y,
-        z*z*x, z*x, x, z*z*y, z*y, y, z*z*z, z*z, z, 1;
-    double mysol1 = deg2mult.dot(sols3);
-    if (std::abs(mysol - mysol1) > eps) {
-      std::cout << "Deg2 = " << mysol << " their mult = " << mysol1 << std::endl;
-      break;
-    }
-  }
 }
 
 // Shorthand for multiplying the Essential matrix with its transpose according
@@ -224,11 +185,9 @@ std::vector<EssentialMatrix> FivePointRelativePose(
   //   null space of this matrix (found by SVD).
   Matrix<double, 5, 9> epipolar_constraint;
   for (int i = 0; i < 5; i++) {
-    // Normalize image points and make homogeneous.
+    // Make image points homogeneous.
     Vector3d tmp_img1(image1_points[i][0], image1_points[i][1], 1.0);
-    //tmp_img1.normalize();
     Vector3d tmp_img2(image2_points[i][0], image2_points[i][1], 1.0);
-    //tmp_img2.normalize();
     // Fill matrix with the epipolar constraint from q'_t*E*q = 0. Where q is
     // from the first image, and q' is from the second. Eq. 8 in the Nister
     // paper.
@@ -250,8 +209,8 @@ std::vector<EssentialMatrix> FivePointRelativePose(
   // Step 3. Gauss-Jordan Elimination with partial pivoting on constraint
   // matrix.
   math::matrix::GaussJordan(&constraint_matrix);
-  // Step 4. Expand determinant polynomial of 3x3 polynomial B.
 
+  // Step 4. Expand determinant polynomial of 3x3 polynomial B.
   // Create matrix B. Horribly ugly, but not sure if there's a better way to do
   // it!
   RowVector4d b11(constraint_matrix(4, 12),
@@ -321,6 +280,7 @@ std::vector<EssentialMatrix> FivePointRelativePose(
     companion(i, i-1) = 1.0;
   // Compute eigenvalues. Note, these can be complex.
   Eigen::VectorXcd eigenvalues = companion.eigenvalues();
+
   // Eigenvalues = z. Plug z back into previous equations to get x, y values.
   std::vector<EssentialMatrix> essential_matrices;
   for (int i = 0; i < eigenvalues.rows(); i++) {
@@ -330,8 +290,8 @@ std::vector<EssentialMatrix> FivePointRelativePose(
       double y = EvaluatePoly(p2, z)/EvaluatePoly(p3, z);
       Matrix<double, 9, 1> temp_sum = x*null_space.col(0) +
           y*null_space.col(1) + z*null_space.col(2) + null_space.col(3);
-      // Need to do it like this because temp_sum is a row vector and is a pain
-      // to immediately resize into a Matrix3d.
+      // Need to do it like this because temp_sum is a row vector and recasting
+      // it as a 3x3 will load it column-major.
       Eigen::Matrix3d candidate_essential_mat;
       candidate_essential_mat << temp_sum.head(3).transpose(),
           temp_sum.segment(3, 3).transpose(),
@@ -339,7 +299,9 @@ std::vector<EssentialMatrix> FivePointRelativePose(
       essential_matrices.push_back(candidate_essential_mat);
     }
   }
+
   return essential_matrices;
+
 }
 }  // pose
 }  // vision

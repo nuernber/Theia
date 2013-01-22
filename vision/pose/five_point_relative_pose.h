@@ -1,8 +1,8 @@
 #ifndef VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_
 #define VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_
 
-#include "vision/models/essential_matrix.h"
 #include <vector>
+#include "vision/models/essential_matrix.h"
 
 namespace vision {
 namespace pose {

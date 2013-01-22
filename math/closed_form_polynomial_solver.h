@@ -26,5 +26,5 @@ int SolveQuarticReals(double a, double b, double c, double d, double e,
                        double* roots);
 int SolveQuartic(double a, double b, double c, double d, double e,
                   std::complex<double>* roots);
-}  // math
+}  // namespace math
 #endif  // MATH_CLOSED_FORM_POLYNOMIAL_SOLVER_H_
