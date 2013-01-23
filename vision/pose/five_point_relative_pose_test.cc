@@ -32,13 +32,13 @@ TEST(FivePointRelativePose, Sanity) {
                      {0.09012597508721, 0.11407993279726},
                      {0.15373963107017, 0.02622710108650}};
 
-  clock_t t = clock();
+  // clock_t t = clock();
   std::vector<EssentialMatrix> essential_matrices =
       FivePointRelativePose(m1, m2);
-  t = clock() - t;
-  printf("My version took me %d clicks (%f seconds).\n",
-         t,
-         ((float)t)/CLOCKS_PER_SEC);
+  // t = clock() - t;
+  // printf("My version took me %d clicks (%f seconds).\n",
+  // t,
+  // ((float)t)/CLOCKS_PER_SEC);
 
   std::cout << "Num solutions found = " <<
       essential_matrices.size() << std::endl;

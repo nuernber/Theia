@@ -55,6 +55,43 @@ ENDIF (NOT EXISTS ${EIGEN_INCLUDE})
 MESSAGE("-- Found Eigen 3.0: ${EIGEN_INCLUDE}")
 INCLUDE_DIRECTORIES(${EIGEN_INCLUDE})
 
+# Google Flags
+MESSAGE("-- Check for Google Flags")
+FIND_LIBRARY(GFLAGS_LIB NAMES gflags PATHS ${SEARCH_LIBS})
+IF (NOT EXISTS ${GFLAGS_LIB})
+  MESSAGE(FATAL_ERROR
+    "Can't find Google Flags. Please specify: "
+    "-DGFLAGS_LIB=...")
+ENDIF (NOT EXISTS ${GFLAGS_LIB})
+MESSAGE("-- Found Google Flags library: ${GFLAGS_LIB}")
+FIND_PATH(GFLAGS_INCLUDE NAMES gflags/gflags.h PATHS ${SEARCH_HEADERS})
+IF (NOT EXISTS ${GFLAGS_INCLUDE})
+  MESSAGE(FATAL_ERROR
+    "Can't find Google Flags. Please specify: "
+    "-DGFLAGS_INCLUDE=...")
+ENDIF (NOT EXISTS ${GFLAGS_INCLUDE})
+MESSAGE("-- Found Google Flags header in: ${GFLAGS_INCLUDE}")
+INCLUDE_DIRECTORIES(${GFLAGS_INCLUDE})
+
+# Google Logging
+MESSAGE("-- Check for Google Log")
+FIND_LIBRARY(GLOG_LIB NAMES glog PATHS ${SEARCH_LIBS})
+IF (NOT EXISTS ${GLOG_LIB})
+  MESSAGE(FATAL_ERROR
+    "Can't find Google Log. Please specify: "
+    "-DGLOG_LIB=...")
+ENDIF (NOT EXISTS ${GLOG_LIB})
+MESSAGE("-- Found Google Log library: ${GLOG_LIB}")
+
+FIND_PATH(GLOG_INCLUDE NAMES glog/logging.h PATHS ${SEARCH_HEADERS})
+IF (NOT EXISTS ${GLOG_INCLUDE})
+  MESSAGE(FATAL_ERROR
+    "Can't find Google Log. Please specify: "
+    "-DGLOG_INCLUDE=...")
+ENDIF (NOT EXISTS ${GLOG_INCLUDE})
+MESSAGE("-- Found Google Log header in: ${GLOG_INCLUDE}")
+INCLUDE_DIRECTORIES(${GLOG_INCLUDE})
+
 # Multithreading using OpenMP
 OPTION(OPENMP
        "Enable thread solving (requires OpenMP)"
@@ -90,7 +127,7 @@ ENDIF (CMAKE_BUILD_TYPE STREQUAL "Release")
 #       by automatically compiling myclass_test.cc and linking the mytest target
 MACRO (GTEST NAME)
   ADD_EXECUTABLE(${NAME} ${NAME}.cc)
-  TARGET_LINK_LIBRARIES(${NAME} gtest gtest_main ${ARGN})
+  TARGET_LINK_LIBRARIES(${NAME} gtest gtest_main ${ARGN} ${GFLAGS_LIB} ${GLOG_LIB})
   ADD_TEST(NAME ${NAME}
            COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${NAME}
            --test_srcdir
@@ -102,7 +139,7 @@ MACRO (CC_LIBRARY NAME SRCS)
   STRING(REPLACE "${CMAKE_SOURCE_DIR}/" "" TARGETDIR ${CMAKE_CURRENT_LIST_DIR})
   ADD_LIBRARY(${TARGETDIR}/${NAME} STATIC ${SRCS})
   SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY OUTPUT_NAME ${NAME})
-  TARGET_LINK_LIBRARIES(${TARGETDIR}/${NAME} ${ARGN})
+  TARGET_LINK_LIBRARIES(${TARGETDIR}/${NAME} ${ARGN} ${GFLAGS_LIB} ${GLOG_LIB})
 ENDMACRO (CC_LIBRARY)
 
 ADD_SUBDIRECTORY(math)

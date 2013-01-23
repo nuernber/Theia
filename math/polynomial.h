@@ -16,7 +16,7 @@ class Polynomial {
   Polynomial(const Polynomial& poly) : Polynomial(poly.coeffs_) {}
   Polynomial(int degree, const double coeffs[]);
   ~Polynomial() {}
-  
+
   // Return the degree of the polynomial.
   int GetDegree() const { return coeffs_.size() - 1; }
 
@@ -26,7 +26,7 @@ class Polynomial {
 
   // Evaluate the polynomial at x.
   double EvalAt(const double x) const;
-  
+
   // Add two polynomials together.
   Polynomial Add(const Polynomial& poly) const;
   Polynomial Subtract(const Polynomial& poly) const;
@@ -39,7 +39,7 @@ class Polynomial {
   Polynomial operator*(const Polynomial &poly) { return this->Multiply(poly); }
   // Negation
   Polynomial operator-();
-  
+
   // First order differentiation.
   Polynomial Differentiate() const;
 

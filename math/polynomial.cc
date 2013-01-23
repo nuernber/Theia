@@ -1,14 +1,22 @@
 #include "math/polynomial.h"
 
 #include <algorithm>
-#include <stack>
 #include <tuple>
 #include <utility>
 #include <vector>
 
 namespace math {
 namespace {
-inline bool SignOf(const double& d ){
+struct SturmInterval {
+  double lower_bound;
+  int lower_val;
+  double upper_bound;
+  int upper_val;
+  SturmInterval(double lb, int lv, double ub, int uv)
+      : lower_bound(lb), lower_val(lv), upper_bound(ub), upper_val(uv) {}
+};
+
+inline bool SignOf(const double& d ) {
   return d < 0.0;
 }
 
@@ -18,14 +26,13 @@ class SturmChain {
     q_.resize(poly.GetDegree() + 1);
 
     // Create Sturm Chain.
-    std::vector<Polynomial> f_(poly.GetDegree() + 1);
     coeffs_ = Polynomial(poly);
     derivitive_ = coeffs_.Differentiate();
 
     Polynomial f_i_plus_2 = coeffs_;
     Polynomial f_i_plus_1 = derivitive_;
     Polynomial f_current;
-    for (int i = f_.size() - 3; i >= 0; i--) {
+    for (int i = q_.size() - 3; i >= 0; i--) {
       std::tie(q_[i+2], f_current) =
           f_i_plus_2.Divide(f_i_plus_1);
       f_i_plus_2 = f_i_plus_1;
@@ -116,7 +123,6 @@ class SturmChain {
   Polynomial derivitive_;
   // Array of quotients of the form mx + b (m and x are saved).
   std::vector<Polynomial> q_;
-
 };
 
 double BisectionRefineRoot(const SturmChain& sturm,
@@ -226,7 +232,7 @@ Polynomial::Polynomial(int degree, const double coeffs[]) {
 // Evaluate the polynomial at x.
 double Polynomial::EvalAt(const double x) const {
   double val = 0;
-  for(int i = coeffs_.size() - 1; i > 0; i--) {
+  for (int i = coeffs_.size() - 1; i > 0; i--) {
     val += coeffs_[i];
     val *= x;
   }
@@ -252,13 +258,12 @@ Polynomial Polynomial::Subtract(const Polynomial& poly) const {
   for (int i = 0; i < coeffs_.size(); i++)
     diff[i] += coeffs_[i];
   return Polynomial(diff);
-
 }
 
 Polynomial Polynomial::Multiply(const Polynomial& poly) const {
   std::vector<double> ret(coeffs_.size() + poly.coeffs_.size() - 1);
-  for(int i = 0; i < coeffs_.size(); i++)
-    for(int j = 0; j < poly.coeffs_.size(); j++)
+  for (int i = 0; i < coeffs_.size(); i++)
+    for (int j = 0; j < poly.coeffs_.size(); j++)
       ret[i + j] += coeffs_[i]*poly.coeffs_[j];
   return Polynomial(ret);
 }
@@ -282,7 +287,7 @@ std::pair<Polynomial, Polynomial> Polynomial::Divide(
 
 Polynomial Polynomial::Differentiate() const {
   std::vector<double> ret(coeffs_.size() - 1);
-  for(int i = 1; i < coeffs_.size(); i++)
+  for (int i = 1; i < coeffs_.size(); i++)
     ret[i-1] = coeffs_[i] * i;
 
   return Polynomial(ret);
@@ -321,14 +326,12 @@ std::vector<double> Polynomial::RealRoots() const {
 
   // Initiate Recursive call.
   std::vector<double> roots;
-
   FindSturmRoots(sturm,
                  lower_bound,
                  sturm.EvalAt(lower_bound),
                  upper_bound,
                  sturm.EvalAt(upper_bound),
                  &roots);
-
   return roots;
 }
 

@@ -141,17 +141,15 @@ TEST(Polynomial, Division) {
   std::pair<Polynomial, Polynomial> divided = poly1.Divide(poly2);
   Polynomial quotient = divided.first;
   Polynomial remainder = divided.second;
-  
+
   // ASSERT that the evaluation of the two polys multiplied together is correct.
   double rand_x = RandDouble(-10, 10);
   ASSERT_DOUBLE_EQ(poly1.EvalAt(rand_x),
-            (poly2.Multiply(quotient)).EvalAt(rand_x) +
-            remainder.EvalAt(rand_x));
+                   (poly2.Multiply(quotient)).EvalAt(rand_x) +
+                   remainder.EvalAt(rand_x));
 }
 
 TEST(Polynomial, Differentiate) {
-
-
 }
 
 TEST(Polynomial, FindRealRoots) {
@@ -166,7 +164,7 @@ TEST(Polynomial, FindRealRoots) {
   Polynomial my_poly = Polynomial({-coeffs[0], 1.0});
   for (int i = 1; i < poly_size; i++)
     my_poly = my_poly*Polynomial({-coeffs[i], 1.0});
-  
+
   // Extract real roots.
   std::vector<double> real_roots = my_poly.RealRoots();
   std::sort(coeffs.begin(), coeffs.end());
