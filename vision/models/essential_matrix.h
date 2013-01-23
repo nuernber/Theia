@@ -18,9 +18,14 @@ class EssentialMatrix {
     return essential_mat_;
   }
 
+  // Extract R and T from the essential matrix. Perform this using an
+  // optimization to extract the SVD for this 3x3 matrix.
+  void GetRotationAndTranslation(double rotation[3][3],
+                                 double translation[3]);
+  
   friend std::ostream& operator <<(std::ostream& os,
                                    const EssentialMatrix& mat);
-
+  
  private:
   Eigen::Matrix3d essential_mat_;
 };

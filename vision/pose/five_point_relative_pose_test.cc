@@ -10,6 +10,10 @@
 
 namespace vision {
 namespace pose {
+namespace {
+const double kEps = 1e-12;
+}
+
 using Eigen::Matrix3d;
 using vision::models::EssentialMatrix;
 
@@ -40,16 +44,12 @@ TEST(FivePointRelativePose, Sanity) {
   // t,
   // ((float)t)/CLOCKS_PER_SEC);
 
-  std::cout << "Num solutions found = " <<
-      essential_matrices.size() << std::endl;
   for (int i = 0; i < essential_matrices.size(); i++) {
     const Matrix3d& essential_matrix = essential_matrices[i].GetMatrix();
-    std::cout << "Essential Matrix =\n" << essential_matrix << std::endl;
-    // Use Map.
     Eigen::Vector3d u(m1[i][0], m1[i][1], 1.0);
     Eigen::Vector3d u_prime(m2[i][0], m2[i][1], 1.0);
     double epipolar_constraint = (u_prime.transpose())*essential_matrix*u;
-    std::cout << "Epipolar constraint = " << epipolar_constraint << std::endl;
+    ASSERT_LT(fabs(epipolar_constraint), kEps);
   }
 }
 
