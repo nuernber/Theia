@@ -40,9 +40,9 @@ namespace models {
 class EssentialMatrix {
  public:
   EssentialMatrix() {}
-  EssentialMatrix(const Eigen::Matrix3d& essential_mat)
+  explicit EssentialMatrix(const Eigen::Matrix3d& essential_mat)
       : essential_mat_(essential_mat) {}
-  EssentialMatrix(const double data[3][3]);
+  explicit EssentialMatrix(const double data[3][3]);
   ~EssentialMatrix() {}
 
   const Eigen::Matrix3d& GetMatrix() {
