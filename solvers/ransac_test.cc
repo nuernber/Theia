@@ -79,15 +79,6 @@ double RandDouble(double dMin, double dMax) {
 }
 }  // namespace
 
-TEST(RansacTest, NoInput) {
-  LineEstimator line_estimator;
-  Line line;
-  vector<Point> input_points;
-  Ransac<Point, Line> ransac_line(2, 0.7, 10000);
-  bool success = ransac_line.Compute(input_points, line_estimator, 0.3, &line);
-  ASSERT_FALSE(success);
-}
-
 TEST(RansacTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
@@ -99,8 +90,8 @@ TEST(RansacTest, LineFitting) {
 
   LineEstimator line_estimator;
   Line line;
-  Ransac<Point, Line> ransac_line(2, 0.7, 10000);
-  ransac_line.Compute(input_points, line_estimator, 0.3, &line);
+  Ransac<Point, Line> ransac_line(2, 0.3, 7000, 10000);
+  ransac_line.Estimate(input_points, line_estimator, &line);
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }
 
@@ -117,8 +108,8 @@ TEST(RansacTest, GetInliers) {
   Line line;
   double error_thresh = 0.3;
   // Set an un-obtainable value for the inlier ratio (e.g. > 1.0)
-  Ransac<Point, Line> ransac_line(2, 0.7, 10000);
-  ransac_line.Compute(input_points, line_estimator, error_thresh, &line);
+  Ransac<Point, Line> ransac_line(2, error_thresh, 7000, 10000);
+  ransac_line.Estimate(input_points, line_estimator, &line);
 
   // Ensure each inlier is actually an inlier.
   vector<bool> inliers = ransac_line.GetInliers();
@@ -141,9 +132,8 @@ TEST(RansacTest, TerminationNumInliers) {
   LineEstimator line_estimator;
   Line line;
   // Set an un-obtainable value for the inlier ratio (e.g. > 1.0)
-  Ransac<Point, Line> ransac_line(2, 2.0, 10000);
-  ransac_line.termination_num_inliers = 10;
-  ransac_line.Compute(input_points, line_estimator, 0.3, &line);
+  Ransac<Point, Line> ransac_line(2, 2.0, 300, 10000);
+  ransac_line.Estimate(input_points, line_estimator, &line);
 
   int num_inliers = ransac_line.GetNumInliers();
   ASSERT_GE(num_inliers, 10);
