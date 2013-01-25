@@ -313,7 +313,7 @@ std::vector<EssentialMatrix> FivePointRelativePose(
     candidate_essential_mat << temp_sum.head(3).transpose(),
         temp_sum.segment(3, 3).transpose(),
         temp_sum.tail(3).transpose();
-    essential_matrices.push_back(candidate_essential_mat);
+    essential_matrices.push_back(EssentialMatrix(candidate_essential_mat));
   }
 
   // Step 5 (alternative). Extract roots of n (the 10th degree polynomial).
