@@ -40,6 +40,7 @@ namespace vision {
 namespace pose {
 
 namespace {
+using Eigen::Vector3d;
 
 double kEpsilon = 1e-4;
 void ProjectPoint(const double camera_matrix[3][3],
@@ -50,7 +51,6 @@ void ProjectPoint(const double camera_matrix[3][3],
   using Eigen::Map;
   using Eigen::Matrix;
   using Eigen::RowMajor;
-  using Eigen::Vector3d;
   using Eigen::Vector4d;
 
   // Specifying the matrices this way reduces memory overhead.
@@ -73,14 +73,11 @@ void ProjectPoint(const double camera_matrix[3][3],
 
 // Computes camera pose using the three point algorithm and returns all possible
 // solutions (up to 4).
-int PoseThreePoints(const double image_points[3][2],
+int PoseThreePoints(const double image_points[3][3],
                     const double world_points[3][3],
-                    const double focal_length[2],
-                    const double principle_point[2],
                     double rotation[][3][3],
                     double translation[][3]) {
   using Eigen::Matrix3d;
-  using Eigen::Vector3d;
 
   // World points
   Vector3d p1(world_points[0][0], world_points[0][1], world_points[0][2]);
@@ -92,19 +89,9 @@ int PoseThreePoints(const double image_points[3][2],
     return 0;
 
   // Extract image points as feature vectors (unitary, normalized).
-  Vector3d f1((image_points[0][0] - principle_point[0])/focal_length[0],
-              (image_points[0][1] - principle_point[1])/focal_length[1],
-              1.0);
-
-  Vector3d f2((image_points[1][0] - principle_point[0])/focal_length[0],
-              (image_points[1][1] - principle_point[1])/focal_length[1],
-              1.0);
-  Vector3d f3((image_points[2][0] - principle_point[0])/focal_length[0],
-              (image_points[2][1] - principle_point[1])/focal_length[1],
-              1.0);
-  f1.normalize();
-  f2.normalize();
-  f3.normalize();
+  Vector3d f1(image_points[0][0], image_points[0][1], image_points[0][2]);
+  Vector3d f2(image_points[1][0], image_points[1][1], image_points[1][2]);
+  Vector3d f3(image_points[2][0], image_points[2][1], image_points[2][2]);
 
   // Create intermediate camera frame.
   Vector3d e1 = f1;
@@ -120,18 +107,9 @@ int PoseThreePoints(const double image_points[3][2],
 
   // Reinforce that f3[2] > 0 for having theta in [0;pi]
   if (f3[2] > 0) {
-    Vector3d f2((image_points[0][0] - principle_point[0])/focal_length[0],
-                (image_points[0][1] - principle_point[1])/focal_length[1],
-                1.0);
-    f1.normalize();
-    Vector3d f1((image_points[1][0] - principle_point[0])/focal_length[0],
-                (image_points[1][1] - principle_point[1])/focal_length[1],
-                1.0);
-    f2.normalize();
-    Vector3d f3((image_points[2][0] - principle_point[0])/focal_length[0],
-                (image_points[2][1] - principle_point[1])/focal_length[1],
-                1.0);
-    f3.normalize();
+    f1 = Vector3d(image_points[1][0], image_points[1][1], image_points[1][2]);
+    f2 = Vector3d(image_points[0][0], image_points[0][1], image_points[0][2]);
+    f3 = Vector3d(image_points[2][0], image_points[2][1], image_points[2][2]);
 
     e1 = f1;
     e3 = f1.cross(f2).normalized();
@@ -241,15 +219,40 @@ int PoseThreePoints(const double image_points[3][2],
 
     // Copy solution output variable.
     memcpy(rotation[i], r.data(), sizeof(r(0, 0))*9);
-    memcpy(translation[i], c.data(), sizeof(c(0))*9);
+    memcpy(translation[i], c.data(), sizeof(c(0))*3);
   }
 
   return num_solutions;
 }
 
+int PoseThreePoints(const double image_points[3][2],
+                    const double world_points[3][3],
+                    const double focal_length[2],
+                    const double principle_point[2],
+                    double rotation[][3][3],
+                    double translation[][3]) {
+  Vector3d f1((image_points[0][0] - principle_point[0])/focal_length[0],
+              (image_points[0][1] - principle_point[1])/focal_length[1],
+              1.0);
+
+  Vector3d f2((image_points[1][0] - principle_point[0])/focal_length[0],
+              (image_points[1][1] - principle_point[1])/focal_length[1],
+              1.0);
+  Vector3d f3((image_points[2][0] - principle_point[0])/focal_length[0],
+              (image_points[2][1] - principle_point[1])/focal_length[1],
+              1.0);
+  f1.normalize();
+  f2.normalize();
+  f3.normalize();
+  double image_points2[3][3] = {{f1[0], f1[1], f1[2]},
+                                {f2[0], f2[1], f2[2]},
+                                {f3[0], f3[1], f3[2]}};
+  return PoseThreePoints(image_points2, world_points, rotation, translation);
+}
+
 // Computes pose using three point algorithm. The fourth correspondence is used
 // to determine the best solution of the (up to 4) candidate solutions.
-bool PoseFourPoints(const double image_points[4][2],
+bool PoseFourPoints(const double image_points[4][3],
                     const double world_points[4][3],
                     const double focal_length[2],
                     const double principle_point[2],
@@ -259,8 +262,6 @@ bool PoseFourPoints(const double image_points[4][2],
   double candidate_translation[4][3];
   int num_valid_poses = PoseThreePoints(image_points,
                                         world_points,
-                                        focal_length,
-                                        principle_point,
                                         candidate_rotation,
                                         candidate_translation);
   // For each candidate pose, measure the reprojection error of the 4th point
@@ -296,6 +297,41 @@ bool PoseFourPoints(const double image_points[4][2],
          candidate_translation[best_pose_index],
          sizeof(candidate_translation[0][0])*3);
   return true;
+}
+
+bool PoseFourPoints(const double image_points[4][2],
+                    const double world_points[4][3],
+                    const double focal_length[2],
+                    const double principle_point[2],
+                    double rotation[3][3],
+                    double translation[3]) {
+  Vector3d f1((image_points[0][0] - principle_point[0])/focal_length[0],
+              (image_points[0][1] - principle_point[1])/focal_length[1],
+              1.0);
+
+  Vector3d f2((image_points[1][0] - principle_point[0])/focal_length[0],
+              (image_points[1][1] - principle_point[1])/focal_length[1],
+              1.0);
+  Vector3d f3((image_points[2][0] - principle_point[0])/focal_length[0],
+              (image_points[2][1] - principle_point[1])/focal_length[1],
+              1.0);
+  Vector3d f4((image_points[3][0] - principle_point[0])/focal_length[0],
+              (image_points[3][1] - principle_point[1])/focal_length[1],
+              1.0);
+  f1.normalize();
+  f2.normalize();
+  f3.normalize();
+  f4.normalize();
+  double image_points2[4][3] = {{f1[0], f1[1], f1[2]},
+                                {f2[0], f2[1], f2[2]},
+                                {f3[0], f3[1], f3[2]},
+                                {f4[0], f4[1], f4[2]}};
+  return PoseFourPoints(image_points2,
+                        world_points,
+                        focal_length,
+                        principle_point,
+                        rotation,
+                        translation);
 }
 }  // pose
 }  // vision

@@ -41,15 +41,26 @@ namespace pose {
 //
 // Params:
 //   image_points: Location of features on the image plane (x[i][*] = i-th image
-//     point)
+//     point). Points are normalized. If you don't have normalized points, use
+//     the other PoseThreePoints method.
 //   world_points: 3D location of features. Must correspond to the image_point
 //     of the same index (x[i][*] = i-th world point)
-//   focal_length: x, then y focal length (expressed in pixels).
-//   principle point: x, then y image optical center point (in pixels).
 //   rotation: The candidate rotations computed from the 3 point algorithm.
 //   translation: The candidate translations computed.
 // NOTE: P3P returns up to 4 poses, so the rotation and translation arrays are
 //       indeed arrays of 3x3 and 3x1 arrays respectively.
+// Return: the number of poses computed.
+int PoseThreePoints(const double image_points[3][3],
+                    const double world_points[3][3],
+                    double rotation[][3][3],
+                    double translation[][3]);
+// Params:
+//   image_points: Image points of correspondances (not-normalized).
+//   world_points: World points of correspondances.
+//   focal_length: x, then y focal length (expressed in pixels).
+//   principle point: x, then y image optical center point (in pixels).
+//   rotation: The candidate rotations determined by P3P.
+//   translation: The candidate translation determined by P3P.
 // Return: the number of poses computed.
 int PoseThreePoints(const double image_points[3][2],
                     const double world_points[3][3],
@@ -63,6 +74,14 @@ int PoseThreePoints(const double image_points[3][2],
 // candidate solutions. Same parameters as above, except only the best solution
 // is returned in the output parameters, rotation and translation.
 // Return: true if a successful pose is found, false else.
+bool PoseFourPoints(const double image_points[4][3],
+                    const double world_points[4][3],
+                    const double focal_length[2],
+                    const double principle_point[2],
+                    double rotation[3][3],
+                    double translation[3]);
+
+// Same as above, but for not-normalized image coordinates.
 bool PoseFourPoints(const double image_points[4][2],
                     const double world_points[4][3],
                     const double focal_length[2],

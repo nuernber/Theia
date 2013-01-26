@@ -88,7 +88,6 @@ TEST(PerspectiveThreePoint, Sanity) {
 
   double rotation[4][3][3];
   double translation[4][3];
-  clock_t t = clock();
   int num_solutions = PoseThreePoints(image_points,
                                       world_points,
                                       focal_length,
