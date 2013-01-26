@@ -32,40 +32,65 @@
 #ifndef SOLVERS_MLE_QUALITY_MEASUREMENT_H_
 #define SOLVERS_MLE_QUALITY_MEASUREMENT_H_
 
+#include <cmath>
+#include <glog/logging.h>
+#include <limits>
 #include <vector>
 #include "solvers/quality_measurement.h"
 
 namespace solvers {
 
-// Define the quality metric according to MLE
+// Define the quality metric according to Guided MLE from "Guided sampling and
+// consensus for motion estimation" by Tordoff and Murray
 class MLEQualityMeasurement : public QualityMeasurement {
  public:
-  MLEQualityMeasurement(double terminating_thresh,
-                        double inlier_ratio = 0.5)
-      : terminating_threshold_(terminating_thresh),
-        inlier_ratio_(inlier_ratio) {}
+  // Params:
+  //  inlier_dist: Distribution of inlier noise. Typically a gaussian mixture.
+  //  outlier_dist: Distribution of outlier noise. Typically a uniform
+  //    distribution over the search radius (in pixels).
+  //  confidence: The confidence of each measurement.
+  //  confidence_thesh: All measurements with a confidence higher than this will
+  //    be considered an inlier.
+  MLEQualityMeasurement(const Distribution& inlier_dist,
+                        const Distribution& outlier_dist,
+                        const std::vector<double>& confidence,
+                        double confidence_thresh)
+      : inlier_dist_(inlier_dist),
+        outlier_dist_(outlier_dist),
+        confidence_(confidence),
+        confidence_threshold_(confidence_thresh) {}
+
   ~MLEQualityMeasurement() {}
 
   // Given the residuals, assess a quality metric for the data. Returns the
   // quality assessment and outputs a vector of bools indicating the inliers.
   double Calculate(const std::vector<double>& residuals,
                    std::vector<bool>* inliers) {
+    double kInfinity = std::numerical_limits<double>::max();
     inliers->resize(residuals.size(), false);
     double mle = 0.0;
-    double inlier_ratio_estimate = inlier_ratio_;
     for (int i = 0; i < residuals.size(); i++) {
-      double pr_inlier;
-      double pr_outlier;
-      double confidence = pr_inlier/(pr_inlier + pr_outlier);
+      const double& r = residuals[i];
+      const double& v = confidence_[i];
 
-      // Count as an inlier if our confidence to this point is above the
-      // terminating confidence.
-      if (confidence > terminating_threshold) {
+      double pr_inlier = inlier_dist_.eval(r)*v;
+      double pr_outlier = outlier_dis_.eval(r)*(1.0 - v);
+
+      double arglog = pr_inlier + pr_outlier;
+      // If the arglog = 0 then this is a horrible model. Return the max value
+      // possible and stop computation.
+      if (arglog == 0.0)
+        return kInfinity;
+
+      // If our confidence of this measurement is sufficiently high, add it to
+      // the inlier list.
+      double confidence = pr_inlier/arglog;
+      if (confidence > confidence_threshold_) {
         inliers->at(i) = true;
-      }
 
-      mle += log(confidence);
+      mle += log(arglog);
     }
+    return mle;
   }
 
   // Given two quality measurements, determine which is betters. Note that
@@ -83,8 +108,7 @@ class MLEQualityMeasurement : public QualityMeasurement {
  private:
   // Threshold for determining whether MLE estimate is good enough.
   double terminating_threshold_;
-  // Initial estimate for the inlier ratio of the data.
-  double inlier_ratio_;
+
 };
 }  // namespace solvers
 #endif  // SOLVERS_MLE_QUALITY_MEASUREMENT_H_
