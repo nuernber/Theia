@@ -42,6 +42,21 @@ LIST(APPEND EIGEN_SEARCH_HEADERS /usr/local/include/eigen3)
 LIST(APPEND EIGEN_SEARCH_HEADERS /usr/local/homebrew/include/eigen3)  # Mac OS X
 LIST(APPEND EIGEN_SEARCH_HEADERS /opt/local/var/macports/software/eigen3/opt/local/include/eigen3) # Mac OS X
 
+# Force default build type to be Release
+IF (NOT CMAKE_BUILD_TYPE)
+  MESSAGE("-- No build type specified; defaulting to CMAKE_BUILD_TYPE=Release.")
+  SET(CMAKE_BUILD_TYPE Release CACHE STRING
+    "Choose the type of build, options are: None Debug Release."
+    FORCE)
+ELSE (NOT CMAKE_BUILD_TYPE)
+  IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    MESSAGE("\n=================================================================================")
+    MESSAGE("\n-- Build type: Debug. Performance will be terrible!")
+    MESSAGE("-- Add -DCMAKE_BUILD_TYPE=Release to the CMake command line to get an optimized build.")
+    MESSAGE("\n=================================================================================")
+  ENDIF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+ENDIF (NOT CMAKE_BUILD_TYPE)
+
 # Set c++ standard to c++11
 SET(CMAKE_CXX_FLAGS)
 #It requires C++11!
@@ -125,7 +140,7 @@ IF (CMAKE_BUILD_TYPE STREQUAL "Release")
   IF (CMAKE_COMPILER_IS_GNUCXX)
     # Linux
     IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -msse2 -msse3 -msse4")
     ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Mac OS X
     IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -154,8 +169,37 @@ MACRO (CC_LIBRARY NAME SRCS)
   ADD_LIBRARY(${TARGETDIR}/${NAME} STATIC ${SRCS})
   SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY OUTPUT_NAME ${NAME})
   TARGET_LINK_LIBRARIES(${TARGETDIR}/${NAME} ${ARGN} ${GFLAGS_LIB} ${GLOG_LIB})
+  LIST(APPEND THEIA_LIBS ${TARGETDIR}/${NAME})
 ENDMACRO (CC_LIBRARY)
 
 ADD_SUBDIRECTORY(math)
 ADD_SUBDIRECTORY(solvers)
 ADD_SUBDIRECTORY(vision)
+
+# Install the .h files
+#FILE(GLOB_RECURSE THEIA_FILES "${CMAKE_SOURCE_DIR}/*.h")
+#FOREACH(HEADER ${THEIA_FILES})
+#  IF("${HEADER}" MATCHES ".*gtest.*")
+#    LIST(REMOVE_ITEM THEIA_FILES ${HEADER})
+#  ENDIF()
+#ENDFOREACH(HEADER)
+#INSTALL(DIRECTORY ${THEIA_FILES} DESTINATION include/theia)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR} DESTINATION include
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN "data*" EXCLUDE
+  PATTERN "build*" EXCLUDE
+  PATTERN "libraries*" EXCLUDE
+  PATTERN "*git*" EXCLUDE)
+
+# Install the library
+FILE(GLOB_RECURSE THEIA_FILES "${CMAKE_SOURCE_DIR}/*.cc")
+FOREACH(THEIA_FILE ${THEIA_FILES})
+  IF("${THEIA_FILE}" MATCHES ".*gtest.*" OR "${THEIA_FILE}" MATCHES ".*test.cc")
+    LIST(REMOVE_ITEM THEIA_FILES ${THEIA_FILE})
+  ENDIF()
+ENDFOREACH(THEIA_FILE)
+ADD_LIBRARY(theia STATIC ${THEIA_FILES})
+TARGET_LINK_LIBRARIES(theia ${GFLAGS_LIB} ${GLOG_LIB})
+INSTALL(TARGETS theia DESTINATION lib)
+
