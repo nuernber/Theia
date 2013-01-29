@@ -63,10 +63,8 @@ int PoseThreePoints(const double image_points[3][2],
 // candidate solutions. Same parameters as above, except only the best solution
 // is returned in the output parameters, rotation and translation.
 // Return: true if a successful pose is found, false else.
-bool PoseFourPoints(const double image_points[4][2],
+bool PoseFourPoints(const double image_points[4][3],
                     const double world_points[4][3],
-                    const double focal_length[2],
-                    const double principle_point[2],
                     double rotation[3][3],
                     double translation[3]);
 }  // pose

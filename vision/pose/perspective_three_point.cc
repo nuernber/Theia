@@ -34,43 +34,11 @@
 #include <math.h>
 #include <Eigen/Dense>
 #include <algorithm>
+#include <glog/logging.h>
 #include "math/closed_form_polynomial_solver.h"
 
 namespace vision {
 namespace pose {
-
-namespace {
-
-double kEpsilon = 1e-4;
-void ProjectPoint(const double camera_matrix[3][3],
-                  const double rotation[3][3],
-                  const double translation[3],
-                  const double world_point[3],
-                  double projected_point[3]) {
-  using Eigen::Map;
-  using Eigen::Matrix;
-  using Eigen::RowMajor;
-  using Eigen::Vector3d;
-  using Eigen::Vector4d;
-
-  // Specifying the matrices this way reduces memory overhead.
-  Map<const Matrix<double, 3, 3, RowMajor> >
-      camera_mat(reinterpret_cast<const double*>(&camera_matrix[0]));
-  Map<const Matrix<double, 3, 3, RowMajor> >
-      rotation_mat(reinterpret_cast<const double*>(&rotation[0]));
-  Map<const Vector3d>
-      translation_mat(reinterpret_cast<const double*>(&translation[0]));
-
-  Matrix<double, 3, 4> transformation;
-  transformation << rotation_mat, translation_mat;
-
-  Vector4d world_vec(world_point[0], world_point[1], world_point[2], 1.0);
-  Vector3d proj_vec = camera_mat*transformation*world_vec;
-  projected_point[0] = proj_vec[0]/proj_vec[2];
-  projected_point[1] = proj_vec[1]/proj_vec[2];
-}
-}  // namespace
-
 // Computes camera pose using the three point algorithm and returns all possible
 // solutions (up to 4).
 int PoseThreePoints(const double image_points[3][2],
@@ -243,40 +211,47 @@ int PoseThreePoints(const double image_points[3][2],
     memcpy(rotation[i], r.data(), sizeof(r(0, 0))*9);
     memcpy(translation[i], c.data(), sizeof(c(0))*9);
   }
-
   return num_solutions;
 }
 
 // Computes pose using three point algorithm. The fourth correspondence is used
 // to determine the best solution of the (up to 4) candidate solutions.
-bool PoseFourPoints(const double image_points[4][2],
+bool PoseFourPoints(const double image_points[4][3],
                     const double world_points[4][3],
-                    const double focal_length[2],
-                    const double principle_point[2],
                     double rotation[3][3],
                     double translation[3]) {
+  using Eigen::Affine3d;
+  using Eigen::Map;
+  using Eigen::Vector3d;
+  using Eigen::Matrix;
+
   double candidate_rotation[4][3][3];
   double candidate_translation[4][3];
   int num_valid_poses = PoseThreePoints(image_points,
                                         world_points,
-                                        focal_length,
-                                        principle_point,
                                         candidate_rotation,
                                         candidate_translation);
   // For each candidate pose, measure the reprojection error of the 4th point
   // and pick the best candidate pose.
-  double camera_matrix[3][3] = {{focal_length[0], 0, principle_point[0]},
-                                {0, focal_length[1], principle_point[1]},
-                                {0, 0, 1.0}};
   double min_reprojection_error = 1e9;
   int best_pose_index = 0;
+  if (num_valid_poses == 0)
+    return false;
+  
   for (int i = 0; i < num_valid_poses; i++) {
-    double projected_point[2];
-    ProjectPoint(camera_matrix,
-                 candidate_rotation[i],
-                 candidate_translation[i],
-                 world_points[3],
-                 projected_point);
+    Map<const Matrix<double, 3, 3, Eigen::RowMajor> >
+        rotation_mat(reinterpret_cast<const double*>(&candidate_rotation[i][0]));
+    Map<const Vector3d>
+        translation_mat(reinterpret_cast<const double*>(&candidate_translation[i][0]));
+    Affine3d transformation;
+    transformation.rotation() = rotation_mat;
+    transformation.translation() = translation_mat;
+
+    Map<const Vector3d> image_pt(reinterpret_cast<const double*>(&image_points[3][0]));
+    Vector3d projected_point = transformation*image_pt;
+    VLOG(0) << "old point = " << image_pt;
+    VLOG(0) << "new point = " << projected_point;
+    /*
     double reprojection_error =
         (projected_point[0] - image_points[3][0])*
         (projected_point[0] - image_points[3][0]) +
@@ -286,6 +261,7 @@ bool PoseFourPoints(const double image_points[4][2],
       min_reprojection_error = reprojection_error;
       best_pose_index = i;
     }
+    */
   }
 
   // Copy solution to output variables.

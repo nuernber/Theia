@@ -101,8 +101,6 @@ TEST(PerspectiveThreePoint, Sanity) {
   double best_translation[3];
   bool solved = PoseFourPoints(image_points,
                                world_points,
-                               focal_length,
-                               principle_point,
                                best_rotation,
                                best_translation);
 
