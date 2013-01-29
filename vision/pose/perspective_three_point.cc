@@ -219,8 +219,11 @@ bool PoseFourPoints(const double image_points[4][3],
   if (num_valid_poses == 0)
     return false;
 
-  Map<const Vector3d> image_pt(
-      reinterpret_cast<const double*>(&image_points[3][0]));
+  // Scale the image point so that z = 1.0. This makes it easier to compare to
+  // later, since we don't know how the points were normalized (if at all).
+  Vector3d image_pt(image_points[3][0]/image_points[3][2],
+                    image_points[3][1]/image_points[3][2],
+                    1.0);
   Map<const Vector3d> world_pt(
       reinterpret_cast<const double*>(&world_points[3][0]));
   for (int i = 0; i < num_valid_poses; i++) {
@@ -231,6 +234,8 @@ bool PoseFourPoints(const double image_points[4][3],
         translation_mat(
             reinterpret_cast<const double*>(&candidate_translation[i][0]));
 
+    // Get the projected point and scale so z = 1.0. As noted above, this makes
+    // it easier to compare the reprojection error.
     Vector3d projected_point = rotation_mat*world_pt + translation_mat;
     projected_point[0] /= projected_point[2];
     projected_point[1] /= projected_point[2];

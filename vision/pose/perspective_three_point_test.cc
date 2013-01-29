@@ -73,9 +73,9 @@ TEST(PerspectiveThreePoint, Normalized) {
                       world_points[i][2],
                       1.0);
     Vector3d proj_point = transformation*world_pt;
-    image_points[i][0] = proj_point[0]/proj_point[2];
-    image_points[i][1] = proj_point[1]/proj_point[2];
-    image_points[i][2] = 1.0;
+    image_points[i][0] = proj_point[0];
+    image_points[i][1] = proj_point[1];
+    image_points[i][2] = proj_point[2];
   }
 
   double rotation[4][3][3];
