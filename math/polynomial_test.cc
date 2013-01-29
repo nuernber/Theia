@@ -188,7 +188,7 @@ TEST(Polynomial, FindRealRoots) {
   int poly_size = 10;
   vector<double> coeffs(poly_size);
   for (int i = 0; i < poly_size; i++) {
-    coeffs[i] = RandDouble(-10, 10);
+    coeffs[i] = RandDouble(-100, 100);
   }
 
   // Construct the polynomial as the mulitiplication of all the roots.
@@ -199,9 +199,32 @@ TEST(Polynomial, FindRealRoots) {
   // Extract real roots.
   std::vector<double> real_roots = my_poly.RealRoots();
   std::sort(coeffs.begin(), coeffs.end());
+  std::sort(real_roots.begin(), real_roots.end());
   for (int i = 0; i < real_roots.size(); i++) {
     ASSERT_LT(fabs(real_roots[i] - coeffs[i]), kEps);
   }
 }
 
+TEST(Polynomial, FindRealRootsWithZeros) {
+  double kEps = 1e-6;
+  int poly_size = 10;
+  vector<double> coeffs = {-1.61739e+54,
+                           -9.11593e+52,
+                           1.75991e+53,
+                           3.10101e+52,
+                           1.01049e+51,
+                           1.34686e+36,
+                           1.18743e+19,
+                           -1443.83,
+                           -1.79664e-14,
+                           3.08243e-31,
+                           4.90057e-48};
+  Polynomial my_poly = Polynomial(coeffs);
+  // Extract real roots.
+  std::vector<double> real_roots = my_poly.RealRoots();
+  std::sort(real_roots.begin(), real_roots.end());
+  for (int i = 0; i < real_roots.size(); i++) {
+    std::cout << "found root: " << real_roots[i] << std::endl;
+  }
+}
 }  // namespace math

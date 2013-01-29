@@ -32,6 +32,7 @@
 #ifndef MATH_POLYNOMIAL_H_
 #define MATH_POLYNOMIAL_H_
 
+#include <complex>
 #include <utility>
 #include <vector>
 
@@ -74,12 +75,17 @@ class Polynomial {
   // First order differentiation.
   Polynomial Differentiate() const;
 
+  std::vector<double> RealRoots() const;
+  std::vector<std::complex<double> > Roots() const;
   // Solve for real roots using Sturm Chains. Note that there are closed-form
   // polynomial solvers for degree up to 4 in
   // math/closed_form_polynomial_solvers.h Additionally, this is only a
   // reasonable solution up to degree 100.
-  std::vector<double> RealRoots() const;
+  std::vector<double> RealRootsSturm() const;
 
+  // Prune's leading 0's from the polynomial.
+  Polynomial& Trim();
+  
  private:
   // Coefficients of the polynomial.
   std::vector<double> coeffs_;

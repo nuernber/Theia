@@ -32,6 +32,9 @@
 #include "math/polynomial.h"
 
 #include <algorithm>
+#include <Eigen/Dense>
+#include <iostream>
+#include <glog/logging.h>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -66,8 +69,8 @@ class SturmChain {
     for (int i = q_.size() - 3; i >= 0; i--) {
       std::tie(q_[i+2], f_current) =
           f_i_plus_2.Divide(f_i_plus_1);
-      f_i_plus_2 = f_i_plus_1;
-      f_i_plus_1 = -f_current;
+      f_i_plus_2 = f_i_plus_1.Trim();
+      f_i_plus_1 = -f_current.Trim();
     }
     q_[1] = f_i_plus_2;
     q_[0] = f_i_plus_1;
@@ -260,6 +263,15 @@ Polynomial::Polynomial(int degree, const double coeffs[]) {
   coeffs_.assign(coeffs, coeffs + degree + 1);
 }
 
+// Resize the polynomial so there are no leading zeros.
+Polynomial& Polynomial::Trim() {
+  int i;
+  for (i = coeffs_.size() - 1; coeffs_[i] == 0.0 && i >= 0; i--);
+  if (i < coeffs_.size() - 1)
+    coeffs_.resize(i + 1);
+  return *this;
+}
+
 // Evaluate the polynomial at x.
 double Polynomial::EvalAt(const double x) const {
   double val = 0;
@@ -331,8 +343,35 @@ Polynomial Polynomial::operator -() {
   return Polynomial(negated);
 }
 
-// Solve for real roots using Sturm Chain.
 std::vector<double> Polynomial::RealRoots() const {
+  std::vector<std::complex<double> > complex_roots = Roots();
+  std::vector<double> roots;
+  for (int i = 0; i < complex_roots.size(); i++)
+    if(complex_roots[i].imag() == 0.0)
+      roots.push_back(complex_roots[i].real());
+  return roots;
+}
+
+std::vector<std::complex<double> > Polynomial::Roots() const {
+  const int degree = coeffs_.size() - 1;
+  Eigen::Map<const Eigen::VectorXd> poly(&coeffs_[0], degree + 1, 1);
+  Eigen::MatrixXd companion = Eigen::MatrixXd::Zero(degree, degree);
+
+  // Construct companion matrix.
+  companion.row(0) = -1.0*poly.head(degree).reverse();
+  companion.row(0) /= poly(degree);
+  for (int i = 1; i < degree; i++)
+    companion(i, i-1) = 1.0;
+  // Compute eigenvalues. Note, these can be complex.
+  Eigen::VectorXcd eigenvalues = companion.eigenvalues();
+  std::vector<std::complex<double> > roots(eigenvalues.rows());
+  for (int i = 0; i < roots.size(); i++)
+    roots[i] = eigenvalues(i);
+  return roots;
+}
+
+// Solve for real roots using Sturm Chain.
+std::vector<double> Polynomial::RealRootsSturm() const {
   // Initialize Sturm Chain.
   SturmChain sturm(*this);
 
