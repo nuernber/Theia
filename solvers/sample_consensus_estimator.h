@@ -54,7 +54,7 @@ class SampleConsensusEstimator {
   //   of iterations based on the outlier probability, use SetMaxIters.
   SampleConsensusEstimator(Sampler<Datum>* sampler,
                            QualityMeasurement* quality_measurement,
-                           int max_iters) : max_iters_(max_iters) {
+                           int max_iters = 1000) : max_iters_(max_iters) {
     sampler_.reset(sampler);
     quality_measurement_.reset(quality_measurement);
   }
@@ -132,7 +132,8 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
                                                             &temp_inlier_set);
 
     // Update best model if error is the best we have seen.
-    if (quality_measurement_->Compare(sample_quality, best_quality)) {
+    if (quality_measurement_->Compare(sample_quality, best_quality) ||
+        best_quality == static_cast<double>(QualityMeasurement::INVALID)) {
       *best_model = temp_model;
       best_quality = sample_quality;
 
