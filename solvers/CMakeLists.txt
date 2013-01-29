@@ -2,7 +2,8 @@
 
 # Tests:
 IF (${BUILD_TESTING})
+  GTEST(arrsac_test)
+  GTEST(mlesac_test)
   GTEST(ransac_test)
   GTEST(sprt_test)
-  GTEST(arrsac_test)
 ENDIF (${BUILD_TESTING})

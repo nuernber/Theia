@@ -32,10 +32,11 @@
 #ifndef SOLVERS_MLE_QUALITY_MEASUREMENT_H_
 #define SOLVERS_MLE_QUALITY_MEASUREMENT_H_
 
-#include <cmath>
 #include <glog/logging.h>
+#include <cmath>
 #include <limits>
 #include <vector>
+
 #include "math/distribution.h"
 #include "solvers/quality_measurement.h"
 
@@ -52,8 +53,8 @@ class MLEQualityMeasurement : public QualityMeasurement {
   //  confidence: The confidence of each measurement.
   //  confidence_thesh: All measurements with a confidence higher than this will
   //    be considered an inlier.
-  MLEQualityMeasurement(const Distribution& inlier_dist,
-                        const Distribution& outlier_dist,
+  MLEQualityMeasurement(const math::Distribution& inlier_dist,
+                        const math::Distribution& outlier_dist,
                         const std::vector<double>& confidence,
                         double confidence_thresh)
       : inlier_dist_(inlier_dist),
@@ -67,7 +68,7 @@ class MLEQualityMeasurement : public QualityMeasurement {
   // quality assessment and outputs a vector of bools indicating the inliers.
   double Calculate(const std::vector<double>& residuals,
                    std::vector<bool>* inliers) {
-    double kInfinity = std::numerical_limits<double>::max();
+    const double kInfinity = 1e24;
     inliers->resize(residuals.size(), false);
     double mle = 0.0;
     for (int i = 0; i < residuals.size(); i++) {
@@ -75,7 +76,7 @@ class MLEQualityMeasurement : public QualityMeasurement {
       const double& v = confidence_[i];
 
       double pr_inlier = inlier_dist_.eval(r)*v;
-      double pr_outlier = outlier_dis_.eval(r)*(1.0 - v);
+      double pr_outlier = outlier_dist_.eval(r)*(1.0 - v);
 
       double arglog = pr_inlier + pr_outlier;
       // If the arglog = 0 then this is a horrible model. Return the max value
@@ -89,14 +90,15 @@ class MLEQualityMeasurement : public QualityMeasurement {
       if (confidence > confidence_threshold_) {
         inliers->at(i) = true;
 
-      mle += log(arglog);
+        mle += log(arglog);
+      }
     }
     return mle;
   }
 
   // Given two quality measurements, determine which is betters. Note that
-  // larger is not always better! Returns true if quality1 is of higher quality
-  // than quality2.
+  // larger is not always better! Returns true if quality1 is of higher
+  // quality than quality2.
   bool Compare(const double quality1, const double quality2) {
     return quality1 < quality2;
   }
@@ -104,19 +106,19 @@ class MLEQualityMeasurement : public QualityMeasurement {
   // Return true if the quality passed in is high enough to terminate the
   // sampling consensus.
   bool SufficientlyHighQuality(const double quality) {
-    return quality <= terminating_threshold_;
+    return quality <= confidence_threshold_;
   }
-  
+
  private:
   // Threshold for determining whether MLE estimate is good enough.
   double confidence_threshold_;
 
   // Distribution of inlier data.
-  const Distribution& inlier_dist_;
+  const math::Distribution& inlier_dist_;
   // Distribution of outlier data.
-  const Distribution& outlier_dist_;
+  const math::Distribution& outlier_dist_;
   // Confidences of each data point.
-  std::vector<double>& confidence_;
+  const std::vector<double>& confidence_;
 };
 }  // namespace solvers
 #endif  // SOLVERS_MLE_QUALITY_MEASUREMENT_H_

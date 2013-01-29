@@ -32,12 +32,12 @@
 #ifndef MATH_DISTRIBUTION_H_
 #define MATH_DISTRIBUTION_H_
 
-#include <cmath>
 #include <glog/logging.h>
+#include <cmath>
 
 namespace math {
 // Abstract class for probability disributions.
-class Distribution{
+class Distribution {
  public:
   Distribution() {}
   virtual ~Distribution() {}
@@ -60,7 +60,7 @@ class NormalDistribution : public Distribution {
     beta_ = -1.0/(2.0*sigma*sigma);
   }
 
-  ~Normal() {}
+  ~NormalDistribution() {}
 
   double eval(double x) const {
     return alpha_*exp(beta_*x*x);
@@ -81,23 +81,22 @@ class NormalDistribution : public Distribution {
 // within this span, and 0 when x is outside of the span.
 class UniformDistribution : public Distribution {
  public:
-  
   UniformDistribution(const double& left, const double& right)
       : left_(left), right_(right) {
     CHECK_LT(left, right) << "Left bound must be less than the right bound for "
                           << "uniform distributions.";
     CHECK_NE(right, left) << "Left bound is equal to right bound! Uniform "
                           << "distribution must have a nonzero range.";
-    inverse_span = (left == right) ? 1.0 : 1.0/(right - left);
+    inverse_span_ = (left == right) ? 1.0 : 1.0/(right - left);
   }
-  
-  //Destructor
-  ~Rectangular() {}
 
-  double eval(double x) const{
-    return (left_ <= x && x <= right_) ? inverse_span : 0;
+  // Destructor
+  ~UniformDistribution() {}
+
+  double eval(double x) const {
+    return (left_ <= x && x <= right_) ? inverse_span_ : 0;
   }
-  
+
  protected:
   const double left_;
   const double right_;

@@ -29,7 +29,9 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+#include <chrono>
 #include <math.h>
+#include <random>
 
 #include "gtest/gtest.h"
 #include "solvers/estimator.h"
@@ -81,17 +83,31 @@ double RandDouble(double dMin, double dMax) {
 
 TEST(MlesacTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
-  vector<Point> input_points;
-  for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1.0, 1.0);
-    double noise_y = RandDouble(-1.0, 1.0);
-    input_points.push_back(Point(i + noise_x, i + noise_y));
+  // construct a trivial random generator engine from a time-based seed:
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(seed);
+  std::normal_distribution<double> gauss_distribution(0.0, 0.1);
+
+  const int num_points = 1000;
+  vector<Point> input_points(num_points);
+  vector<double> confidence(num_points);
+
+  for (int i = 0; i < num_points; ++i) {
+    if (i%20 == 0) {
+      input_points[i] = Point(i, i);
+      confidence[i] = 1.0;
+    } else {
+      double noise_x = gauss_distribution(generator);
+      double noise_y = gauss_distribution(generator);
+      input_points[i] = Point(i + noise_x, i + noise_y);
+      confidence[i] = 0.1;
+    }
   }
 
   LineEstimator line_estimator;
   Line line;
-  Ransac<Point, Line> ransac_line(2, 0.3, 7000, 10000);
-  ransac_line.Estimate(input_points, line_estimator, &line);
+  Mlesac<Point, Line> mlesac_line(2, 0.0, 1.0, -100, 100, confidence, 0.95);
+  mlesac_line.Estimate(input_points, line_estimator, &line);
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }
 

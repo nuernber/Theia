@@ -58,14 +58,14 @@ class Mlesac : public SampleConsensusEstimator<Datum, Model> {
          double inlier_sigma,
          double search_left,
          double search_right,
-         std::vector<double> confidence,
+         const std::vector<double>& confidence,
          double confidence_threshold)
       : SampleConsensusEstimator<Datum, Model>(
           new RandomSampler<Datum>(min_sample_size),
-          new MLEQualityMeasurement(new NormalDistribution(inlier_mean,
-                                                           inlier_sigma),
-                                    new UniformDistribution(search_left,
-                                                            search_right),
+          new MLEQualityMeasurement(math::NormalDistribution(inlier_mean,
+                                                             inlier_sigma),
+                                    math::UniformDistribution(search_left,
+                                                              search_right),
                                     confidence,
                                     confidence_threshold)) {}
 
