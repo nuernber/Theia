@@ -51,7 +51,7 @@ double RandDouble(double dMin, double dMax) {
 }
 }
 
-TEST(PerspectiveThreePoint, Sanity) {
+TEST(PerspectiveThreePoint, Normalized) {
   // World coordinates of the 4 control points. Let them be random points in the
   // 2x2x2 centered around the origin.
   double world_points[4][3];
@@ -66,33 +66,22 @@ TEST(PerspectiveThreePoint, Sanity) {
       0, -1, 0, 0,
       0, 0, -1, 8;
 
-  // Intrinsic parameters of camera.
-  double focal_length[] = {800, 800};
-  double principle_point[] = {320, 240};
-
-  Matrix3d camera_matrix;
-  camera_matrix << focal_length[0], 0, principle_point[0],
-      0, focal_length[1], principle_point[1],
-      0, 0, 1.0;
-
-  double image_points[4][2];
+  double image_points[4][3];
   for (int i = 0; i < 4; i++) {
     Vector4d world_pt(world_points[i][0],
                       world_points[i][1],
                       world_points[i][2],
                       1.0);
-    Vector3d proj_point = camera_matrix*transformation*world_pt;
+    Vector3d proj_point = transformation*world_pt;
     image_points[i][0] = proj_point[0]/proj_point[2];
     image_points[i][1] = proj_point[1]/proj_point[2];
+    image_points[i][2] = 1.0;
   }
 
   double rotation[4][3][3];
   double translation[4][3];
-  clock_t t = clock();
   int num_solutions = PoseThreePoints(image_points,
                                       world_points,
-                                      focal_length,
-                                      principle_point,
                                       rotation,
                                       translation);
   ASSERT_GT(num_solutions, 0);
@@ -111,5 +100,6 @@ TEST(PerspectiveThreePoint, Sanity) {
     ASSERT_LT(std::abs(best_translation[i] - transformation(i, 3)), kEpsilon);
   }
 }
+
 }  // namespace pose
 }  // namespace vision

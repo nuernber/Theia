@@ -4,7 +4,7 @@
 CC_LIBRARY(perspective_three_point perspective_three_point.cc  math/closed_form_polynomial_solver)
 
 # 5 Point relative pose
-CC_LIBRARY(five_point_relative_pose five_point_relative_pose.cc vision/models/essential_matrix math/polynomial)
+CC_LIBRARY(five_point_relative_pose five_point_relative_pose.cc vision/models/essential_matrix)
 
 # Tests:
 IF (${BUILD_TESTING})

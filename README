@@ -17,6 +17,8 @@ II. How do I compile/install it?
 Theia depends on the following libraries:
 Eigen: http://eigen.tuxfamily.org/
 Googletest: http://code.google.com/p/googletest/ (only if testing is enabled)
+Google flags: https://code.google.com/p/gflags/
+Google logging: https://code.google.com/p/google-glog/
 
 CMake is the build system used. From the base directory, execute the following
 commands:
@@ -25,6 +27,9 @@ mkdir my_build
 cd my_build
 cmake ..
 make
+
+To install, you can then execute:
+make install
 
 This should build the library with the proper configurations for you system. You
 can also run the unittests by executing the command "make test" from the

@@ -31,24 +31,23 @@
 
 #include "vision/pose/perspective_three_point.h"
 
+#include <glog/logging.h>
 #include <math.h>
 #include <Eigen/Dense>
 #include <algorithm>
-#include <glog/logging.h>
 #include "math/closed_form_polynomial_solver.h"
 
 namespace vision {
 namespace pose {
+using Eigen::Vector3d;
+
 // Computes camera pose using the three point algorithm and returns all possible
 // solutions (up to 4).
-int PoseThreePoints(const double image_points[3][2],
+int PoseThreePoints(const double image_points[3][3],
                     const double world_points[3][3],
-                    const double focal_length[2],
-                    const double principle_point[2],
                     double rotation[][3][3],
                     double translation[][3]) {
   using Eigen::Matrix3d;
-  using Eigen::Vector3d;
 
   // World points
   Vector3d p1(world_points[0][0], world_points[0][1], world_points[0][2]);
@@ -60,16 +59,9 @@ int PoseThreePoints(const double image_points[3][2],
     return 0;
 
   // Extract image points as feature vectors (unitary, normalized).
-  Vector3d f1((image_points[0][0] - principle_point[0])/focal_length[0],
-              (image_points[0][1] - principle_point[1])/focal_length[1],
-              1.0);
-
-  Vector3d f2((image_points[1][0] - principle_point[0])/focal_length[0],
-              (image_points[1][1] - principle_point[1])/focal_length[1],
-              1.0);
-  Vector3d f3((image_points[2][0] - principle_point[0])/focal_length[0],
-              (image_points[2][1] - principle_point[1])/focal_length[1],
-              1.0);
+  Vector3d f1(image_points[0][0], image_points[0][1], image_points[0][2]);
+  Vector3d f2(image_points[1][0], image_points[1][1], image_points[1][2]);
+  Vector3d f3(image_points[2][0], image_points[2][1], image_points[2][2]);
   f1.normalize();
   f2.normalize();
   f3.normalize();
@@ -88,18 +80,9 @@ int PoseThreePoints(const double image_points[3][2],
 
   // Reinforce that f3[2] > 0 for having theta in [0;pi]
   if (f3[2] > 0) {
-    Vector3d f2((image_points[0][0] - principle_point[0])/focal_length[0],
-                (image_points[0][1] - principle_point[1])/focal_length[1],
-                1.0);
-    f1.normalize();
-    Vector3d f1((image_points[1][0] - principle_point[0])/focal_length[0],
-                (image_points[1][1] - principle_point[1])/focal_length[1],
-                1.0);
-    f2.normalize();
-    Vector3d f3((image_points[2][0] - principle_point[0])/focal_length[0],
-                (image_points[2][1] - principle_point[1])/focal_length[1],
-                1.0);
-    f3.normalize();
+    f1 = Vector3d(image_points[1][0], image_points[1][1], image_points[1][2]);
+    f2 = Vector3d(image_points[0][0], image_points[0][1], image_points[0][2]);
+    f3 = Vector3d(image_points[2][0], image_points[2][1], image_points[2][2]);
 
     e1 = f1;
     e3 = f1.cross(f2).normalized();
@@ -209,7 +192,7 @@ int PoseThreePoints(const double image_points[3][2],
 
     // Copy solution output variable.
     memcpy(rotation[i], r.data(), sizeof(r(0, 0))*9);
-    memcpy(translation[i], c.data(), sizeof(c(0))*9);
+    memcpy(translation[i], c.data(), sizeof(c(0))*3);
   }
   return num_solutions;
 }
@@ -220,9 +203,7 @@ bool PoseFourPoints(const double image_points[4][3],
                     const double world_points[4][3],
                     double rotation[3][3],
                     double translation[3]) {
-  using Eigen::Affine3d;
   using Eigen::Map;
-  using Eigen::Vector3d;
   using Eigen::Matrix;
 
   double candidate_rotation[4][3][3];
@@ -237,31 +218,29 @@ bool PoseFourPoints(const double image_points[4][3],
   int best_pose_index = 0;
   if (num_valid_poses == 0)
     return false;
-  
+
+  Map<const Vector3d> image_pt(
+      reinterpret_cast<const double*>(&image_points[3][0]));
+  Map<const Vector3d> world_pt(
+      reinterpret_cast<const double*>(&world_points[3][0]));
   for (int i = 0; i < num_valid_poses; i++) {
     Map<const Matrix<double, 3, 3, Eigen::RowMajor> >
-        rotation_mat(reinterpret_cast<const double*>(&candidate_rotation[i][0]));
+        rotation_mat(
+            reinterpret_cast<const double*>(&candidate_rotation[i][0]));
     Map<const Vector3d>
-        translation_mat(reinterpret_cast<const double*>(&candidate_translation[i][0]));
-    Affine3d transformation;
-    transformation.rotation() = rotation_mat;
-    transformation.translation() = translation_mat;
+        translation_mat(
+            reinterpret_cast<const double*>(&candidate_translation[i][0]));
 
-    Map<const Vector3d> image_pt(reinterpret_cast<const double*>(&image_points[3][0]));
-    Vector3d projected_point = transformation*image_pt;
-    VLOG(0) << "old point = " << image_pt;
-    VLOG(0) << "new point = " << projected_point;
-    /*
-    double reprojection_error =
-        (projected_point[0] - image_points[3][0])*
-        (projected_point[0] - image_points[3][0]) +
-        (projected_point[1] - image_points[3][1])*
-        (projected_point[1] - image_points[3][1]);
-    if (reprojection_error < min_reprojection_error) {
+    Vector3d projected_point = rotation_mat*world_pt + translation_mat;
+    projected_point[0] /= projected_point[2];
+    projected_point[1] /= projected_point[2];
+    projected_point[2] = 1.0;
+
+    double reprojection_error = (projected_point - image_pt).norm();
+    if (min_reprojection_error > reprojection_error) {
       min_reprojection_error = reprojection_error;
       best_pose_index = i;
     }
-    */
   }
 
   // Copy solution to output variables.
