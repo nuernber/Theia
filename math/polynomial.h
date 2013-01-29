@@ -32,57 +32,217 @@
 #ifndef MATH_POLYNOMIAL_H_
 #define MATH_POLYNOMIAL_H_
 
+#include <Eigen/Dense>
+#include <glog/logging.h>
+#include <tuple>
+
+#include <algorithm>
+#include <complex>
 #include <utility>
 #include <vector>
 
 namespace math {
 // Class for storing and manipulating polynomials for a univariate
 // polynomial.
+template<int degree>
 class Polynomial {
  public:
   // coeffs is an array containing the coefficients of the polynomial, with
   // coeffs[i] corresponding to the i-th degree coefficient.
-  Polynomial() {}
-  explicit Polynomial(const std::vector<double> coeffs) : coeffs_(coeffs) {}
-  Polynomial(const Polynomial& poly) : Polynomial(poly.coeffs_) {}
-  Polynomial(int degree, const double coeffs[]);
+  Polynomial() {
+    coeffs_ = Eigen::Matrix<double, degree + 1, 1>::Zero();
+  }
+  explicit Polynomial(const std::vector<double> coeffs) {
+    std::copy(coeffs.begin(), coeffs.end(), coeffs_.data());
+  }
+  Polynomial(const Polynomial& poly) : coeffs_(poly.coeffs_) {}
+  explicit Polynomial(const double coeffs[]) {
+    std::copy(coeffs, coeffs + degree + 1, coeffs_.data());
+  }
   ~Polynomial() {}
 
   // Return the degree of the polynomial.
-  int GetDegree() const { return coeffs_.size() - 1; }
+  int GetDegree() const { return degree; }
 
   // Operator overload for polynomial access.
   double& operator[](unsigned int i) { return coeffs_[i]; }
   const double& operator[](unsigned int i) const { return coeffs_[i]; }
 
   // Evaluate the polynomial at x.
-  double EvalAt(const double x) const;
+  double EvalAt(const double x) const {
+    double val = 0;
+    for (int i = degree; i > 0; i--) {
+      val += coeffs_[i];
+      val *= x;
+    }
+    val += coeffs_[0];
+    return val;
+  }
 
   // Add two polynomials together.
-  Polynomial Add(const Polynomial& poly) const;
-  Polynomial Subtract(const Polynomial& poly) const;
-  Polynomial Multiply(const Polynomial& poly) const;
-  std::pair<Polynomial, Polynomial> Divide(const Polynomial& poly) const;
+  template<int degree2>
+  Polynomial Add(const Polynomial<degree2>& poly) const {
+    CHECK_EQ(degree, degree2) << "Cannot add polynomials of different sizes";
+    Polynomial<degree> sum;
+    sum.coeffs_ = coeffs_ + poly.coeffs_;
+    return sum;
+  }
+
+  template<int degree2>
+  Polynomial Subtract(const Polynomial<degree2>& poly) const {
+    CHECK_EQ(degree, degree2) << "Cannot subtract polynomials of different "
+                              << "sizes";
+    Polynomial<degree> diff;
+    diff.coeffs_ = coeffs_ - poly.coeffs_;
+    return diff;
+  }
+
+  template<int degree2>
+  Polynomial<degree + degree2> Multiply(const Polynomial<degree2>& poly) const {
+    Polynomial<degree + degree2> product;
+    for (int i = 0; i <= degree; i++)
+      for (int j = 0; j <= degree2; j++)
+        product.coeffs_[i + j] += coeffs_[i]*poly.coeffs_[j];
+    return product;
+  }
+
+  // TODO(cmsweeney): Make this more efficient with Eigen.
+  template<int degree2>
+  std::pair<Polynomial<degree - degree2>, Polynomial<degree2 - 1> > Divide(
+      const Polynomial<degree2>& poly) const {
+    Polynomial<degree - degree2> quotient;
+    Eigen::Matrix<double, degree + 1, 1> remainder(coeffs_);
+
+    for (int i = quotient.GetDegree(); i >= 0; i--) {
+      double scale = remainder[i + poly.coeffs_.size() - 1]/
+          poly.coeffs_[poly.coeffs_.size() - 1];
+      quotient.coeffs_[i] = scale;
+      for (int j = 0; j < poly.coeffs_.size(); j++)
+        remainder[i + j] -= scale*poly.coeffs_[j];
+    }
+    return std::make_pair(
+        quotient,
+        Polynomial<degree2 - 1>(remainder.head(degree2).data()));
+  }
 
   // Operator overload for polynomial arithmatic.
-  Polynomial operator+(const Polynomial &poly) { return this->Add(poly); }
-  Polynomial operator-(const Polynomial &poly) { return this->Subtract(poly); }
-  Polynomial operator*(const Polynomial &poly) { return this->Multiply(poly); }
+  template<int degree2>
+  Polynomial<degree> operator+(const Polynomial<degree2> &poly) {
+    return this->Add(poly);
+  }
+  template<int degree2>
+  Polynomial<degree> operator-(const Polynomial<degree> &poly) {
+    return this->Subtract(poly);
+  }
+
+  template<int degree2>
+  Polynomial<degree + degree2> operator*(const Polynomial<degree2> &poly) {
+    return this->Multiply(poly);
+  }
+
   // Negation
-  Polynomial operator-();
+  Polynomial<degree> operator-() { return Polynomail(-coeffs_); }
 
   // First order differentiation.
-  Polynomial Differentiate() const;
+  Polynomial<degree - 1> Differentiate() const {
+    Polynomial<degree - 1> derivitive = coeffs_.tail(degree);
+    for (int i = 0; i < degree; i++)
+      derivitive[i] *= i + 1;
+    return derivitive;
+  }
 
-  // Solve for real roots using Sturm Chains. Note that there are closed-form
-  // polynomial solvers for degree up to 4 in
-  // math/closed_form_polynomial_solvers.h Additionally, this is only a
-  // reasonable solution up to degree 100.
-  std::vector<double> RealRoots() const;
+  std::vector<double> RealRoots() const {
+    std::vector<std::complex<double> > complex_roots = Roots();
+    std::vector<double> roots;
+    for (int i = 0; i < complex_roots.size(); i++) {
+      if (complex_roots[i].imag() == 0.0)
+        roots.push_back(complex_roots[i].real());
+    }
+    return roots;
+  }
+
+  std::vector<std::complex<double> > Roots() const {
+    Eigen::Matrix<double, degree, degree> companion =
+        Eigen::Matrix<double, degree, degree>::Zero();
+
+    companion.diagonal(-1).setOnes();
+    companion.row(0) = -coeffs_.head(degree).reverse();
+    companion.row(0) /= coeffs_(degree);
+
+    // Compute balancing matrix.
+    BalanceCompanionMatrix(&companion);
+
+    // Compute eigenvalues. Note, these can be complex.
+    Eigen::VectorXcd eigenvalues = companion.eigenvalues();
+
+    std::vector<std::complex<double> > roots(eigenvalues.rows());
+    for (int i = 0; i < roots.size(); i++)
+      roots[i] = eigenvalues(i);
+    return roots;
+  }
 
  private:
   // Coefficients of the polynomial.
-  std::vector<double> coeffs_;
+  Eigen::Matrix<double, degree + 1, 1> coeffs_;
+
+  template<int friend_degree>
+  friend class Polynomial;
+
+  // Borrowed from Ceres Solver, implementing balancing function as described by
+  // B. N. Parlett and C. Reinsch, "Balancing a Matrix for Calculation of
+  // Eigenvalues and Eigenvectors".  In: Numerische Mathematik, Volume 13,
+  // Number 4 (1969), 293-304, Springer Berlin Heidelberg. DOI:
+  // 10.1007/BF02165404
+  void BalanceCompanionMatrix(
+      Eigen::Matrix<double, degree, degree>* companion) const {
+    Eigen::Matrix<double, degree, degree>& companion_matrix =
+        *companion;
+    Eigen::Matrix<double, degree, degree> companion_matrix_offdiagonal =
+        companion_matrix;
+    companion_matrix_offdiagonal.diagonal().setZero();
+
+    // gamma <= 1 controls how much a change in the scaling has to
+    // lower the 1-norm of the companion matrix to be accepted.
+    //
+    // gamma = 1 seems to lead to cycles (numerical issues?), so
+    // we set it slightly lower.
+    const double gamma = 0.9;
+    // Greedily scale row/column pairs until there is no change.
+    bool scaling_has_changed;
+    do {
+      scaling_has_changed = false;
+
+      for (int i = 0; i < degree; ++i) {
+        const double row_norm =
+            companion_matrix_offdiagonal.row(i).template lpNorm<1>();
+        const double col_norm =
+            companion_matrix_offdiagonal.col(i).template lpNorm<1>();
+
+        // Decompose row_norm/col_norm into mantissa * 2^exponent,
+        // where 0.5 <= mantissa < 1. Discard mantissa (return value
+        // of frexp), as only the exponent is needed.
+        int exponent = 0;
+        std::frexp(row_norm / col_norm, &exponent);
+        exponent /= 2;
+
+        if (exponent != 0) {
+          const double scaled_col_norm = std::ldexp(col_norm, exponent);
+          const double scaled_row_norm = std::ldexp(row_norm, -exponent);
+          if (scaled_col_norm + scaled_row_norm < gamma*(col_norm + row_norm)) {
+            // Accept the new scaling. (Multiplication by powers of 2 should not
+            // introduce rounding errors (ignoring non-normalized numbers and
+            // over- or underflow))
+            scaling_has_changed = true;
+            companion_matrix_offdiagonal.row(i) *= std::ldexp(1.0, -exponent);
+            companion_matrix_offdiagonal.col(i) *= std::ldexp(1.0, exponent);
+          }
+        }
+      }
+    } while (scaling_has_changed);
+
+    companion_matrix_offdiagonal.diagonal() = companion_matrix.diagonal();
+    companion_matrix = companion_matrix_offdiagonal;
+  }
 };
 
 }  // namespace math
