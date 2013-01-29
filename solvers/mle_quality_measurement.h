@@ -36,6 +36,7 @@
 #include <glog/logging.h>
 #include <limits>
 #include <vector>
+#include "math/distribution.h"
 #include "solvers/quality_measurement.h"
 
 namespace solvers {
@@ -105,10 +106,17 @@ class MLEQualityMeasurement : public QualityMeasurement {
   bool SufficientlyHighQuality(const double quality) {
     return quality <= terminating_threshold_;
   }
+  
  private:
   // Threshold for determining whether MLE estimate is good enough.
-  double terminating_threshold_;
+  double confidence_threshold_;
 
+  // Distribution of inlier data.
+  const Distribution& inlier_dist_;
+  // Distribution of outlier data.
+  const Distribution& outlier_dist_;
+  // Confidences of each data point.
+  std::vector<double>& confidence_;
 };
 }  // namespace solvers
 #endif  // SOLVERS_MLE_QUALITY_MEASUREMENT_H_

@@ -29,47 +29,70 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef SOLVERS_MLESAC_H_
-#define SOLVERS_MLESAC_H_
+#include <math.h>
 
-#include <vector>
-
-#include "math/distribution.h"
-#include "solvers/mle_quality_measurement.h"
-#include "solvers/random_sampler.h"
-#include "solvers/sample_consensus_estimator.h"
+#include "gtest/gtest.h"
+#include "solvers/estimator.h"
+#include "solvers/mlesac.h"
 
 namespace solvers {
-template<class Datum, class Model>
-class Mlesac : public SampleConsensusEstimator<Datum, Model> {
- public:
-  // Params:
-  //  min_sample_size: the minimum number of samples needed to estimate a model
-  //  inline_mean: Mean of inlier noise distribution.
-  //  inlier_sigma: Sigma of the inlier noise distribution.
-  //  search_left: Left bound of the search region of image correspondances.
-  //    e.g. -100px
-  //  search_right: Right bound of the search region of image correspondances.
-  //    e.g. 100px
-  //  confidence: Vector containing the confidences of each correspondance.
-  //  confidence_threshold: Correspondances above this are considered inliers.
-  Mlesac(int min_sample_size,
-         double inlier_mean,
-         double inlier_sigma,
-         double search_left,
-         double search_right,
-         std::vector<double> confidence,
-         double confidence_threshold)
-      : SampleConsensusEstimator<Datum, Model>(
-          new RandomSampler<Datum>(min_sample_size),
-          new MLEQualityMeasurement(new NormalDistribution(inlier_mean,
-                                                           inlier_sigma),
-                                    new UniformDistribution(search_left,
-                                                            search_right),
-                                    confidence,
-                                    confidence_threshold)) {}
-
-  ~Mlesac() {}
+namespace {
+struct Point {
+  double x;
+  double y;
+  Point() {}
+  Point(double _x, double _y) : x(_x), y(_y) {}
 };
+
+// y = mx + b
+struct Line {
+  double m;
+  double b;
+  Line() {}
+  Line(double _m, double _b) : m(_m), b(_b) {}
+};
+
+class LineEstimator : public Estimator<Point, Line> {
+ public:
+  LineEstimator() {}
+  ~LineEstimator() {}
+
+  bool EstimateModel(const vector<Point>& data, Line* model) const {
+    model->m = (data[1].y - data[0].y)/(data[1].x - data[0].x);
+    model->b = data[1].y - model->m*data[1].x;
+    return true;
+  }
+
+  double Error(const Point& point, const Line& line) const {
+    double a = -1.0*line.m;
+    double b = 1.0;
+    double c = -1.0*line.b;
+
+    return fabs(a*point.x + b*point.y + c)/(sqrt(pow(a*a + b*b, 2)));
+  }
+};
+
+// Returns a random double between dMin and dMax
+double RandDouble(double dMin, double dMax) {
+  double d = static_cast<double>(rand()) / RAND_MAX;
+  return dMin + d * (dMax - dMin);
+}
+}  // namespace
+
+TEST(MlesacTest, LineFitting) {
+  // Create a set of points along y=x with a small random pertubation.
+  vector<Point> input_points;
+  for (int i = 0; i < 10000; ++i) {
+    double noise_x = RandDouble(-1.0, 1.0);
+    double noise_y = RandDouble(-1.0, 1.0);
+    input_points.push_back(Point(i + noise_x, i + noise_y));
+  }
+
+  LineEstimator line_estimator;
+  Line line;
+  Ransac<Point, Line> ransac_line(2, 0.3, 7000, 10000);
+  ransac_line.Estimate(input_points, line_estimator, &line);
+  ASSERT_LT(fabs(line.m - 1.0), 0.1);
+}
+
 }  // namespace solvers
-#endif  // SOLVERS_MLESAC_H_
