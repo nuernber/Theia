@@ -41,8 +41,6 @@
 #include "solvers/sampler.h"
 
 namespace solvers {
-using std::vector;
-
 template<class Datum, class Model>
 class SampleConsensusEstimator {
  public:
@@ -54,7 +52,9 @@ class SampleConsensusEstimator {
   //   of iterations based on the outlier probability, use SetMaxIters.
   SampleConsensusEstimator(Sampler<Datum>* sampler,
                            QualityMeasurement* quality_measurement,
-                           int max_iters = 10000) : max_iters_(max_iters) {
+                           int max_iters = 10000)
+      : max_iters_(max_iters),
+        num_iters_(-1) {
     sampler_.reset(sampler);
     quality_measurement_.reset(quality_measurement);
   }
@@ -69,12 +69,12 @@ class SampleConsensusEstimator {
   //     and Model type
   //   best_model: The output parameter that will be filled with the best model
   //     estimated from RANSAC
-  virtual bool Estimate(const vector<Datum>& data,
+  virtual bool Estimate(const std::vector<Datum>& data,
                         const Estimator<Datum, Model>& estimator,
                         Model* best_model);
 
   // Returns a bool vector with true for inliers, false for outliers.
-  const vector<bool>& GetInliers() { return inliers_; }
+  const std::vector<bool>& GetInliers() { return inliers_; }
 
   // Count the number of inliers.
   int GetNumInliers() {
@@ -86,6 +86,10 @@ class SampleConsensusEstimator {
     return num_inliers;
   }
 
+  int GetNumIterations() {
+    return num_iters_;
+  }
+  
  protected:
   // Our sampling strategy.
   std::unique_ptr<Sampler<Datum> > sampler_;
@@ -94,15 +98,18 @@ class SampleConsensusEstimator {
   std::unique_ptr<QualityMeasurement> quality_measurement_;
 
   // Inliners from the recent data. Only valid if Estimate has been called!
-  vector<bool> inliers_;
+  std::vector<bool> inliers_;
 
   // Max number of iterations to perform before terminating .
   int max_iters_;
+
+  // Number of iterations performed before succeeding.
+  int num_iters_;
 };
 
 template<class Datum, class Model>
 bool SampleConsensusEstimator<Datum, Model>::Estimate(
-    const vector<Datum>& data,
+    const std::vector<Datum>& data,
     const Estimator<Datum, Model>& estimator,
     Model* best_model) {
   CHECK_GT(data.size(), 0)
@@ -111,7 +118,7 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
   double best_quality = static_cast<double>(QualityMeasurement::INVALID);
   for (int iters = 0; iters < max_iters_; iters++) {
     // Sample subset. Proceed if successfully sampled.
-    vector<Datum> data_subset;
+    std::vector<Datum> data_subset;
     if (!sampler_->Sample(data, &data_subset))
       continue;
 
@@ -122,12 +129,12 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
       continue;
 
     // Calculate residuals from estimated model.
-    vector<double> residuals(data.size());
+    std::vector<double> residuals(data.size());
     for (int i = 0; i < data.size(); i++)
       residuals[i] = estimator.Error(data[i], temp_model);
 
     // Determine quality of the generated model.
-    vector<bool> temp_inlier_set(data.size());
+    std::vector<bool> temp_inlier_set(data.size());
     double sample_quality = quality_measurement_->Calculate(residuals,
                                                             &temp_inlier_set);
 
@@ -141,20 +148,21 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
       // based on all inliers and return;
       if (quality_measurement_->SufficientlyHighQuality(best_quality)) {
         // Grab inliers to refine the model.
-        vector<Datum> temp_consensus_set;
+        std::vector<Datum> temp_consensus_set;
         for (int i = 0; i < temp_inlier_set.size(); i++) {
           if (temp_inlier_set[i])
             temp_consensus_set.push_back(data[i]);
         }
         // Refine the model based on all current inliers.
         estimator.RefineModel(temp_consensus_set, best_model);
+        num_iters_ = iters + 1;
         break;
       }
     }
   }
 
   inliers_.resize(data.size());
-  vector<double> final_residuals(data.size());
+  std::vector<double> final_residuals(data.size());
   for (int i = 0; i < data.size(); i++)
     final_residuals[i] = estimator.Error(data[i], *best_model);
 

@@ -30,6 +30,7 @@
 //
 
 #include <math.h>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "solvers/estimator.h"
@@ -57,7 +58,7 @@ class LineEstimator : public Estimator<Point, Line> {
   LineEstimator() {}
   ~LineEstimator() {}
 
-  bool EstimateModel(const vector<Point>& data, Line* model) const {
+  bool EstimateModel(const std::vector<Point>& data, Line* model) const {
     model->m = (data[1].y - data[0].y)/(data[1].x - data[0].x);
     model->b = data[1].y - model->m*data[1].x;
     return true;
@@ -81,7 +82,7 @@ double RandDouble(double dMin, double dMax) {
 
 TEST(RansacTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
-  vector<Point> input_points;
+  std::vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
     double noise_x = RandDouble(-1.0, 1.0);
     double noise_y = RandDouble(-1.0, 1.0);
@@ -97,7 +98,7 @@ TEST(RansacTest, LineFitting) {
 
 TEST(RansacTest, GetInliers) {
   // Create a set of points along y=x with a small random pertubation.
-  vector<Point> input_points;
+  std::vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
     double noise_x = RandDouble(-1, 1);
     double noise_y = RandDouble(-1, 1);
@@ -112,7 +113,7 @@ TEST(RansacTest, GetInliers) {
   ransac_line.Estimate(input_points, line_estimator, &line);
 
   // Ensure each inlier is actually an inlier.
-  vector<bool> inliers = ransac_line.GetInliers();
+  std::vector<bool> inliers = ransac_line.GetInliers();
   for (int i = 0; i < input_points.size(); i++) {
     bool verified_inlier =
         line_estimator.Error(input_points[i], line) < error_thresh;
@@ -122,7 +123,7 @@ TEST(RansacTest, GetInliers) {
 
 TEST(RansacTest, TerminationNumInliers) {
   // Create a set of points along y=x with a small random pertubation.
-  vector<Point> input_points;
+  std::vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
     double noise_x = RandDouble(-1, 1);
     double noise_y = RandDouble(-1, 1);
