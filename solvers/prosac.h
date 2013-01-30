@@ -42,8 +42,6 @@
 #include "solvers/sample_consensus_estimator.h"
 
 namespace solvers {
-using std::vector;
-
 // Estimate a model using PROSAC. The Estimate method is inherited, but for
 // PROSAC requires the data to be in sorted order by quality (with highest
 // quality at index 0).

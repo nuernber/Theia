@@ -32,6 +32,7 @@
 #include <chrono>
 #include <math.h>
 #include <random>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "solvers/estimator.h"
@@ -59,7 +60,7 @@ class LineEstimator : public Estimator<Point, Line> {
   LineEstimator() {}
   ~LineEstimator() {}
 
-  bool EstimateModel(const vector<Point>& data, Line* model) const {
+  bool EstimateModel(const std::vector<Point>& data, Line* model) const {
     model->m = (data[1].y - data[0].y)/(data[1].x - data[0].x);
     model->b = data[1].y - model->m*data[1].x;
     return true;
@@ -89,8 +90,8 @@ TEST(MlesacTest, LineFitting) {
   std::normal_distribution<double> gauss_distribution(0.0, 0.1);
 
   const int num_points = 10000;
-  vector<Point> input_points(num_points);
-  vector<double> confidence(num_points);
+  std::vector<Point> input_points(num_points);
+  std::vector<double> confidence(num_points);
 
   for (int i = 0; i < num_points; ++i) {
     if (i%20 == 0) {

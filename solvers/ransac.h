@@ -42,8 +42,6 @@
 #include "solvers/sample_consensus_estimator.h"
 
 namespace solvers {
-using std::vector;
-
 template<class Datum, class Model>
 class Ransac : public SampleConsensusEstimator<Datum, Model> {
  public:
