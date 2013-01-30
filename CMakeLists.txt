@@ -154,9 +154,11 @@ ENDIF (CMAKE_BUILD_TYPE STREQUAL "Release")
 #       which has been compiled as target: myclass then calling
 #       GTEST(myclass_test myclass) will create a test executable myclass_test
 #       by automatically compiling myclass_test.cc and linking the mytest target
+ADD_LIBRARY(test_main test/test_main.cc)
+TARGET_LINK_LIBRARIES(test_main gtest ${GLOG_LIB} ${GFLAGS_LIB})
 MACRO (GTEST NAME)
   ADD_EXECUTABLE(${NAME} ${NAME}.cc)
-  TARGET_LINK_LIBRARIES(${NAME} gtest gtest_main ${ARGN} ${GFLAGS_LIB} ${GLOG_LIB})
+  TARGET_LINK_LIBRARIES(${NAME} gtest test_main ${ARGN} ${GFLAGS_LIB} ${GLOG_LIB})
   ADD_TEST(NAME ${NAME}
            COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${NAME}
            --test_srcdir
@@ -177,14 +179,6 @@ ADD_SUBDIRECTORY(solvers)
 ADD_SUBDIRECTORY(vision)
 
 # Install the .h files
-#FILE(GLOB_RECURSE THEIA_FILES "${CMAKE_SOURCE_DIR}/*.h")
-#FOREACH(HEADER ${THEIA_FILES})
-#  IF("${HEADER}" MATCHES ".*gtest.*")
-#    LIST(REMOVE_ITEM THEIA_FILES ${HEADER})
-#  ENDIF()
-#ENDFOREACH(HEADER)
-#INSTALL(DIRECTORY ${THEIA_FILES} DESTINATION include/theia)
-
 install(DIRECTORY ${CMAKE_SOURCE_DIR} DESTINATION include
   FILES_MATCHING PATTERN "*.h"
   PATTERN "data*" EXCLUDE
