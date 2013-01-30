@@ -35,7 +35,7 @@
 
 #include "gtest/gtest.h"
 #include "solvers/estimator.h"
-#include "solvers/mlesac.h"
+#include "solvers/prosac.h"
 
 namespace solvers {
 namespace {
@@ -81,21 +81,23 @@ double RandDouble(double dMin, double dMax) {
 }
 }  // namespace
 
-TEST(MlesacTest, LineFitting) {
+TEST(ProsacTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
   // construct a trivial random generator engine from a time-based seed:
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
-  std::normal_distribution<double> gauss_distribution(0.0, 0.1);
-
+  std::normal_distribution<double> gauss_distribution(0.0, 0.5);
+  std::normal_distribution<double> small_distribution(0.0, 0.05);
   const int num_points = 10000;
   vector<Point> input_points(num_points);
   vector<double> confidence(num_points);
 
   for (int i = 0; i < num_points; ++i) {
-    if (i%20 == 0) {
-      input_points[i] = Point(i, i);
-      confidence[i] = 1.0;
+    if (i < 300) {
+      double noise_x = small_distribution(generator);
+      double noise_y = small_distribution(generator);
+      input_points[i] = Point(i + noise_x, i + noise_y);      
+      confidence[i] = 0.95;
     } else {
       double noise_x = gauss_distribution(generator);
       double noise_y = gauss_distribution(generator);
@@ -106,8 +108,8 @@ TEST(MlesacTest, LineFitting) {
 
   LineEstimator line_estimator;
   Line line;
-  Mlesac<Point, Line> mlesac_line(2, 0.0, 1.0, -100, 100, confidence, 0.95);
-  mlesac_line.Estimate(input_points, line_estimator, &line);
+  Prosac<Point, Line> prosac_line(2, 1.0, 800, 100000);
+  prosac_line.Estimate(input_points, line_estimator, &line);
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }
 
