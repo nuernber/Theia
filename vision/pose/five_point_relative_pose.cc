@@ -1,9 +1,41 @@
+// Copyright (C) 2013  Chris Sweeney <cmsweeney@cs.ucsb.edu>
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//
+//     * Redistributions in binary form must reproduce the above
+//       copyright notice, this list of conditions and the following
+//       disclaimer in the documentation and/or other materials provided
+//       with the distribution.
+//
+//     * Neither the name of the University of California, Santa Barbara nor the
+//       names of its contributors may be used to endorse or promote products
+//       derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL CHRIS SWEENEY BE LIABLE FOR ANY DIRECT,
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+
 #include "vision/pose/five_point_relative_pose.h"
 
 #include <Eigen/Dense>
+#include <unsupported/Eigen/Polynomials>
 #include <vector>
 #include <cmath>
-
+#include <ctime>
 #include "math/matrix/gauss_jordan.h"
 #include "math/polynomial.h"
 #include "vision/models/essential_matrix.h"
@@ -269,7 +301,7 @@ std::vector<EssentialMatrix> FivePointRelativePose(
 
   // Step 5. Extract real roots of the 10th degree polynomial.
   std::vector<EssentialMatrix> essential_matrices;
-  math::Polynomial determinant_poly(10, n.data());
+  math::Polynomial<10> determinant_poly(n.data());
   std::vector<double> roots = determinant_poly.RealRoots();
   for (double z : roots) {
     double x = EvaluatePoly(p1, z)/EvaluatePoly(p3, z);
@@ -282,43 +314,8 @@ std::vector<EssentialMatrix> FivePointRelativePose(
     candidate_essential_mat << temp_sum.head(3).transpose(),
         temp_sum.segment(3, 3).transpose(),
         temp_sum.tail(3).transpose();
-    essential_matrices.push_back(candidate_essential_mat);
+    essential_matrices.push_back(EssentialMatrix(candidate_essential_mat));
   }
-
-  // Step 5 (alternative). Extract roots of n (the 10th degree polynomial).
-  // You can solve the 10 deg polynomial as a sturn sequence, or as an
-  // eigen-decomposition of a companion matrix. We choose the latter because of
-  // the efficiency and convenience of the Eigen library.
-  /*
-    Matrix<double, 10, 10> companion = Matrix<double, 10, 10>::Zero();
-    // Scale n so that the 10th deg coefficient = 1.
-    n /= n(10);
-    // Construct companion matrix.
-    companion.row(0) = -1.0*n.head(10).reverse();
-    for (int i = 1; i < 10; i++)
-    companion(i, i-1) = 1.0;
-    // Compute eigenvalues. Note, these can be complex.
-    Eigen::VectorXcd eigenvalues = companion.eigenvalues();
-
-    // Eigenvalues = z. Plug z back into previous equations to get x, y values.
-    std::vector<EssentialMatrix> essential_matrices;
-    for (int i = 0; i < eigenvalues.rows(); i++) {
-    if (eigenvalues(i).imag() == 0.0) {
-    double z = eigenvalues(i).real();
-    double x = EvaluatePoly(p1, z)/EvaluatePoly(p3, z);
-    double y = EvaluatePoly(p2, z)/EvaluatePoly(p3, z);
-    Matrix<double, 9, 1> temp_sum = x*null_space.col(0) +
-    y*null_space.col(1) + z*null_space.col(2) + null_space.col(3);
-    // Need to do it like this because temp_sum is a row vector and recasting
-    // it as a 3x3 will load it column-major.
-    Eigen::Matrix3d candidate_essential_mat;
-    candidate_essential_mat << temp_sum.head(3).transpose(),
-    temp_sum.segment(3, 3).transpose(),
-    temp_sum.tail(3).transpose();
-    essential_matrices.push_back(candidate_essential_mat);
-    }
-    }
-  */
   return essential_matrices;
 }
 }  // pose

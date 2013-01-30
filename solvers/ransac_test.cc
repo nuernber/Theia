@@ -1,3 +1,34 @@
+// Copyright (C) 2013  Chris Sweeney <cmsweeney@cs.ucsb.edu>
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//
+//     * Redistributions in binary form must reproduce the above
+//       copyright notice, this list of conditions and the following
+//       disclaimer in the documentation and/or other materials provided
+//       with the distribution.
+//
+//     * Neither the name of the University of California, Santa Barbara nor the
+//       names of its contributors may be used to endorse or promote products
+//       derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL CHRIS SWEENEY BE LIABLE FOR ANY DIRECT,
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+
 #include <math.h>
 
 #include "gtest/gtest.h"
@@ -48,15 +79,6 @@ double RandDouble(double dMin, double dMax) {
 }
 }  // namespace
 
-TEST(RansacTest, NoInput) {
-  LineEstimator line_estimator;
-  Line line;
-  vector<Point> input_points;
-  Ransac<Point, Line> ransac_line(2, 0.7, 10000);
-  bool success = ransac_line.Compute(input_points, line_estimator, 0.3, &line);
-  ASSERT_FALSE(success);
-}
-
 TEST(RansacTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
@@ -68,8 +90,8 @@ TEST(RansacTest, LineFitting) {
 
   LineEstimator line_estimator;
   Line line;
-  Ransac<Point, Line> ransac_line(2, 0.7, 10000);
-  ransac_line.Compute(input_points, line_estimator, 0.3, &line);
+  Ransac<Point, Line> ransac_line(2, 0.3, 7000, 10000);
+  ransac_line.Estimate(input_points, line_estimator, &line);
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }
 
@@ -86,8 +108,8 @@ TEST(RansacTest, GetInliers) {
   Line line;
   double error_thresh = 0.3;
   // Set an un-obtainable value for the inlier ratio (e.g. > 1.0)
-  Ransac<Point, Line> ransac_line(2, 0.7, 10000);
-  ransac_line.Compute(input_points, line_estimator, error_thresh, &line);
+  Ransac<Point, Line> ransac_line(2, error_thresh, 7000, 10000);
+  ransac_line.Estimate(input_points, line_estimator, &line);
 
   // Ensure each inlier is actually an inlier.
   vector<bool> inliers = ransac_line.GetInliers();
@@ -110,9 +132,8 @@ TEST(RansacTest, TerminationNumInliers) {
   LineEstimator line_estimator;
   Line line;
   // Set an un-obtainable value for the inlier ratio (e.g. > 1.0)
-  Ransac<Point, Line> ransac_line(2, 2.0, 10000);
-  ransac_line.termination_num_inliers = 10;
-  ransac_line.Compute(input_points, line_estimator, 0.3, &line);
+  Ransac<Point, Line> ransac_line(2, 2.0, 300, 10000);
+  ransac_line.Estimate(input_points, line_estimator, &line);
 
   int num_inliers = ransac_line.GetNumInliers();
   ASSERT_GE(num_inliers, 10);

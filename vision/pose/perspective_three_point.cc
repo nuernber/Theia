@@ -1,5 +1,37 @@
+// Copyright (C) 2013  Chris Sweeney <cmsweeney@cs.ucsb.edu>
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//
+//     * Redistributions in binary form must reproduce the above
+//       copyright notice, this list of conditions and the following
+//       disclaimer in the documentation and/or other materials provided
+//       with the distribution.
+//
+//     * Neither the name of the University of California, Santa Barbara nor the
+//       names of its contributors may be used to endorse or promote products
+//       derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL CHRIS SWEENEY BE LIABLE FOR ANY DIRECT,
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+
 #include "vision/pose/perspective_three_point.h"
 
+#include <glog/logging.h>
 #include <math.h>
 #include <Eigen/Dense>
 #include <algorithm>
@@ -7,49 +39,15 @@
 
 namespace vision {
 namespace pose {
-
-namespace {
-
-double kEpsilon = 1e-4;
-void ProjectPoint(const double camera_matrix[3][3],
-                  const double rotation[3][3],
-                  const double translation[3],
-                  const double world_point[3],
-                  double projected_point[3]) {
-  using Eigen::Map;
-  using Eigen::Matrix;
-  using Eigen::RowMajor;
-  using Eigen::Vector3d;
-  using Eigen::Vector4d;
-
-  // Specifying the matrices this way reduces memory overhead.
-  Map<const Matrix<double, 3, 3, RowMajor> >
-      camera_mat(reinterpret_cast<const double*>(&camera_matrix[0]));
-  Map<const Matrix<double, 3, 3, RowMajor> >
-      rotation_mat(reinterpret_cast<const double*>(&rotation[0]));
-  Map<const Vector3d>
-      translation_mat(reinterpret_cast<const double*>(&translation[0]));
-
-  Matrix<double, 3, 4> transformation;
-  transformation << rotation_mat, translation_mat;
-
-  Vector4d world_vec(world_point[0], world_point[1], world_point[2], 1.0);
-  Vector3d proj_vec = camera_mat*transformation*world_vec;
-  projected_point[0] = proj_vec[0]/proj_vec[2];
-  projected_point[1] = proj_vec[1]/proj_vec[2];
-}
-}  // namespace
+using Eigen::Vector3d;
 
 // Computes camera pose using the three point algorithm and returns all possible
 // solutions (up to 4).
-int PoseThreePoints(const double image_points[3][2],
+int PoseThreePoints(const double image_points[3][3],
                     const double world_points[3][3],
-                    const double focal_length[2],
-                    const double principle_point[2],
                     double rotation[][3][3],
                     double translation[][3]) {
   using Eigen::Matrix3d;
-  using Eigen::Vector3d;
 
   // World points
   Vector3d p1(world_points[0][0], world_points[0][1], world_points[0][2]);
@@ -61,16 +59,9 @@ int PoseThreePoints(const double image_points[3][2],
     return 0;
 
   // Extract image points as feature vectors (unitary, normalized).
-  Vector3d f1((image_points[0][0] - principle_point[0])/focal_length[0],
-              (image_points[0][1] - principle_point[1])/focal_length[1],
-              1.0);
-
-  Vector3d f2((image_points[1][0] - principle_point[0])/focal_length[0],
-              (image_points[1][1] - principle_point[1])/focal_length[1],
-              1.0);
-  Vector3d f3((image_points[2][0] - principle_point[0])/focal_length[0],
-              (image_points[2][1] - principle_point[1])/focal_length[1],
-              1.0);
+  Vector3d f1(image_points[0][0], image_points[0][1], image_points[0][2]);
+  Vector3d f2(image_points[1][0], image_points[1][1], image_points[1][2]);
+  Vector3d f3(image_points[2][0], image_points[2][1], image_points[2][2]);
   f1.normalize();
   f2.normalize();
   f3.normalize();
@@ -89,18 +80,9 @@ int PoseThreePoints(const double image_points[3][2],
 
   // Reinforce that f3[2] > 0 for having theta in [0;pi]
   if (f3[2] > 0) {
-    Vector3d f2((image_points[0][0] - principle_point[0])/focal_length[0],
-                (image_points[0][1] - principle_point[1])/focal_length[1],
-                1.0);
-    f1.normalize();
-    Vector3d f1((image_points[1][0] - principle_point[0])/focal_length[0],
-                (image_points[1][1] - principle_point[1])/focal_length[1],
-                1.0);
-    f2.normalize();
-    Vector3d f3((image_points[2][0] - principle_point[0])/focal_length[0],
-                (image_points[2][1] - principle_point[1])/focal_length[1],
-                1.0);
-    f3.normalize();
+    f1 = Vector3d(image_points[1][0], image_points[1][1], image_points[1][2]);
+    f2 = Vector3d(image_points[0][0], image_points[0][1], image_points[0][2]);
+    f3 = Vector3d(image_points[2][0], image_points[2][1], image_points[2][2]);
 
     e1 = f1;
     e3 = f1.cross(f2).normalized();
@@ -210,48 +192,57 @@ int PoseThreePoints(const double image_points[3][2],
 
     // Copy solution output variable.
     memcpy(rotation[i], r.data(), sizeof(r(0, 0))*9);
-    memcpy(translation[i], c.data(), sizeof(c(0))*9);
+    memcpy(translation[i], c.data(), sizeof(c(0))*3);
   }
-
   return num_solutions;
 }
 
 // Computes pose using three point algorithm. The fourth correspondence is used
 // to determine the best solution of the (up to 4) candidate solutions.
-bool PoseFourPoints(const double image_points[4][2],
+bool PoseFourPoints(const double image_points[4][3],
                     const double world_points[4][3],
-                    const double focal_length[2],
-                    const double principle_point[2],
                     double rotation[3][3],
                     double translation[3]) {
+  using Eigen::Map;
+  using Eigen::Matrix;
+
   double candidate_rotation[4][3][3];
   double candidate_translation[4][3];
   int num_valid_poses = PoseThreePoints(image_points,
                                         world_points,
-                                        focal_length,
-                                        principle_point,
                                         candidate_rotation,
                                         candidate_translation);
   // For each candidate pose, measure the reprojection error of the 4th point
   // and pick the best candidate pose.
-  double camera_matrix[3][3] = {{focal_length[0], 0, principle_point[0]},
-                                {0, focal_length[1], principle_point[1]},
-                                {0, 0, 1.0}};
   double min_reprojection_error = 1e9;
   int best_pose_index = 0;
+  if (num_valid_poses == 0)
+    return false;
+
+  // Scale the image point so that z = 1.0. This makes it easier to compare to
+  // later, since we don't know how the points were normalized (if at all).
+  Vector3d image_pt(image_points[3][0]/image_points[3][2],
+                    image_points[3][1]/image_points[3][2],
+                    1.0);
+  Map<const Vector3d> world_pt(
+      reinterpret_cast<const double*>(&world_points[3][0]));
   for (int i = 0; i < num_valid_poses; i++) {
-    double projected_point[2];
-    ProjectPoint(camera_matrix,
-                 candidate_rotation[i],
-                 candidate_translation[i],
-                 world_points[3],
-                 projected_point);
-    double reprojection_error =
-        (projected_point[0] - image_points[3][0])*
-        (projected_point[0] - image_points[3][0]) +
-        (projected_point[1] - image_points[3][1])*
-        (projected_point[1] - image_points[3][1]);
-    if (reprojection_error < min_reprojection_error) {
+    Map<const Matrix<double, 3, 3, Eigen::RowMajor> >
+        rotation_mat(
+            reinterpret_cast<const double*>(&candidate_rotation[i][0]));
+    Map<const Vector3d>
+        translation_mat(
+            reinterpret_cast<const double*>(&candidate_translation[i][0]));
+
+    // Get the projected point and scale so z = 1.0. As noted above, this makes
+    // it easier to compare the reprojection error.
+    Vector3d projected_point = rotation_mat*world_pt + translation_mat;
+    projected_point[0] /= projected_point[2];
+    projected_point[1] /= projected_point[2];
+    projected_point[2] = 1.0;
+
+    double reprojection_error = (projected_point - image_pt).norm();
+    if (min_reprojection_error > reprojection_error) {
       min_reprojection_error = reprojection_error;
       best_pose_index = i;
     }

@@ -28,6 +28,9 @@ cd my_build
 cmake ..
 make
 
+To install, you can then execute:
+make install
+
 This should build the library with the proper configurations for you system. You
 can also run the unittests by executing the command "make test" from the
 my_build directory. You need to have google's gtest installed for the unittests.
