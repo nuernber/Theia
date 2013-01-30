@@ -86,16 +86,18 @@ TEST(ProsacTest, LineFitting) {
   // construct a trivial random generator engine from a time-based seed:
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
-  std::normal_distribution<double> gauss_distribution(0.0, 0.1);
-
-  const int num_points = 1000;
+  std::normal_distribution<double> gauss_distribution(0.0, 0.5);
+  std::normal_distribution<double> small_distribution(0.0, 0.05);
+  const int num_points = 10000;
   vector<Point> input_points(num_points);
   vector<double> confidence(num_points);
 
   for (int i = 0; i < num_points; ++i) {
-    if (i < 100) {
-      input_points[i] = Point(i, i);
-      confidence[i] = 1.0 - (i - 100.0)/200.0;
+    if (i < 300) {
+      double noise_x = small_distribution(generator);
+      double noise_y = small_distribution(generator);
+      input_points[i] = Point(i + noise_x, i + noise_y);      
+      confidence[i] = 0.95;
     } else {
       double noise_x = gauss_distribution(generator);
       double noise_y = gauss_distribution(generator);

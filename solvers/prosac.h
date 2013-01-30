@@ -80,7 +80,7 @@ class Prosac : public SampleConsensusEstimator<Datum, Model> {
                                              outlier_probability,
                                              no_fail_probability))) {}
   ~Prosac() {}
-  
+
  private:
   // Set the max iterations based on Eq. 4.18 in Hartley & Zisserman.
   //   min_sample_size: the min number of samples required to estimate a model.

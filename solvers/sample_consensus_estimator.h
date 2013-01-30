@@ -54,7 +54,7 @@ class SampleConsensusEstimator {
   //   of iterations based on the outlier probability, use SetMaxIters.
   SampleConsensusEstimator(Sampler<Datum>* sampler,
                            QualityMeasurement* quality_measurement,
-                           int max_iters = 1000) : max_iters_(max_iters) {
+                           int max_iters = 10000) : max_iters_(max_iters) {
     sampler_.reset(sampler);
     quality_measurement_.reset(quality_measurement);
   }

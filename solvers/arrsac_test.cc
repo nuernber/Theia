@@ -29,6 +29,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+#include <chrono>
 #include <math.h>
 #include <vector>
 
@@ -47,9 +48,13 @@ template<class Datum, class Model>
 class TestableArrsac : public Arrsac<Datum, Model> {
  public:
   TestableArrsac(int min_sample_size,
+                 double error_thresh,
                  int max_candidate_hyps = 500,
                  int block_size = 100)
-      : Arrsac<Datum, Model>(min_sample_size, max_candidate_hyps, block_size) {}
+      : Arrsac<Datum, Model>(min_sample_size,
+                             error_thresh,
+                             max_candidate_hyps,
+                             block_size) {}
   using Arrsac<Datum, Model>::GenerateInitialHypothesisSet;
 };
 
@@ -101,6 +106,10 @@ TEST(ArrsacTest, InitializeHypothesisSet) {
   for (int i = 0; i < 10000; ++i) {
     double noise_x = RandDouble(-1.0, 1.0);
     double noise_y = RandDouble(-1.0, 1.0);
+    if (i < 300) {
+      noise_x = 0;
+      noise_y = 0;
+    }
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
   vector<double> input_quality(input_points.size(), 0.0);
@@ -114,26 +123,26 @@ TEST(ArrsacTest, InitializeHypothesisSet) {
   double epsilon = 0.6;
 
   vector<Line> initial_hypothesis;
-  TestableArrsac<Point, Line> arrsac_line(2);
+  TestableArrsac<Point, Line> arrsac_line(2, 1.0);
   int num_iterations =
       arrsac_line.GenerateInitialHypothesisSet(input_points,
-                                               input_quality,
                                                estimator,
-                                               error_thresh,
                                                &initial_hypothesis);
   ASSERT_GT(num_iterations, 0);
 }
 
-TEST(ArrsacTest, Compute) {
+TEST(ArrsacTest, Estimate) {
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(seed);
+  std::normal_distribution<double> gauss_distribution(0.0, 0.5);
+  std::normal_distribution<double> small_distribution(0.0, 0.1);
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1.0, 1.0);
-    double noise_y = RandDouble(-1.0, 1.0);
+    double noise_x = gauss_distribution(generator);
+    double noise_y = gauss_distribution(generator);
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
-  vector<double> input_quality(input_points.size(), 0.0);
-
   LineEstimator estimator;
   // Error threshold to consider points inliers vs outliers.
   double error_thresh = 0.3;
@@ -143,34 +152,29 @@ TEST(ArrsacTest, Compute) {
   double epsilon = 0.8;
 
   Line fitted_line;
-  TestableArrsac<Point, Line> arrsac_line(2);
-  bool success = arrsac_line.Compute(input_points,
-                                     input_quality,
-                                     estimator,
-                                     error_thresh,
-                                     &fitted_line);
-  std::cout << "m = " << fitted_line.m << " b = " << fitted_line.b << std::endl;
+  TestableArrsac<Point, Line> arrsac_line(2, 1.0);
+  bool success = arrsac_line.Estimate(input_points,
+                                      estimator,
+                                      &fitted_line);
+  ASSERT_NEAR(fitted_line.m, 1.0, 0.1);
 }
 
-
-TEST(ArrsacTest, ComputeWithQuality) {
+TEST(ArrsacTest, EstimateWithQuality) {
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(seed);
+  std::normal_distribution<double> gauss_distribution(0.0, 0.5);
+  std::normal_distribution<double> small_distribution(0.0, 0.05);
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1.0, 1.0);
-    double noise_y = RandDouble(-1.0, 1.0);
+    double noise_x = gauss_distribution(generator);
+    double noise_y = gauss_distribution(generator);
+    if (i < 300) {
+      noise_x = small_distribution(generator);
+      noise_y = small_distribution(generator);
+    }
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
-  vector<double> input_quality(input_points.size(), 0.0);
-
-  // Set the several values to be without noise. Set the quality of these points
-  // to 1 (all others are 0).
-  input_points[0] = Point(0.0, 0.0);
-  input_quality[0] = 1.0;
-  input_points[1234] = Point(1234.0, 1234.0);
-  input_quality[1234] = 1.0;
-  input_points[5678] = Point(5768.0, 5678.0);
-  input_quality[5678] = 1.0;
 
   LineEstimator estimator;
   // Error threshold to consider points inliers vs outliers.
@@ -181,13 +185,11 @@ TEST(ArrsacTest, ComputeWithQuality) {
   double epsilon = 0.8;
 
   Line fitted_line;
-  TestableArrsac<Point, Line> arrsac_line(2);
-  bool success = arrsac_line.Compute(input_points,
-                                     input_quality,
-                                     estimator,
-                                     error_thresh,
-                                     &fitted_line);
-  std::cout << "m = " << fitted_line.m << " b = " << fitted_line.b << std::endl;
+  TestableArrsac<Point, Line> arrsac_line(2, 1.0);
+  bool success = arrsac_line.Estimate(input_points,
+                                      estimator,
+                                      &fitted_line);
+  ASSERT_NEAR(fitted_line.m, 1.0, 0.02);
 }
 
 }  // namespace solvers

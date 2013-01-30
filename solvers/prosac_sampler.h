@@ -49,7 +49,7 @@ class ProsacSampler : public Sampler<Datum> {
   explicit ProsacSampler(int num_samples,
                          int ransac_convergence_iterations = 200000)
       : num_samples_(num_samples),
-        ransac_convergence_iterations_(ransac_convergence_iterations_),
+        ransac_convergence_iterations_(ransac_convergence_iterations),
         kth_sample_number_(1) {}
   ~ProsacSampler() {}
 

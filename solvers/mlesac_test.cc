@@ -88,7 +88,7 @@ TEST(MlesacTest, LineFitting) {
   std::default_random_engine generator(seed);
   std::normal_distribution<double> gauss_distribution(0.0, 0.1);
 
-  const int num_points = 1000;
+  const int num_points = 10000;
   vector<Point> input_points(num_points);
   vector<double> confidence(num_points);
 
