@@ -30,13 +30,14 @@
 //
 
 #include "vision/models/essential_matrix.h"
-
+#include <algorithm>
 #include <Eigen/Dense>
 #include <glog/logging.h>
 
 namespace vision {
 namespace models {
 using Eigen::Matrix3d;
+using Eigen::Vector3d;
 
 EssentialMatrix::EssentialMatrix(const double data[3][3]) {
   essential_mat_ << data[0][0], data[0][1], data[0][2],
@@ -44,10 +45,8 @@ EssentialMatrix::EssentialMatrix(const double data[3][3]) {
       data[2][0], data[2][1], data[2][2];
 }
 
-void EssentialMatrix::Decompose(double rotation[3][3],
-                                double translation[3]) {
-  using Eigen::Vector3d;
-
+void EssentialMatrix::Decompose(double rotation[4][3][3],
+                                double translation[4][3]) {
   Matrix3d d;
   d << 0, 1, 0,
       -1, 0, 0,
@@ -75,6 +74,20 @@ void EssentialMatrix::Decompose(double rotation[3][3],
   Matrix3d ra = u*d*(v.transpose());
   Matrix3d rb = u*d.transpose()*(v.transpose());
   Vector3d t(u.col(2));
+  Vector3d t_neg(-t);
+  // Copy the 4 possible decompositions into the output arrays.
+  std::copy(ra.data(), ra.data() + ra.size(),
+            reinterpret_cast<double*>(rotation[0]));
+  std::copy(t.data(), t.data() + t.size(), translation[0]);
+  std::copy(ra.data(), ra.data() + ra.size(),
+            reinterpret_cast<double*>(rotation[1]));
+  std::copy(t_neg.data(), t_neg.data() + t_neg.size(), translation[1]);
+  std::copy(rb.data(), rb.data() + rb.size(),
+            reinterpret_cast<double*>(rotation[2]));
+  std::copy(t.data(), t.data() + t.size(), translation[2]);
+  std::copy(rb.data(), rb.data() + rb.size(),
+            reinterpret_cast<double*>(rotation[3]));
+  std::copy(t_neg.data(), t_neg.data() + t_neg.size(), translation[3]);
 }
 
 std::ostream& operator <<(std::ostream& os,

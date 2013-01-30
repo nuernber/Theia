@@ -32,27 +32,37 @@
 #include "vision/models/essential_matrix.h"
 
 #include "gtest/gtest.h"
+#include <glog/logging.h>
 #include <Eigen/Dense>
 
 namespace vision {
 namespace models {
 using Eigen::Matrix3d;
 
-TEST(EssentialMat, GetRandT) {
+TEST(EssentialMat, Decompose) {
   Matrix3d rotation = Matrix3d::Random();
   Eigen::Vector3d trans = Eigen::Vector3d::Random();
   Matrix3d translation;
   translation << 0, -trans(2), trans(1),
       trans(2), 0, -trans(0),
       -trans(1), trans(0), 0;
-  std::cout << "true rotation = \n" << rotation << std::endl;
-  std::cout << "true translation = \n" << trans << std::endl;
+  LOG(INFO) << "true rotation = \n" << rotation;
+  LOG(INFO) << "true translation = \n" << trans;
   EssentialMatrix my_essential_mat(rotation*translation);
-  std::cout << "Essential mat = \n" << my_essential_mat << std::endl;
+  LOG(INFO) << "Essential mat = \n" << my_essential_mat;
 
-  double my_rotation[3][3];
-  double my_translation[3];
+  double my_rotation[4][3][3];
+  double my_translation[4][3];
   my_essential_mat.Decompose(my_rotation, my_translation);
+  for (int i = 0; i < 4; i++) {
+    LOG(INFO) << "rotation =";
+    for (int j = 0; j < 3; j++)
+      LOG(INFO) << my_rotation[i][j][0] << " " << my_rotation[i][j][1]
+                << " " << my_rotation[i][j][2];
+    LOG(INFO) << "translation =";
+    LOG(INFO) << my_translation[i][0] << " " << my_translation[i][1]
+              << " " << my_translation[i][2];
+  }
 }
 
 }  // namespace models
