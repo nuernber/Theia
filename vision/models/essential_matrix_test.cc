@@ -52,7 +52,7 @@ TEST(EssentialMat, GetRandT) {
 
   double my_rotation[3][3];
   double my_translation[3];
-  my_essential_mat.GetRotationAndTranslation(my_rotation, my_translation);
+  my_essential_mat.Decompose(my_rotation, my_translation);
 }
 
 }  // namespace models

@@ -32,8 +32,7 @@
 #include "vision/models/essential_matrix.h"
 
 #include <Eigen/Dense>
-#include <ctime>
-#include <iostream>
+#include <glog/logging.h>
 
 namespace vision {
 namespace models {
@@ -53,22 +52,6 @@ void EssentialMatrix::Decompose(double rotation[3][3],
   d << 0, 1, 0,
       -1, 0, 0,
       0, 0, 1;
-
-  clock_t t = clock();
-  Eigen::JacobiSVD<Matrix3d> svd =
-      essential_mat_.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);
-  Matrix3d u_me = svd.matrixU();
-  Matrix3d v_me = svd.matrixV();
-  t = clock();
-  std::cout << "their u = \n" << u_me << std::endl;
-  std::cout << "their v = \n" << v_me << std::endl;
-  std::cout << "r = " << u_me*d*(v_me.transpose()) << std::endl;
-  t = clock() - t;
-  printf("Eigen Version took me %d clicks (%f seconds).\n",
-         t,
-         ((float)t)/CLOCKS_PER_SEC);
-
-  //
   Vector3d large_a = essential_mat_.row(0);
   Vector3d large_b = essential_mat_.row(1);
   if (large_a.cross(large_b).squaredNorm() <
@@ -89,15 +72,9 @@ void EssentialMatrix::Decompose(double rotation[3][3],
   u.col(0) = (essential_mat_*v.col(0)).normalized();
   u.col(1) = (essential_mat_*v.col(1)).normalized();
   u.col(2) = u.col(0).cross(u.col(1));
-  t = clock() - t;
-  LOG(INFO) << "my u = \n" << u;
-  LOG(INFO) << "my v = \n" << v;
-  LOG(INFO) << "r = " << u*d*(v.transpose());
-
-  printf("My Version took me %d clicks (%f seconds).\n",
-         t,
-         ((float)t)/CLOCKS_PER_SEC);
-
+  Matrix3d ra = u*d*(v.transpose());
+  Matrix3d rb = u*d.transpose()*(v.transpose());
+  Vector3d t(u.col(2));
 }
 
 std::ostream& operator <<(std::ostream& os,
