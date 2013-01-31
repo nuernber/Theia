@@ -1,22 +1,22 @@
 // Copyright (C) 2013  Chris Sweeney <cmsweeney@cs.ucsb.edu>
 // All rights reserved.
-//
+// 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
-//
+// 
 //     * Redistributions of source code must retain the above copyright
 //       notice, this list of conditions and the following disclaimer.
-//
+// 
 //     * Redistributions in binary form must reproduce the above
 //       copyright notice, this list of conditions and the following
 //       disclaimer in the documentation and/or other materials provided
 //       with the distribution.
-//
+// 
 //     * Neither the name of the University of California, Santa Barbara nor the
 //       names of its contributors may be used to endorse or promote products
 //       derived from this software without specific prior written permission.
-//
+// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -27,43 +27,16 @@
 // ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
+// 
 
-#include "vision/models/essential_matrix.h"
-
-#include "gtest/gtest.h"
-#include <glog/logging.h>
-#include <Eigen/Dense>
-#include "test/test_utils.h"
-#include <ctime>
-
-namespace vision {
-namespace models {
-using Eigen::Matrix3d;
-using Eigen::Vector3d;
-using test::RandDouble;
-
-TEST(EssentialMat, Decompose) {
-  using Eigen::AngleAxisd;
-  Matrix3d rotation;
-  rotation = AngleAxisd(RandDouble(-0.4, 0.4), Vector3d::UnitX())
-      *AngleAxisd(RandDouble(-0.4, 0.4), Vector3d::UnitY())
-      *AngleAxisd(RandDouble(-0.4, 0.4), Vector3d::UnitZ());
-  Vector3d trans = Vector3d::Random();
-  Matrix3d translation;
-  translation << 0.0, -trans(2), trans(1),
-      trans(2), 0.0, -trans(0),
-      -trans(1), trans(0), 0.0;
-  Matrix3d e = translation*rotation;
-  EssentialMatrix my_essential_mat(e);
-
-  double my_rotation[4][3][3];
-  double my_translation[4][3];
-  clock_t t = clock();
-  my_essential_mat.Decompose(my_rotation, my_translation);
-  t = clock() - t;
-  VLOG(0) << "It took me " << t/(CLOCKS_PER_SEC/1000.0) << " milli seconds).\n";
+#ifndef TEST_TEST_UTILS_H_
+#define TEST_TEST_UTILS_H_
+namespace test {
+// Get a random double between lower and upper.
+inline double RandDouble(double lower, double upper) {
+  double d = static_cast<double>(rand())/RAND_MAX;
+  return lower + d*(upper - lower);
 }
 
-}  // namespace models
-}  // namespace vision
+}  // namespace test
+#endif  // TEST_TEST_UTILS_H_

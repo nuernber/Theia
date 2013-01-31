@@ -35,6 +35,7 @@
 #include "gtest/gtest.h"
 #include "solvers/estimator.h"
 #include "solvers/ransac.h"
+#include "test/test_utils.h"
 
 namespace solvers {
 namespace {
@@ -72,20 +73,14 @@ class LineEstimator : public Estimator<Point, Line> {
     return fabs(a*point.x + b*point.y + c)/(sqrt(pow(a*a + b*b, 2)));
   }
 };
-
-// Returns a random double between dMin and dMax
-double RandDouble(double dMin, double dMax) {
-  double d = static_cast<double>(rand()) / RAND_MAX;
-  return dMin + d * (dMax - dMin);
-}
 }  // namespace
 
 TEST(RansacTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
   std::vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1.0, 1.0);
-    double noise_y = RandDouble(-1.0, 1.0);
+    double noise_x = test::RandDouble(-1.0, 1.0);
+    double noise_y = test::RandDouble(-1.0, 1.0);
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
 
@@ -100,8 +95,8 @@ TEST(RansacTest, GetInliers) {
   // Create a set of points along y=x with a small random pertubation.
   std::vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1, 1);
-    double noise_y = RandDouble(-1, 1);
+    double noise_x = test::RandDouble(-1, 1);
+    double noise_y = test::RandDouble(-1, 1);
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
 
@@ -125,8 +120,8 @@ TEST(RansacTest, TerminationNumInliers) {
   // Create a set of points along y=x with a small random pertubation.
   std::vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1, 1);
-    double noise_y = RandDouble(-1, 1);
+    double noise_x = test::RandDouble(-1, 1);
+    double noise_y = test::RandDouble(-1, 1);
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
 

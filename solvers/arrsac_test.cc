@@ -36,6 +36,7 @@
 #include "gtest/gtest.h"
 #include "solvers/arrsac.h"
 #include "solvers/estimator.h"
+#include "test/test_utils.h"
 
 using std::vector;
 
@@ -92,20 +93,14 @@ class LineEstimator : public Estimator<Point, Line> {
     return fabs(a*point.x + b*point.y + c)/(sqrt(pow(a*a + b*b, 2)));
   }
 };
-
-// Returns a random double between dMin and dMax
-double RandDouble(double dMin, double dMax) {
-  double d = static_cast<double>(rand()) / RAND_MAX;
-  return dMin + d * (dMax - dMin);
-}
 }  // namespace
 
 TEST(ArrsacTest, InitializeHypothesisSet) {
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1.0, 1.0);
-    double noise_y = RandDouble(-1.0, 1.0);
+    double noise_x = test::RandDouble(-1.0, 1.0);
+    double noise_y = test::RandDouble(-1.0, 1.0);
     if (i < 300) {
       noise_x = 0;
       noise_y = 0;
