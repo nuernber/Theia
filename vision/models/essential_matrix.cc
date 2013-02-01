@@ -39,16 +39,6 @@ namespace models {
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
 
-namespace {
-Matrix3d CrossProductMatrix(const Vector3d& vec) {
-  Matrix3d cross_prod;
-  cross_prod << 0, -vec(2), vec(1),
-      vec(2), 0, -vec(0),
-      -vec(2), vec(0), 0;
-  return cross_prod;
-}
-}  // namespace
-
 EssentialMatrix::EssentialMatrix(const double data[3][3]) {
   essential_mat_ << data[0][0], data[0][1], data[0][2],
       data[1][0], data[1][1], data[1][2],
@@ -69,11 +59,6 @@ void EssentialMatrix::Decompose(double rotation[4][3][3],
   const Vector3d& ea = essential_mat_.row(0);
   const Vector3d& eb = essential_mat_.row(1);
   const Vector3d& ec = essential_mat_.row(2);
-
-  VLOG(0) << "e = \n" << essential_mat_;
-  VLOG(0) << "ea = \n" << ea;
-  VLOG(0) << "eb = \n" << eb;
-  VLOG(0) << "ec = \n" << ec;
 
   // Generate cross products.
   Matrix3d cross_products;

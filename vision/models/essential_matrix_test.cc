@@ -35,7 +35,6 @@
 #include <glog/logging.h>
 #include <Eigen/Dense>
 #include "test/test_utils.h"
-#include <ctime>
 
 namespace vision {
 namespace models {
@@ -43,26 +42,48 @@ using Eigen::Matrix3d;
 using Eigen::Vector3d;
 using test::RandDouble;
 
+namespace {
+Matrix3d CrossProductMatrix(const Vector3d& vec) {
+  Matrix3d cross_prod;
+  cross_prod << 0, -vec(2), vec(1),
+      vec(2), 0, -vec(0),
+      -vec(1), vec(0), 0;
+  return cross_prod;
+}
+}  // namespace
+
 TEST(EssentialMat, Decompose) {
   using Eigen::AngleAxisd;
+
+  // Tolerance for accepting the decomposition.
+  double kTolerance = 1e-12;
+  
   Matrix3d rotation;
-  rotation = AngleAxisd(RandDouble(-0.4, 0.4), Vector3d::UnitX())
-      *AngleAxisd(RandDouble(-0.4, 0.4), Vector3d::UnitY())
-      *AngleAxisd(RandDouble(-0.4, 0.4), Vector3d::UnitZ());
+  rotation = AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitX())
+      *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitY())
+      *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitZ());
   Vector3d trans = Vector3d::Random();
-  Matrix3d translation;
-  translation << 0.0, -trans(2), trans(1),
-      trans(2), 0.0, -trans(0),
-      -trans(1), trans(0), 0.0;
+  Matrix3d translation = CrossProductMatrix(trans);
+
   Matrix3d e = translation*rotation;
   EssentialMatrix my_essential_mat(e);
 
   double my_rotation[4][3][3];
   double my_translation[4][3];
-  clock_t t = clock();
   my_essential_mat.Decompose(my_rotation, my_translation);
-  t = clock() - t;
-  VLOG(0) << "It took me " << t/(CLOCKS_PER_SEC/1000.0) << " milli seconds).\n";
+
+  for (int i = 0; i < 4; i++) {
+    Eigen::Map<const Matrix3d> rot(
+        reinterpret_cast<double*>(my_rotation[i][0]));
+    Eigen::Map<const Vector3d> tran(
+        reinterpret_cast<double*>(my_translation[i]));
+    Matrix3d estimated_e = CrossProductMatrix(tran)*rot;
+    // Fix estimated_e to be the same sign as e.
+    if (estimated_e(0, 0)*e(0, 0) < 0.0)
+      estimated_e *= -1.0;
+    
+    test::ExpectMatricesNear(estimated_e, e, kTolerance);
+  }
 }
 
 }  // namespace models

@@ -31,6 +31,10 @@
 
 #ifndef TEST_TEST_UTILS_H_
 #define TEST_TEST_UTILS_H_
+
+#include "gtest/gtest.h"
+#include <Eigen/Core>
+
 namespace test {
 // Get a random double between lower and upper.
 inline double RandDouble(double lower, double upper) {
@@ -38,5 +42,16 @@ inline double RandDouble(double lower, double upper) {
   return lower + d*(upper - lower);
 }
 
+// Assert that values of the two matrices are nearly the same.
+template <typename Derived>
+void ExpectMatricesNear(const Eigen::MatrixBase<Derived>& a,
+                        const Eigen::MatrixBase<Derived>& b,
+                        double tolerance) {
+  ASSERT_EQ(a.rows(), b.rows());
+  ASSERT_EQ(a.cols(), b.cols());
+  for (int i = 0; i < a.rows(); i++)
+    for (int j = 0; j < b.rows(); j++)
+      ASSERT_NEAR(a(i, j), b(i, j), tolerance);  
+}
 }  // namespace test
 #endif  // TEST_TEST_UTILS_H_

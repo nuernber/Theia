@@ -158,7 +158,7 @@ ADD_LIBRARY(test_main test/test_main.cc)
 TARGET_LINK_LIBRARIES(test_main gtest ${GLOG_LIB} ${GFLAGS_LIB})
 MACRO (GTEST NAME)
   ADD_EXECUTABLE(${NAME} ${NAME}.cc)
-  TARGET_LINK_LIBRARIES(${NAME} gtest test_main ${ARGN} ${GFLAGS_LIB} ${GLOG_LIB})
+  TARGET_LINK_LIBRARIES(${NAME} test_main gtest ${ARGN} ${GFLAGS_LIB} ${GLOG_LIB})
   ADD_TEST(NAME ${NAME}
            COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${NAME}
            --test_srcdir
