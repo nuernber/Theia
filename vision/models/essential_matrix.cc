@@ -63,21 +63,16 @@ void EssentialMatrix::Decompose(double rotation[4][3][3],
   // Generate cross products.
   Matrix3d cross_products;
   cross_products << ea.cross(eb), ea.cross(ec), eb.cross(ec);
-  VLOG(0) << "cross term =\n" << ea.cross(eb);
-  VLOG(0) << "cross_products = \n" << cross_products;
 
   // Choose the cross product with the largest norm (for numerical accuracy).
   const Vector3d cf_scales(cross_products.col(0).squaredNorm(),
                            cross_products.col(1).squaredNorm(),
                            cross_products.col(2).squaredNorm());
-  VLOG(0) << "cf scales =\n" << cf_scales;
   int max_index;
   double max_cf = cf_scales.maxCoeff(&max_index);
-  VLOG(0) << "max index = " << max_index;
 
   // For index 0, 1, we want ea and for index 2 we want eb.
   int max_e_index = max_index/2;
-  VLOG(0) << "max e index = " << max_e_index;
 
   // Construct v of the SVD.
   Matrix3d v = Matrix3d::Zero();
@@ -90,10 +85,6 @@ void EssentialMatrix::Decompose(double rotation[4][3][3],
   u.col(0) = (essential_mat_*v.col(0)).normalized();
   u.col(1) = (essential_mat_*v.col(1)).normalized();
   u.col(2) = u.col(0).cross(u.col(1));
-  
-  VLOG(0) << "U = \n" << u;
-  VLOG(0) << "V = \n" << v;
-  VLOG(0) << "E = \n" << u*diag*(v.transpose());
 
   // Possible rotation configurations.
   const Matrix3d ra = u*d*v.transpose();
@@ -105,9 +96,6 @@ void EssentialMatrix::Decompose(double rotation[4][3][3],
   const double scale = essential_mat_(2,2)/(u(2, 0)*v(2, 0) + u(2, 1)*v(2, 1));
   const Vector3d t = scale*u.col(2);
   const Vector3d t_neg = -t;
-  VLOG(0) << "Ra = \n" << ra;
-  VLOG(0) << "Rb = \n" << rb;
-  VLOG(0) << "t = \n" << t;
 
   // Copy the 4 possible decompositions into the output arrays.
   std::copy(ra.data(), ra.data() + ra.size(),
