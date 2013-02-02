@@ -160,9 +160,7 @@ MACRO (GTEST NAME)
   ADD_EXECUTABLE(${NAME} ${NAME}.cc)
   TARGET_LINK_LIBRARIES(${NAME} test_main gtest ${ARGN} ${GFLAGS_LIB} ${GLOG_LIB})
   ADD_TEST(NAME ${NAME}
-           COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${NAME}
-           --test_srcdir
-           ${CMAKE_SOURCE_DIR}/data)
+           COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${NAME})
 ENDMACRO (GTEST)
 
 # Macro for CC Libraries.

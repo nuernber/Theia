@@ -50,9 +50,30 @@ class EssentialMatrix {
   }
 
   // Extract R and T from the essential matrix. Perform this using an
-  // optimization to extract the SVD for this 3x3 matrix.
+  // optimization to extract the SVD for this 3x3 matrix. All decomposition
+  // methods return R, T such that E = Tx * R where Tx is the cross product
+  // matrix of T
   void Decompose(double rotation[4][3][3],
-                 double translation[4][3]);  
+                 double translation[4][3]) const;  
+
+  // Extract R and T from the essential matrix. Find the optimal decomposition
+  // by triangulating a point and ensuring the cheirality constraint (that the
+  // point is in front of the camera). This assumes the point correspondance
+  // passed in was a point used for the 5 point algorithm (i.e. an ideal
+  // point). Implemented according to Appendix C of the Nister paper.
+  void DecomposeWithIdealCorrespondence(const double image_point1[3],
+                                        const double image_point2[3],
+                                        double rotation[3][3],
+                                        double translation[3]) const;  
+
+  // Extract R and T from the essential matrix.  Same as above, but does not
+  // require an ideal correspondance (i.e. the correspondance does NOT have to
+  // be one used in the five point to generate the essential matrix).
+  void DecomposeWithCorrespondence(const double image_point1[3],
+                                   const double image_point2[3],
+                                   double rotation[3][3],
+                                   double translation[3]) const;  
+
   friend std::ostream& operator <<(std::ostream& os,
                                    const EssentialMatrix& mat);
   

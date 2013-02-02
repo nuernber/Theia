@@ -48,8 +48,8 @@ namespace pose {
 //     image point)
 // Return: essential_matrix: Output all solutions of the 5 point algorithm.
 std::vector<vision::models::EssentialMatrix> FivePointRelativePose(
-    const double image1_points[3][2],
-    const double image2_points[3][2]);
+    const double image1_points[3][3],
+    const double image2_points[3][3]);
 }  // pose
 }  // vision
 

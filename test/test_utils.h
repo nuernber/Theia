@@ -33,7 +33,8 @@
 #define TEST_TEST_UTILS_H_
 
 #include "gtest/gtest.h"
-#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <glog/logging.h>
 
 namespace test {
 // Get a random double between lower and upper.
@@ -53,5 +54,18 @@ void ExpectMatricesNear(const Eigen::MatrixBase<Derived>& a,
     for (int j = 0; j < b.rows(); j++)
       ASSERT_NEAR(a(i, j), b(i, j), tolerance);  
 }
+
+void ExpectArraysNear(int n,
+                      const double* a,
+                      const double* b,
+                      double tolerance) {
+  ASSERT_GT(n, 0);
+  CHECK(a);
+  CHECK(b);
+  for (int i = 0; i < n; i++) {
+    EXPECT_NEAR(a[i], b[i], tolerance) << "i = " << i;
+  }
+}
+
 }  // namespace test
 #endif  // TEST_TEST_UTILS_H_

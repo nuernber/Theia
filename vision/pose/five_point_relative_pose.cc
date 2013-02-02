@@ -207,8 +207,8 @@ Matrix<double, 9, 4> EfficientNullspaceExtraction(
 // Implementation of Nister from "An Efficient Solution to the Five-Point
 // Relative Pose Problem"
 std::vector<EssentialMatrix> FivePointRelativePose(
-    const double image1_points[5][2],
-    const double image2_points[5][2]) {
+    const double image1_points[5][3],
+    const double image2_points[5][3]) {
   using Eigen::Vector3d;
   using Eigen::RowVector3d;
 
@@ -218,8 +218,8 @@ std::vector<EssentialMatrix> FivePointRelativePose(
   Matrix<double, 5, 9> epipolar_constraint;
   for (int i = 0; i < 5; i++) {
     // Make image points homogeneous.
-    Vector3d tmp_img1(image1_points[i][0], image1_points[i][1], 1.0);
-    Vector3d tmp_img2(image2_points[i][0], image2_points[i][1], 1.0);
+    Eigen::Map<const Vector3d> tmp_img1(image1_points[i]);
+    Eigen::Map<const Vector3d> tmp_img2(image2_points[i]);
     // Fill matrix with the epipolar constraint from q'_t*E*q = 0. Where q is
     // from the first image, and q' is from the second. Eq. 8 in the Nister
     // paper.

@@ -33,8 +33,6 @@
 
 #include <Eigen/Core>
 #include <vector>
-#include <iostream>
-#include <ctime>
 
 #include "vision/models/essential_matrix.h"
 #include "gtest/gtest.h"
@@ -45,7 +43,9 @@ namespace {
 const double kEps = 1e-12;
 }
 
+using Eigen::Map;
 using Eigen::Matrix3d;
+using Eigen::Vector3d;
 using vision::models::EssentialMatrix;
 
 TEST(FivePointRelativePose, Sanity) {
@@ -56,29 +56,24 @@ TEST(FivePointRelativePose, Sanity) {
       23.52168039400320, -21.32072430358359, 1.00000000000000;
 
   // corresponding points
-  double m1[5][2] = {{-0.06450996083506, 0.13271495297568},
-                     {0.12991134106070, 0.25636930852309},
-                     {-0.01417169260989, -0.00201819071777},
-                     {0.02077599827229, 0.14974189941659},
-                     {0.15970376410206, 0.17782283760921}};
-  double m2[5][2] = {{0.01991821260977, 0.13855920297370},
-                     {0.29792009989498, 0.21684093037950},
-                     {0.14221131487001, 0.03902000959363},
-                     {0.09012597508721, 0.11407993279726},
-                     {0.15373963107017, 0.02622710108650}};
+  double m1[5][3] = {{-0.06450996083506, 0.13271495297568, 1.0},
+                     {0.12991134106070, 0.25636930852309, 1.0},
+                     {-0.01417169260989, -0.00201819071777, 1.0},
+                     {0.02077599827229, 0.14974189941659, 1.0},
+                     {0.15970376410206, 0.17782283760921, 1.0}};
+  double m2[5][3] = {{0.01991821260977, 0.13855920297370, 1.0},
+                     {0.29792009989498, 0.21684093037950, 1.0},
+                     {0.14221131487001, 0.03902000959363, 1.0},
+                     {0.09012597508721, 0.11407993279726, 1.0},
+                     {0.15373963107017, 0.02622710108650, 1.0}};
 
-  // clock_t t = clock();
   std::vector<EssentialMatrix> essential_matrices =
       FivePointRelativePose(m1, m2);
-  // t = clock() - t;
-  // printf("My version took me %d clicks (%f seconds).\n",
-  // t,
-  // ((float)t)/CLOCKS_PER_SEC);
 
   for (int i = 0; i < essential_matrices.size(); i++) {
     const Matrix3d& essential_matrix = essential_matrices[i].GetMatrix();
-    Eigen::Vector3d u(m1[i][0], m1[i][1], 1.0);
-    Eigen::Vector3d u_prime(m2[i][0], m2[i][1], 1.0);
+    Map<const Vector3d> u(m1[i]);
+    Map<const Vector3d> u_prime(m2[i]);
     double epipolar_constraint = (u_prime.transpose())*essential_matrix*u;
     ASSERT_LT(fabs(epipolar_constraint), kEps);
   }

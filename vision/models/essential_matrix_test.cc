@@ -31,6 +31,9 @@
 
 #include "vision/models/essential_matrix.h"
 
+#include <chrono>
+#include <math.h>
+#include <random>
 #include "gtest/gtest.h"
 #include <glog/logging.h>
 #include <Eigen/Dense>
@@ -38,12 +41,17 @@
 
 namespace vision {
 namespace models {
+using Eigen::AngleAxisd;
 using Eigen::Matrix3d;
+using Eigen::Map;
 using Eigen::Vector3d;
 using test::RandDouble;
 
 namespace {
-Matrix3d CrossProductMatrix(const Vector3d& vec) {
+// Tolerance for accepting numbers are equal (for use in decomposition).
+double kTolerance = 1e-12;
+
+inline Matrix3d CrossProductMatrix(const Vector3d& vec) {
   Matrix3d cross_prod;
   cross_prod << 0, -vec(2), vec(1),
       vec(2), 0, -vec(0),
@@ -52,12 +60,8 @@ Matrix3d CrossProductMatrix(const Vector3d& vec) {
 }
 }  // namespace
 
-TEST(EssentialMat, Decompose) {
-  using Eigen::AngleAxisd;
-
-  // Tolerance for accepting the decomposition.
-  double kTolerance = 1e-12;
-  
+TEST(EssentialMatrix, Decompose) {
+  // Construct a rotation for a small rotation.
   Matrix3d rotation;
   rotation = AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitX())
       *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitY())
@@ -65,7 +69,9 @@ TEST(EssentialMat, Decompose) {
   Vector3d trans = Vector3d::Random();
   Matrix3d translation = CrossProductMatrix(trans);
 
+  // Before Eq. 9.11 on page 257 of Hartley and Zisserman.
   Matrix3d e = translation*rotation;
+  e /= -e(2, 2);
   EssentialMatrix my_essential_mat(e);
 
   double my_rotation[4][3][3];
@@ -73,17 +79,113 @@ TEST(EssentialMat, Decompose) {
   my_essential_mat.Decompose(my_rotation, my_translation);
 
   for (int i = 0; i < 4; i++) {
-    Eigen::Map<const Matrix3d> rot(
+    Map<const Matrix3d> rot(
         reinterpret_cast<double*>(my_rotation[i][0]));
-    Eigen::Map<const Vector3d> tran(
+    Map<const Vector3d> tran(
         reinterpret_cast<double*>(my_translation[i]));
     Matrix3d estimated_e = CrossProductMatrix(tran)*rot;
     // Fix estimated_e to be the same sign as e.
-    if (estimated_e(0, 0)*e(0, 0) < 0.0)
-      estimated_e *= -1.0;
-    
+    estimated_e /= -estimated_e(2, 2);
     test::ExpectMatricesNear(estimated_e, e, kTolerance);
   }
+}
+
+TEST(EssentialMatrix, DecomposeWithIdealCorrespondence) {
+  Matrix3d true_rotation;
+  true_rotation = AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitX())
+      *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitY())
+      *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitZ());
+  Vector3d true_trans(Vector3d::Random());
+  Matrix3d trans = CrossProductMatrix(true_trans);
+
+  // Generate random 3d points, making sure all of them are in front of the
+  // camera. Then project them into the 2nd camera using the rotate/translate
+  // transformation.
+  double image1_pts[3];
+  double image2_pts[3];
+  double world_points[4] = {RandDouble(-3, 3),
+                            RandDouble(-3, 3),
+                            RandDouble(0.1, 3),
+                            1.0};
+  // Generate corresponding image point.
+  Eigen::Matrix<double, 3, 4> transform;
+  transform << true_rotation, true_trans;
+
+  Map<const Eigen::Vector4d> world_pt(world_points);
+  Map<Vector3d> img1_pt(image1_pts);
+  img1_pt = world_pt.head(3);
+
+  Map<Vector3d> img2_pt(image2_pts);
+  img2_pt = transform*world_pt;
+  
+  // Generate Essential Matrix from the rotation/translation.
+  EssentialMatrix my_essential_mat(trans*true_rotation);
+  
+  double rotation[3][3];
+  double translation[3];
+  
+  my_essential_mat.DecomposeWithIdealCorrespondence(image2_pts,
+                                                    image1_pts,
+                                                    rotation,
+                                                    translation);
+  
+  test::ExpectArraysNear(9,
+                         reinterpret_cast<double*>(rotation),
+                         true_rotation.data(),
+                         kTolerance);
+  test::ExpectArraysNear(3, translation, true_trans.data(), kTolerance);
+}
+
+TEST(EssentialMatrix, DecomposeWithCorrespondence) {
+  Matrix3d true_rotation;
+  true_rotation = AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitX())
+      *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitY())
+      *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitZ());
+  Vector3d true_trans(Vector3d::Random());
+  Matrix3d trans = CrossProductMatrix(true_trans);
+
+  Eigen::Matrix<double, 3, 4> transform;
+  transform << true_rotation, true_trans;
+
+  // Generate random 3d points, making sure all of them are in front of the
+  // camera. Then project them into the 2nd camera using the rotate/translate
+  // transformation.
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(seed);
+  std::normal_distribution<double> gauss_noise(0.0, 1.0);
+
+  double image1_pts[3];
+  double image2_pts[3];
+  double world_points[4] = {RandDouble(-3, 3),
+                            RandDouble(-3, 3),
+                            RandDouble(0.1, 3),
+                            1.0};
+  // Generate corresponding image point.
+  Map<const Eigen::Vector4d> world_pt(world_points);
+  Map<Vector3d> img1_pt(image1_pts);
+  img1_pt = world_pt.head(3);
+  
+  Map<Vector3d> img2_pt(image2_pts);
+  img2_pt = transform*world_pt;
+  img2_pt /= img2_pt(2);
+  img2_pt(0) += gauss_noise(generator);
+  img2_pt(1) += gauss_noise(generator);
+  VLOG(0) << "img1 pt = \n" << img1_pt;
+  VLOG(0) << "img2 pt = \n" << img2_pt;
+  // Generate Essential Matrix from the rotation/translation.
+  EssentialMatrix my_essential_mat(trans*true_rotation);
+
+  double rotation[3][3];
+  double translation[3];
+  my_essential_mat.DecomposeWithCorrespondence(image1_pts,
+                                               image2_pts,
+                                               rotation,
+                                               translation);
+  test::ExpectArraysNear(9,
+                         reinterpret_cast<double*>(rotation),
+                         true_rotation.data(),
+                         kTolerance);
+  test::ExpectArraysNear(3, translation, true_trans.data(), kTolerance);
 }
 
 }  // namespace models
