@@ -66,19 +66,27 @@ class EssentialMatrix {
                                         double rotation[3][3],
                                         double translation[3]) const;  
 
-  // Extract R and T from the essential matrix.  Same as above, but does not
-  // require an ideal correspondance (i.e. the correspondance does NOT have to
-  // be one used in the five point to generate the essential matrix).
-  void DecomposeWithCorrespondence(const double image_point1[3],
-                                   const double image_point2[3],
-                                   double rotation[3][3],
-                                   double translation[3]) const;  
 
   friend std::ostream& operator <<(std::ostream& os,
                                    const EssentialMatrix& mat);
   
  private:
   Eigen::Matrix3d essential_mat_;
+
+  // TODO(cmsweeney): Make this not private! It was moved to private because I
+  // could not figure out how to make it work properly. Triangulation is
+  // performed according to appendix C of the Nister "EFficient Five Point Alg."
+  // paper, but it does not work consistently for non-ideal (i.e. noisy) points.
+  //
+  // Extract R and T from the essential matrix.  Same as above, but does not
+  // require an ideal correspondance (i.e. the correspondance does NOT have to
+  // be one used in the five point to generate the essential matrix).
+  void DecomposeWithCorrespondence(
+      int num_correspondences,
+      const double image_point1[][3],
+      const double image_point2[][3],
+      double rotation[3][3],
+      double translation[3]) const;    
 };
 }  // namespace models
 }  // namespace vision

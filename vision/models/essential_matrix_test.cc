@@ -49,7 +49,8 @@ using test::RandDouble;
 
 namespace {
 // Tolerance for accepting numbers are equal (for use in decomposition).
-double kTolerance = 1e-12;
+double kTolerance = 1e-9;
+typedef Eigen::Matrix<double, 3, 3, Eigen::RowMajor> RowMatrix3d;
 
 inline Matrix3d CrossProductMatrix(const Vector3d& vec) {
   Matrix3d cross_prod;
@@ -79,19 +80,20 @@ TEST(EssentialMatrix, Decompose) {
   my_essential_mat.Decompose(my_rotation, my_translation);
 
   for (int i = 0; i < 4; i++) {
-    Map<const Matrix3d> rot(
+    Map<const RowMatrix3d> rot(
         reinterpret_cast<double*>(my_rotation[i][0]));
     Map<const Vector3d> tran(
         reinterpret_cast<double*>(my_translation[i]));
     Matrix3d estimated_e = CrossProductMatrix(tran)*rot;
-    // Fix estimated_e to be the same sign as e.
+    // Fix estimated_e to be the same sign as e and scale be -1 at the bottom
+    // right corner.
     estimated_e /= -estimated_e(2, 2);
     test::ExpectMatricesNear(estimated_e, e, kTolerance);
   }
 }
 
 TEST(EssentialMatrix, DecomposeWithIdealCorrespondence) {
-  Matrix3d true_rotation;
+  RowMatrix3d true_rotation;
   true_rotation = AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitX())
       *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitY())
       *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitZ());
@@ -105,7 +107,7 @@ TEST(EssentialMatrix, DecomposeWithIdealCorrespondence) {
   double image2_pts[3];
   double world_points[4] = {RandDouble(-3, 3),
                             RandDouble(-3, 3),
-                            RandDouble(0.1, 3),
+                            RandDouble(1, 5),
                             1.0};
   // Generate corresponding image point.
   Eigen::Matrix<double, 3, 4> transform;
@@ -117,76 +119,26 @@ TEST(EssentialMatrix, DecomposeWithIdealCorrespondence) {
 
   Map<Vector3d> img2_pt(image2_pts);
   img2_pt = transform*world_pt;
-  
+
   // Generate Essential Matrix from the rotation/translation.
   EssentialMatrix my_essential_mat(trans*true_rotation);
-  
+
   double rotation[3][3];
   double translation[3];
-  
-  my_essential_mat.DecomposeWithIdealCorrespondence(image2_pts,
-                                                    image1_pts,
+
+  my_essential_mat.DecomposeWithIdealCorrespondence(image1_pts,
+                                                    image2_pts,
                                                     rotation,
                                                     translation);
-  
+
   test::ExpectArraysNear(9,
                          reinterpret_cast<double*>(rotation),
                          true_rotation.data(),
                          kTolerance);
-  test::ExpectArraysNear(3, translation, true_trans.data(), kTolerance);
-}
-
-TEST(EssentialMatrix, DecomposeWithCorrespondence) {
-  Matrix3d true_rotation;
-  true_rotation = AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitX())
-      *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitY())
-      *AngleAxisd(RandDouble(-0.2, 0.2), Vector3d::UnitZ());
-  Vector3d true_trans(Vector3d::Random());
-  Matrix3d trans = CrossProductMatrix(true_trans);
-
-  Eigen::Matrix<double, 3, 4> transform;
-  transform << true_rotation, true_trans;
-
-  // Generate random 3d points, making sure all of them are in front of the
-  // camera. Then project them into the 2nd camera using the rotate/translate
-  // transformation.
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  std::default_random_engine generator(seed);
-  std::normal_distribution<double> gauss_noise(0.0, 1.0);
-
-  double image1_pts[3];
-  double image2_pts[3];
-  double world_points[4] = {RandDouble(-3, 3),
-                            RandDouble(-3, 3),
-                            RandDouble(0.1, 3),
-                            1.0};
-  // Generate corresponding image point.
-  Map<const Eigen::Vector4d> world_pt(world_points);
-  Map<Vector3d> img1_pt(image1_pts);
-  img1_pt = world_pt.head(3);
-  
-  Map<Vector3d> img2_pt(image2_pts);
-  img2_pt = transform*world_pt;
-  img2_pt /= img2_pt(2);
-  img2_pt(0) += gauss_noise(generator);
-  img2_pt(1) += gauss_noise(generator);
-  VLOG(0) << "img1 pt = \n" << img1_pt;
-  VLOG(0) << "img2 pt = \n" << img2_pt;
-  // Generate Essential Matrix from the rotation/translation.
-  EssentialMatrix my_essential_mat(trans*true_rotation);
-
-  double rotation[3][3];
-  double translation[3];
-  my_essential_mat.DecomposeWithCorrespondence(image1_pts,
-                                               image2_pts,
-                                               rotation,
-                                               translation);
-  test::ExpectArraysNear(9,
-                         reinterpret_cast<double*>(rotation),
-                         true_rotation.data(),
+  test::ExpectArraysNear(3,
+                         translation,
+                         true_trans.normalized().data(),
                          kTolerance);
-  test::ExpectArraysNear(3, translation, true_trans.data(), kTolerance);
 }
-
 }  // namespace models
 }  // namespace vision

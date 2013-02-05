@@ -33,14 +33,18 @@
 #define TEST_TEST_UTILS_H_
 
 #include "gtest/gtest.h"
+#include <chrono>
 #include <Eigen/Dense>
 #include <glog/logging.h>
+#include <random>
 
 namespace test {
 // Get a random double between lower and upper.
 inline double RandDouble(double lower, double upper) {
-  double d = static_cast<double>(rand())/RAND_MAX;
-  return lower + d*(upper - lower);
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(seed);
+  std::uniform_real_distribution<double> distribution(lower, upper);
+  return distribution(generator);
 }
 
 // Assert that values of the two matrices are nearly the same.

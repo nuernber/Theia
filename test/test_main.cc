@@ -33,8 +33,6 @@
 #include <glog/logging.h>
 #include "gtest/gtest.h"
 
-DEFINE_bool(big_menu, true, "Include 'advanced' options in the menu listing");
-
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);

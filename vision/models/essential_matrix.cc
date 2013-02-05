@@ -43,6 +43,66 @@ using Eigen::Matrix;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 
+namespace {
+typedef Matrix<double, 3, 3, Eigen::RowMajor> RowMatrix3d;
+
+// Performs the Cheirality Test to determine which of the candidate
+// transformations results in the triangulated point in front of the two
+// cameras. Appendix C of Nister paper.
+int CheiralityTest(const Vector3d& q,
+                   const Vector3d& q_prime,
+                   const Vector3d& d,
+                   const Matrix3d& essential_mat,
+                   const double candidate_rotation[4][3][3],
+                   const double candidate_translation[4][3]) {
+  // Given the correspondance, find the one configuration where the
+  // triangulation is in front of the camera.
+  Vector3d eq = essential_mat*q;
+  Vector3d c = q_prime.cross(Vector3d(eq(0), eq(1), 0.0));
+
+  Map<const RowMatrix3d> rot(
+      reinterpret_cast<const double*>(candidate_rotation[0]));
+  Map<const Vector3d> trans(
+      reinterpret_cast<const double*>(candidate_translation[0]));
+
+  // Triangulate the 3d point.
+  Matrix<double, 3, 4> p;
+  p << rot, trans;
+  Vector4d c_plane = p.transpose()*c;
+  Vector4d triangulated_pt;
+  triangulated_pt << d*c_plane(3),
+      -d.dot(c_plane.head(3));
+  // C1 and C2 test if the triangulated pt are in front of camera 1 and 2
+  // respectively.
+  double c1 = triangulated_pt(2)*triangulated_pt(3);
+  double c2 = ((p*triangulated_pt)[2])*triangulated_pt(3);
+
+  if (c1 < 0 && c2 < 0) {
+    return 1;
+  } else if (c1*c2 < 0) {
+    Map<const RowMatrix3d> rot_temp(
+        reinterpret_cast<const double*>(candidate_rotation[2]));
+    Map<const Vector3d> trans_temp(
+        reinterpret_cast<const double*>(candidate_translation[2]));
+
+    // Triangulate the 3d point for the reflection configuration.
+    p << rot_temp, trans_temp;
+    c_plane = p.transpose()*c;
+    triangulated_pt << d*c_plane(3),
+        -d.dot(c_plane.head(3));
+    c1 = triangulated_pt(2)*triangulated_pt(3);
+    c2 = ((p*triangulated_pt)[2])*triangulated_pt(3);
+    if (c1 > 0 && c2 > 0)
+      return 2;
+    else
+      return 3;
+  }
+
+  return 0;
+}
+
+}  // namespace
+
 EssentialMatrix::EssentialMatrix(const double data[3][3]) {
   essential_mat_ << data[0][0], data[0][1], data[0][2],
       data[1][0], data[1][1], data[1][2],
@@ -55,10 +115,6 @@ void EssentialMatrix::Decompose(double rotation[4][3][3],
   d << 0, 1, 0,
       -1, 0, 0,
       0, 0, 1;
-  Matrix3d diag;
-  diag << 1, 0, 0,
-      0, 1, 0,
-      0, 0, 0;
 
   const Vector3d& ea = essential_mat_.row(0);
   const Vector3d& eb = essential_mat_.row(1);
@@ -91,16 +147,15 @@ void EssentialMatrix::Decompose(double rotation[4][3][3],
   u.col(2) = u.col(0).cross(u.col(1));
 
   // Possible rotation configurations.
-  const Matrix3d ra = u*d*v.transpose();
-  const Matrix3d rb = u*d.transpose()*v.transpose();
-
+  const RowMatrix3d ra = u*d*v.transpose();
+  const RowMatrix3d rb = u*d.transpose()*v.transpose();
+  
   // Scale t to be proper magnitude. Scale factor is derived from the fact that
   // U*diag*V^t = E. We simply choose to scale it such that the last terms will
   // be equal.
-  const double scale = essential_mat_(2, 2)/(u(2, 0)*v(2, 0) + u(2, 1)*v(2, 1));
-  const Vector3d t = scale*u.col(2);
+  const Vector3d t = u.col(2).normalized();
   const Vector3d t_neg = -t;
-
+  
   // Copy the 4 possible decompositions into the output arrays.
   std::copy(ra.data(), ra.data() + ra.size(),
             reinterpret_cast<double*>(rotation[0]));
@@ -129,120 +184,82 @@ void EssentialMatrix::DecomposeWithIdealCorrespondence(
   double candidate_translation[4][3];
   Decompose(candidate_rotation, candidate_translation);
 
-  // Given the correspondance, find the one configuration where the
-  // triangulation is in front of the camera.
-  Vector3d eq = essential_mat_*q;
-  Vector3d c = q_prime.cross(Vector3d(eq(0), eq(1), 0.0));
-  Map<const Matrix3d> rot(
-      reinterpret_cast<double*>(candidate_rotation[0][0]));
-  Map<const Vector3d> trans(
-      reinterpret_cast<double*>(candidate_translation[0]));
-
-  // Triangulate the 3d point.
-  Matrix<double, 3, 4> p;
-  p << rot, trans;
-
-  Vector4d c_plane = p.transpose()*c;
-  Vector4d triangulated_pt;
-  triangulated_pt << q*c_plane(3),
-      (-q(0)*c_plane(0) - q(1)*c_plane(1) - q(2)*c_plane(2));
-
-  double c1 = triangulated_pt(2)*triangulated_pt(3);
-  double c2 = ((p*triangulated_pt)[2])*triangulated_pt(3);
-  // If the point is in front of the camera, quit!
-  int best_index = 0;
-  if (c1 < 0 && c2 < 0) {
-    best_index = 1;
-  } else if (c1*c2 < 0) {
-    Map<const Matrix3d> rot_temp(
-        reinterpret_cast<double*>(candidate_rotation[2][0]));
-    Map<const Vector3d> trans_temp(
-        reinterpret_cast<double*>(candidate_translation[2]));
-
-    // Triangulate the 3d point.
-    Matrix<double, 3, 4> p_temp;
-    p << rot, trans;
-    if (triangulated_pt(2)*((p_temp*triangulated_pt)[3]) < 0) {
-      best_index = 2;
-    } else {
-      best_index = 3;
-    }      
-  }
-
-  Map<const Matrix3d> rot_best(
-      reinterpret_cast<double*>(candidate_rotation[best_index][0]));
+  int best_index = CheiralityTest(q,
+                                  q_prime,
+                                  q,
+                                  essential_mat_,
+                                  candidate_rotation,
+                                  candidate_translation);
+  Map<const RowMatrix3d> rot_best(
+      reinterpret_cast<const double*>(candidate_rotation[best_index]));
   Map<const Vector3d> trans_best(
-      reinterpret_cast<double*>(candidate_translation[best_index]));
+      reinterpret_cast<const double*>(candidate_translation[best_index]));
 
   std::copy(rot_best.data(), rot_best.data() + rot_best.size(),
             reinterpret_cast<double*>(rotation));
   std::copy(trans_best.data(), trans_best.data() + trans_best.size(),
             reinterpret_cast<double*>(translation));
+
   return;
 }
 
 void EssentialMatrix::DecomposeWithCorrespondence(
-    const double image_point1[3],
-    const double image_point2[3],
+    int num_correspondences,
+    const double image_point1[][3],
+    const double image_point2[][3],
     double rotation[3][3],
     double translation[3]) const {
   // Map the image points to vectors.
-  Map<const Vector3d> q(image_point1);
-  Map<const Vector3d> q_prime(image_point2);
 
   double candidate_rotation[4][3][3];
   double candidate_translation[4][3];
   Decompose(candidate_rotation, candidate_translation);
 
-  // Given the correspondance, find the one configuration where the
-  // triangulation is in front of the camera.
-  Vector3d a = essential_mat_.transpose()*q_prime;
-  Vector3d b = q.cross(Vector3d(a(0), a(1), 0.0));
-  Vector3d eq = essential_mat_*q;
-  Vector3d c = q_prime.cross(Vector3d(eq(0), eq(1), 0.0));
-  Vector3d d = a.cross(b);
-
-  Map<const Matrix3d> rot(
-      reinterpret_cast<double*>(candidate_rotation[0][0]));
-  Map<const Vector3d> trans(
-      reinterpret_cast<double*>(candidate_translation[0]));
-
-  // Triangulate the 3d point.
-  Matrix<double, 3, 4> p;
-  p << rot, trans;
-
-  Vector4d c_plane = p.transpose()*c;
-  Vector4d triangulated_pt;
-  triangulated_pt << d*c_plane(3),
-      (-d(0)*c_plane(0) - d(1)*c_plane(1) - d(2)*c_plane(2));
-  VLOG(0) << "triangulated_pt = \n" << triangulated_pt;
-  double c1 = triangulated_pt(2)*triangulated_pt(3);
-  double c2 = ((p*triangulated_pt)[2])*triangulated_pt(3);
-  // If the point is in front of the camera, quit!
-  int best_index = 0;
-  if (c1 < 0 && c2 < 0) {
-    best_index = 1;
-  } else if (c1*c2 < 0) {
-    Map<const Matrix3d> rot_temp(
-        reinterpret_cast<double*>(candidate_rotation[2][0]));
-    Map<const Vector3d> trans_temp(
-        reinterpret_cast<double*>(candidate_translation[2]));
-
-    // Triangulate the 3d point.
-    Matrix<double, 3, 4> p_temp;
-    p << rot, trans;
-    if (triangulated_pt(2)*((p_temp*triangulated_pt)[3]) < 0) {
-      best_index = 2;
-    } else {
-      best_index = 3;
-    }      
+  for (int i = 0; i < 4; i++) {
+    VLOG(0) << "rotation\n";
+    for (int j = 0; j < 3; j++)
+      VLOG(0) << candidate_rotation[i][j][0] << " "
+              << candidate_rotation[i][j][1] << " "
+              << candidate_rotation[i][j][2];
+    VLOG(0) << "translation\n" << candidate_translation[i][0] << " "
+            << candidate_translation[i][1] << " "
+            << candidate_translation[i][2];
   }
 
-  Map<const Matrix3d> rot_best(
-      reinterpret_cast<double*>(candidate_rotation[best_index][0]));
-  Map<const Vector3d> trans_best(
-      reinterpret_cast<double*>(candidate_translation[best_index]));
+  // Given the correspondances, test each point to see which camera
+  // configuration it will be in front of both cameras for.
+  int support[4] = {0, 0, 0, 0};
+  for (int i = 0; i < num_correspondences; i++) {
+    Map<const Vector3d> q(image_point1[i]);
+    Map<const Vector3d> q_prime(image_point2[i]);
 
+    Vector3d a = essential_mat_.transpose()*q_prime;
+    Vector3d b = q.cross(Vector3d(a(0), a(1), 0.0));
+    Vector3d d = a.cross(b);
+    int best_in = CheiralityTest(q,
+                                 q_prime,
+                                 d,
+                                 essential_mat_,
+                                 candidate_rotation,
+                                 candidate_translation);
+    support[best_in]++;
+  }
+
+  VLOG(0) << "support = " << support[0] << ", "
+          << support[1] << ", "
+          << support[2] << ", "
+          << support[3];
+
+  int best_index = 0;
+  for (int i = 1; i < 4; i++) {
+    best_index = support[i] > support[best_index] ? i : best_index;
+  }
+
+  Map<const RowMatrix3d> rot_best(
+      reinterpret_cast<const double*>(candidate_rotation[best_index]));
+  Map<const Vector3d> trans_best(
+      reinterpret_cast<const double*>(candidate_translation[best_index]));
+  
   std::copy(rot_best.data(), rot_best.data() + rot_best.size(),
             reinterpret_cast<double*>(rotation));
   std::copy(trans_best.data(), trans_best.data() + trans_best.size(),
