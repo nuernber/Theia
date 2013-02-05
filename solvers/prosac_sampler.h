@@ -32,7 +32,10 @@
 #ifndef SOLVERS_PROSAC_SAMPLER_H_
 #define SOLVERS_PROSAC_SAMPLER_H_
 
+#include <algorithm>
+#include <chrono>
 #include <glog/logging.h>
+#include <random>
 #include <stdlib.h>
 #include <vector>
 
@@ -50,7 +53,10 @@ class ProsacSampler : public Sampler<Datum> {
                          int ransac_convergence_iterations = 200000)
       : num_samples_(num_samples),
         ransac_convergence_iterations_(ransac_convergence_iterations),
-        kth_sample_number_(1) {}
+        kth_sample_number_(1),
+        generator(std::chrono::system_clock::now().time_since_epoch().count())
+  {}
+  
   ~ProsacSampler() {}
 
   // Set the sample such that you are sampling the kth prosac sample (Eq. 6).
@@ -82,18 +88,42 @@ class ProsacSampler : public Sampler<Datum> {
       }
     }
 
+
+    subset->resize(num_samples_);
     if (t_n_prime < kth_sample_number_) {
       // Randomly sample m data points from the top n data points.
+      std::uniform_int_distribution<int> distribution(0, n - 1);
+      std::vector<int> random_numbers;
       for (int i = 0; i < num_samples_; i++) {
-        subset->push_back(data[rand() % (n)]);
+        // Generate a random number that has not already been used.
+        int rand_number;
+        while (std::find(random_numbers.begin(),
+                         random_numbers.end(),
+                         (rand_number = distribution(generator)))
+               != random_numbers.end());
+        random_numbers.push_back(rand_number);
+
+        // Push the *unique* random index back.
+        subset->at(i) = data[rand_number];
       }
     } else {
+      std::uniform_int_distribution<int> distribution(0, n - 2);
+      std::vector<int> random_numbers;
       // Randomly sample m-1 data points from the top n-1 data points.
       for (int i = 0; i < num_samples_ - 1; i++) {
-        subset->push_back(data[rand() % (n-1)]);
+        // Generate a random number that has not already been used.
+        int rand_number;
+        while (std::find(random_numbers.begin(),
+                         random_numbers.end(),
+                         (rand_number = distribution(generator)))
+               != random_numbers.end());
+        random_numbers.push_back(rand_number);
+
+        // Push the *unique* random index back.
+        subset->at(i) = data[rand_number];
       }
       // Make the last point from the nth position.
-      subset->push_back(data[n]);
+      subset->at(num_samples_ - 1) = data[n];
     }
     CHECK_EQ(subset->size(), num_samples_) << "Prosac subset is incorrect "
                                            << "size!";
@@ -110,6 +140,9 @@ class ProsacSampler : public Sampler<Datum> {
 
   // Number of iterations of PROSAC before it just acts like ransac.
   int ransac_convergence_iterations_;
+
+  // Random number generator seed
+  std::default_random_engine generator;
 };
 }  // namespace solvers
 #endif  // SOLVERS_PROSAC_SAMPLER_H_

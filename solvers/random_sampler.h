@@ -32,6 +32,9 @@
 #ifndef SOLVERS_RANDOM_SAMPLER_H_
 #define SOLVERS_RANDOM_SAMPLER_H_
 
+#include <algorithm>
+#include <chrono>
+#include <random>
 #include <stdlib.h>
 #include <vector>
 
@@ -44,18 +47,37 @@ class RandomSampler : public Sampler<Datum> {
  public:
   // num_samples: the number of samples needed. Typically this corresponds to
   //   the minumum number of samples needed to estimate a model.
-  explicit RandomSampler(int num_samples) : num_samples_(num_samples) {}
+  explicit RandomSampler(int num_samples)
+      : num_samples_(num_samples),
+        generator(std::chrono::system_clock::now().time_since_epoch().count())
+  {}
+
   ~RandomSampler() {}
   // Samples the input variable data and fills the vector subset with the
   // random samples.
   bool Sample(const std::vector<Datum>& data, std::vector<Datum>* subset) {
-    for (int i = 0; i < num_samples_; i++)
-      subset->push_back(data[rand()%data.size()]);
+    std::uniform_int_distribution<int> distribution(0, data.size() - 1);
+    subset->resize(num_samples_);
+    std::vector<int> random_numbers;
+    for (int i = 0; i < num_samples_; i++) {
+      int rand_number;
+      // Generate a random number that has not already been used.
+      while (std::find(random_numbers.begin(),
+                       random_numbers.end(),
+                       (rand_number = distribution(generator)))
+             != random_numbers.end());
+      random_numbers.push_back(rand_number);
+      subset->at(i) = data[rand_number];
+    }
     return true;
   }
 
  private:
+  // Number of samples to obtain.
   int num_samples_;
+
+  // Random number generator engine.
+  std::default_random_engine generator;
 };
 }  // namespace solvers
 #endif  // SOLVERS_RANDOM_SAMPLER_H_

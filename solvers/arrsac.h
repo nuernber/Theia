@@ -33,6 +33,8 @@
 #define SOLVERS_ARRSAC_H_
 
 #include <algorithm>
+#include <chrono>
+#include <random>
 #include <vector>
 
 #include "solvers/estimator.h"
@@ -277,6 +279,8 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
     }
   }
 
+  RandomSampler<Datum> random_sampler(min_sample_size_);
+  
   // Preemptive Evaluation
   for (int i = block_size_+1; i < data.size(); i++) {
     // Select n, the number of hypotheses to consider.
@@ -325,9 +329,7 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
         // Generate and evaluate M' - k new hypotheses on i data points.
         for (int j = 0; j < temp_max_candidate_hyps - k; j++) {
           std::vector<Datum> data_random_subset;
-          // Choose random data points for new hypothesis.
-          for (int l = 0; l < min_sample_size_; l++)
-            data_random_subset.push_back(data[rand() % data.size()]);
+          random_sampler.Sample(data, &data_random_subset);
 
           // Estimate new hypothesis model.
           Model estimated_model;

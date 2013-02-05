@@ -91,7 +91,7 @@ TEST(ProsacTest, LineFitting) {
     if (i < 300) {
       double noise_x = small_distribution(generator);
       double noise_y = small_distribution(generator);
-      input_points[i] = Point(i + noise_x, i + noise_y);      
+      input_points[i] = Point(i + noise_x, i + noise_y);
       confidence[i] = 0.95;
     } else {
       double noise_x = gauss_distribution(generator);
