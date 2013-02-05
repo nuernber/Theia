@@ -38,6 +38,8 @@
 
 #include <algorithm>
 #include <complex>
+#include <glog/logging.h>
+#include <stdlib.h>
 #include <utility>
 #include <vector>
 
@@ -49,16 +51,18 @@ class Polynomial {
  public:
   // coeffs is an array containing the coefficients of the polynomial, with
   // coeffs[i] corresponding to the i-th degree coefficient.
-  Polynomial() {
-    coeffs_ = Eigen::Matrix<double, degree + 1, 1>::Zero();
-  }
+  Polynomial() : coeffs_(Eigen::Matrix<double, degree + 1, 1>::Zero()) {}
+  
   explicit Polynomial(const std::vector<double> coeffs) {
     std::copy(coeffs.begin(), coeffs.end(), coeffs_.data());
   }
+  
   Polynomial(const Polynomial& poly) : coeffs_(poly.coeffs_) {}
+
   explicit Polynomial(const double coeffs[]) {
     std::copy(coeffs, coeffs + degree + 1, coeffs_.data());
   }
+
   ~Polynomial() {}
 
   // Return the degree of the polynomial.
@@ -88,6 +92,7 @@ class Polynomial {
     return sum;
   }
 
+  // Subtract two polynomials.
   template<int degree2>
   Polynomial Subtract(const Polynomial<degree2>& poly) const {
     CHECK_EQ(degree, degree2) << "Cannot subtract polynomials of different "
@@ -97,6 +102,7 @@ class Polynomial {
     return diff;
   }
 
+  // Multiply two polynomials.
   template<int degree2>
   Polynomial<degree + degree2> Multiply(const Polynomial<degree2>& poly) const {
     Polynomial<degree + degree2> product;
@@ -106,6 +112,7 @@ class Polynomial {
     return product;
   }
 
+  // Divide two polynomials, returning the quotient and remainder.
   // TODO(cmsweeney): Make this more efficient with Eigen.
   template<int degree2>
   std::pair<Polynomial<degree - degree2>, Polynomial<degree2 - 1> > Divide(
@@ -130,6 +137,7 @@ class Polynomial {
   Polynomial<degree> operator+(const Polynomial<degree2> &poly) {
     return this->Add(poly);
   }
+  
   template<int degree2>
   Polynomial<degree> operator-(const Polynomial<degree> &poly) {
     return this->Subtract(poly);
@@ -151,16 +159,23 @@ class Polynomial {
     return derivitive;
   }
 
+  // Returns all real roots to the polynomial.
   std::vector<double> RealRoots() const {
     std::vector<std::complex<double> > complex_roots = Roots();
     std::vector<double> roots;
+    double kEps = 1e-12;
     for (int i = 0; i < complex_roots.size(); i++) {
-      if (complex_roots[i].imag() == 0.0)
+      if (fabs(complex_roots[i].imag()) < kEps)
         roots.push_back(complex_roots[i].real());
     }
     return roots;
   }
 
+  // Finds all roots (real and complex) of the polynomial by building a
+  // companion matrix and finding the eigenvalues of that matrix. The companion
+  // matrix is first balanced (rearranged and scaled so that there are fewer
+  // changes in orders of magnitude amongst the matrix entries) to increase the
+  // stability of the eigenvalues, which are otherwise sensitive.
   std::vector<std::complex<double> > Roots() const {
     Eigen::Matrix<double, degree, degree> companion =
         Eigen::Matrix<double, degree, degree>::Zero();

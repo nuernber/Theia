@@ -32,6 +32,7 @@
 #include "math/polynomial.h"
 
 #include <algorithm>
+#include <glog/logging.h>
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
@@ -42,6 +43,8 @@
 namespace math {
 using std::vector;
 namespace {
+double kEps = 1e-9;
+
 template<int degree>
 void PrintPoly(const Polynomial<degree>& poly) {
   std::cout << "Poly = ";
@@ -53,13 +56,13 @@ void PrintPoly(const Polynomial<degree>& poly) {
 TEST(Polynomial, Addition) {
   const int poly1_size = 27;
   const int poly2_size = 27;
-  vector<double> coeffs1(poly1_size);
-  vector<double> coeffs2(poly2_size);
+  vector<double> coeffs1(poly1_size + 1);
+  vector<double> coeffs2(poly2_size + 1);
 
-  for (int i = 0; i < poly1_size; i++) {
+  for (int i = 0; i <= poly1_size; i++) {
     coeffs1[i] = test::RandDouble(-1000, 1000);
   }
-  for (int i = 0; i < poly2_size; i++) {
+  for (int i = 0; i <= poly2_size; i++) {
     coeffs2[i] = test::RandDouble(-1000, 1000);
   }
 
@@ -84,13 +87,13 @@ TEST(Polynomial, Addition) {
 TEST(Polynomial, Subtraction) {
   const int poly1_size = 18;
   const int poly2_size = 18;
-  vector<double> coeffs1(poly1_size);
-  vector<double> coeffs2(poly2_size);
+  vector<double> coeffs1(poly1_size + 1);
+  vector<double> coeffs2(poly2_size + 1);
 
-  for (int i = 0; i < poly1_size; i++) {
+  for (int i = 0; i <= poly1_size; i++) {
     coeffs1[i] = test::RandDouble(-1000, 1000);
   }
-  for (int i = 0; i < poly2_size; i++) {
+  for (int i = 0; i <= poly2_size; i++) {
     coeffs2[i] = test::RandDouble(-1000, 1000);
   }
 
@@ -113,10 +116,10 @@ TEST(Polynomial, Subtraction) {
 }
 
 TEST(Polynomial, Multiplication) {
-  const int poly1_size = 22;
-  const int poly2_size = 33;
-  vector<double> coeffs1(poly1_size);
-  vector<double> coeffs2(poly2_size);
+  const int poly1_size = 15;
+  const int poly2_size = 13;
+  vector<double> coeffs1(poly1_size + 1);
+  vector<double> coeffs2(poly2_size + 1);
 
   for (int i = 0; i <= poly1_size; i++) {
     coeffs1[i] = test::RandDouble(-10, 10);
@@ -127,14 +130,18 @@ TEST(Polynomial, Multiplication) {
 
   Polynomial<poly1_size> poly1(coeffs1);
   Polynomial<poly2_size> poly2(coeffs2);
-  Polynomial<poly1_size + poly2_size> product = poly1.Multiply(poly2);
+  Polynomial<poly1_size + poly2_size> product(poly1.Multiply(poly2));
 
   // ASSERT that the evaluation of the two polys multiplied together is correct.
   double rand_x = test::RandDouble(-10, 10);
-  ASSERT_DOUBLE_EQ(product.EvalAt(rand_x),
-                   poly1.EvalAt(rand_x)*poly2.EvalAt(rand_x));
+  // If the degree of the polynomial is high, the machine precision can make
+  // this a difficult value to assess. Instead, we ensure that hte difference
+  // between the two evaluations is less than some precision.
+  ASSERT_LT(
+      fabs(product.EvalAt(rand_x) -
+           poly1.EvalAt(rand_x)*poly2.EvalAt(rand_x))/product.EvalAt(rand_x),
+      kEps);
 }
-
 
 TEST(Polynomial, Division) {
   // Ensure poly2 is of lower degree than poly1
@@ -159,20 +166,25 @@ TEST(Polynomial, Division) {
 
   // ASSERT that the evaluation of the two polys multiplied together is correct.
   double rand_x = test::RandDouble(-10, 10);
-  ASSERT_DOUBLE_EQ(poly1.EvalAt(rand_x),
-                   (poly2.Multiply(quotient)).EvalAt(rand_x) +
-                   remainder.EvalAt(rand_x));
+  double diff = poly1.EvalAt(rand_x) -
+      ((poly2.Multiply(quotient)).EvalAt(rand_x) +
+       remainder.EvalAt(rand_x));
+  // If the degree of the polynomial is high, the machine precision can make
+  // this a difficult value to assess. Instead, we ensure that hte difference
+  // between the two evaluations is less than some precision.
+  ASSERT_LT(fabs(diff)/poly1.EvalAt(rand_x),
+            kEps);
 }
 
 TEST(Polynomial, Differentiate) {
 }
 
 TEST(Polynomial, FindRealRoots) {
-  double kEps = 1e-6;
+  double kRootsEps = 1e-6;
   const int poly_size = 10;
   vector<double> coeffs(poly_size);
   for (int i = 0; i < poly_size; i++) {
-    coeffs[i] = test::RandDouble(-90, 90);
+    coeffs[i] = test::RandDouble(-1, 1);
   }
 
   // Construct the polynomial as the mulitiplication of all the roots.
@@ -192,8 +204,9 @@ TEST(Polynomial, FindRealRoots) {
   std::vector<double> real_roots = my_poly.RealRoots();
   std::sort(coeffs.begin(), coeffs.end());
   std::sort(real_roots.begin(), real_roots.end());
+  // Ensure that the roots found evaluate to (nearly) zero.
   for (int i = 0; i < real_roots.size(); i++) {
-    ASSERT_NEAR(real_roots[i], coeffs[i], kEps);
+    EXPECT_LT(fabs(my_poly.EvalAt(real_roots[i])), kRootsEps);
   }
 }
 }  // namespace math
