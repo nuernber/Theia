@@ -76,7 +76,7 @@ class ProsacSampler : public Sampler<Datum> {
     for (int i = 0; i < num_samples_; i++) {
       t_n *= static_cast<double>(n - i)/(data.size() - i);
     }
-
+    
     double t_n_prime = 1.0;
     // Choose min n such that T_n_prime >= t (Eq. 5).
     for (int t = 1; t <= kth_sample_number_; t++) {
@@ -87,9 +87,7 @@ class ProsacSampler : public Sampler<Datum> {
         n++;
       }
     }
-
-
-    subset->resize(num_samples_);
+    subset->reserve(num_samples_);
     if (t_n_prime < kth_sample_number_) {
       // Randomly sample m data points from the top n data points.
       std::uniform_int_distribution<int> distribution(0, n - 1);
@@ -104,7 +102,7 @@ class ProsacSampler : public Sampler<Datum> {
         random_numbers.push_back(rand_number);
 
         // Push the *unique* random index back.
-        subset->at(i) = data[rand_number];
+        subset->push_back(data[rand_number]);
       }
     } else {
       std::uniform_int_distribution<int> distribution(0, n - 2);
@@ -120,10 +118,10 @@ class ProsacSampler : public Sampler<Datum> {
         random_numbers.push_back(rand_number);
 
         // Push the *unique* random index back.
-        subset->at(i) = data[rand_number];
+        subset->push_back(data[rand_number]);
       }
       // Make the last point from the nth position.
-      subset->at(num_samples_ - 1) = data[n];
+      subset->push_back(data[n]);
     }
     CHECK_EQ(subset->size(), num_samples_) << "Prosac subset is incorrect "
                                            << "size!";

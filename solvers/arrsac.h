@@ -78,9 +78,7 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
          double error_thresh,
          int max_candidate_hyps = 500,
          int block_size = 100)
-      : SampleConsensusEstimator<Datum, Model>(NULL,
-                                               NULL),
-        min_sample_size_(min_sample_size),
+      : min_sample_size_(min_sample_size),
         error_thresh_(error_thresh),
         max_candidate_hyps_(max_candidate_hyps),
         block_size_(block_size),

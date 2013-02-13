@@ -71,7 +71,7 @@ class LineEstimator : public Estimator<Point, Line> {
     double b = 1.0;
     double c = -1.0*line.b;
 
-    return fabs(a*point.x + b*point.y + c)/(sqrt(pow(a*a + b*b, 2)));
+    return fabs(a*point.x + b*point.y + c)/sqrt(a*a + b*b);
   }
 };
 }  // namespace

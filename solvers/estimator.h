@@ -32,6 +32,10 @@
 #ifndef SOLVERS_ESTIMATOR_H_
 #define SOLVERS_ESTIMATOR_H_
 
+#include <glog/logging.h>
+#ifdef THEIA_USE_OPENMP
+#include <omp.h>
+#endif
 #include <vector>
 
 namespace solvers {
@@ -53,10 +57,18 @@ class Estimator {
   // Given a set of data points, estimate the model. Users should implement this
   // function appropriately for the task being solved. Returns true for
   // successful model estimation (and outputs model), false for failed
-  // estimation.
+  // estimation. Typically, this is a minimal set, but it is not required to be.
   virtual bool EstimateModel(const std::vector<Datum>& data,
                              Model* model) const = 0;
 
+  // Estimate a model from a non-minimal sampling of the data. E.g. for a line,
+  // use SVD on a set of points instead of constructing a line from two points.
+  // By default, this simply implements the minimal case.
+  virtual bool EstimateModelNonminimal(const std::vector<Datum>& data,
+                                       Model* model) const {
+    return EstimateModel(data, model);
+  }
+  
   // Refine the model based on an updated subset of data, and a pre-computed
   // model. Can be optionally implemented.
   virtual bool RefineModel(const std::vector<Datum>& data, Model* model) const {
@@ -67,6 +79,15 @@ class Estimator {
   // this function appropriately for the task being solved.
   virtual double Error(const Datum& data, const Model& model) const = 0;
 
+  virtual std::vector<double> Residuals(const std::vector<Datum>& data,
+                                        const Model& model) const {
+    std::vector<double> residuals(data.size());
+#pragma omp parallel for
+    for (int i = 0; i < data.size(); i++)
+      residuals[i] = Error(data[i], model);
+    return residuals;
+  }
+  
   // Returns the set inliers of the data set based on the error threshold
   // provided.
   std::vector<bool> GetInliers(const std::vector<Datum>& data,
@@ -88,6 +109,12 @@ class Estimator {
       if (Error(data, model) < error_threshold)
         num_inliers++;
     return num_inliers;
+  }
+
+  // Enable a quick check to see if the model is valid. This can be a geometric
+  // check or some other verification of the model structure.
+  virtual bool ValidModel(const Model& model) const {
+    return true;
   }
 };
 

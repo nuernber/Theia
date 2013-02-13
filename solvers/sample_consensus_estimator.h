@@ -59,6 +59,8 @@ class SampleConsensusEstimator {
     quality_measurement_.reset(quality_measurement);
   }
 
+  SampleConsensusEstimator() {}
+
   virtual ~SampleConsensusEstimator() {}
 
   // Computes the best-fitting model using RANSAC. Returns false if RANSAC
@@ -89,7 +91,7 @@ class SampleConsensusEstimator {
   int GetNumIterations() {
     return num_iters_;
   }
-  
+
  protected:
   // Our sampling strategy.
   std::unique_ptr<Sampler<Datum> > sampler_;
@@ -129,9 +131,7 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
       continue;
 
     // Calculate residuals from estimated model.
-    std::vector<double> residuals(data.size());
-    for (int i = 0; i < data.size(); i++)
-      residuals[i] = estimator.Error(data[i], temp_model);
+    std::vector<double> residuals = estimator.Residuals(data, temp_model);
 
     // Determine quality of the generated model.
     std::vector<bool> temp_inlier_set(data.size());
@@ -162,9 +162,7 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
   }
 
   inliers_.resize(data.size());
-  std::vector<double> final_residuals(data.size());
-  for (int i = 0; i < data.size(); i++)
-    final_residuals[i] = estimator.Error(data[i], *best_model);
+  std::vector<double> final_residuals = estimator.Residuals(data, *best_model);
 
   quality_measurement_->Calculate(final_residuals, &inliers_);
 
