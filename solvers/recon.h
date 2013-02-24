@@ -40,6 +40,8 @@
 #include <unordered_map>
 #include <vector>
 #include <iostream>
+
+#include "math/probability/kolmogorov_smirnoff.h"
 #include "solvers/estimator.h"
 #include "solvers/inlier_support.h"
 #include "solvers/prosac_sampler.h"
@@ -70,7 +72,7 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
         num_nonminimal_models(20) {}
 
   Recon(int min_sample_size)
-      : Recon<Datum, Model>(min_sample_size, 3) {}
+      : Recon<Datum, Model>(min_sample_size, 5) {}
 
   ~Recon() {}
 
@@ -90,6 +92,9 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
   // % of common inliers = alpha*alpha
   double alpha;
 
+  // max sigma as approximated by guess of outlier ratio
+  double sigma_max;
+  
   // Number of nonminimal models to generate using PROSAC sampling on mean of
   // best residuals (Step 4).
   int num_nonminimal_models;
@@ -139,21 +144,24 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
     // efficient lookup table where the original index is the key and a pointer
     // to the residual data point is the value.
     ModelResiduals(const std::vector<double>& residuals) {
-      residual_data_points.resize(residuals.size());
+      residual_data_points.reserve(residuals.size());
       for (int i = 0; i < residuals.size(); i++) {
         // Create the residual data points. Note the sorted index is -1 until
         // the list is actually sorted.
-        residual_data_points[i] = ResidualDataPoint(residuals[i], i, -1);
+        residual_data_points.push_back(ResidualDataPoint(residuals[i], i, -1));
       }
       // Sort data.
       std::sort(residual_data_points.begin(),
                 residual_data_points.end(),
                 residual_sorter);
+      
       // Update sorted index.
+      sorted_residuals.reserve(residuals.size());
       for (int i = 0; i < residuals.size(); i++) {
         residual_data_points[i].sorted_index = i;
         // Add index to lookup.
         index_lookup[residual_data_points[i].index] = &residual_data_points[i];
+        sorted_residuals.push_back(residual_data_points[i].residual);
       }
     }
 
@@ -171,7 +179,7 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
       // See how many members in the first n are in common.
       // TODO(cmsweeney): Perhaps start this at a higher number?
       bool alpha_test = false;
-      for (*n = 0; *n < max_iterations; (*n)++) {
+      for (*n = 0; *n < alpha_sq*max_iterations - 1; (*n)++) {
         // Fetch the common data point in the other model's residuals. Residuals
         // are stored by original index in the lookup.
         const ResidualDataPoint* other_residual =
@@ -217,69 +225,18 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
 
     // Holds all of the residuals in sorted order.
     std::vector<ResidualDataPoint> residual_data_points;
+
+    // Sorted residuals stored by themselves for quick access!
+    std::vector<double> sorted_residuals;
+    
     // A lookup table so that you can find the residual data point from the
     // original index.
     std::unordered_map<int, ResidualDataPoint*> index_lookup;
+
+    Model model;
   };
 
 };
-
-template<class Datum, class Model>
-bool Recon<Datum, Model>::KSTest(
-    const std::vector<ResidualDataPoint>& residual1,
-    const std::vector<ResidualDataPoint>& residual2,
-    int n) {
-  CHECK_LE(n, residual1.size());
-  CHECK_LE(n, residual2.size());
-
-  int r1_index = 0;
-  int r2_index = 0;
-  double max_distance = 0;
-  double t = std::max(residual1[0].residual, residual2[0].residual);
-  while (r1_index < n && r2_index < n) {
-    // Calculate empirical distribution. I.e. count all values <= t.
-    while (residual1[r1_index + 1].residual <= t && r1_index < n - 1)
-      r1_index++;
-    while (residual2[r2_index + 1].residual <= t && r2_index < n - 1)
-      r2_index++;
-
-    double r1_empirical = static_cast<double>(r1_index + 1)/
-        static_cast<double>(n);
-    double r2_empirical = static_cast<double>(r2_index + 1)/
-        static_cast<double>(n);
-    double temp_distance = fabs(r1_empirical - r2_empirical);
-    if (temp_distance > max_distance) {
-      max_distance = temp_distance;
-    }
-
-    // Choose next value for t. It should be the next largest value among *both*
-    // residuals.
-    if (residual1[r1_index + 1].residual < residual2[r2_index + 1].residual) {
-      r1_index++;
-      t = residual1[r1_index].residual;
-    }
-    else {
-      r2_index++;
-      t = residual2[r2_index].residual;
-    }
-  }
-
-  bool val = static_cast<double>(n)/2.0*max_distance <= 1.63;
-  if (val) {
-    VLOG(0) << "max_distance for valid ks test = " << max_distance;
-    std::cout << "residual 1 = \n";
-    for (int i = 0; i < n; i++) {
-      std::cout << residual1[i].residual << " ";
-    }
-    std::cout << "\nresidual 2 = \n";
-    for (int i = 0; i < n; i++) {
-      std::cout << residual2[i].residual << " ";
-    }
-    std::cout << std::endl;
-    LOG(FATAL) << "time to quit!";
-  }
-  return val;
-}
 
 template<class Datum, class Model>
 bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
@@ -317,6 +274,7 @@ bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
     valid_models.push_back(
         std::unique_ptr<ModelResiduals>(new ModelResiduals(temp_residuals)));
     ModelResiduals* current_model = valid_models.back().get();
+    current_model->model = temp_model;
     alpha_consistent_models.clear();
     alpha_consistent_models.push_back(current_model);
     for (int i = 0; i < valid_models.size() - 1; i++) {
@@ -325,14 +283,21 @@ bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
       if (current_model->AlphaConsistentWith(*valid_models[i],
                                              alpha,
                                              &n)) {
-        // VLOG(0) << "alpha consistent at " << n;
-        if (KSTest(current_model->residual_data_points,
-                   valid_models[i]->residual_data_points,
-                   n)) {
+        VLOG(0) << "model " << valid_models[i]->model.m
+                << ", " << valid_models[i]->model.b
+                << " is alpha consistent at " << n;
+        double sigma_hat = 1.4286*(1.0 + 5.0/(n - min_sample_size_))*
+            sqrt(valid_models[i]->sorted_residuals[n/2]);
+        
+        if (sigma_hat < sigma_max ||
+            math::probability::KolmogorovSmirnoffTest(
+                current_model->sorted_residuals,
+                valid_models[i]->sorted_residuals,
+                n)) {
           VLOG(0) << "passed KS test!";
           VLOG(0) << "alpha models size = " << alpha_consistent_models.size();
           // Add to set of alpha consistent models.
-          alpha_consistent_models.push_back(current_model);
+          alpha_consistent_models.push_back(valid_models[i].get());
           // If we have enough alpha consistent models, quit!
           if (alpha_consistent_models.size() >= min_consistent_models_)
             break;
@@ -344,6 +309,9 @@ bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
       break;
   }
 
+  for (ModelResiduals* acm : alpha_consistent_models)
+    VLOG(0) << "alpha consistent model = " << acm->model.m << ", " << acm->model.b;
+  
   // Collect the means of residuals from the alpha consistent models.
   std::vector<double> mean_residuals(data.size());
   for (int i = 0; i < data.size(); i++) {
@@ -390,7 +358,6 @@ bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
       prosac_models[i].AlphaConsistentWith(prosac_models[j],
                                            alpha,
                                            &n);
-      VLOG(0) << "prosac(" << i << ", " << j << " ) n = " << n;
       pairwise_n.push_back(n);
     }
   }

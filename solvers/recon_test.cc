@@ -93,19 +93,19 @@ TEST(ReconTest, LineFitting) {
     double noise_y = gauss_distribution(generator);
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
-  /*
-  for (int i = 0; i < num_pts/2; ++i) {
+  
+  for (int i = 0; i < num_pts; ++i) {
     double noise_x = uniform_distribution(generator);
     double noise_y = uniform_distribution(generator);
     input_points.push_back(Point(noise_x, noise_y));
   }
-  */
+  
   LineEstimator line_estimator;
   Line line;
   Recon<Point, Line> recon_line(3);
   VLOG(0) << "input points size = " << input_points.size();
   recon_line.Estimate(input_points, line_estimator, &line);
-  ASSERT_LT(fabs(line.m - 1.0), 0.1);
+  ASSERT_NEAR(line.m, 1.0, 0.01);
 }
 
 }  // namespace solvers

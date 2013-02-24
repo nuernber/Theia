@@ -29,49 +29,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef TEST_TEST_UTILS_H_
-#define TEST_TEST_UTILS_H_
 
-#include <chrono>
-#include <random>
-
-#include <Eigen/Dense>
-#include <glog/logging.h>
-
-#include "gtest/gtest.h"
-
-namespace test {
-// Get a random double between lower and upper.
-inline double RandDouble(double lower, double upper) {
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  std::default_random_engine generator(seed);
-  std::uniform_real_distribution<double> distribution(lower, upper);
-  return distribution(generator);
-}
-
-// Assert that values of the two matrices are nearly the same.
-template <typename Derived>
-void ExpectMatricesNear(const Eigen::MatrixBase<Derived>& a,
-                        const Eigen::MatrixBase<Derived>& b,
-                        double tolerance) {
-  ASSERT_EQ(a.rows(), b.rows());
-  ASSERT_EQ(a.cols(), b.cols());
-  for (int i = 0; i < a.rows(); i++)
-    for (int j = 0; j < b.rows(); j++)
-      ASSERT_NEAR(a(i, j), b(i, j), tolerance);
-}
-
-void ExpectArraysNear(int n,
-                      const double* a,
-                      const double* b,
-                      double tolerance) {
-  ASSERT_GT(n, 0);
-  CHECK(a);
-  CHECK(b);
-  for (int i = 0; i < n; i++) {
-    EXPECT_NEAR(a[i], b[i], tolerance) << "i = " << i;
-  }
-}
-
-}  // namespace test
-#endif  // TEST_TEST_UTILS_H_
+// This is a dummy file so that CMake will compile correctly! CMake does not
+// handle header files (recon.h is header-only because it is templated) well,
+// and I have not found a way to link a header-only target to a static
+// library. Putting this dummy cc file will allow this to happen.

@@ -32,16 +32,17 @@
 #ifndef SOLVERS_ARRSAC_H_
 #define SOLVERS_ARRSAC_H_
 
-#include <algorithm>
 #include <chrono>
 #include <random>
+
+#include <algorithm>
 #include <vector>
 
+#include "math/probability/sequential_probability_ratio.h"
 #include "solvers/estimator.h"
 #include "solvers/sample_consensus_estimator.h"
 #include "solvers/random_sampler.h"
 #include "solvers/prosac_sampler.h"
-#include "solvers/sequential_probability_ratio_test.h"
 
 // Implementation of ARRSAC, a "real-time" RANSAC algorithm, by Raguram
 // et. al. (ECCV 2008). You only need to call the constructor and the Compute
@@ -154,8 +155,9 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
     const Estimator<Datum, Model>& estimator,
     std::vector<Model>* accepted_hypotheses) {
   //   set parameters for SPRT test, calculate initial value of A
-  double decision_threshold = CalculateSPRTDecisionThreshold(sigma_,
-                                                             epsilon_);
+  double decision_threshold =
+      math::probability::CalculateSPRTDecisionThreshold(sigma_,
+                                                        epsilon_);
   int k = 1;
   int m_prime = max_candidate_hyps_;
   // Inner RANSAC variables.
@@ -201,15 +203,16 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
     int num_tested_points;
     double observed_inlier_ratio;
     // Evaluate hypothesis h(k) with SPRT.
-    bool sprt_test = SequentialProbabilityRatioTest(data_input,
-                                                    hypothesis,
-                                                    estimator,
-                                                    error_thresh_,
-                                                    sigma_,
-                                                    epsilon_,
-                                                    decision_threshold,
-                                                    &num_tested_points,
-                                                    &observed_inlier_ratio);
+    std::vector<double> residuals = estimator.Residuals(data_input,
+                                                        hypothesis);
+    bool sprt_test = math::probability::SequentialProbabilityRatioTest(
+        residuals,
+        error_thresh_,
+        sigma_,
+        epsilon_,
+        decision_threshold,
+        &num_tested_points,
+        &observed_inlier_ratio);
 
     // If the model was rejected by the SPRT test.
     if (!sprt_test) {
@@ -278,7 +281,7 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
   }
 
   RandomSampler<Datum> random_sampler(min_sample_size_);
-  
+
   // Preemptive Evaluation
   for (int i = block_size_+1; i < data.size(); i++) {
     // Select n, the number of hypotheses to consider.
