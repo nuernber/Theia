@@ -40,6 +40,7 @@
 #include <unordered_map>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 #include "math/probability/kolmogorov_smirnoff.h"
 #include "solvers/estimator.h"
@@ -94,7 +95,7 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
 
   // max sigma as approximated by guess of outlier ratio
   double sigma_max;
-  
+
   // Number of nonminimal models to generate using PROSAC sampling on mean of
   // best residuals (Step 4).
   int num_nonminimal_models;
@@ -154,7 +155,7 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
       std::sort(residual_data_points.begin(),
                 residual_data_points.end(),
                 residual_sorter);
-      
+
       // Update sorted index.
       sorted_residuals.reserve(residuals.size());
       for (int i = 0; i < residuals.size(); i++) {
@@ -228,7 +229,7 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
 
     // Sorted residuals stored by themselves for quick access!
     std::vector<double> sorted_residuals;
-    
+
     // A lookup table so that you can find the residual data point from the
     // original index.
     std::unordered_map<int, ResidualDataPoint*> index_lookup;
@@ -283,19 +284,82 @@ bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
       if (current_model->AlphaConsistentWith(*valid_models[i],
                                              alpha,
                                              &n)) {
+
+
+        std::ofstream myfile;
+        myfile.open ("extra/recon_lines.m");
+        myfile << "x = [";
+        for (int i = 0; i < data.size(); i++)
+          myfile << data[i].x << " ";
+        myfile << "];\ny = [";
+        for (int i = 0; i < data.size(); i++)
+          myfile << data[i].y << " ";
+        myfile << "];\n";
+        myfile << "m1 = " << current_model->model.m
+               << "; b1 = " << current_model->model.b << ";\n";
+        myfile << "m2 = " << valid_models[i]->model.m
+               << "; b2 = " << valid_models[i]->model.b << ";\n";
+        myfile << "ks_data1 = [";
+        
+        for (int j = 0; j < n; j++) {
+          myfile << current_model->sorted_residuals[j] << " ";
+        }
+        myfile << "];\n ks_data2 = [";
+        for (int j = 0; j < n; j++) {
+          myfile << valid_models[i]->sorted_residuals[j] << " ";
+        }
+        myfile << "];";
+        myfile.close();
+
         VLOG(0) << "model " << valid_models[i]->model.m
                 << ", " << valid_models[i]->model.b
                 << " is alpha consistent at " << n;
+
+
         double sigma_hat = 1.4286*(1.0 + 5.0/(n - min_sample_size_))*
             sqrt(valid_models[i]->sorted_residuals[n/2]);
-        
+
+        double sigma_1 = 0;
+        double sigma_2 = 0;
+        for (int j = 0; j < n; j++) {
+          sigma_1 += current_model->sorted_residuals[j]*
+              current_model->sorted_residuals[j];
+          sigma_2 += valid_models[i]->sorted_residuals[j]*
+              valid_models[i]->sorted_residuals[j];
+        }
+        sigma_1 /= n;
+        sigma_1 = sqrt(sigma_1);
+        sigma_2 /= n;
+        sigma_2 = sqrt(sigma_2);
+        VLOG(0) << "sigmas = " << sigma_1 << " vs " << sigma_2;
+
+        std::vector<double> curr_model_chi(n);
+        std::copy(current_model->sorted_residuals.begin(),
+                  current_model->sorted_residuals.begin() + n,
+                  curr_model_chi.begin());
+        std::vector<double> valid_model_chi(n);
+        std::copy(valid_models[i]->sorted_residuals.begin(),
+                  valid_models[i]->sorted_residuals.begin() + n,
+                  valid_model_chi.begin());
+
+        for (int j = 0; j < n; j++) {
+          curr_model_chi[i] /= sigma_1;
+          valid_model_chi[i] /= sigma_2;
+        }
+        std::cin.get();
+
         if (sigma_hat < sigma_max ||
-            math::probability::KolmogorovSmirnoffTest(
+            (math::probability::KolmogorovSmirnoffTest(
                 current_model->sorted_residuals,
-                valid_models[i]->sorted_residuals,
-                n)) {
+                curr_model_chi,
+                n) &&
+             math::probability::KolmogorovSmirnoffTest(
+                 valid_models[i]->sorted_residuals,
+                 curr_model_chi,
+                 n))) {
           VLOG(0) << "passed KS test!";
           VLOG(0) << "alpha models size = " << alpha_consistent_models.size();
+
           // Add to set of alpha consistent models.
           alpha_consistent_models.push_back(valid_models[i].get());
           // If we have enough alpha consistent models, quit!
@@ -311,7 +375,7 @@ bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
 
   for (ModelResiduals* acm : alpha_consistent_models)
     VLOG(0) << "alpha consistent model = " << acm->model.m << ", " << acm->model.b;
-  
+
   // Collect the means of residuals from the alpha consistent models.
   std::vector<double> mean_residuals(data.size());
   for (int i = 0; i < data.size(); i++) {

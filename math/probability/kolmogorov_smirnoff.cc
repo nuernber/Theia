@@ -29,9 +29,6 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_TEST_H_
-#define MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_TEST_H_
-
 #include "math/probability/kolmogorov_smirnoff.h"
 
 #include <algorithm>
@@ -80,29 +77,12 @@ bool KolmogorovSmirnoffTest(const std::vector<double>& residual1,
       break;
   }
   
-  // 1.63 is the value in the published tables for 5% rejection rate of the null
+  // 1.63 is the value in the published tables for 1% rejection rate of the null
   // hypothesis.
   double val =
       sqrt(static_cast<double>(n1*n2)/static_cast<double>(n1+n2))*max_distance;
-
-
-  std::ofstream myfile;
-  myfile.open ("extra/ks_test.m");
-  myfile << "x = [";
-  for (int i = 0; i < residual1.size(); i++)
-    myfile << residual1[i] << " ";
-  myfile << "];\ny = [";
-  for (int i = 0; i < residual2.size(); i++)
-    myfile << residual2[i] << " ";
-  myfile << "];\n";
-  myfile << "ks = " << ((val <= 1.63) ? 1 : 0) << ";";
-  myfile << "val = " << max_distance << ";";
-  myfile << "n = " << n1 << ";";
-  myfile.close();
   
-  if (val <= 1.36)
-    std::cin.get();
-  return val <= 1.36;
+  return val <= 1.63;
 }
 
 
@@ -121,4 +101,3 @@ bool KolmogorovSmirnoffTest(const std::vector<double>& residual1,
 
 }  // namespace probability
 }  // namespace math
-#endif  // MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_TEST_H_
