@@ -77,12 +77,12 @@ bool KolmogorovSmirnoffTest(const std::vector<double>& residual1,
       break;
   }
   
-  // 1.63 is the value in the published tables for 1% rejection rate of the null
+  // 1.36 is the value in the published tables for 5% rejection rate of the null
   // hypothesis.
   double val =
       sqrt(static_cast<double>(n1*n2)/static_cast<double>(n1+n2))*max_distance;
   
-  return val <= 1.63;
+  return val <= 1.36;
 }
 
 

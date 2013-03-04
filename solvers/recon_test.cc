@@ -33,6 +33,8 @@
 #include <math.h>
 #include <random>
 #include <vector>
+#include <fstream>
+#include <iostream>
 
 #include "gtest/gtest.h"
 #include "solvers/estimator.h"
@@ -73,7 +75,8 @@ class LineEstimator : public Estimator<Point, Line> {
     double b = 1.0;
     double c = -1.0*line.b;
 
-    return fabs(a*point.x + b*point.y + c)/sqrt(a*a + b*b);
+    //return fabs(a*point.x + b*point.y + c)/sqrt(a*a + b*b);
+    return point.y - line.m*point.x - line.b;
   }
 };
 }  // namespace
@@ -81,10 +84,10 @@ class LineEstimator : public Estimator<Point, Line> {
 TEST(ReconTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
   int num_pts = 1000;
-  double inlier_ratio = 0.5;
+  double inlier_ratio = 0.4;
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
-  std::normal_distribution<double> gauss_distribution(0.0, 0.1);
+  std::normal_distribution<double> gauss_distribution(0.0, 1.0);
   std::uniform_real_distribution<double> uniform_distribution(0, num_pts*inlier_ratio);
 
   std::vector<Point> input_points;
@@ -104,7 +107,7 @@ TEST(ReconTest, LineFitting) {
   LineEstimator line_estimator;
   Line line;
   Recon<Point, Line> recon_line(3);
-  recon_line.sigma_max = 1.0;
+  recon_line.sigma_max = 2.0;
   VLOG(0) << "input points size = " << input_points.size();
   recon_line.Estimate(input_points, line_estimator, &line);
   ASSERT_NEAR(line.m, 1.0, 0.01);
