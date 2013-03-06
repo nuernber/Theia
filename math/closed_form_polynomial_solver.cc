@@ -31,8 +31,6 @@
 
 #include "math/closed_form_polynomial_solver.h"
 
-#include <glog/logging.h>
-
 #include <complex>
 #include <cmath>
 using std::complex;
@@ -126,8 +124,6 @@ int SolveQuarticReals(double a, double b, double c, double d, double e,
   int num_complex_solutions = SolveQuartic(a, b, c, d, e, complex_roots);
   int num_real_solutions = 0;
   for (int i = 0; i < num_complex_solutions; i++) {
-    VLOG(0) << "sol = " << complex_roots[i].real() << ", "
-            << complex_roots[i].imag();
     if (std::abs(complex_roots[i].imag()) < kEpsilon) {
       roots[num_real_solutions++] = complex_roots[i].real();
     }
@@ -168,12 +164,6 @@ int SolveQuartic(double a, double b, double c, double d, double e,
 
   complex<double> w = sqrt(alpha + 2.0*y);
 
-  complex<double> temp;
-  VLOG(0) << "a = " << a
-          << "\nb = " << b
-          << "\nc = " << c
-          << "\nd = " << d
-          << "\ne = " << e;
   roots[0] = -b/(4.0*a) + 0.5*(w + sqrt(-(3.0*alpha + 2.0*y + 2.0*beta/w)));
   roots[1] = -b/(4.0*a) + 0.5*(w - sqrt(-(3.0*alpha + 2.0*y + 2.0*beta/w)));
   roots[2] = -b/(4.0*a) + 0.5*(-w + sqrt(-(3.0*alpha + 2.0*y - 2.0*beta/w)));
