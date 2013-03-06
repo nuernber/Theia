@@ -31,12 +31,14 @@
 
 #include "math/polynomial.h"
 
-#include <algorithm>
 #include <glog/logging.h>
-#include <iostream>
-#include <iomanip>
 #include <stdlib.h>
+
+#include <algorithm>
+#include <iomanip>
+#include <iostream>
 #include <vector>
+
 #include "gtest/gtest.h"
 #include "test/test_utils.h"
 

@@ -32,6 +32,7 @@
 #include <math.h>
 #include <Eigen/Core>
 #include "gtest/gtest.h"
+#include "test/test_utils.h"
 #include "vision/pose/perspective_three_point.h"
 
 namespace vision {
@@ -43,24 +44,19 @@ using Eigen::Vector4d;
 
 namespace {
 double kEpsilon = 1e-9;
-
-// Returns a random double between dMin and dMax
-double RandDouble(double dMin, double dMax) {
-  double d = static_cast<double>(rand()) / RAND_MAX;
-  return dMin + d * (dMax - dMin);
-}
 }
 
 TEST(PerspectiveThreePoint, Normalized) {
   // World coordinates of the 4 control points. Let them be random points in the
   // 2x2x2 centered around the origin.
+  test::InitRandomGenerator();
   double world_points[4][3];
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 3; j++)
-      world_points[i][j] = RandDouble(-2, 2);
+      world_points[i][j] = test::RandDouble(-2, 2);
 
   // Find the camera projections of each of these points.
-  // Make the camera at (0, 0, 6) looking straight down the axis.
+  // Make the camera at (0, 0, 8) looking straight down the axis.
   Matrix<double, 3, 4> transformation;
   transformation << 1, 0, 0, 0,
       0, -1, 0, 0,
@@ -76,6 +72,8 @@ TEST(PerspectiveThreePoint, Normalized) {
     image_points[i][0] = proj_point[0];
     image_points[i][1] = proj_point[1];
     image_points[i][2] = proj_point[2];
+    VLOG(0) << "world point = " << world_pt;
+    VLOG(0) << "projected point = " << proj_point;
   }
 
   double rotation[4][3][3];

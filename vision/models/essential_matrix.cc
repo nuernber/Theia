@@ -149,13 +149,13 @@ void EssentialMatrix::Decompose(double rotation[4][3][3],
   // Possible rotation configurations.
   const RowMatrix3d ra = u*d*v.transpose();
   const RowMatrix3d rb = u*d.transpose()*v.transpose();
-  
+
   // Scale t to be proper magnitude. Scale factor is derived from the fact that
   // U*diag*V^t = E. We simply choose to scale it such that the last terms will
   // be equal.
   const Vector3d t = u.col(2).normalized();
   const Vector3d t_neg = -t;
-  
+
   // Copy the 4 possible decompositions into the output arrays.
   std::copy(ra.data(), ra.data() + ra.size(),
             reinterpret_cast<double*>(rotation[0]));
@@ -259,7 +259,7 @@ void EssentialMatrix::DecomposeWithCorrespondence(
       reinterpret_cast<const double*>(candidate_rotation[best_index]));
   Map<const Vector3d> trans_best(
       reinterpret_cast<const double*>(candidate_translation[best_index]));
-  
+
   std::copy(rot_best.data(), rot_best.data() + rot_best.size(),
             reinterpret_cast<double*>(rotation));
   std::copy(trans_best.data(), trans_best.data() + trans_best.size(),

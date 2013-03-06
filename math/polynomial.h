@@ -34,12 +34,11 @@
 
 #include <Eigen/Dense>
 #include <glog/logging.h>
+#include <stdlib.h>
 #include <tuple>
 
 #include <algorithm>
 #include <complex>
-#include <glog/logging.h>
-#include <stdlib.h>
 #include <utility>
 #include <vector>
 
@@ -52,11 +51,11 @@ class Polynomial {
   // coeffs is an array containing the coefficients of the polynomial, with
   // coeffs[i] corresponding to the i-th degree coefficient.
   Polynomial() : coeffs_(Eigen::Matrix<double, degree + 1, 1>::Zero()) {}
-  
+
   explicit Polynomial(const std::vector<double> coeffs) {
     std::copy(coeffs.begin(), coeffs.end(), coeffs_.data());
   }
-  
+
   Polynomial(const Polynomial& poly) : coeffs_(poly.coeffs_) {}
 
   explicit Polynomial(const double coeffs[]) {
@@ -137,7 +136,7 @@ class Polynomial {
   Polynomial<degree> operator+(const Polynomial<degree2> &poly) {
     return this->Add(poly);
   }
-  
+
   template<int degree2>
   Polynomial<degree> operator-(const Polynomial<degree> &poly) {
     return this->Subtract(poly);

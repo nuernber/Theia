@@ -54,7 +54,7 @@ class EssentialMatrix {
   // methods return R, T such that E = Tx * R where Tx is the cross product
   // matrix of T
   void Decompose(double rotation[4][3][3],
-                 double translation[4][3]) const;  
+                 double translation[4][3]) const;
 
   // Extract R and T from the essential matrix. Find the optimal decomposition
   // by triangulating a point and ensuring the cheirality constraint (that the
@@ -64,12 +64,12 @@ class EssentialMatrix {
   void DecomposeWithIdealCorrespondence(const double image_point1[3],
                                         const double image_point2[3],
                                         double rotation[3][3],
-                                        double translation[3]) const;  
+                                        double translation[3]) const;
 
 
   friend std::ostream& operator <<(std::ostream& os,
                                    const EssentialMatrix& mat);
-  
+
  private:
   Eigen::Matrix3d essential_mat_;
 
@@ -86,7 +86,7 @@ class EssentialMatrix {
       const double image_point1[][3],
       const double image_point2[][3],
       double rotation[3][3],
-      double translation[3]) const;    
+      double translation[3]) const;
 };
 }  // namespace models
 }  // namespace vision

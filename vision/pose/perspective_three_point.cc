@@ -33,6 +33,7 @@
 
 #include <glog/logging.h>
 #include <math.h>
+
 #include <Eigen/Dense>
 #include <algorithm>
 #include "math/closed_form_polynomial_solver.h"
@@ -114,6 +115,8 @@ int PoseThreePoints(const double image_points[3][3],
   double p_1 = p3(0);
   double p_2 = p3(1);
 
+  VLOG(0) << "f_1 = " << f_1 << "\t f_2 = " << f_2;
+
   double cos_beta = f1.dot(f2);
   double b = 1.0/(1.0 - cos_beta*cos_beta) - 1.0;
 
@@ -121,7 +124,7 @@ int PoseThreePoints(const double image_points[3][3],
     b = -sqrt(b);
   else
     b = sqrt(b);
-
+  VLOG(0) << "b = " << b;
   // Definition of temporary variables for avoiding multiple computation
   double f_1_pw2 = f_1*f_1;
   double f_2_pw2 = f_2*f_2;

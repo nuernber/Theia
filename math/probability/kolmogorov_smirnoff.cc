@@ -31,12 +31,11 @@
 
 #include "math/probability/kolmogorov_smirnoff.h"
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <cmath>
 #include <vector>
-#include <glog/logging.h>
-#include <iostream>
-#include <fstream>
 
 namespace math {
 namespace probability {
@@ -76,12 +75,12 @@ bool KolmogorovSmirnoffTest(const std::vector<double>& residual1,
     if (r1_index >= n1 || r2_index >= n2)
       break;
   }
-  
+
   // 1.36 is the value in the published tables for 5% rejection rate of the null
   // hypothesis.
   double val =
       sqrt(static_cast<double>(n1*n2)/static_cast<double>(n1+n2))*max_distance;
-  
+
   return val <= 1.36;
 }
 

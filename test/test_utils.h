@@ -41,10 +41,17 @@
 #include "gtest/gtest.h"
 
 namespace test {
+std::default_random_engine generator;
+
+// Initializes the random generator to be based on the current time. Does not
+// have to be called before calling RandDouble, but it works best if it is.
+void InitRandomGenerator() {
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  generator.seed(seed);
+}
+
 // Get a random double between lower and upper.
 inline double RandDouble(double lower, double upper) {
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  std::default_random_engine generator(seed);
   std::uniform_real_distribution<double> distribution(lower, upper);
   return distribution(generator);
 }

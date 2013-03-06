@@ -29,8 +29,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_TEST_H_
-#define MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_TEST_H_
+#ifndef MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_H_
+#define MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_H_
 
 #include <vector>
 
@@ -55,4 +55,4 @@ bool KolmogorovSmirnoffTest(const std::vector<double>& residual1,
 
 }  // namespace probability
 }  // namespace math
-#endif  // MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_TEST_H_
+#endif  // MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_H_
