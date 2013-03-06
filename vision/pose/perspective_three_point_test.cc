@@ -72,8 +72,8 @@ TEST(PerspectiveThreePoint, Normalized) {
     image_points[i][0] = proj_point[0];
     image_points[i][1] = proj_point[1];
     image_points[i][2] = proj_point[2];
-    VLOG(0) << "world point = " << world_pt;
-    VLOG(0) << "projected point = " << proj_point;
+    VLOG(0) << "world point = " << world_pt.transpose();
+    VLOG(0) << "projected point = " << proj_point.transpose();
   }
 
   double rotation[4][3][3];

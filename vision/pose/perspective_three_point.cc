@@ -66,7 +66,9 @@ int PoseThreePoints(const double image_points[3][3],
   f1.normalize();
   f2.normalize();
   f3.normalize();
-
+  VLOG(0) << "f1 = " << f1.transpose();
+  VLOG(0) << "f2 = " << f2.transpose();
+  VLOG(0) << "f3 = " << f3.transpose();
   // Create intermediate camera frame.
   Vector3d e1 = f1;
   Vector3d e3 = f1.cross(f2).normalized();
@@ -84,7 +86,10 @@ int PoseThreePoints(const double image_points[3][3],
     f1 = Vector3d(image_points[1][0], image_points[1][1], image_points[1][2]);
     f2 = Vector3d(image_points[0][0], image_points[0][1], image_points[0][2]);
     f3 = Vector3d(image_points[2][0], image_points[2][1], image_points[2][2]);
-
+    f1.normalize();
+    f2.normalize();
+    f3.normalize();
+    
     e1 = f1;
     e3 = f1.cross(f2).normalized();
     e2 = e3.cross(e1);
@@ -115,9 +120,8 @@ int PoseThreePoints(const double image_points[3][3],
   double p_1 = p3(0);
   double p_2 = p3(1);
 
-  VLOG(0) << "f_1 = " << f_1 << "\t f_2 = " << f_2;
-
   double cos_beta = f1.dot(f2);
+  VLOG(0) << "cos_beta = " << cos_beta;
   double b = 1.0/(1.0 - cos_beta*cos_beta) - 1.0;
 
   if (cos_beta < 0)
