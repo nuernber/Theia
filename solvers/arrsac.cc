@@ -1,4 +1,4 @@
-// Copyright (C) 2013  Chris Sweeney <cmsweeney@cs.ucsb.edu>
+// Copyright (C) 2013 The Regents of the University of California (Regents).
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -13,7 +13,7 @@
 //       disclaimer in the documentation and/or other materials provided
 //       with the distribution.
 //
-//     * Neither the name of the University of California, Santa Barbara nor the
+//     * Neither the name of The Regents or University of California nor the
 //       names of its contributors may be used to endorse or promote products
 //       derived from this software without specific prior written permission.
 //
@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+// Please contact the author of this library if you have any questions.
+// Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
 
 // This is a dummy file so that CMake will compile correctly! CMake does not
