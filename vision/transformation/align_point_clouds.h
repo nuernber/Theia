@@ -34,8 +34,7 @@
 #ifndef VISION_TRANSFORMATION_ALIGN_POINT_CLOUDS_H_
 #define VISION_TRANSFORMATION_ALIGN_POINT_CLOUDS_H_
 
-namespace vision {
-namespace transformation {
+namespace theia {
 // Use Besl-McKay registration to align point clouds. We use SVD decomposition
 // to find the rotation, as this is much more likely to find the global minimum
 // as compared to traditional ICP, which is only guaranteed to find a local
@@ -57,6 +56,5 @@ void AlignPointClouds(const double left[][3],
                       int num_points,
                       double rotation[3][3],
                       double translation[3]);
-}  // namespace transformation
-}  // namespace vision
+}  // namespace theia
 #endif  // VISION_TRANSFORMATION_ALIGN_POINT_CLOUDS_H_

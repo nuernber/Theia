@@ -36,8 +36,7 @@
 
 #include <vector>
 
-namespace solvers {
-
+namespace theia {
 // Purely virtual class to be used with sampling consensus estimators
 // (e.g. Ransac, Prosac, MLESac, etc.). This class is implemented to assess the
 // quality of the data. A trivial example is the inlier quality measurement
@@ -66,6 +65,5 @@ class QualityMeasurement {
   // sampling consensus.
   virtual bool SufficientlyHighQuality(const double quality) = 0;
 };
-
-}  // namespace solvers
+}  // namespace theia
 #endif  // SOLVERS_QUALITY_MEASUREMENT_H_

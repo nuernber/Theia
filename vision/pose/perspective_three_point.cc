@@ -40,8 +40,7 @@
 #include <algorithm>
 #include "math/closed_form_polynomial_solver.h"
 
-namespace vision {
-namespace pose {
+namespace theia {
 using Eigen::Vector3d;
 
 // Computes camera pose using the three point algorithm and returns all possible
@@ -161,12 +160,12 @@ int PoseThreePoints(const double image_points[3][3],
 
   // Computation of roots.
   double real_roots[4];
-  int num_solutions = math::SolveQuarticReals(factors[0],
-                                              factors[1],
-                                              factors[2],
-                                              factors[3],
-                                              factors[4],
-                                              real_roots);
+  int num_solutions = SolveQuarticReals(factors[0],
+                                        factors[1],
+                                        factors[2],
+                                        factors[3],
+                                        factors[4],
+                                        real_roots);
   // Backsubstitution of each solution
   for (int i = 0; i < num_solutions; i++) {
     double cot_alpha = (-f_1*p_1/f_2-real_roots[i]*p_2 + d_12*b)/
@@ -263,5 +262,4 @@ bool PoseFourPoints(const double image_points[4][3],
          sizeof(candidate_translation[0][0])*3);
   return true;
 }
-}  // pose
-}  // vision
+}  // namespace theia

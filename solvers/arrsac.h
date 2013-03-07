@@ -49,7 +49,7 @@
 // Implementation of ARRSAC, a "real-time" RANSAC algorithm, by Raguram
 // et. al. (ECCV 2008). You only need to call the constructor and the Compute
 // method to run ARRSAC on your data.
-namespace solvers {
+namespace theia {
 // Helper struct for scoring the hypotheses in ARRSAC.
 template<class Datum>
 struct ScoredData {
@@ -158,8 +158,7 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
     std::vector<Model>* accepted_hypotheses) {
   //   set parameters for SPRT test, calculate initial value of A
   double decision_threshold =
-      math::probability::CalculateSPRTDecisionThreshold(sigma_,
-                                                        epsilon_);
+      CalculateSPRTDecisionThreshold(sigma_, epsilon_);
   int k = 1;
   int m_prime = max_candidate_hyps_;
   // Inner RANSAC variables.
@@ -207,14 +206,13 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
     // Evaluate hypothesis h(k) with SPRT.
     std::vector<double> residuals = estimator.Residuals(data_input,
                                                         hypothesis);
-    bool sprt_test = math::probability::SequentialProbabilityRatioTest(
-        residuals,
-        error_thresh_,
-        sigma_,
-        epsilon_,
-        decision_threshold,
-        &num_tested_points,
-        &observed_inlier_ratio);
+    bool sprt_test = SequentialProbabilityRatioTest(residuals,
+                                                    error_thresh_,
+                                                    sigma_,
+                                                    epsilon_,
+                                                    decision_threshold,
+                                                    &num_tested_points,
+                                                    &observed_inlier_ratio);
 
     // If the model was rejected by the SPRT test.
     if (!sprt_test) {
@@ -358,5 +356,5 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
   return true;
 }
 
-}  // namespace solvers
+}  // namespace theia
 #endif  // SOLVERS_ARRSAC_H_

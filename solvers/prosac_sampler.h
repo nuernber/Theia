@@ -43,7 +43,7 @@
 
 #include "solvers/sampler.h"
 
-namespace solvers {
+namespace theia {
 // Prosac sampler used for PROSAC implemented according to "Matching with PROSAC
 // - Progressive Sampling Consensus" by Chum and Matas.
 template<class Datum>
@@ -144,5 +144,5 @@ class ProsacSampler : public Sampler<Datum> {
   // Random number generator seed
   std::default_random_engine generator;
 };
-}  // namespace solvers
+}  // namespace theia
 #endif  // SOLVERS_PROSAC_SAMPLER_H_

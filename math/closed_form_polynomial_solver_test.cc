@@ -37,7 +37,7 @@
 
 using std::complex;
 
-namespace math {
+namespace theia {
 
 TEST(SolveQuadraticPolynomial, DegenerateSolution) {
   // - 2x + 1 = 0
@@ -112,4 +112,4 @@ TEST(SolveQuarticPolynomial, SolveReals) {
   for (int i = 0; i < 4; i++)
     std::cout << roots[i] << std::endl;
 }
-}  // namespace math
+}  // namespace test

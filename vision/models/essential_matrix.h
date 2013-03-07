@@ -37,8 +37,7 @@
 #include <Eigen/Core>
 #include <ostream>
 
-namespace vision {
-namespace models {
+namespace theia {
 class EssentialMatrix {
  public:
   EssentialMatrix() {}
@@ -90,8 +89,5 @@ class EssentialMatrix {
       double rotation[3][3],
       double translation[3]) const;
 };
-}  // namespace models
-}  // namespace vision
-
-
+}  // namespace theia
 #endif  // VISION_MODELS_ESSENTIAL_MATRIX_H_

@@ -37,7 +37,7 @@
 #include <glog/logging.h>
 #include <cmath>
 
-namespace math {
+namespace theia {
 // Abstract class for probability disributions.
 class Distribution {
  public:
@@ -105,6 +105,6 @@ class UniformDistribution : public Distribution {
   double inverse_span_;
 };
 
-}  // namespace math
+}  // namespace theia
 
 #endif  // MATH_DISTRIBUTION_H_

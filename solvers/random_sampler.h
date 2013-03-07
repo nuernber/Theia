@@ -42,7 +42,7 @@
 
 #include "solvers/sampler.h"
 
-namespace solvers {
+namespace theia {
 // Random sampler used for RANSAC.
 template<class Datum>
 class RandomSampler : public Sampler<Datum> {
@@ -81,5 +81,5 @@ class RandomSampler : public Sampler<Datum> {
   // Random number generator engine.
   std::default_random_engine generator;
 };
-}  // namespace solvers
+}  // namespace theia
 #endif  // SOLVERS_RANDOM_SAMPLER_H_

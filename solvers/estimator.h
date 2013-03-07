@@ -40,7 +40,7 @@
 #endif
 #include <vector>
 
-namespace solvers {
+namespace theia {
 // Templated class for estimating a model for RANSAC. This class is purely a
 // virtual class and should be implemented for the specific task that RANSAC is
 // being used for. Two methods must be implemented: EstimateModel and Error. All
@@ -120,6 +120,6 @@ class Estimator {
   }
 };
 
-}  // namespace solvers
+}  // namespace theia
 
 #endif  // SOLVERS_ESTIMATOR_H_

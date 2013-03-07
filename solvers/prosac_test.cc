@@ -40,7 +40,7 @@
 #include "solvers/prosac.h"
 #include "test/test_utils.h"
 
-namespace solvers {
+namespace theia {
 namespace {
 struct Point {
   double x;
@@ -110,4 +110,4 @@ TEST(ProsacTest, LineFitting) {
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }
 
-}  // namespace solvers
+}  // namespace theia

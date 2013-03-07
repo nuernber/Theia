@@ -39,8 +39,7 @@
 #include <cmath>
 #include <vector>
 
-namespace math {
-namespace probability {
+namespace theia {
 bool KolmogorovSmirnoffTest(const std::vector<double>& residual1,
                             const std::vector<double>& residual2,
                             int n1,
@@ -100,5 +99,4 @@ bool KolmogorovSmirnoffTest(const std::vector<double>& residual1,
   return KolmogorovSmirnoffTest(residual1, residual2, min_residual_size);
 }
 
-}  // namespace probability
-}  // namespace math
+}  // namespace theia

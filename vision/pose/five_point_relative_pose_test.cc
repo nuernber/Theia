@@ -39,8 +39,7 @@
 #include "vision/models/essential_matrix.h"
 #include "gtest/gtest.h"
 
-namespace vision {
-namespace pose {
+namespace theia {
 namespace {
 const double kEps = 1e-12;
 }
@@ -48,7 +47,6 @@ const double kEps = 1e-12;
 using Eigen::Map;
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
-using vision::models::EssentialMatrix;
 
 TEST(FivePointRelativePose, Sanity) {
   // Ground truth essential matrix.
@@ -80,6 +78,4 @@ TEST(FivePointRelativePose, Sanity) {
     ASSERT_LT(fabs(epipolar_constraint), kEps);
   }
 }
-
-}  // namespace pose
-}  // namespace vision
+}  // namespace theia

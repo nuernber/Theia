@@ -37,8 +37,7 @@
 #include <Eigen/Core>
 #include <algorithm>
 
-namespace math {
-namespace matrix {
+namespace theia {
 
 // Gauss-Jordan elimination on a matrix.
 // Modifies the input matrix to be the matrix after gauss-jordan elimation.
@@ -75,7 +74,6 @@ void GaussJordan(Eigen::MatrixBase<Derived>* input, int max_rows = 99999) {
     (*input)(i, i) = 1.0;
   }
 }
-}  // namespace matrix
-}  // namespace math
+}  // namespace theia
 
 #endif  // MATH_MATRIX_GAUSS_JORDAN_H_

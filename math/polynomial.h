@@ -44,7 +44,7 @@
 #include <utility>
 #include <vector>
 
-namespace math {
+namespace theia {
 // Class for storing and manipulating polynomials for a univariate
 // polynomial.
 template<int degree>
@@ -261,5 +261,5 @@ class Polynomial {
   }
 };
 
-}  // namespace math
+}  // namespace theia
 #endif  // MATH_POLYNOMIAL_H_

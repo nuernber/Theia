@@ -43,7 +43,7 @@
 #include "solvers/prosac_sampler.h"
 #include "solvers/sample_consensus_estimator.h"
 
-namespace solvers {
+namespace theia {
 // Estimate a model using PROSAC. The Estimate method is inherited, but for
 // PROSAC requires the data to be in sorted order by quality (with highest
 // quality at index 0).
@@ -94,7 +94,6 @@ class Prosac : public SampleConsensusEstimator<Datum, Model> {
                 log(1.0 - pow(1.0 - outlier_probability, min_sample_size)));
   }
 };
-
-}  // namespace solvers
+}  // namespace theia
 
 #endif  // SOLVERS_PROSAC_H_

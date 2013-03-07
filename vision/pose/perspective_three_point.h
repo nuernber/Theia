@@ -34,8 +34,7 @@
 #ifndef VISION_POSE_PERSPECTIVE_THREE_POINT_H_
 #define VISION_POSE_PERSPECTIVE_THREE_POINT_H_
 
-namespace vision {
-namespace pose {
+namespace theia {
 // Computes camera pose using the three point algorithm and returns all possible
 // solutions (up to 4). Follows steps from the paper "A Novel Parameterization
 // of the Perspective-Three-Point Problem for a direct computation of Absolute
@@ -65,7 +64,5 @@ bool PoseFourPoints(const double image_points[4][3],
                     const double world_points[4][3],
                     double rotation[3][3],
                     double translation[3]);
-}  // pose
-}  // vision
-
+}  // namespace theia
 #endif  // VISION_POSE_PERSPECTIVE_THREE_POINT_H_

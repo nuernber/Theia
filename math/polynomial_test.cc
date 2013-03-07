@@ -44,7 +44,7 @@
 #include "gtest/gtest.h"
 #include "test/test_utils.h"
 
-namespace math {
+namespace theia {
 using std::vector;
 namespace {
 double kEps = 1e-9;
@@ -213,4 +213,4 @@ TEST(Polynomial, FindRealRoots) {
     EXPECT_LT(fabs(my_poly.EvalAt(real_roots[i])), kRootsEps);
   }
 }
-}  // namespace math
+}  // namespace theia

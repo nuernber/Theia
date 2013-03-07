@@ -42,8 +42,7 @@
 #include "math/distribution.h"
 #include "solvers/quality_measurement.h"
 
-namespace solvers {
-
+namespace theia {
 // Define the quality metric according to Guided MLE from "Guided sampling and
 // consensus for motion estimation" by Tordoff and Murray
 class MLEQualityMeasurement : public QualityMeasurement {
@@ -55,8 +54,8 @@ class MLEQualityMeasurement : public QualityMeasurement {
   //  confidence: The confidence of each measurement.
   //  confidence_thesh: All measurements with a confidence higher than this will
   //    be considered an inlier.
-  MLEQualityMeasurement(const math::Distribution& inlier_dist,
-                        const math::Distribution& outlier_dist,
+  MLEQualityMeasurement(const Distribution& inlier_dist,
+                        const Distribution& outlier_dist,
                         const std::vector<double>& confidence,
                         double confidence_thresh)
       : inlier_dist_(inlier_dist),
@@ -116,11 +115,11 @@ class MLEQualityMeasurement : public QualityMeasurement {
   double confidence_threshold_;
 
   // Distribution of inlier data.
-  const math::Distribution& inlier_dist_;
+  const Distribution& inlier_dist_;
   // Distribution of outlier data.
-  const math::Distribution& outlier_dist_;
+  const Distribution& outlier_dist_;
   // Confidences of each data point.
   const std::vector<double>& confidence_;
 };
-}  // namespace solvers
+}  // namespace theia
 #endif  // SOLVERS_MLE_QUALITY_MEASUREMENT_H_

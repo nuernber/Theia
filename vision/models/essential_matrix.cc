@@ -37,8 +37,7 @@
 #include <glog/logging.h>
 #include <algorithm>
 
-namespace vision {
-namespace models {
+namespace theia {
 using Eigen::Map;
 using Eigen::Matrix3d;
 using Eigen::Matrix;
@@ -274,6 +273,4 @@ std::ostream& operator <<(std::ostream& os,
   os << mat.essential_mat_;
   return os;
 }
-
-}  // namespace models
-}  // namespace vision
+}  // namespace theia

@@ -37,8 +37,7 @@
 #include "test/test_utils.h"
 #include "vision/pose/perspective_three_point.h"
 
-namespace vision {
-namespace pose {
+namespace theia {
 using Eigen::Matrix3d;
 using Eigen::Matrix;
 using Eigen::Vector3d;
@@ -98,6 +97,4 @@ TEST(PerspectiveThreePoint, Normalized) {
     ASSERT_LT(std::abs(best_translation[i] - transformation(i, 3)), kEpsilon);
   }
 }
-
-}  // namespace pose
-}  // namespace vision
+}  // namespace theia

@@ -38,8 +38,7 @@
 
 #include "solvers/quality_measurement.h"
 
-namespace solvers {
-
+namespace theia {
 // Assess quality of data by whether each error residual is less than an error
 // threshold. If it is below the threshold, it is considered an inlier.
 class InlierSupport : public QualityMeasurement {
@@ -84,7 +83,6 @@ class InlierSupport : public QualityMeasurement {
   // number.
   double min_num_inliers_;
 };
-
-}  // namespace solvers
+}  // namespace theia
 
 #endif  // SOLVERS_INLIER_SUPPORT_H_

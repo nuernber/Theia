@@ -43,7 +43,7 @@
 #include "solvers/random_sampler.h"
 #include "solvers/sample_consensus_estimator.h"
 
-namespace solvers {
+namespace theia {
 template<class Datum, class Model>
 class Ransac : public SampleConsensusEstimator<Datum, Model> {
  public:
@@ -91,7 +91,5 @@ class Ransac : public SampleConsensusEstimator<Datum, Model> {
                 log(1.0 - pow(1.0 - outlier_probability, min_sample_size)));
   }
 };
-
-}  // namespace solvers
-
+}  // namespace theia
 #endif  // SOLVERS_RANSAC_H_

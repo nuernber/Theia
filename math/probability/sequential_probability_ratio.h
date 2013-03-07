@@ -36,8 +36,7 @@
 
 #include <vector>
 
-namespace math {
-namespace probability {
+namespace theia {
 // Modified version of Wald's SPRT as Matas et. al. implement it in "Randomized
 // RANSAC with Sequential Probability Ratio Test"
 
@@ -69,6 +68,5 @@ bool SequentialProbabilityRatioTest(const std::vector<double>& residuals,
                                     double decision_threshold,
                                     int* num_tested_points,
                                     double* observed_inlier_ratio);
-}  // namespace probability
-}  // namespace math
+}  // namespace theia
 #endif  // MATH_PROBABILITY_SEQUENTIAL_PROBABILITY_RATIO_TEST_H_

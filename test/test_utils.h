@@ -41,7 +41,7 @@
 #include <glog/logging.h>
 
 #include "gtest/gtest.h"
-
+namespace theia {
 namespace test {
 std::default_random_engine generator;
 
@@ -83,4 +83,5 @@ void ExpectArraysNear(int n,
 }
 
 }  // namespace test
+}  // namespace theia
 #endif  // TEST_TEST_UTILS_H_

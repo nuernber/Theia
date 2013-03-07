@@ -34,15 +34,13 @@
 #ifndef SOLVERS_RECON_H_
 #define SOLVERS_RECON_H_
 
-#include <algorithm>
 #include <math.h>
-#include <cstdlib>
-#include <math.h>
-#include <memory>
 #include <unordered_map>
+
+#include <algorithm>
+#include <cstdlib>
+#include <memory>
 #include <vector>
-#include <iostream>
-#include <fstream>
 
 #include "math/probability/kolmogorov_smirnoff.h"
 #include "solvers/estimator.h"
@@ -51,7 +49,7 @@
 #include "solvers/random_sampler.h"
 #include "solvers/sample_consensus_estimator.h"
 
-namespace solvers {
+namespace theia {
 // Implementation of the RECON method by Raguram et al: "RECON: Scale-Adaptive
 // Robust Estimation via Residual Consensus". This RANSAC variation determines
 // the inlier threhold automatically by generating several models, then
@@ -75,7 +73,7 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
         sigma_max(-1),
         num_nonminimal_models(20) {}
 
-  Recon(int min_sample_size)
+  explicit Recon(int min_sample_size)
       : Recon<Datum, Model>(min_sample_size, 3) {}
 
   ~Recon() {}
@@ -175,12 +173,14 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
   // distribtuion. Only the data points found in common_indices are passed to
   // the KS test (as these are the estimated inliers).
   // NOTE: I have not found this test to be very robust for line-fitting.
-  // TODO: Test this for more advanced model-fitting (i.e. homography).
-  bool KolmogorovSmirnoffTest(const ModelResiduals& r1,
-                              const ModelResiduals& r2,
-                              const std::vector<int>& common_indices) const;
+  // TODO(cmsweeney): Test this for more advanced model-fitting (i.e.
+  // homography).
+  bool KolmogorovSmirnoffWrapper(const ModelResiduals& r1,
+                                 const ModelResiduals& r2,
+                                 const std::vector<int>& common_indices) const;
 
-  // Utility function to intersct set_1 with set_1 and store the values in set_1.
+  // Utility function to intersct set_1 with set_1 and store the values in
+  // set_1.
   void IntersectInPlace(std::vector<int>* set_1,
                         const std::vector<int>& set_2);
 };
@@ -220,7 +220,8 @@ bool Recon<Datum, Model>::AlphaConsistent(const ModelResiduals& m1,
     overlap[m1[i].GetIndex()] = true;
     overlap[m2[i].GetIndex()] = true;
 
-    if (num_overlap/static_cast<double>(i + 1.0) >= alpha_sq && i > m1.size()/10) {
+    if (num_overlap/static_cast<double>(i + 1.0) >=
+        alpha_sq && i > m1.size()/10) {
       *n = i + 1;
       return true;
     }
@@ -229,7 +230,7 @@ bool Recon<Datum, Model>::AlphaConsistent(const ModelResiduals& m1,
 }
 
 template<class Datum, class Model>
-bool Recon<Datum, Model>::KolmogorovSmirnoffTest(
+bool Recon<Datum, Model>::KolmogorovSmirnoffWrapper(
     const ModelResiduals& r1,
     const ModelResiduals& r2,
     const std::vector<int>& common_indices) const {
@@ -244,8 +245,7 @@ bool Recon<Datum, Model>::KolmogorovSmirnoffTest(
   std::sort(residuals1.begin(), residuals1.end());
   std::sort(residuals2.begin(), residuals2.end());
 
-  return math::probability::KolmogorovSmirnoffTest(residuals1,
-                                                   residuals2);
+  return KolmogorovSmirnoffTest(residuals1, residuals2);
 }
 
 template<class Datum, class Model>
@@ -258,7 +258,7 @@ void Recon<Datum, Model>::IntersectInPlace(std::vector<int>* set_1,
       it1 = set_1->erase(it1);
     } else if (*it2 < *it1) {
       ++it2;
-    } else { // *it1 == *it2
+    } else {
       ++it1;
       ++it2;
     }
@@ -337,7 +337,9 @@ void Recon<Datum, Model>::FindAlphaConsistentModels(
         // close to our expectations and the size of the overlap sets found so
         // far is relatively close.
         //        if (sigma_hat < sigma_max) {
-        if (KolmogorovSmirnoffTest(current_model, valid_models[i], common_indices)) {
+        if (KolmogorovSmirnoffWrapper(current_model,
+                                      valid_models[i],
+                                      common_indices)) {
           overlap_count.push_back(common_indices.size());
           int min_overlap = *std::min_element(overlap_count.begin(),
                                               overlap_count.end());
@@ -453,11 +455,11 @@ void Recon<Datum, Model>::FindBestInlierSet(
     // See how many points have been visited by all models.
     int common_elements = 0;
     for (int i = 0; i < common.size(); i++) {
-      //VLOG(0) << "common_elements[" << i << "] = " << common[i];
+      // VLOG(0) << "common_elements[" << i << "] = " << common[i];
       if (common[i] >= models.size())
         common_elements++;
     }
-    //VLOG(0) << "num common elements = " << common_elements;
+    // VLOG(0) << "num common elements = " << common_elements;
     if (static_cast<double>(common_elements)/(n + 1.0) >= alpha*alpha)
       break;
   }
@@ -535,15 +537,9 @@ bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
   // Effectively establish a random sampling of the inliers since they are
   // returned in index-sorted order.
   std::random_shuffle(best_inlier_set.begin(), best_inlier_set.end());
-  //RandomSampler<Datum> random_sampler(min_sample_size_);
-  //std::vector<Datum> best_subset_sample;
-  //while (!random_sampler.Sample(best_inlier_set, &best_subset_sample));
-  //estimator.EstimateModelNonminimal(best_subset_sample, best_model);
   estimator.EstimateModelNonminimal(best_inlier_set, best_model);
   VLOG(0) << "best model = " << best_model->m << ", " << best_model->b;
   return true;
 }
-
-}  // namespace solvers
-
+}  // namespace theia
 #endif  // SOLVERS_RECON_H_

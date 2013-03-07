@@ -35,15 +35,13 @@
 #include <math.h>
 #include <random>
 #include <vector>
-#include <fstream>
-#include <iostream>
 
 #include "gtest/gtest.h"
 #include "solvers/estimator.h"
 #include "solvers/recon.h"
 #include "test/test_utils.h"
 
-namespace solvers {
+namespace theia {
 namespace {
 struct Point {
   double x;
@@ -76,8 +74,6 @@ class LineEstimator : public Estimator<Point, Line> {
     double a = -1.0*line.m;
     double b = 1.0;
     double c = -1.0*line.b;
-
-    //return fabs(a*point.x + b*point.y + c)/sqrt(a*a + b*b);
     return point.y - line.m*point.x - line.b;
   }
 };
@@ -90,7 +86,8 @@ TEST(ReconTest, LineFitting) {
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
   std::normal_distribution<double> gauss_distribution(0.0, 1.0);
-  std::uniform_real_distribution<double> uniform_distribution(0, num_pts*inlier_ratio);
+  std::uniform_real_distribution<double>
+      uniform_distribution(0, num_pts*inlier_ratio);
 
   std::vector<Point> input_points;
   VLOG(0) << "input points size = " << input_points.size();
@@ -99,13 +96,13 @@ TEST(ReconTest, LineFitting) {
     double noise_y = gauss_distribution(generator);
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
-  
+
   for (int i = 0; i < num_pts - num_pts*inlier_ratio; ++i) {
     double noise_x = uniform_distribution(generator);
     double noise_y = uniform_distribution(generator);
     input_points.push_back(Point(noise_x, noise_y));
   }
-  
+
   LineEstimator line_estimator;
   Line line;
   Recon<Point, Line> recon_line(3);
@@ -114,5 +111,4 @@ TEST(ReconTest, LineFitting) {
   recon_line.Estimate(input_points, line_estimator, &line);
   ASSERT_NEAR(line.m, 1.0, 0.01);
 }
-
-}  // namespace solvers
+}  // namespace theia

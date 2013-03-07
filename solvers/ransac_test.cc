@@ -39,7 +39,7 @@
 #include "solvers/ransac.h"
 #include "test/test_utils.h"
 
-namespace solvers {
+namespace theia {
 namespace {
 struct Point {
   double x;
@@ -135,5 +135,4 @@ TEST(RansacTest, TerminationNumInliers) {
   int num_inliers = ransac_line.GetNumInliers();
   ASSERT_GE(num_inliers, 10);
 }
-
-}  // namespace solvers
+}  // namespace theia

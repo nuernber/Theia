@@ -39,8 +39,7 @@
 // decomposition because it is better at finding the absolute minimum error for
 // rotation as compared to a true ICP that Besl-McKay describe, which is only
 // guaranteed to find a local minima.
-namespace vision {
-namespace transformation {
+namespace theia {
 namespace {
 double kEpsilon = 1e-4;
 }  // namespace
@@ -93,6 +92,4 @@ void AlignPointClouds(const double left[][3],
   Eigen::Map<Eigen::RowVector3d> translation_vec(translation);
   translation_vec = right_centroid - rotated_left_centroid.transpose();
 }
-
-}  // namespace transformation
-}  // namespace vision
+}  // namespace theia

@@ -36,7 +36,7 @@
 
 #include <vector>
 
-namespace solvers {
+namespace theia {
 // Purely virtual class used for the sampling consensus methods (e.g. Ransac,
 // Prosac, MLESac, etc.)
 template<class Datum>
@@ -49,6 +49,5 @@ class Sampler {
   virtual bool Sample(const std::vector<Datum>& data,
                       std::vector<Datum>* subset) = 0;
 };
-
-}  // namespace solvers
+}  // namespace theia
 #endif  // SOLVERS_SAMPLER_H_

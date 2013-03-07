@@ -42,7 +42,7 @@
 #include "solvers/quality_measurement.h"
 #include "solvers/sampler.h"
 
-namespace solvers {
+namespace theia {
 template<class Datum, class Model>
 class SampleConsensusEstimator {
  public:
@@ -170,6 +170,6 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
 
   return true;
 }
-}  // namespace solvers
+}  // namespace theia
 
 #endif  // SOLVERS_SAMPLE_CONSENSUS_ESTIMATOR_H_

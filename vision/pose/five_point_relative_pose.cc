@@ -34,19 +34,17 @@
 #include "vision/pose/five_point_relative_pose.h"
 
 #include <Eigen/Dense>
-#include <unsupported/Eigen/Polynomials>
-#include <vector>
 #include <cmath>
 #include <ctime>
+#include <vector>
+
 #include "math/matrix/gauss_jordan.h"
 #include "math/polynomial.h"
 #include "vision/models/essential_matrix.h"
 
-namespace vision {
-namespace pose {
+namespace theia {
 using Eigen::Matrix;
 using Eigen::RowVector4d;
-using vision::models::EssentialMatrix;
 
 namespace {
 // Multiplies two polynomials over the same variable.
@@ -197,7 +195,7 @@ Matrix<double, 10, 20> BuildConstraintMatrix(
 Matrix<double, 9, 4> EfficientNullspaceExtraction(
     const Matrix<double, 5, 9>& constraint) {
   Matrix<double, 5, 9> constraint_copy(constraint);
-  math::matrix::GaussJordan(&constraint_copy);
+  GaussJordan(&constraint_copy);
   Matrix<double, 4, 9> null_space;
   null_space << constraint_copy.rightCols(4).transpose(),
       -Eigen::Matrix4d::Identity();
@@ -242,7 +240,7 @@ std::vector<EssentialMatrix> FivePointRelativePose(
 
   // Step 3. Gauss-Jordan Elimination with partial pivoting on constraint
   // matrix.
-  math::matrix::GaussJordan(&constraint_matrix);
+  GaussJordan(&constraint_matrix);
 
   // Step 4. Expand determinant polynomial of 3x3 polynomial B.
   // Create matrix B. Horribly ugly, but not sure if there's a better way to do
@@ -303,7 +301,7 @@ std::vector<EssentialMatrix> FivePointRelativePose(
 
   // Step 5. Extract real roots of the 10th degree polynomial.
   std::vector<EssentialMatrix> essential_matrices;
-  math::Polynomial<10> determinant_poly(n.data());
+  Polynomial<10> determinant_poly(n.data());
   std::vector<double> roots = determinant_poly.RealRoots();
   for (double z : roots) {
     double x = EvaluatePoly(p1, z)/EvaluatePoly(p3, z);
@@ -320,5 +318,4 @@ std::vector<EssentialMatrix> FivePointRelativePose(
   }
   return essential_matrices;
 }
-}  // pose
-}  // vision
+}  // namespace theia

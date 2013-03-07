@@ -40,7 +40,7 @@ using std::complex;
 // Number within the error threshold of zero.
 #define kEpsilon 1e-12
 
-namespace math {
+namespace theia {
 namespace {
 // Solve depressed cubic using Cardano's method.
 int SolveDepressedCubic(double p, double q, complex<double>* roots) {
@@ -173,4 +173,4 @@ int SolveQuartic(double a, double b, double c, double d, double e,
 
   return 4;
 }
-}  // namespace math
+}  // namespace theia

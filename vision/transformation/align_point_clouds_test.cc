@@ -36,8 +36,7 @@
 #include "gtest/gtest.h"
 #include "vision/transformation/align_point_clouds.h"
 
-namespace vision {
-namespace transformation {
+namespace theia {
 using Eigen::Matrix;
 using Eigen::Matrix3d;
 using Eigen::RowMajor;
@@ -93,6 +92,5 @@ TEST(AlignPointClouds, SimpleTransform) {
     ASSERT_LT(std::abs(translation[i] - translation_vec(i)), kEpsilon);
   }
 }
+}  // namespace theia
 
-}  // namespace transformation
-}  // namespace vision

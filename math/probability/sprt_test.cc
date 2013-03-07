@@ -40,6 +40,7 @@
 #include "test/test_utils.h"
 
 using std::vector;
+namespace theia {
 namespace {
 struct Point {
   double x;
@@ -57,7 +58,6 @@ struct Line {
 };
 }  // namespace
 
-namespace solvers {
 class LineEstimator : public Estimator<Point, Line> {
  public:
   LineEstimator() {}
@@ -77,11 +77,6 @@ class LineEstimator : public Estimator<Point, Line> {
     return fabs(a*point.x + b*point.y + c)/(sqrt(pow(a*a + b*b, 2)));
   }
 };
-}  // namespace solvers
-
-namespace math {
-namespace probability {
-using solvers::LineEstimator;
 
 // TODO(cmsweeney): Make this test a verification (i.e. is the value coming out
 // accurate?) instead of just a sanity check.
@@ -201,5 +196,4 @@ TEST(SPRTTest, SequentialProbabilityRatioTestFail) {
                                                 &observed_inlier_ratio);
   EXPECT_FALSE(sprt_success);
 }
-}  // namespace probability
-}  // namespace math
+}  // namespace theia

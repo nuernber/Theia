@@ -42,7 +42,7 @@
 
 using std::vector;
 
-namespace solvers {
+namespace theia {
 namespace {
 
 // Create a testable instance of ARRSAC (i.e. move protected methods to public
@@ -189,4 +189,4 @@ TEST(ArrsacTest, EstimateWithQuality) {
   ASSERT_NEAR(fitted_line.m, 1.0, 0.02);
 }
 
-}  // namespace solvers
+}  // namespace theia

@@ -35,8 +35,7 @@
 
 #include <cmath>
 
-namespace math {
-namespace probability {
+namespace theia {
 double CalculateSPRTDecisionThreshold(double sigma,
                                       double epsilon,
                                       double time_compute_model_ratio,
@@ -97,5 +96,4 @@ bool SequentialProbabilityRatioTest(const std::vector<double>& residuals,
   *num_tested_points = residuals.size();
   return true;
 }
-}  // namespace probability
-}  // namespace math
+}  // namespace theia

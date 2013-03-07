@@ -36,8 +36,7 @@
 #include <Eigen/Dense>
 #include "gtest/gtest.h"
 
-namespace math {
-namespace matrix {
+namespace theia {
 
 TEST(GaussJordan, SimpleTest) {
   Eigen::Matrix<double, 3, 6> test_mat;
@@ -51,5 +50,4 @@ TEST(GaussJordan, SimpleTest) {
   after_matrix << test_mat.col(3), test_mat.col(4), test_mat.col(5);
   ASSERT_TRUE(after_matrix.isApprox(before_matrix.inverse()));
 }
-}  // namespace matrix
-}  // namespace math
+}  // namespace theia

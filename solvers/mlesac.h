@@ -41,7 +41,7 @@
 #include "solvers/random_sampler.h"
 #include "solvers/sample_consensus_estimator.h"
 
-namespace solvers {
+namespace theia {
 template<class Datum, class Model>
 class Mlesac : public SampleConsensusEstimator<Datum, Model> {
  public:
@@ -64,14 +64,14 @@ class Mlesac : public SampleConsensusEstimator<Datum, Model> {
          double confidence_threshold)
       : SampleConsensusEstimator<Datum, Model>(
           new RandomSampler<Datum>(min_sample_size),
-          new MLEQualityMeasurement(math::NormalDistribution(inlier_mean,
-                                                             inlier_sigma),
-                                    math::UniformDistribution(search_left,
-                                                              search_right),
+          new MLEQualityMeasurement(NormalDistribution(inlier_mean,
+                                                       inlier_sigma),
+                                    UniformDistribution(search_left,
+                                                        search_right),
                                     confidence,
                                     confidence_threshold)) {}
 
   ~Mlesac() {}
 };
-}  // namespace solvers
+}  // namespace theia
 #endif  // SOLVERS_MLESAC_H_

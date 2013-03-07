@@ -36,8 +36,7 @@
 
 #include <vector>
 
-namespace math {
-namespace probability {
+namespace theia {
 // Two Sample Kolmogorov-Smirnoff Test. This test attempts to determine if two
 // residuals come from the same distribution. Residuals passed in must be in
 // sorted order. Returns true if the residuals are deemed the same from the
@@ -55,6 +54,5 @@ bool KolmogorovSmirnoffTest(const std::vector<double>& residual1,
 bool KolmogorovSmirnoffTest(const std::vector<double>& residual1,
                             const std::vector<double>& residual2);
 
-}  // namespace probability
-}  // namespace math
+}  // namespace theia
 #endif  // MATH_PROBABILITY_KOLMOGOROV_SMIRNOFF_H_

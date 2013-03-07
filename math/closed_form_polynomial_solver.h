@@ -42,7 +42,7 @@
 
 #include <complex>
 
-namespace math {
+namespace theia {
 // Provides solutions to the equation a*x^2 + b*x + c = 0.
 int SolveQuadraticReals(double a, double b, double c, double* roots);
 int SolveQuadratic(double a, double b, double c, std::complex<double>* roots);
@@ -59,5 +59,5 @@ int SolveQuarticReals(double a, double b, double c, double d, double e,
                       double* roots);
 int SolveQuartic(double a, double b, double c, double d, double e,
                  std::complex<double>* roots);
-}  // namespace math
+}  // namespace theia
 #endif  // MATH_CLOSED_FORM_POLYNOMIAL_SOLVER_H_

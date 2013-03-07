@@ -40,8 +40,7 @@
 #include <random>
 #include <vector>
 
-namespace math {
-namespace probability {
+namespace theia {
 TEST(KolmogorovSmirnoff, SameDistributionGaussian) {
   int num_pts = 500;
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -118,5 +117,4 @@ TEST(KolmogorovSmirnoff, DifferentDistribution) {
     EXPECT_FALSE(KolmogorovSmirnoffTest(data1, data2, n));
 }
 
-}  // namespace probability
-}  // namespace math
+}  // namespace theia

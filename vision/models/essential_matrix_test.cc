@@ -41,8 +41,7 @@
 #include <Eigen/Dense>
 #include "test/test_utils.h"
 
-namespace vision {
-namespace models {
+namespace theia {
 using Eigen::AngleAxisd;
 using Eigen::Matrix3d;
 using Eigen::Map;
@@ -142,5 +141,4 @@ TEST(EssentialMatrix, DecomposeWithIdealCorrespondence) {
                          true_trans.normalized().data(),
                          kTolerance);
 }
-}  // namespace models
-}  // namespace vision
+}  // namespace theia
