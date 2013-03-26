@@ -1,0 +1,191 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>Pose and Resectioning &mdash; Theia Documentation</title>
+
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+
+
+    
+    <link rel="stylesheet" href="_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/searchtools.js"></script>
+    <link rel="top" title="Theia Documentation" href="index.html" />
+    <link rel="up" title="Documentation and Tutorials" href="tutorials.html" />
+    <link rel="next" title="Math" href="math.html" />
+    <link rel="prev" title="Ransac" href="ransac.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="math.html" title="Math"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ransac.html" title="Ransac"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" accesskey="U">Documentation and Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pose-and-resectioning">
+<span id="tutorial-pose"></span><h1>Pose and Resectioning<a class="headerlink" href="#pose-and-resectioning" title="Permalink to this headline">¶</a></h1>
+<p>Theia contains efficient and robust implementations of the following pose and
+resectioning algorithms. We attempted to make each method as general as possible so that users were not tied to Theia data structures to use the methods. This is why most methods use simple arrays as the input and output &#8211; we give the user the power to write simple wrappers for their own data structures if they so choose.</p>
+<ul class="simple">
+<li><a class="reference internal" href="#section-p3p"><em>Perspective Three Point (P3P)</em></a></li>
+<li><a class="reference internal" href="#section-five-point"><em>Five Point Relative Pose</em></a></li>
+</ul>
+<p>You can include the Pose module in your code with the following line:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="cp">#include &lt;theia/pose.h&gt;</span>
+</pre></div>
+</div>
+<div class="section" id="perspective-three-point-p3p">
+<span id="section-p3p"></span><h2>Perspective Three Point (P3P)<a class="headerlink" href="#perspective-three-point-p3p" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="PoseThreePoints__doubleCAA.doubleCAA.doubleAAA.doubleAA">
+int <tt class="descname">PoseThreePoints</tt><big>(</big>const double <em>image_points</em>[3][3], const double <em>world_points</em>[3][3], double <em>rotation</em>[][3][3], double <em>translation</em>[][3]<big>)</big><a class="headerlink" href="#PoseThreePoints__doubleCAA.doubleCAA.doubleAAA.doubleAA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes camera pose using the three point algorithm and returns all possible
+solutions (up to 4). Follows steps from the paper &#8220;A Novel Parameterization of
+the Perspective-Three-Point Problem for a direct computation of Absolute
+Camera position and Orientation&#8221; by <a class="reference internal" href="bibliography.html#kneip">[Kneip]</a>. This algorithm has been proven
+to be up to an order of magnitude faster than other methods.</p>
+<p><tt class="docutils literal"><span class="pre">image_points</span></tt>: Location of features on the image plane (x[i][*] = i-th image point).</p>
+<p><tt class="docutils literal"><span class="pre">world_points</span></tt>: 3D location of features. Must correspond to the image_point of the same index (x[i][*] = i-th world point)</p>
+<p><tt class="docutils literal"><span class="pre">rotation</span></tt>: The candidate rotations computed from the 3 point algorithm.</p>
+<p><tt class="docutils literal"><span class="pre">translation</span></tt>: The candidate translations computed.</p>
+<p><tt class="docutils literal"><span class="pre">Returns</span></tt>: The number of poses computed, along with the output parameters <tt class="docutils literal"><span class="pre">rotation</span></tt> and <tt class="docutils literal"><span class="pre">translation</span></tt> filled with the valid poses.</p>
+<p><strong>NOTE</strong>: P3P returns up to 4 poses, so the rotation and translation arrays are indeed arrays of 3x3 and 3x1 arrays respectively.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PoseFourPoints__doubleCAA.doubleCAA.doubleAA.doubleA">
+bool <tt class="descname">PoseFourPoints</tt><big>(</big>const double <em>image_points</em>[4][3], const double <em>world_points</em>[4][3], double <em>rotation</em>[3][3], double <em>translation</em>[3]<big>)</big><a class="headerlink" href="#PoseFourPoints__doubleCAA.doubleCAA.doubleAA.doubleA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes pose using three point algorithm (method above). The fourth
+correspondence is used to determine the best solution of the (up to 4)
+candidate solutions. All parameter are the same as above, except only the
+best solution is returned in the output parameters, rotation and translation.</p>
+<p><tt class="docutils literal"><span class="pre">Returns</span></tt>: True if a successful pose is found, false else.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="five-point-relative-pose">
+<span id="section-five-point"></span><h2>Five Point Relative Pose<a class="headerlink" href="#five-point-relative-pose" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="FivePointRelativePose__doubleCAA.doubleCAA">
+std::vector&lt;EssentialMatrix&gt; <tt class="descname">FivePointRelativePose</tt><big>(</big>const double <em>image1_points</em>[5][3], const double <em>image2_points</em>[5][3]<big>)</big><a class="headerlink" href="#FivePointRelativePose__doubleCAA.doubleCAA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the relative pose between two cameras using 5 corresponding
+points. Algorithm is implemented based on &#8220;An Efficient Solution to the
+Five-Point Relative Pose Problem&#8221; by <a class="reference internal" href="bibliography.html#nister">[Nister]</a>.</p>
+<p><tt class="docutils literal"><span class="pre">image1_points</span></tt>: Location of features on the image plane (x[i][*] = i-th image point)</p>
+<p><tt class="docutils literal"><span class="pre">image2_points</span></tt>: Location of features on the image plane (x[i][*] = i-th image point)</p>
+<p><tt class="docutils literal"><span class="pre">Returns</span></tt>: Output all solutions of the 5 point algorithm as <tt class="xref cpp cpp-class docutils literal"><span class="pre">EssentialMatrix</span></tt>.</p>
+<p><strong>TODO:</strong> Make this output 3x3 double arrays as well.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+<h3><a href="index.html">Theia</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Documentation and Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Pose and Resectioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributions.html">Contribuing to Theia</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ransac.html"
+                        title="previous chapter">Ransac</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="math.html"
+                        title="next chapter">Math</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="math.html" title="Math"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ransac.html" title="Ransac"
+             >previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" >Documentation and Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+<div class="footer">
+    &copy; Copyright 2013, Chris Sweeney.
+</div>
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,306 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>Math &mdash; Theia Documentation</title>
+
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+
+
+    
+    <link rel="stylesheet" href="_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/searchtools.js"></script>
+    <link rel="top" title="Theia Documentation" href="index.html" />
+    <link rel="up" title="Documentation and Tutorials" href="tutorials.html" />
+    <link rel="next" title="Point Cloud" href="point_cloud.html" />
+    <link rel="prev" title="Pose and Resectioning" href="pose.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="point_cloud.html" title="Point Cloud"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pose.html" title="Pose and Resectioning"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" accesskey="U">Documentation and Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="math">
+<span id="tutorial-math"></span><h1>Math<a class="headerlink" href="#math" title="Permalink to this headline">¶</a></h1>
+<p>At the root of computer vision is a heavy amount of math and probability. Theia contains various math functions implemented with a generic interface for ease of use.</p>
+<p>You can include the Math module with the following line:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="cp">#include &lt;theia/math.h&gt;</span>
+</pre></div>
+</div>
+<div class="section" id="closed-form-polynomial-solver">
+<span id="section-closed-form-poly"></span><h2>Closed Form Polynomial Solver<a class="headerlink" href="#closed-form-polynomial-solver" title="Permalink to this headline">¶</a></h2>
+<p>Many problems in vision rely on solving a polynomial quickly. For small degrees
+(n &lt;= 4) this can be done in closed form, making them exceptionally fast. We
+have implemented solvers for these cases.</p>
+<dl class="function">
+<dt id="SolveQuadraticReals__double.double.double.doubleP">
+int <tt class="descname">SolveQuadraticReals</tt><big>(</big>double <em>a</em>, double <em>b</em>, double <em>c</em>, double* <em>roots</em><big>)</big><a class="headerlink" href="#SolveQuadraticReals__double.double.double.doubleP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="SolveQuadratic__double.double.double.std::complex:double:P">
+int <tt class="descname">SolveQuadratic</tt><big>(</big>double <em>a</em>, double <em>b</em>, double <em>c</em>, std::complex&lt;double&gt;* <em>roots</em><big>)</big><a class="headerlink" href="#SolveQuadratic__double.double.double.std::complex:double:P" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides solutions to the equation <span class="math">\(a*x^2 + b*x + c = 0\)</span></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="SolveCubicReals__double.double.double.double.doubleP">
+int <tt class="descname">SolveCubicReals</tt><big>(</big>double <em>a</em>, double <em>b</em>, double <em>c</em>, double <em>d</em>, double* <em>roots</em><big>)</big><a class="headerlink" href="#SolveCubicReals__double.double.double.double.doubleP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="SolveCubic__double.double.double.double.std::complex:double:P">
+int <tt class="descname">SolveCubic</tt><big>(</big>double <em>a</em>, double <em>b</em>, double <em>c</em>, double <em>d</em>, std::complex&lt;double&gt;* <em>roots</em><big>)</big><a class="headerlink" href="#SolveCubic__double.double.double.double.std::complex:double:P" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides solutions to the equation <span class="math">\(a*x^3 + b*x^2 + c*x + d = 0\)</span> using <a class="reference external" href="http://en.wikipedia.org/wiki/Cubic_function#Cardano.27s_method">Cardan&#8217;s</a> method.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="SolveQuarticReals__double.double.double.double.double.doubleP">
+int <tt class="descname">SolveQuarticReals</tt><big>(</big>double <em>a</em>, double <em>b</em>, double <em>c</em>, double <em>d</em>, double <em>e</em>, double* <em>roots</em><big>)</big><a class="headerlink" href="#SolveQuarticReals__double.double.double.double.double.doubleP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="SolveQuartic__double.double.double.double.double.std::complex:double:P">
+int <tt class="descname">SolveQuartic</tt><big>(</big>double <em>a</em>, double <em>b</em>, double <em>c</em>, double <em>d</em>, double <em>e</em>, std::complex&lt;double&gt;* <em>roots</em><big>)</big><a class="headerlink" href="#SolveQuartic__double.double.double.double.double.std::complex:double:P" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides solutions to the equation <span class="math">\(a*x^4 + b*x^3 + c*x^2 + d*x + e = 0\)</span> using <a class="reference external" href="http://en.wikipedia.org/wiki/Quartic_function#Ferrari.27s_solution">Ferrari&#8217;s method</a> to reduce to problem to a cubic.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="generic-polynomial-solver">
+<span id="section-generic-poly"></span><h2>Generic Polynomial Solver<a class="headerlink" href="#generic-polynomial-solver" title="Permalink to this headline">¶</a></h2>
+<p>For polynomials of degree &gt; 4 there are no easy closed-form solutions, making the problem of finding roots much more difficult. However, we have implemented a generic <a class="reference internal" href="#Polynomial" title="Polynomial"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Polynomial</span></tt></a> class that is templated on the degree of the polynomial. Because it is templated, the methods are generated at compile-time, so solving the polynomial ends up being extremely fast compared to non-templated methods (with relative few tradeoffs in terms of usability).</p>
+<dl class="class">
+<dt id="Polynomial">
+<em class="property">class </em><tt class="descname">Polynomial</tt><a class="headerlink" href="#Polynomial" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-c++"><div class="highlight"><pre><span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree</span><span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">Polynomial</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="k">explicit</span> <span class="n">Polynomial</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">coeffs</span><span class="p">);</span>
+  <span class="k">explicit</span> <span class="n">Polynomial</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">coeffs</span><span class="p">[]);</span>
+  <span class="o">~</span><span class="n">Polynomial</span><span class="p">()</span> <span class="p">{}</span>
+
+  <span class="kt">int</span> <span class="n">GetDegree</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">degree</span><span class="p">;</span> <span class="p">}</span>
+  <span class="kt">double</span> <span class="n">EvalAt</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+  <span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree2</span><span class="o">&gt;</span>
+  <span class="n">Polynomial</span> <span class="n">Add</span><span class="p">(</span><span class="k">const</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span><span class="o">&gt;&amp;</span> <span class="n">poly</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+  <span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree2</span><span class="o">&gt;</span>
+  <span class="n">Polynomial</span> <span class="n">Subtract</span><span class="p">(</span><span class="k">const</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span><span class="o">&gt;&amp;</span> <span class="n">poly</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+  <span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree2</span><span class="o">&gt;</span>
+  <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree</span> <span class="o">+</span> <span class="n">degree2</span><span class="o">&gt;</span> <span class="n">Multiply</span><span class="p">(</span><span class="k">const</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span><span class="o">&gt;&amp;</span> <span class="n">poly</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+  <span class="c1">// Returns the quotient polynomial and the remainder polynomial.</span>
+  <span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree2</span><span class="o">&gt;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree</span> <span class="o">-</span> <span class="n">degree2</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">Divide</span><span class="p">(</span>
+      <span class="k">const</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span><span class="o">&gt;&amp;</span> <span class="n">poly</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+  <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree</span> <span class="o">-</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="n">Differentiate</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">RealRoots</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">complex</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">Roots</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="#Polynomial" title="Polynomial"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Polynomial</span></tt></a> class allows for all basic polynomial operations, as
+well as some more advances operations (e.g. polynomial division,
+differentiation, etc.). The functions are particular note are the roots functions:</p>
+<dl class="function">
+<dt id="Polynomial::RootsC">
+std::vector&lt;std::complex&lt;double&gt;&gt; <tt class="descname">Roots</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#Polynomial::RootsC" title="Permalink to this definition">¶</a></dt>
+<dd><p>These methods calculate the roots of the polynomial (up to roughly degree
+100) efficiently by building a companion matrix and solving for the
+eigenvalues. This method has been shown to be very efficient, and also takes
+advantages of the underlying data structure (Eigen3 matrix). In order to
+increase the stability, we first balance the companion matrix by rearranging
+and scaling so that the changes in magnitude amongst matrix entries is not
+drastic.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Polynomial::RealRootsC">
+std::vector&lt;double&gt; <tt class="descname">RealRoots</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#Polynomial::RealRootsC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as the above method, but only returns the real roots. That is, only the
+roots that have complex values &lt; epsilon distance from 0. Note, this is
+different than only returning the real values of the solutions
+(i.e. ignoring the imaginary component).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="guass-jordan">
+<span id="section-gauss-jordan"></span><h2>Guass-Jordan<a class="headerlink" href="#guass-jordan" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="GaussJordan__Eigen::MatrixBase:Derived:P.i">
+void <tt class="descname">GaussJordan</tt><big>(</big>Eigen::MatrixBase&lt;Derived&gt;* <em>input</em>, int <em>max_rows</em><em>=99999</em><big>)</big><a class="headerlink" href="#GaussJordan__Eigen::MatrixBase:Derived:P.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform traditional Gauss-Jordan elimination on an Eigen3 matrix. If
+<tt class="docutils literal"><span class="pre">max_rows</span></tt> is specified, it will on perform Gauss-Jordan on the first
+<tt class="docutils literal"><span class="pre">max_rows</span></tt> number of rows. This is useful for problems where your system is
+extremely overdetermined and you do not need all rows to be solved.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="kolmogorov-smirnoff-two-sample-test">
+<span id="section-ks-test"></span><h2>Kolmogorov-Smirnoff Two Sample Test<a class="headerlink" href="#kolmogorov-smirnoff-two-sample-test" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes it is useful to test if two distributions come from the same distribution. This is particularly the case in RANSAC-like methods where inliers, for instance, are known to behave according to a chi-squared distribution. The <a class="reference external" href="http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test">Kolmogorov-Smirnoff Test</a> determines whether two sets of data come from the same distribution by inspecting the empirical distribution functions of the two sets. We have only implemented the two-sample Kolmogorov-Smirnoff test.</p>
+<dl class="function">
+<dt id="KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR">
+bool <tt class="descname">KolmogorovSmirnoffTest</tt><big>(</big>const std::vector&lt;double&gt;&amp; <em>residual1</em>, const std::vector&lt;double&gt;&amp; <em>residual2</em><big>)</big><a class="headerlink" href="#KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i">
+bool <tt class="descname">KolmogorovSmirnoffTest</tt><big>(</big>const std::vector&lt;double&gt;&amp; <em>residual1</em>, const std::vector&lt;double&gt;&amp; <em>residual2</em>, int <em>n</em><big>)</big><a class="headerlink" href="#KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">n</span></tt>: Only performs the KS-Test for the first n values of each set.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i.i">
+bool <tt class="descname">KolmogorovSmirnoffTest</tt><big>(</big>const std::vector&lt;double&gt;&amp; <em>residual1</em>, const std::vector&lt;double&gt;&amp; <em>residual2</em>, int <em>n1</em>, int <em>n2</em><big>)</big><a class="headerlink" href="#KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">n1,</span> <span class="pre">n2</span></tt> Only performs the KS-Test for the first n1 members of <tt class="docutils literal"><span class="pre">residual1</span></tt> and the first n2 members of <tt class="docutils literal"><span class="pre">residual2</span></tt>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="sequential-probability-ratio-test">
+<span id="section-sprt"></span><h2>Sequential Probability Ratio Test<a class="headerlink" href="#sequential-probability-ratio-test" title="Permalink to this headline">¶</a></h2>
+<p>Modified version of Wald&#8217;s <a class="reference external" href="http://en.wikipedia.org/wiki/Sequential_probability_ratio_test">SPRT</a> as <a class="reference internal" href="bibliography.html#matas">[Matas]</a> et. al. implement it in &#8220;Randomized
+RANSAC with Sequential Probability Ratio Test&#8221;</p>
+<dl class="function">
+<dt id="CalculateSPRTDecisionThreshold__double.double.double.i">
+double <tt class="descname">CalculateSPRTDecisionThreshold</tt><big>(</big>double <em>sigma</em>, double <em>epsilon</em>, double <em>time_compute_model_ratio</em><em>=200.0</em>, int <em>num_models_verified</em><em>=1</em><big>)</big><a class="headerlink" href="#CalculateSPRTDecisionThreshold__double.double.double.i" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">sigma</span></tt>: Probability of rejecting a good model (Bernoulli parameter).</p>
+<p><tt class="docutils literal"><span class="pre">epsilon</span></tt>: Inlier ratio.</p>
+<p><tt class="docutils literal"><span class="pre">time_compute_model_ratio</span></tt>: Computing the model parameters from a sample takes the same time as verification of time_compute_model_ratio data points. Matas et. al. use 200.</p>
+<p><tt class="docutils literal"><span class="pre">num_model_verified</span></tt>: Number of models that are verified per sample.</p>
+<p><tt class="docutils literal"><span class="pre">Returns</span></tt>:  The SPRT decision threshold based on the input parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="SequentialProbabilityRatioTest__std::vector:double:CR.double.double.double.double.iP.doubleP">
+bool <tt class="descname">SequentialProbabilityRatioTest</tt><big>(</big>const std::vector&lt;double&gt;&amp; <em>residuals</em>, double <em>error_thresh</em>, double <em>sigma</em>, double <em>epsilon</em>, double <em>decision_threshold</em>, int* <em>num_tested_points</em>, double* <em>observed_inlier_ratio</em><big>)</big><a class="headerlink" href="#SequentialProbabilityRatioTest__std::vector:double:CR.double.double.double.double.iP.doubleP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modified version of Wald&#8217;s SPRT as <a class="reference internal" href="bibliography.html#matas">[Matas]</a> et. al. implement it in &#8220;Randomized
+RANSAC with Sequential Probability Ratio Test&#8221;. See the paper for more
+details.</p>
+<p><tt class="docutils literal"><span class="pre">residuals</span></tt>: Error residuals to use for SPRT analysis.</p>
+<p><tt class="docutils literal"><span class="pre">error_thresh</span></tt>: Error threshold for determining when Datum fits the model.</p>
+<p><tt class="docutils literal"><span class="pre">sigma</span></tt>: Probability of rejecting a good model.</p>
+<p><tt class="docutils literal"><span class="pre">epsilon</span></tt>: Inlier ratio.</p>
+<p><tt class="docutils literal"><span class="pre">decision_threshold</span></tt>: The decision threshold at which to terminate.</p>
+<p><tt class="docutils literal"><span class="pre">observed_inlier_ratio</span></tt>: Output parameter of inlier ratio tested.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+<h3><a href="index.html">Theia</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Documentation and Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributions.html">Contribuing to Theia</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pose.html"
+                        title="previous chapter">Pose and Resectioning</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="point_cloud.html"
+                        title="next chapter">Point Cloud</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="point_cloud.html" title="Point Cloud"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pose.html" title="Pose and Resectioning"
+             >previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" >Documentation and Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+<div class="footer">
+    &copy; Copyright 2013, Chris Sweeney.
+</div>
+
+
+
+
+
+  </body>
+</html>

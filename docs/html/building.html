@@ -1,0 +1,176 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>Building Theia Library &mdash; Theia Documentation</title>
+
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+
+
+    
+    <link rel="stylesheet" href="_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/searchtools.js"></script>
+    <link rel="top" title="Theia Documentation" href="index.html" />
+    <link rel="next" title="Documentation and Tutorials" href="tutorials.html" />
+    <link rel="prev" title="Theia" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorials.html" title="Documentation and Tutorials"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Theia"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="building-theia-library">
+<span id="chapter-building"></span><h1>Building Theia Library<a class="headerlink" href="#building-theia-library" title="Permalink to this headline">¶</a></h1>
+<p>Theia source code and documentation are hosted on <a class="reference external" href="https://github.com/kip622/Theia">Github</a> where you can always grab the latest version</p>
+<div class="section" id="dependencies">
+<span id="section-dependencies"></span><h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>Theia relies on a number of open source libraries. Luckily, most of the will be included in Ceres</p>
+<ol class="arabic simple">
+<li>C++11 is needed for certain functionality and added models to the stdlib. C++0x will probably work in most cases, but is not guaranteed. As such, you need a compiler that supports C++11 appropriately.</li>
+<li><a class="reference external" href="http://www.cmake.org">CMake</a> is a cross platform build system. Theia needs a relatively recent version of CMake (version 2.8.0 or better).</li>
+<li><a class="reference external" href="http://eigen.tuxfamily.org/index.php?title=Main_Page">eigen3</a> is used extensively for doing nearly all the matrix and linear algebra operations.</li>
+<li><a class="reference external" href="https://code.google.com/p/ceres-solver/">Ceres Solver</a> is a library for solving non-linear least squares problems. In particular, Theia uses it for Bundle Adjustment. Install Ceres to the &#8220;libraries&#8221; folder inside the Theia source.</li>
+</ol>
+<p><strong>NOTE</strong>: Theia also depends on the following libraries, but they are included in the installation of Ceres so you do not need to reinstall them.</p>
+<ol class="arabic simple" start="5">
+<li><a class="reference external" href="http://http://code.google.com/p/googletest">googletest</a> is used for unit tests. Every file in Theia (with a few minor exceptions) is covered by a unittest.</li>
+<li><a class="reference external" href="http://http://code.google.com/p/google-glog">google-glog</a> is used for error checking and logging. Ceres needs glog version 0.3.1 or later. Version 0.3 (which ships with Fedora 16) has a namespace bug which prevents Ceres from building.</li>
+<li><a class="reference external" href="http://code.google.com/p/gflags">gflags</a> is a library for processing command line flags. It is used by some of the examples and tests. While it is not strictly necessary to build the library, we strongly recommend building the library with gflags.</li>
+</ol>
+</div>
+<div class="section" id="building">
+<span id="section-building"></span><h2>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h2>
+<p>Building should be equivalent on all platforms, thanks to CMake. To install Theia, simply run the following commands after you have installed the <a class="reference internal" href="#section-dependencies"><em>Dependencies</em></a>.</p>
+<div class="highlight-bash"><div class="highlight"><pre>tar zxf theia-0.0.1.tar.gz
+mkdir theia-build
+<span class="nb">cd </span>theia-build
+cmake ..
+make -j4
+make <span class="nb">test</span>
+</pre></div>
+</div>
+<p>If you can run make test without repeatedly getting errors (NOTE: some of the methods in this library are inherently probabilistic, so always have a small chance of failing. This will be fixed in future versions!), then you are ready to install. Theia can be install using the make install command</p>
+<div class="highlight-bash"><div class="highlight"><pre>make install
+</pre></div>
+</div>
+<p>You can also try running the unit tests individually. The executables should be located in the bin directory of the theia-build folder.</p>
+</div>
+<div class="section" id="customizing-the-build">
+<span id="section-customizing"></span><h2>Customizing the build<a class="headerlink" href="#customizing-the-build" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to customize the build process by passing appropriate flags to
+<tt class="docutils literal"><span class="pre">CMake</span></tt>. Use these flags only if you really know what you are doing.</p>
+<ol class="arabic simple">
+<li><tt class="docutils literal"><span class="pre">-DBUILD_TESTING=OFF</span></tt>: Use this flag to enable or disable building the unit tests. By default, this option is enabled.</li>
+<li><tt class="docutils literal"><span class="pre">-DOPENMP=OFF</span></tt>: By default, Theia uses OpenMP to multithread/parallelize certain parts of the code. Certain platforms don&#8217;t play nice with this, so you can disable this option.</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+<h3><a href="index.html">Theia</a></h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Building Theia Library</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building">Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-the-build">Customizing the build</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Documentation and Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributions.html">Contribuing to Theia</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Theia</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorials.html"
+                        title="next chapter">Documentation and Tutorials</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorials.html" title="Documentation and Tutorials"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Theia"
+             >previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+<div class="footer">
+    &copy; Copyright 2013, Chris Sweeney.
+</div>
+
+
+
+
+
+  </body>
+</html>

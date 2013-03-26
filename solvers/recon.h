@@ -64,17 +64,15 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
   // sigma_max: A *rough* estimate of the max noise variance. This can be up to
   //   an order of magnitude and still be useful.
   // min_consistent_models: Number of consistent models needed before a solution
-  //   is determined.
+  //   is determined (typically this is set to 3).
   Recon(int min_sample_size,
-        int min_consistent_models)
+        int min_consistent_models,
+        double sig_max)
       : min_sample_size_(min_sample_size),
         min_consistent_models_(min_consistent_models),
+        sigma_max(sig_max),
         alpha(0.99),
-        sigma_max(-1),
         num_nonminimal_models(20) {}
-
-  explicit Recon(int min_sample_size)
-      : Recon<Datum, Model>(min_sample_size, 3) {}
 
   ~Recon() {}
 

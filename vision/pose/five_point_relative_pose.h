@@ -49,8 +49,8 @@ class EssentialMatrix;
 //     image point)
 // Return: essential_matrix: Output all solutions of the 5 point algorithm.
 std::vector<EssentialMatrix> FivePointRelativePose(
-    const double image1_points[3][3],
-    const double image2_points[3][3]);
+    const double image1_points[5][3],
+    const double image2_points[5][3]);
 }  // namespace theia
 
 #endif  // VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_

@@ -105,8 +105,7 @@ TEST(ReconTest, LineFitting) {
 
   LineEstimator line_estimator;
   Line line;
-  Recon<Point, Line> recon_line(3);
-  recon_line.sigma_max = 2.0;
+  Recon<Point, Line> recon_line(3, 3, 2.0);
   VLOG(0) << "input points size = " << input_points.size();
   recon_line.Estimate(input_points, line_estimator, &line);
   ASSERT_NEAR(line.m, 1.0, 0.01);

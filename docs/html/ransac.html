@@ -1,0 +1,453 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>Ransac &mdash; Theia Documentation</title>
+
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+
+
+    
+    <link rel="stylesheet" href="_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/searchtools.js"></script>
+    <link rel="top" title="Theia Documentation" href="index.html" />
+    <link rel="up" title="Documentation and Tutorials" href="tutorials.html" />
+    <link rel="next" title="Pose and Resectioning" href="pose.html" />
+    <link rel="prev" title="Documentation and Tutorials" href="tutorials.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pose.html" title="Pose and Resectioning"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorials.html" title="Documentation and Tutorials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" accesskey="U">Documentation and Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ransac">
+<span id="tutorial-ransac"></span><h1>Ransac<a class="headerlink" href="#ransac" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/RANSAC">Random Sample Consensus</a>, or RANSAC, one
+of the most commonly used algorithms in Computer Vision. As a result, much
+research has gone into making RANSAC extensions and variants that increase the
+efficiency or accuracy of the estimation. We have implemented a templated class
+that makes using RANSAC for estimation extremely easy as well as simple to
+extend.</p>
+<p>This module can be included in your code with:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="cp">#include &lt;theia/ransac.h&gt;</span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: For the descriptions below, we often use the term &#8220;RANSAC&#8221; to mean the general strategy of model estimation via sample consensus. Most of the time, &#8220;RANSAC&#8221; refers to RANSAC and the variants we have implemented.</p>
+<p>The following RANSAC methods are implemented in Theia:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#Ransac" title="Ransac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Ransac</span></tt></a></li>
+<li><a class="reference internal" href="#Prosac" title="Prosac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Prosac</span></tt></a></li>
+<li><a class="reference internal" href="#Mlesac" title="Mlesac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Mlesac</span></tt></a></li>
+<li><a class="reference internal" href="#Arrsac" title="Arrsac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Arrsac</span></tt></a></li>
+<li><a class="reference internal" href="#Recon" title="Recon"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Recon</span></tt></a></li>
+</ul>
+<div class="section" id="estimator">
+<h2><a class="reference internal" href="#Estimator" title="Estimator"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Estimator</span></tt></a><a class="headerlink" href="#estimator" title="Permalink to this headline">¶</a></h2>
+<p>The basic method for using RANSAC (and its variants) is to specify the class
+corresponding to the algorithm you will use (e.g. RANSAC, PROSAC, etc.) and the
+method for estimating a model from data points. The interface to do the latter
+requires you implement derived class of the <a class="reference internal" href="#Estimator" title="Estimator"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Estimator</span></tt></a> class.</p>
+<dl class="class">
+<dt id="Estimator">
+<em class="property">class </em><tt class="descname">Estimator</tt><a class="headerlink" href="#Estimator" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-c++"><div class="highlight"><pre><span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Datum</span><span class="p">,</span> <span class="k">class</span> <span class="nc">Model</span><span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">Estimator</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">Estimator</span><span class="p">()</span> <span class="p">{}</span>
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">Estimator</span><span class="p">()</span> <span class="p">{}</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">EstimateModel</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span>
+                             <span class="n">Model</span><span class="o">*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">double</span> <span class="n">Error</span><span class="p">(</span><span class="k">const</span> <span class="n">Datum</span><span class="o">&amp;</span> <span class="n">data</span><span class="p">,</span> <span class="k">const</span> <span class="n">Model</span><span class="o">&amp;</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="c1">// Functions to optionally implement.</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">EstimateModelNonminimal</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span>
+                                       <span class="n">Model</span><span class="o">*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">RefineModel</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span> <span class="n">Model</span><span class="o">*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">ValidModel</span><span class="p">(</span><span class="k">const</span> <span class="n">Model</span><span class="o">&amp;</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+  <span class="c1">// Helper methods implemented in base class.</span>
+  <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">Residuals</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span>
+                                        <span class="k">const</span> <span class="n">Model</span><span class="o">&amp;</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span> <span class="n">GetInliers</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span>
+                               <span class="k">const</span> <span class="n">Model</span><span class="o">&amp;</span> <span class="n">model</span><span class="p">,</span>
+                               <span class="kt">double</span> <span class="n">error_threshold</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+  <span class="kt">int</span> <span class="n">GetNumInliers</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span>
+                    <span class="k">const</span> <span class="n">Model</span><span class="o">&amp;</span> <span class="n">model</span><span class="p">,</span>
+                    <span class="kt">double</span> <span class="n">error_threshold</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>The only methods that are required to be implemented are the
+<tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimator::EstimateModel()</span></tt> and <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimator::Error()</span></tt>
+methods. These methods specify how the model is estimated from the data
+provided, and how the error residuals are calculated from a given
+model. All other methods are optional to implement, but will only
+enhance the output of RANSAC.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="using-the-ransac-classes">
+<h2>Using the RANSAC classes<a class="headerlink" href="#using-the-ransac-classes" title="Permalink to this headline">¶</a></h2>
+<p>In order to make our RANSAC classes consistent and extendible we specify an
+interface (via a pure virtual class) as a <tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensusEstimator</span></tt>
+class. All of the RANSAC variants in Theia are derived from this class, so they
+are all guaranteed to have the same interface. When using a RANSAC (or
+RANSAC-variant) class, you simply need to call the constructor (each class
+implements its own <a class="reference internal" href="#section-constructors"><em>constructor</em></a>) and then call the
+<a class="reference internal" href="#SampleConsensusEstimator::Estimate__std::vector:Datum:CR.Estimator:Datum.Model:CR.ModelP" title="SampleConsensusEstimator::Estimate"><tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate</span></tt></a> method.</p>
+<dl class="function">
+<dt id="SampleConsensusEstimator::Estimate__std::vector:Datum:CR.Estimator:Datum.Model:CR.ModelP">
+bool <tt class="descclassname">SampleConsensusEstimator::</tt><tt class="descname">Estimate</tt><big>(</big>const std::vector&lt;Datum&gt;&amp; <em>data</em>, const Estimator&lt;Datum, Model&gt;&amp; <em>estimator</em>, Model* <em>best_model</em><big>)</big><a class="headerlink" href="#SampleConsensusEstimator::Estimate__std::vector:Datum:CR.Estimator:Datum.Model:CR.ModelP" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the main (and often the only) method you use when performing RANSAC
+(or a variant). It computes a model given the data and the <a class="reference internal" href="#Estimator" title="Estimator"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Estimator</span></tt></a>
+class that you have specified for your problem. It returns true (and sets the
+<tt class="docutils literal"><span class="pre">best_model</span></tt> parameter) upon success, and false (with <tt class="docutils literal"><span class="pre">best_model</span></tt> having
+undefined behavior) upon failure.</p>
+</dd></dl>
+
+<p>We will illustrate the use of the RANSAC class with a simple line estimation example.</p>
+<blockquote>
+<div><div class="highlight-c++"><div class="highlight"><pre><span class="c1">// Our &quot;data&quot;.</span>
+<span class="k">struct</span> <span class="n">Point</span> <span class="p">{</span>
+  <span class="kt">double</span> <span class="n">x</span><span class="p">;</span> <span class="kt">double</span> <span class="n">y</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// Our &quot;model&quot;.</span>
+<span class="k">struct</span> <span class="n">Line</span> <span class="p">{</span>
+  <span class="kt">double</span> <span class="n">m</span><span class="p">;</span> <span class="kt">double</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// Estimator class.</span>
+<span class="k">class</span> <span class="nc">LineEstimator</span><span class="o">:</span> <span class="k">public</span> <span class="n">Estimator</span><span class="o">&lt;</span><span class="n">Point</span><span class="p">,</span> <span class="n">Line</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="c1">// Estimate a line from two points.</span>
+  <span class="kt">bool</span> <span class="n">EstimateModel</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Point</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span> <span class="n">Line</span><span class="o">*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="n">model</span><span class="o">-&gt;</span><span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">y</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">x</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">x</span><span class="p">);</span>
+    <span class="n">model</span><span class="o">-&gt;</span><span class="n">b</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">y</span> <span class="o">-</span> <span class="n">model</span><span class="o">-&gt;</span><span class="n">m</span><span class="o">*</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">x</span><span class="p">;</span>
+    <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="c1">// Calculate the error as the y distance of the point to the line.</span>
+  <span class="kt">double</span> <span class="n">Error</span><span class="p">(</span><span class="k">const</span> <span class="n">Point</span><span class="o">&amp;</span> <span class="n">point</span><span class="p">,</span> <span class="k">const</span> <span class="n">Line</span><span class="o">&amp;</span> <span class="n">line</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">point</span><span class="p">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">line</span><span class="p">.</span><span class="n">m</span><span class="o">*</span><span class="n">point</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">line</span><span class="p">.</span><span class="n">b</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Specifying an <a class="reference internal" href="#Estimator" title="Estimator"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Estimator</span></tt></a> is that easy! Now lets look at how to actually
+use a RANSAC method to use the <tt class="xref cpp cpp-class docutils literal"><span class="pre">LineEstimator</span></tt>.</p>
+<blockquote>
+<div><div class="highlight-c++"><div class="highlight"><pre><span class="kt">int</span> <span class="n">main</span> <span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Generate your input data using your desired method.</span>
+  <span class="c1">// We put pseudo-code here for simplicity.</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Point</span><span class="o">&gt;</span> <span class="n">input_data</span><span class="p">;</span>
+
+  <span class="c1">// Add 700 inliers.</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">700</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">input_data</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">inlier_point</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="c1">// Add 300 outliers.</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">300</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">input_data</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">outlier_point</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="c1">// Specify RANSAC parameters.</span>
+  <span class="kt">double</span> <span class="n">error_threshold</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">min_num_inliers</span> <span class="o">=</span> <span class="mi">700</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">max_iters</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">;</span>
+
+  <span class="c1">// Estimate the line with RANSAC.</span>
+  <span class="n">LineEstimator</span> <span class="n">line_estimator</span><span class="p">;</span>
+  <span class="n">Line</span> <span class="n">best_line</span><span class="p">;</span>
+  <span class="n">Ransac</span><span class="o">&lt;</span><span class="n">Point</span><span class="p">,</span> <span class="n">Line</span><span class="o">&gt;</span> <span class="n">ransac_estimator</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">error_threshold</span><span class="p">,</span> <span class="n">min_num_inliers</span><span class="p">,</span> <span class="n">max_iters</span><span class="p">);</span>
+  <span class="n">ransac_estimator</span><span class="p">.</span><span class="n">Estimate</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">line_estimator</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">best_line</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Line m = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">best_line</span><span class="p">.</span><span class="n">m</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;*x + &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">best_line</span><span class="p">.</span><span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>There you have it. With just a few lines of code we can use RANSAC to estimate
+the best fitting line. You could easily swap the <a class="reference internal" href="#Ransac" title="Ransac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Ransac</span></tt></a> class with any
+of the RANSAC variants implemented in Theia without having to change anything
+else in the code.</p>
+</div>
+<div class="section" id="instances-of-ransac-methods">
+<span id="section-constructors"></span><h2>Instances of RANSAC Methods<a class="headerlink" href="#instances-of-ransac-methods" title="Permalink to this headline">¶</a></h2>
+<p>Theia has implemented several RANSAC methods as derived classes of the
+<tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensusEstimator</span></tt> class. The typical use case is still to call
+the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method, but each method is likely to have a different
+constructor. The constructors for each method are specified as follows</p>
+<dl class="class">
+<dt id="Ransac">
+<em class="property">class </em><tt class="descname">Ransac</tt><a class="headerlink" href="#Ransac" title="Permalink to this definition">¶</a></dt>
+<dd><p>The standard <a class="reference external" href="http://en.wikipedia.org/wiki/RANSAC">RANSAC</a> implementation as originally proposed by Fischler et. al. <a class="reference internal" href="bibliography.html#fischler">[Fischler]</a></p>
+<dl class="function">
+<dt id="Ransac::Ransac__i.double.i.i">
+ <tt class="descname">Ransac</tt><big>(</big>int <em>min_sample_size</em>, double <em>error_threshold</em>, int <em>min_num_inliers</em>, int <em>max_iters</em><big>)</big><a class="headerlink" href="#Ransac::Ransac__i.double.i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
+<p><tt class="docutils literal"><span class="pre">error_threshold</span></tt>: Error threshold for determining if a data point is an inlier or not.</p>
+<p><tt class="docutils literal"><span class="pre">min_num_inliers</span></tt>: Minimum number of inliers needed to terminate.</p>
+<p><tt class="docutils literal"><span class="pre">max_iters</span></tt>: Maximum number of iterations to run RANSAC. To set the number of iterations based on the outlier probability, use SetMaxIters.</p>
+</dd></dl>
+
+<p>Alternatively, you can choose to have the algorithm calculate the maximum number of iterations by specifying the outlier probability and the probability of having an uncontaminated model according to eq 4.18 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a></p>
+<dl class="function">
+<dt id="Ransac::Ransac__i.double.i.double.double">
+ <tt class="descname">Ransac</tt><big>(</big>int <em>min_sample_size</em>, double <em>error_threshold</em>, int <em>min_num_inliers</em>, double <em>outlier_probability</em>, double <em>no_fail_probability</em><em>=0.99</em><big>)</big><a class="headerlink" href="#Ransac::Ransac__i.double.i.double.double" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
+<p><tt class="docutils literal"><span class="pre">error_threshold</span></tt>: Error threshold for determining if a data point is an inlier or not.</p>
+<p><tt class="docutils literal"><span class="pre">min_num_inliers</span></tt>: Minimum number of inliers needed to terminate.</p>
+<p><tt class="docutils literal"><span class="pre">outlier_probability</span></tt>: Probabiliy that a given data point is an outlier.</p>
+<p><tt class="docutils literal"><span class="pre">no_fail_probability</span></tt>: Probability that at least one sample has no outliers.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Prosac">
+<em class="property">class </em><tt class="descname">Prosac</tt><a class="headerlink" href="#Prosac" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>Progressive Sampling Consensus as originally proposed by <a class="reference internal" href="bibliography.html#chum">[Chum]</a>. Input data
+is assumed to have a quality to it, which can then be exposed in your
+sampling strategy by smartly sampling the high quality data points first,
+then progressively sampling the rest of the data set. In the worst case, this
+algorithm degenerates to RANSAC, but typically is significantly faster.</div></blockquote>
+<dl class="function">
+<dt id="Prosac::Prosac__i.double.i.i">
+ <tt class="descname">Prosac</tt><big>(</big>int <em>min_sample_size</em>, double <em>error_threshold</em>, int <em>min_num_inliers</em>, int <em>max_iters</em><big>)</big><a class="headerlink" href="#Prosac::Prosac__i.double.i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
+<p><tt class="docutils literal"><span class="pre">error_threshold</span></tt>: Error threshold for determining if a data point is an inlier or not.</p>
+<p><tt class="docutils literal"><span class="pre">min_num_inliers</span></tt>: Minimum number of inliers needed to terminate.</p>
+<p><tt class="docutils literal"><span class="pre">max_iters</span></tt>: Maximum number of iterations to run PROSAC. To set the number of iterations based on the outlier probability, use SetMaxIters.</p>
+</dd></dl>
+
+<p><strong>NOTE:</strong> the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method for prosace assumes the data is sorted by quality! That is, that the highest quality data point is first, and the worst quality data point is last in the input vector.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mlesac">
+<em class="property">class </em><tt class="descname">Mlesac</tt><a class="headerlink" href="#Mlesac" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generalization of RANSAC that chooses to maximize the likelihood of an estimation rather than the inlier count. Proposed by <a class="reference internal" href="bibliography.html#torr">[Torr]</a> et. al.</p>
+<dl class="function">
+<dt id="Mlesac::Mlesac__i.double.double.double.double.std::vector:double:CR.double">
+ <tt class="descname">Mlesac</tt><big>(</big>int <em>min_sample_size</em>, double <em>inlier_mean</em>, double <em>inlier_sigma</em>, double <em>search_left</em>, double <em>search_right</em>, const std::vector&lt;double&gt;&amp; <em>confidence</em>, double <em>confidence_threshold</em><big>)</big><a class="headerlink" href="#Mlesac::Mlesac__i.double.double.double.double.std::vector:double:CR.double" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
+<p><tt class="docutils literal"><span class="pre">inline_mean</span></tt>: Mean of inlier noise distribution.</p>
+<p><tt class="docutils literal"><span class="pre">inlier_sigma</span></tt>: Sigma of the inlier noise distribution.</p>
+<p><tt class="docutils literal"><span class="pre">search_left</span></tt>: Left bound of the search region. e.g. -100px for image correspondences</p>
+<p><tt class="docutils literal"><span class="pre">search_right</span></tt>: Right bound of the search region. e.g. 100px for image correspondences</p>
+<p><tt class="docutils literal"><span class="pre">confidence</span></tt>: Vector containing the confidences of each data point.</p>
+<p><tt class="docutils literal"><span class="pre">confidence_threshold</span></tt>: Correspondances above this are considered inliers.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Arrsac">
+<em class="property">class </em><tt class="descname">Arrsac</tt><a class="headerlink" href="#Arrsac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adaptive Real-Time Consensus is a method proposed by <a class="reference internal" href="bibliography.html#raguram">[Raguram]</a> that utilizes
+pre-emptive techniques to perform a partially depth-first evaluation of many
+generated hypotheses at once. This allows for a bounded running time while
+pursuing only the models which are most likely to lead to high quality
+results. This results in a very fast method which can be used for real-time applications.</p>
+<dl class="function">
+<dt id="Arrsac::Arrsac__i.double.i.i">
+ <tt class="descname">Arrsac</tt><big>(</big>int <em>min_sample_size</em>, double <em>error_thresh</em>, int <em>max_candidate_hyps</em><em>=500</em>, int <em>block_size</em><em>=100</em><big>)</big><a class="headerlink" href="#Arrsac::Arrsac__i.double.i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model.</p>
+<p><tt class="docutils literal"><span class="pre">error_thresh</span></tt>: Error threshold for determining inliers vs. outliers. i.e. if the error is below this, the data point is an inlier.</p>
+<p><tt class="docutils literal"><span class="pre">max_candidate_hyps</span></tt>: Maximum number of hypotheses in the initial hypothesis set</p>
+<p><tt class="docutils literal"><span class="pre">block_size</span></tt>: Number of data points a hypothesis is evaluated against before preemptive ordering is used.</p>
+</dd></dl>
+
+<p><strong>NOTE</strong>: This method works for all the unit tests currently in Theia, but needs to be tested further to ensure correctness. Use with caution.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Recon">
+<em class="property">class </em><tt class="descname">Recon</tt><a class="headerlink" href="#Recon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Residual Consensus estimation as proposed by <a class="reference internal" href="bibliography.html#raguramfrahm">[RaguramFrahm]</a>. The driving idea
+is to generate several models from random samples, then compare the
+distribution of their residuals. If the same data points all have small
+residuals, then these points are likely to be inliers. If enough models agree
+with each other on this principle, then the models are likely to be drawn from
+inliers (i.e. uncontaminated models). For more details, refer to the paper.</p>
+<dl class="function">
+<dt id="Recon::Recon__i.i.double">
+ <tt class="descname">Recon</tt><big>(</big>int <em>min_sample_size</em>, int <em>min_consisten_models</em>, double <em>sigma_max</em><big>)</big><a class="headerlink" href="#Recon::Recon__i.i.double" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
+<p><tt class="docutils literal"><span class="pre">min_consistent_models</span></tt>: Number of consistent models that must be generated before a solution is determined.</p>
+<p><tt class="docutils literal"><span class="pre">sigma_max</span></tt>: A <em>rough</em> estimate of the maximum noise variance of the inlier poitns. This only needs to be correct up to an order of magnitude in order to be useful.</p>
+</dd></dl>
+
+<p><strong>NOTE</strong>: Our implementation was not able to achieve the stability that the paper records. We had great difficulty in distinguishing all-outliers cases with all-inliers cases using the KS test as recommended. Thus, the current implementation requires a maximum estimation of sigma (the inlier noise) to be provided.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="implementing-a-new-ransac-method">
+<h2>Implementing a New RANSAC Method<a class="headerlink" href="#implementing-a-new-ransac-method" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensusEstimator</span></tt> class consists of two main items: a
+<tt class="xref cpp cpp-class docutils literal"><span class="pre">Sampler</span></tt> and a <tt class="xref cpp cpp-class docutils literal"><span class="pre">QualityMeasurement</span></tt>. These two members specify
+the most important aspects of most RANSAC techniques: how the data is sampled
+(<tt class="xref cpp cpp-class docutils literal"><span class="pre">Sampler</span></tt>) and how the model quality (or, conversely, error) is measured
+(<tt class="xref cpp cpp-class docutils literal"><span class="pre">QualityMeasurement</span></tt>). Adjusting the <tt class="xref cpp cpp-class docutils literal"><span class="pre">Sampler</span></tt> is how techniques
+such as PROSAC achieve success. Adjusting the measurement of model quality from
+the trivial method (e.g. counting inliers) is how methods such as MLESAC achieve
+good results. Both the <tt class="xref cpp cpp-class docutils literal"><span class="pre">Sampler</span></tt> and <tt class="xref cpp cpp-class docutils literal"><span class="pre">QualityMeasurement</span></tt> classes
+are pure virtual classes that must be derived for all RANSAC methods. Further,
+the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method implemented in the <tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensusEstimator</span></tt>
+base class performs a typical RANSAC style routine, sampling according to the
+<tt class="xref cpp cpp-class docutils literal"><span class="pre">Sampler</span></tt> and <tt class="xref cpp cpp-class docutils literal"><span class="pre">QualityMeasurement</span></tt> specified.</p>
+<p>To implement a new RANSAC method, you should create a class derived from
+<tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensusEstimator</span></tt>. Most methods will probably involve simply
+using a new sampler or quality measurement class, as the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt>
+function will not change and can simply be inherited from the
+<tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensus</span></tt> class. In those cases, you can follow the model of the
+<a class="reference internal" href="#Ransac" title="Ransac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Ransac</span></tt></a> class to specify your new RANSAC-variant class:</p>
+<blockquote>
+<div><div class="highlight-c++"><div class="highlight"><pre><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">Datum</span><span class="p">,</span> <span class="k">class</span> <span class="nc">Model</span><span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">Ransac</span> <span class="o">:</span> <span class="k">public</span> <span class="n">SampleConsensusEstimator</span><span class="o">&lt;</span><span class="n">Datum</span><span class="p">,</span> <span class="n">Model</span><span class="o">&gt;</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+
+  <span class="n">Ransac</span><span class="p">(</span><span class="kt">int</span> <span class="n">min_sample_size</span><span class="p">,</span>
+         <span class="kt">double</span> <span class="n">error_threshold</span><span class="p">,</span>
+         <span class="kt">int</span> <span class="n">min_num_inliers</span><span class="p">,</span>
+         <span class="kt">int</span> <span class="n">max_iters</span><span class="p">)</span>
+    <span class="o">:</span> <span class="n">SampleConsensusEstimator</span><span class="o">&lt;</span><span class="n">Datum</span><span class="p">,</span> <span class="n">Model</span><span class="o">&gt;</span><span class="p">(</span>
+        <span class="k">new</span> <span class="n">RandomSampler</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;</span><span class="p">(</span><span class="n">min_sample_size</span><span class="p">),</span>
+        <span class="k">new</span> <span class="n">InlierSupport</span><span class="p">(</span><span class="n">error_threshold</span><span class="p">,</span>
+                          <span class="n">min_num_inliers</span><span class="p">),</span>
+        <span class="n">max_iters</span><span class="p">)</span> <span class="p">{}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>This is all that the <a class="reference internal" href="#Ransac" title="Ransac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Ransac</span></tt></a> class needs to specify, and the
+<tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> function implemented in the base class
+(<tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensusEstimator</span></tt>) will use the <tt class="xref cpp cpp-class docutils literal"><span class="pre">RandomSampler</span></tt> to
+randomly sample the data, and <tt class="xref cpp cpp-class docutils literal"><span class="pre">InlierSupport</span></tt> to calculate inliers. Of
+course, <tt class="xref cpp cpp-class docutils literal"><span class="pre">RandomSampler</span></tt> and <tt class="xref cpp cpp-class docutils literal"><span class="pre">InliersSupport</span></tt> are derived classes
+of <tt class="xref cpp cpp-class docutils literal"><span class="pre">Sampler</span></tt> and <tt class="xref cpp cpp-class docutils literal"><span class="pre">QualityMeasurement</span></tt> respectively. See the code
+for more details.</p>
+<p>If you want to create a new RANSAC method that involves changing the way
+estimation happens, your class can override the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method. For our
+implementation, <a class="reference internal" href="#Recon" title="Recon"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Recon</span></tt></a> and <a class="reference internal" href="#Arrsac" title="Arrsac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Arrsac</span></tt></a> both do this. See the code
+for those classes for a good example on how you should override the
+<tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+<h3><a href="index.html">Theia</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Documentation and Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Ransac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributions.html">Contribuing to Theia</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorials.html"
+                        title="previous chapter">Documentation and Tutorials</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pose.html"
+                        title="next chapter">Pose and Resectioning</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pose.html" title="Pose and Resectioning"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorials.html" title="Documentation and Tutorials"
+             >previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="tutorials.html" >Documentation and Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+<div class="footer">
+    &copy; Copyright 2013, Chris Sweeney.
+</div>
+
+
+
+
+
+  </body>
+</html>
