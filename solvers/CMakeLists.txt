@@ -6,7 +6,8 @@ CC_LIBRARY(arrsac arrsac.cc math/probability/sequential_probability_ratio)
 
 # RECON
 # NOTE: recon.cc is a dummy file to make this compile!
-CC_LIBRARY(recon recon.cc math/probability/kolmogorov_smirnoff)
+#CC_LIBRARY(recon recon.cc math/probability/kolmogorov_smirnoff)
+HEADER_LIBRARY(recon recon.h math/probability/kolmogorov_smirnoff)
 
 # Tests:
 IF (${BUILD_TESTING})
