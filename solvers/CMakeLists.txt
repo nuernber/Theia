@@ -1,12 +1,9 @@
 # See CMakeLists.txt in base dir for macro definition
 
 # ARRSAC
-# NOTE: arrsac.cc is a dummy file to make this compile!
-CC_LIBRARY(arrsac arrsac.cc math/probability/sequential_probability_ratio)
+HEADER_LIBRARY(arrsac arrsac.h math/probability/sequential_probability_ratio)
 
 # RECON
-# NOTE: recon.cc is a dummy file to make this compile!
-#CC_LIBRARY(recon recon.cc math/probability/kolmogorov_smirnoff)
 HEADER_LIBRARY(recon recon.h math/probability/kolmogorov_smirnoff)
 
 # Tests:

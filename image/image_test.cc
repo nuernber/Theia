@@ -31,8 +31,25 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
+#include <chrono>
+#include <math.h>
+#include <random>
+#include <vector>
 
-// This is a dummy file so that CMake will compile correctly! CMake does not
-// handle header files (recon.h is header-only because it is templated) well,
-// and I have not found a way to link a header-only target to a static
-// library. Putting this dummy cc file will allow this to happen.
+#include <cvd/image.h>
+
+#include <gflags/gflags.h>
+#include "gtest/gtest.h"
+#include "image/image.h"
+#include "test/test_utils.h"
+
+DEFINE_string(test_img_dir, "test/data", "Directory where the test images are "
+              "located");
+
+namespace theia {
+
+TEST(Image, Input) {
+  
+}
+
+}  // namespace theia

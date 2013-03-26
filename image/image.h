@@ -72,8 +72,9 @@ class Image {
   
   // accessors.
 
-  // GetImage.
   
+  // GetImage.
+ CVD:Image<T> GetImage() { return image_; }
   
  protected:
   CVD::Image<T> image_;
