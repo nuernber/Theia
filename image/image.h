@@ -35,46 +35,53 @@
 #define IMAGE_IMAGE_H_
 
 #include <cvd/image.h>
+#include <cvd/image_io.h>
 #include <string>
 
 namespace theia {
 
+// A general Image class for all images used in Theia. This is basically a
+// wrapper for the libCVD Image class. Note the typedefs at the bottom.
 template <typename T>
 class Image {
  public:
-  // Constructors
   Image() {}
-
+  ~Image() {}
+  
   // Read from file.
-  Image(string filename) { image_ = CVD::img_load(filename); }
+  explicit Image(std::string filename) { image_ = CVD::img_load(filename); }
 
   // Copy from a CVD image. Only copies the pointer. See DeepCopy for a full
   // copy.
   Image(CVD::Image<T> copy_img) { image_ = copy_img; }
 
-  // Copy from Image. 
-  Image(Image<T> copy_img) { *this = copy_img; };
+  // Copy from Image. Only increases reference count.
+  Image(const Image<T>& copy_img) { *this = copy_img; };
 
-  // Deep copy.
-  DeepCopy(Image<T> copy_img) { image_ = copy_img.copy_from_me(); }
+  // Clones via deep copy.
+  Image<T> Clone() { return Image(image_.copy_from_me()); }
   
-  // Destructor.
-  ~Image() {}
-
-
+  // Deep copies the input to this.
+  void DeepCopy(Image<T> copy_img) { image_ = copy_img.copy_from_me(); }
+  
   // Write image to file.
-  void Write(string filename) { CVD::img_save(image_, filename); }
+  void Write(std::string filename) { CVD::img_save(image_, filename); }
   
   // Width, height, depth.
   int Width() { return image_.size().x; }
   int Height() { return image_.size().y; }
   
-  
   // accessors.
-
+  T* operator[] (int row) { return image_[row]; }
+  const T* operator[] (int row) const { return image_[row]; }
   
   // GetImage.
- CVD:Image<T> GetImage() { return image_; }
+  CVD::Image<T>& GetCVDImage() { return image_; }
+  const CVD::Image<T>& GetCVDImage() const { return image_; }
+
+  // Get pixel data as array.
+  T* Data() { return image_.data(); }
+  const T* Data() const { return image_.data(); }
   
  protected:
   CVD::Image<T> image_;
@@ -86,17 +93,6 @@ typedef Image<CVD::Rgb<float> > RGBImage;
 
 // Grayscale Image shorthand.
 typedef Image<float> GrayImage;
-
-// Add specialized methods for RGB Images.
-class RGBImage {
-
-
-};
-
-// Add specialized methods for Grayscale Images.
-class GrayImage {
-
-};
 
 }  // namespace theia
 

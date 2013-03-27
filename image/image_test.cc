@@ -34,6 +34,8 @@
 #include <chrono>
 #include <math.h>
 #include <random>
+#include <stdio.h>
+#include <string>
 #include <vector>
 
 #include <cvd/image.h>
@@ -43,13 +45,121 @@
 #include "image/image.h"
 #include "test/test_utils.h"
 
-DEFINE_string(test_img_dir, "test/data", "Directory where the test images are "
-              "located");
+DEFINE_string(test_img, "test1.jpg", "Directory where the test images "
+              "are located");
 
 namespace theia {
+namespace {
+std::string img_filename =
+    THEIA_TEST_DATA_DIR + std::string("/") + FLAGS_test_img;
 
-TEST(Image, Input) {
+#define ASSERT_RGB_IMG_EQ(cvd_img, theia_img, rows, cols) \
+  for (int i = 0; i < rows; i++) { \
+    for (int j = 0; j < cols; j++) { \
+      ASSERT_EQ(cvd_img[i][j].red, theia_img[i][j].red); \
+      ASSERT_EQ(cvd_img[i][j].green, theia_img[i][j].green); \
+      ASSERT_EQ(cvd_img[i][j].blue, theia_img[i][j].blue); \
+    } \
+  } 
+}
+
+#define ASSERT_GRAY_IMG_EQ(cvd_img, theia_img, rows, cols) \
+  for (int i = 0; i < rows; i++) \
+    for (int j = 0; j < cols; j++) \
+      ASSERT_EQ(cvd_img[i][j], theia_img[i][j]); \
+
+// Test that inputting the old fashioned way is the same as through our class.
+TEST(Image, RGBInput) {
+  CVD::Image<CVD::Rgb<float> > cvd_img = CVD::img_load(img_filename);
+
+  RGBImage theia_img(img_filename);
+
+  int rows = cvd_img.size().y;
+  int cols = cvd_img.size().x;
+
+  // Assert each pixel value is exactly the same!
+  ASSERT_RGB_IMG_EQ(cvd_img, theia_img, rows, cols);
+}
+
+// Test that width and height methods work.
+TEST(Image, RGBWidthHeight) {
+  CVD::Image<CVD::Rgb<float> > cvd_img = CVD::img_load(img_filename);
+  RGBImage theia_img(img_filename);
+
+  int true_height = cvd_img.size().y;
+  int true_width = cvd_img.size().x;
+
+  ASSERT_EQ(theia_img.Width(), true_width);
+  ASSERT_EQ(theia_img.Height(), true_height);
+}
+
+TEST(Image, RGBGetImage) {
+  CVD::Image<CVD::Rgb<float> > cvd_img = CVD::img_load(img_filename);
+  RGBImage theia_img(img_filename);
+  CVD::Image<CVD::Rgb<float> > theia_cvd_img = theia_img.GetCVDImage();
   
+  int rows = cvd_img.size().y;
+  int cols = cvd_img.size().x;
+
+  // Assert each pixel value is exactly the same!
+  ASSERT_RGB_IMG_EQ(cvd_img, theia_cvd_img, rows, cols);
+}
+
+TEST(Image, RGBClone) {
+  RGBImage theia_img(img_filename);
+  RGBImage theia2_img = theia_img.Clone();
+
+  int rows = theia_img.Height();
+  int cols = theia_img.Width();
+
+  ASSERT_RGB_IMG_EQ(theia_img, theia2_img, rows, cols);
+}
+
+// Test that inputting the old fashioned way is the same as through our class.
+TEST(Image, GrayInput) {
+  CVD::Image<float> cvd_img = CVD::img_load(img_filename);
+
+  GrayImage theia_img(img_filename);
+
+  int rows = cvd_img.size().y;
+  int cols = cvd_img.size().x;
+
+  // Assert each pixel value is exactly the same!
+  ASSERT_GRAY_IMG_EQ(cvd_img, theia_img, rows, cols);
+}
+
+// Test that width and height methods work.
+TEST(Image, GrayWidthHeight) {
+  CVD::Image<float> cvd_img = CVD::img_load(img_filename);
+  GrayImage theia_img(img_filename);
+
+  int true_height = cvd_img.size().y;
+  int true_width = cvd_img.size().x;
+
+  ASSERT_EQ(theia_img.Width(), true_width);
+  ASSERT_EQ(theia_img.Height(), true_height);
+}
+
+TEST(Image, GrayGetImage) {
+  CVD::Image<float> cvd_img = CVD::img_load(img_filename);
+  GrayImage theia_img(img_filename);
+  CVD::Image<float> theia_cvd_img = theia_img.GetCVDImage();
+  
+  int rows = cvd_img.size().y;
+  int cols = cvd_img.size().x;
+
+  // Assert each pixel value is exactly the same!
+  ASSERT_GRAY_IMG_EQ(cvd_img, theia_cvd_img, rows, cols);
+}
+
+TEST(Image, GrayClone) {
+  GrayImage theia_img(img_filename);
+  GrayImage theia2_img = theia_img.Clone();
+
+  int rows = theia_img.Height();
+  int cols = theia_img.Width();
+
+  ASSERT_GRAY_IMG_EQ(theia_img, theia2_img, rows, cols);
 }
 
 }  // namespace theia
