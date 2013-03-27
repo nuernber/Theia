@@ -2,7 +2,7 @@
 
 .. default-domain:: cpp
 
-.. _tutorial-ransac:
+.. _documentation-ransac:
 
 ======
 Ransac

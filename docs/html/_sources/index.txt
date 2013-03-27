@@ -14,7 +14,7 @@ Mapping (SLAM) systems.
 * Download the latest `release <https://github.com/kip622/Theia>`_ or clone the
   `repo <https://github.com/kip622/Theia>`_ for development.
 
-* Read the :ref:`chapter-tutorials` guide
+* Read the :ref:`chapter-documentation` and the :ref:`chapter-tutorials` guide
 
 
 
@@ -23,6 +23,7 @@ Mapping (SLAM) systems.
    :hidden:
 
    building
+   documentation
    tutorials
    contributions
    acknowledgements

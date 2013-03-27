@@ -1,7 +1,7 @@
 .. _chapter-contributing:
 
 ====================
-Contribuing to Theia
+Contributing to Theia
 ====================
 
 We welcome and encourage contributions to Theia, whether they are new features,
@@ -30,21 +30,28 @@ ensure the usage of the code (or to prove the bug is fixed!).
 CMake
 =====
 
-We have implemented some particular strategies worth noting in our CMake files. We choose to break up the files in Theia into targets. This makes things simpler when compiling -- we only need to include the relevant targets. True, when the library is compiled as a whole all targets will be included anyways, but this strategy reduces the compile time significantly during development and testing.
+We have implemented some particular strategies worth noting in our CMake files. We choose to break up the files in Theia into targets. This makes things simpler when compiling -- we only need to include the relevant targets. True, when the library is compiled as a whole all targets will be included anyways, but this strategy reduces the compile time significantly during development and testing. Further, these macros will automatically include the proper external libraries for you, so you will only need to specify the internal dependencies.
 
 We have defined a CMake macro to aid in building source targets:
 
-.. function:: CC_LIBRARY(target_name source_file.cc dependency_targets ...)
+.. function:: CC_LIBRARY(target_name source_file dependency_targets ...)
   
   ``target_name``: Name of the target to be created
   
-  ``source_file.cc``: The c++ source file used to generate the target
+  ``source_file``: The c++ source file used to generate the target (should end in .cc)
 
   ``dependency_targets ...``: A space-delimited list (can be empty) of all targets that this target depends on.
 
 **NOTE** targets are generated according to target_name and the directory where the target resides. For instance, the target "essential_matrix" inside the folder vision/models/ will be referenced as "vision/models/essential_matrix" after it is generated. This also means that dependency_targets should be listed by their full director/target_name style.
 
-We have also implemented a similar macro for testing:
+Similarly, there is a CMake macro for header-only targets
+
+.. function:: HEADER_LIBRARY(target_name header_file dependency_targest ...)
+
+  ``source_file``: The c++ header file used to generate the target (should end in .h)
+
+
+Finally, we have also implemented a similar macro for testing:
 
 .. function:: GTEST(test_name dependency_targets)
 

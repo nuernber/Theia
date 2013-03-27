@@ -8,7 +8,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
 
-    <title>Contribuing to Theia &mdash; Theia Documentation</title>
+    <title>Contributing to Theia &mdash; Theia Documentation</title>
 
 <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
 
@@ -57,8 +57,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="contribuing-to-theia">
-<span id="chapter-contributing"></span><h1>Contribuing to Theia<a class="headerlink" href="#contribuing-to-theia" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="contributing-to-theia">
+<span id="chapter-contributing"></span><h1>Contributing to Theia<a class="headerlink" href="#contributing-to-theia" title="Permalink to this headline">¶</a></h1>
 <p>We welcome and encourage contributions to Theia, whether they are new features,
 bug fixes or tests. The <a class="reference external" href="http://groups.google.com/group/theia-vision-library">Theia mailing list</a> is the best place for
 all development related discussions. Please consider joining it. If you have an
@@ -76,18 +76,25 @@ ensure the usage of the code (or to prove the bug is fixed!).</p>
 </div>
 <div class="section" id="cmake">
 <h2>CMake<a class="headerlink" href="#cmake" title="Permalink to this headline">¶</a></h2>
-<p>We have implemented some particular strategies worth noting in our CMake files. We choose to break up the files in Theia into targets. This makes things simpler when compiling &#8211; we only need to include the relevant targets. True, when the library is compiled as a whole all targets will be included anyways, but this strategy reduces the compile time significantly during development and testing.</p>
+<p>We have implemented some particular strategies worth noting in our CMake files. We choose to break up the files in Theia into targets. This makes things simpler when compiling &#8211; we only need to include the relevant targets. True, when the library is compiled as a whole all targets will be included anyways, but this strategy reduces the compile time significantly during development and testing. Further, these macros will automatically include the proper external libraries for you, so you will only need to specify the internal dependencies.</p>
 <p>We have defined a CMake macro to aid in building source targets:</p>
 <dl class="function">
 <dt id="CC_LIBRARY">
-<tt class="descname">CC_LIBRARY</tt><big>(</big><em>target_name source_file.cc dependency_targets ...</em><big>)</big><a class="headerlink" href="#CC_LIBRARY" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">CC_LIBRARY</tt><big>(</big><em>target_name source_file dependency_targets ...</em><big>)</big><a class="headerlink" href="#CC_LIBRARY" title="Permalink to this definition">¶</a></dt>
 <dd><p><tt class="docutils literal"><span class="pre">target_name</span></tt>: Name of the target to be created</p>
-<p><tt class="docutils literal"><span class="pre">source_file.cc</span></tt>: The c++ source file used to generate the target</p>
+<p><tt class="docutils literal"><span class="pre">source_file</span></tt>: The c++ source file used to generate the target (should end in .cc)</p>
 <p><tt class="docutils literal"><span class="pre">dependency_targets</span> <span class="pre">...</span></tt>: A space-delimited list (can be empty) of all targets that this target depends on.</p>
 </dd></dl>
 
 <p><strong>NOTE</strong> targets are generated according to target_name and the directory where the target resides. For instance, the target &#8220;essential_matrix&#8221; inside the folder vision/models/ will be referenced as &#8220;vision/models/essential_matrix&#8221; after it is generated. This also means that dependency_targets should be listed by their full director/target_name style.</p>
-<p>We have also implemented a similar macro for testing:</p>
+<p>Similarly, there is a CMake macro for header-only targets</p>
+<dl class="function">
+<dt id="HEADER_LIBRARY">
+<tt class="descname">HEADER_LIBRARY</tt><big>(</big><em>target_name header_file dependency_targest ...</em><big>)</big><a class="headerlink" href="#HEADER_LIBRARY" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">source_file</span></tt>: The c++ header file used to generate the target (should end in .h)</p>
+</dd></dl>
+
+<p>Finally, we have also implemented a similar macro for testing:</p>
 <dl class="function">
 <dt id="GTEST">
 <tt class="descname">GTEST</tt><big>(</big><em>test_name dependency_targets</em><big>)</big><a class="headerlink" href="#GTEST" title="Permalink to this definition">¶</a></dt>
@@ -109,8 +116,9 @@ ensure the usage of the code (or to prove the bug is fixed!).</p>
 <h3><a href="index.html">Theia</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Documentation and Tutorials</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Contribuing to Theia</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Theia Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Contributing to Theia</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#style-and-testing">Style and Testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#cmake">CMake</a></li>
 </ul>

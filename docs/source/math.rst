@@ -2,7 +2,7 @@
 
 .. default-domain:: cpp
 
-.. _tutorial-math:
+.. _documentation-math:
 
 ====
 Math

@@ -2,7 +2,7 @@
 
 .. default-domain:: cpp
 
-.. _tutorial-pose:
+.. _documentation-pose:
 
 =====================
 Pose and Resectioning

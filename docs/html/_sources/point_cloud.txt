@@ -1,4 +1,4 @@
-.. _tutorial-point_cloud:
+.. _documentation-point_cloud:
 
 ===========
 Point Cloud
