@@ -1,0 +1,224 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>Image &mdash; Theia Documentation</title>
+
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+
+
+    
+    <link rel="stylesheet" href="_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/searchtools.js"></script>
+    <link rel="top" title="Theia Documentation" href="index.html" />
+    <link rel="up" title="Documentation" href="documentation.html" />
+    <link rel="next" title="Ransac" href="ransac.html" />
+    <link rel="prev" title="Documentation" href="documentation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ransac.html" title="Ransac"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="documentation.html" title="Documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="image">
+<span id="documentation-image"></span><h1>Image<a class="headerlink" href="#image" title="Permalink to this headline">¶</a></h1>
+<p>Theia provides a basic <a class="reference internal" href="#Image" title="Image"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt></a> class to use for SfM and SLAM
+applications. The class is very lightweight, and is largely a wrapper for the
+<a class="reference external" href="http://www.edwardrosten.com/cvd/cvd/html/index.html">CVD Image class</a> but
+allows for more general use.</p>
+<dl class="class">
+<dt id="RGBImage">
+<em class="property">class </em><tt class="descname">RGBImage</tt><a class="headerlink" href="#RGBImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="GrayImage">
+<em class="property">class </em><tt class="descname">GrayImage</tt><a class="headerlink" href="#GrayImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="Image">
+<em class="property">class </em><tt class="descname">Image</tt><a class="headerlink" href="#Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Images can be stored either as RGB or grayscale, denoted as <a class="reference internal" href="#RGBImage" title="RGBImage"><tt class="xref cpp cpp-class docutils literal"><span class="pre">RGBImage</span></tt></a>
+and <a class="reference internal" href="#GrayImage" title="GrayImage"><tt class="xref cpp cpp-class docutils literal"><span class="pre">GrayImage</span></tt></a> respectively. These are simply template specializations
+of the <a class="reference internal" href="#Image" title="Image"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt></a> class, so their interfaces will be nearly
+identical. Images can be easily read in from a file upon contruction or with
+the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Read()</span></tt> command.</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">string</span> <span class="n">img_filename</span> <span class="o">=</span> <span class="s">&quot;...&quot;</span><span class="p">;</span> <span class="c1">// Image you would like to read in.</span>
+<span class="n">RGBImage</span> <span class="n">my_rgb_image</span><span class="p">(</span><span class="n">img_filename</span><span class="p">);</span>
+
+<span class="c1">// Or alternatively:</span>
+<span class="n">RGBImage</span> <span class="n">my_rgb_image</span><span class="p">;</span>
+<span class="n">my_rgb_image</span><span class="p">.</span><span class="n">Read</span><span class="p">(</span><span class="n">img_filename</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Once an image is loaded, pixel values can be accessed with standard <tt class="docutils literal"><span class="pre">[]</span></tt>
+operators. Pixels are referenced in row then column order.</p>
+<p>When accessing image pixels, either a <tt class="xref cpp cpp-class docutils literal"><span class="pre">RGBPixel</span></tt> or a <tt class="xref cpp cpp-class docutils literal"><span class="pre">Pixel</span></tt>
+will be returned (for <tt class="xref cpp cpp-class docutils literal"><span class="pre">RBGImage</span></tt> and <a class="reference internal" href="#GrayImage" title="GrayImage"><tt class="xref cpp cpp-class docutils literal"><span class="pre">GrayImage</span></tt></a>
+respectively). The <tt class="xref cpp cpp-class docutils literal"><span class="pre">Pixel</span></tt> class is merely a typedef for
+<tt class="xref cpp cpp-class docutils literal"><span class="pre">float</span></tt>, while the <tt class="xref cpp cpp-class docutils literal"><span class="pre">RGBPixel</span></tt> contains members
+<tt class="xref cpp cpp-member docutils literal"><span class="pre">red</span></tt>, <tt class="xref cpp cpp-member docutils literal"><span class="pre">green</span></tt>, and <tt class="xref cpp cpp-member docutils literal"><span class="pre">blue</span></tt> (all type <tt class="xref cpp cpp-class docutils literal"><span class="pre">float</span></tt>).</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="c1">// Load RGB and Grayscale images.</span>
+<span class="n">RGBImage</span> <span class="n">my_rgb_img</span><span class="p">(</span><span class="s">&quot;test_img.jpg&quot;</span><span class="p">);</span>
+<span class="n">GrayImage</span> <span class="n">my_gray_img</span><span class="p">(</span><span class="s">&quot;test_img.jpg&quot;</span><span class="p">);</span>
+
+<span class="c1">// Get the middle pixel location.</span>
+<span class="kt">int</span> <span class="n">middle_row</span> <span class="o">=</span> <span class="n">my_image</span><span class="p">.</span><span class="n">Rows</span><span class="p">()</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">middle_col</span> <span class="o">=</span> <span class="n">my_image</span><span class="p">.</span><span class="n">Cols</span><span class="p">()</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>
+
+<span class="c1">// Grab the middle pixel.</span>
+<span class="n">RGBPixel</span> <span class="n">middle_rgb_pixel</span> <span class="o">=</span> <span class="n">my_rgb_img</span><span class="p">[</span><span class="n">middle_row</span><span class="p">][</span><span class="n">middle_col</span><span class="p">];</span>
+<span class="n">Pixel</span> <span class="n">middle_gray_pixel</span> <span class="o">=</span> <span class="n">my_gray_img</span><span class="p">[</span><span class="n">middle_row</span><span class="p">][</span><span class="n">middle_col</span><span class="p">];</span>
+
+<span class="c1">// Output the RGB Pixel value.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;red = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_rgb_pixel</span><span class="p">.</span><span class="n">red</span>
+          <span class="o">&lt;&lt;</span> <span class="s">&quot; green = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_rgb_pixel</span><span class="p">.</span><span class="n">green</span>
+          <span class="o">&lt;&lt;</span> <span class="s">&quot; blue = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_rgb_pixel</span><span class="p">.</span><span class="n">blue</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+<span class="c1">// Output the grayscale pixel value.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;gray = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_gray_pixel</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>You can also extra patches from images using the <a class="reference internal" href="#Image::SubImage__i.i.i.i" title="Image::SubImage"><tt class="xref cpp cpp-func docutils literal"><span class="pre">SubImage()</span></tt></a> function.</p>
+<dl class="function">
+<dt id="Image::SubImage__i.i.i.i">
+Image&lt;T&gt; <tt class="descname">SubImage</tt><big>(</big>int <em>row</em>, int <em>col</em>, int <em>num_rows</em>, int <em>num_cols</em><big>)</big><a class="headerlink" href="#Image::SubImage__i.i.i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts a sub-image at the given row, col of the size (num_rows,
+num_cols). The row, col given should denote the top-left corner of the
+subwindow to extract. The extracted sub-image will be a copy of the image
+patch in that location, not simply a point to it. <a class="reference internal" href="#Image::SubImage__i.i.i.i" title="Image::SubImage"><tt class="xref cpp cpp-func docutils literal"><span class="pre">SubImage()</span></tt></a> will
+return an <a class="reference internal" href="#Image" title="Image"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt></a> of the same type that it is extracting from.</p>
+</dd></dl>
+
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">RGBImage</span> <span class="n">my_img</span><span class="p">(</span><span class="s">&quot;...&quot;</span><span class="p">);</span>
+
+<span class="c1">// Get the middle pixel location.</span>
+<span class="kt">int</span> <span class="n">middle_row</span> <span class="o">=</span> <span class="n">my_image</span><span class="p">.</span><span class="n">Rows</span><span class="p">()</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">middle_col</span> <span class="o">=</span> <span class="n">my_image</span><span class="p">.</span><span class="n">Cols</span><span class="p">()</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>
+
+<span class="c1">// Extract a 15x15 subimage centered at the middle pixel.</span>
+<span class="kt">int</span> <span class="n">patch_size</span> <span class="o">=</span> <span class="mi">15</span><span class="p">;</span>
+<span class="n">RGBImage</span> <span class="n">middle_sub_img</span> <span class="o">=</span> <span class="n">my_img</span><span class="p">.</span><span class="n">SubImage</span><span class="p">(</span><span class="n">middle_row</span> <span class="o">-</span> <span class="n">patch_size</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                          <span class="n">middle_col</span> <span class="o">-</span> <span class="n">patch_size</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                          <span class="n">patch_size</span><span class="p">,</span>
+                                          <span class="n">patch_size</span><span class="p">);</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+<h3><a href="index.html">Theia</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="documentation.html">Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributions.html">Contributing to Theia</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="documentation.html"
+                        title="previous chapter">Documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ransac.html"
+                        title="next chapter">Ransac</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ransac.html" title="Ransac"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="documentation.html" title="Documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="documentation.html" >Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+<div class="footer">
+    &copy; Copyright 2013, Chris Sweeney.
+</div>
+
+
+
+
+
+  </body>
+</html>
