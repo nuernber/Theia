@@ -41,13 +41,14 @@
 namespace theia {
 
 // A general Image class for all images used in Theia. This is basically a
-// wrapper for the libCVD Image class. Note the typedefs at the bottom.
+// wrapper for the libCVD Image class. Note the typedefs after the class
+// definition as well.
 template <typename T>
 class Image {
  public:
   Image() {}
   ~Image() {}
-  
+
   // Read from file.
   explicit Image(std::string filename) { image_ = CVD::img_load(filename); }
 
@@ -60,21 +61,24 @@ class Image {
 
   // Clones via deep copy.
   Image<T> Clone() { return Image(image_.copy_from_me()); }
-  
+
   // Deep copies the input to this.
   void DeepCopy(Image<T> copy_img) { image_ = copy_img.copy_from_me(); }
-  
+
+  // Read image from file.
+  void Read(std::string filename) { image_ = CVD::img_load(filename); }
+
   // Write image to file.
   void Write(std::string filename) { CVD::img_save(image_, filename); }
-  
-  // Width, height, depth.
-  int Width() { return image_.size().x; }
-  int Height() { return image_.size().y; }
-  
+
+  // Rows, cols.
+  int Rows() { return image_.size().y; }
+  int Cols() { return image_.size().x; }
+
   // accessors.
   T* operator[] (int row) { return image_[row]; }
   const T* operator[] (int row) const { return image_[row]; }
-  
+
   // GetImage.
   CVD::Image<T>& GetCVDImage() { return image_; }
   const CVD::Image<T>& GetCVDImage() const { return image_; }
@@ -82,17 +86,32 @@ class Image {
   // Get pixel data as array.
   T* Data() { return image_.data(); }
   const T* Data() const { return image_.data(); }
-  
+
+  // Extract SubImages from the Image.
+  Image<T> SubImage(int row, int col, int num_rows, int num_cols) {
+    CVD::Image<T> sub_img;
+    sub_img.copy_from(image_.sub_image(CVD::ImageRef(col, row),
+                                       CVD::ImageRef(num_cols, num_rows)));
+    return Image(sub_img);
+  }
+  const Image<T> SubImages(int row, int col,
+                           int num_rows, int num_cols) const {
+    return SubImage(row, col, num_rows, num_cols);
+  }
+
  protected:
   CVD::Image<T> image_;
 
 };
 
+typedef CVD::Rgb<float> RGBPixel;
+typedef float Pixel;
+
 // RGB Image shorthand.
-typedef Image<CVD::Rgb<float> > RGBImage;
+typedef Image<RGBPixel> RGBImage;
 
 // Grayscale Image shorthand.
-typedef Image<float> GrayImage;
+typedef Image<Pixel> GrayImage;
 
 }  // namespace theia
 

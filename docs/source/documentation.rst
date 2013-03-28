@@ -4,7 +4,9 @@
 Documentation
 =============
 
-We have compacted Theia into modules so that each module represents a certain functionality of the library. There are currently 4 main modules in Theia, the contents of which can be added to your program with a single include line for each module. When using Theia in your program, only include the module(s) that are needed for your use.
+We have compacted Theia into modules so that each module represents a certain functionality of the library. There are currently 5 main modules in Theia, the contents of which can be added to your program with a single include line for each module. When using Theia in your program, only include the module(s) that are needed for your use.
+
+* :ref:`documentation-image` - ``#include <theia/image.h>``
 
 * :ref:`documentation-ransac` - ``#include <theia/ransac.h>``
 
@@ -21,7 +23,8 @@ Finally, it should be noted that all the code in Theia is under the namespace th
 .. toctree::
    :maxdepth: 1
    :hidden:
-
+   
+   image
    ransac
    pose
    math

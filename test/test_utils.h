@@ -52,9 +52,15 @@ void InitRandomGenerator() {
   generator.seed(seed);
 }
 
-// Get a random double between lower and upper.
+// Get a random double between lower and upper (inclusive).
 inline double RandDouble(double lower, double upper) {
   std::uniform_real_distribution<double> distribution(lower, upper);
+  return distribution(generator);
+}
+
+// Get a random double between lower and upper (inclusive).
+inline double RandInt(int lower, int upper) {
+  std::uniform_int_distribution<int> distribution(lower, upper);
   return distribution(generator);
 }
 
