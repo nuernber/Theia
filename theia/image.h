@@ -31,14 +31,9 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_MATH_H_
-#define THEIA_MATH_H_
+#ifndef THEIA_IMAGE_H_
+#define THEIA_IMAGE_H_
 
-#include "math/closed_form_polynomial_solver.h"
-#include "math/distribution.h"
-#include "math/matrix/gauss_jordan.h"
-#include "math/polynomial.h"
-#include "math/probability/kolmogorov_smirnoff.h"
-#include "math/probability/sequential_probability_ratio.h"
+#include "theia/image/image.h"
 
-#endif  // THEIA_MATH_H_
+#endif  // THEIA_IMAGE_H_

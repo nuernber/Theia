@@ -116,7 +116,7 @@ TEST(Image, RGBSubImage) {
   RGBImage theia_img(img_filename);
   int rows = theia_img.Rows();
   int cols = theia_img.Cols();
-  RGBImage theia_img_dup = theia_img.SubImage(0, 0, rows, cols);
+  RGBSubImage theia_img_dup = theia_img.GetSubImage(0, 0, rows, cols);
 
   ASSERT_RGB_IMG_EQ(theia_img, theia_img_dup, rows, cols);
 
@@ -130,10 +130,28 @@ TEST(Image, RGBSubImage) {
     CVD::SubImage<RGBPixel> cvd_sub =
         cvd_img.sub_image(CVD::ImageRef(rand_col, rand_row),
                           CVD::ImageRef(patch_size, patch_size));
-    RGBImage theia_sub = theia_img.SubImage(rand_row, rand_col,
-                                            patch_size, patch_size);
+    RGBSubImage theia_sub = theia_img.GetSubImage(rand_row, rand_col,
+                                                  patch_size, patch_size);
     ASSERT_RGB_IMG_EQ(cvd_sub, theia_sub, patch_size, patch_size);
   }
+}
+
+// Test that SubImage is actually just a reference to the original image instead
+// of a copy
+TEST(Image, RGBChangeSubImage) {
+  RGBImage theia_img(img_filename);
+  int rows = theia_img.Rows();
+  int cols = theia_img.Cols();
+  // Grab a subimage.
+  RGBSubImage theia_img_sub = theia_img.GetSubImage(50, 50, 50, 50);
+
+  // Change a pixel in the original image.
+  theia_img[50][50] = RGBPixel(0, 0, 0);
+
+  // See if the change propogates to the subimage.
+  ASSERT_EQ(theia_img[50][50].red, theia_img_sub[0][0].red);
+  ASSERT_EQ(theia_img[50][50].green, theia_img_sub[0][0].green);
+  ASSERT_EQ(theia_img[50][50].blue, theia_img_sub[0][0].blue);
 }
 
 // Test that inputting the old fashioned way is the same as through our class.
@@ -187,7 +205,7 @@ TEST(Image, GraySubImage) {
   GrayImage theia_img(img_filename);
   int rows = theia_img.Rows();
   int cols = theia_img.Cols();
-  GrayImage theia_img_dup = theia_img.SubImage(0, 0, rows, cols);
+  GraySubImage theia_img_dup = theia_img.GetSubImage(0, 0, rows, cols);
 
   ASSERT_GRAY_IMG_EQ(theia_img, theia_img_dup, rows, cols);
 
@@ -201,10 +219,26 @@ TEST(Image, GraySubImage) {
     CVD::SubImage<Pixel> cvd_sub =
         cvd_img.sub_image(CVD::ImageRef(rand_col, rand_row),
                           CVD::ImageRef(patch_size, patch_size));
-    GrayImage theia_sub = theia_img.SubImage(rand_row, rand_col,
-                                             patch_size, patch_size);
+    GraySubImage theia_sub = theia_img.GetSubImage(rand_row, rand_col,
+                                                   patch_size, patch_size);
     ASSERT_GRAY_IMG_EQ(cvd_sub, theia_sub, patch_size, patch_size);
   }
+}
+
+// Test that SubImage is actually just a reference to the original image instead
+// of a copy
+TEST(Image, GrayChangeSubImage) {
+  GrayImage theia_img(img_filename);
+  int rows = theia_img.Rows();
+  int cols = theia_img.Cols();
+  // Grab a subimage.
+  GraySubImage theia_img_sub = theia_img.GetSubImage(50, 50, 50, 50);
+
+  // Change a pixel in the original image.
+  theia_img[50][50] = Pixel(0);
+
+  // See if the change propogates to the subimage.
+  ASSERT_EQ(theia_img[50][50], theia_img_sub[0][0]);
 }
 
 }  // namespace theia

@@ -15,7 +15,4 @@ We attempt to provide sufficient documentation in these tutorials but often furt
    :maxdepth: 1
    :hidden:
 
-   ransac
-   pose
-   math
-   point_cloud
+

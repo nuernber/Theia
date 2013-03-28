@@ -1,8 +1,8 @@
 .. _chapter-contributing:
 
-====================
+=====================
 Contributing to Theia
-====================
+=====================
 
 We welcome and encourage contributions to Theia, whether they are new features,
 bug fixes or tests. The `Theia mailing list

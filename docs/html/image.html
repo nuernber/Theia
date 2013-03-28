@@ -61,7 +61,7 @@
             
   <div class="section" id="image">
 <span id="documentation-image"></span><h1>Image<a class="headerlink" href="#image" title="Permalink to this headline">¶</a></h1>
-<p>Theia provides a basic <a class="reference internal" href="#Image" title="Image"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt></a> class to use for SfM and SLAM
+<p>Theia provides a basic <tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt> class to use for SfM and SLAM
 applications. The class is very lightweight, and is largely a wrapper for the
 <a class="reference external" href="http://www.edwardrosten.com/cvd/cvd/html/index.html">CVD Image class</a> but
 allows for more general use.</p>
@@ -76,11 +76,11 @@ allows for more general use.</p>
 <dd></dd></dl>
 
 <dl class="class">
-<dt id="Image">
-<em class="property">class </em><tt class="descname">Image</tt><a class="headerlink" href="#Image" title="Permalink to this definition">¶</a></dt>
+<dt id="Image:T:">
+<em class="property">class </em><tt class="descname">Image&lt;T&gt;</tt><a class="headerlink" href="#Image:T:" title="Permalink to this definition">¶</a></dt>
 <dd><p>Images can be stored either as RGB or grayscale, denoted as <a class="reference internal" href="#RGBImage" title="RGBImage"><tt class="xref cpp cpp-class docutils literal"><span class="pre">RGBImage</span></tt></a>
 and <a class="reference internal" href="#GrayImage" title="GrayImage"><tt class="xref cpp cpp-class docutils literal"><span class="pre">GrayImage</span></tt></a> respectively. These are simply template specializations
-of the <a class="reference internal" href="#Image" title="Image"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt></a> class, so their interfaces will be nearly
+of the <a class="reference internal" href="#Image:T:" title="Image&lt;T&gt;"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image&lt;T&gt;</span></tt></a> class, so their interfaces will be nearly
 identical. Images can be easily read in from a file upon contruction or with
 the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Read()</span></tt> command.</p>
 <div class="highlight-c++"><div class="highlight"><pre><span class="n">string</span> <span class="n">img_filename</span> <span class="o">=</span> <span class="s">&quot;...&quot;</span><span class="p">;</span> <span class="c1">// Image you would like to read in.</span>
@@ -119,15 +119,17 @@ respectively). The <tt class="xref cpp cpp-class docutils literal"><span class="
 <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;gray = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_gray_pixel</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>You can also extra patches from images using the <a class="reference internal" href="#Image::SubImage__i.i.i.i" title="Image::SubImage"><tt class="xref cpp cpp-func docutils literal"><span class="pre">SubImage()</span></tt></a> function.</p>
+<p>You can also extra patches from images using the <a class="reference internal" href="#Image:T:::GetSubImage__i.i.i.i" title="Image&lt;T&gt;::GetSubImage"><tt class="xref cpp cpp-func docutils literal"><span class="pre">GetSubImage()</span></tt></a> function.</p>
 <dl class="function">
-<dt id="Image::SubImage__i.i.i.i">
-Image&lt;T&gt; <tt class="descname">SubImage</tt><big>(</big>int <em>row</em>, int <em>col</em>, int <em>num_rows</em>, int <em>num_cols</em><big>)</big><a class="headerlink" href="#Image::SubImage__i.i.i.i" title="Permalink to this definition">¶</a></dt>
+<dt id="Image:T:::GetSubImage__i.i.i.i">
+SubImage&lt;T&gt; <tt class="descname">GetSubImage</tt><big>(</big>int <em>row</em>, int <em>col</em>, int <em>num_rows</em>, int <em>num_cols</em><big>)</big><a class="headerlink" href="#Image:T:::GetSubImage__i.i.i.i" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extracts a sub-image at the given row, col of the size (num_rows,
 num_cols). The row, col given should denote the top-left corner of the
-subwindow to extract. The extracted sub-image will be a copy of the image
-patch in that location, not simply a point to it. <a class="reference internal" href="#Image::SubImage__i.i.i.i" title="Image::SubImage"><tt class="xref cpp cpp-func docutils literal"><span class="pre">SubImage()</span></tt></a> will
-return an <a class="reference internal" href="#Image" title="Image"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt></a> of the same type that it is extracting from.</p>
+subwindow to extract. The extracted sub-image will be a reference to the
+patch in the original image, not a copy of it. However, the <tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt>
+class that the patch was extracted from will still own the image so care
+must be taken when deleting images. <a class="reference internal" href="#Image:T:::GetSubImage__i.i.i.i" title="Image&lt;T&gt;::GetSubImage"><tt class="xref cpp cpp-func docutils literal"><span class="pre">GetSubImage()</span></tt></a> will return a
+<a class="reference internal" href="#SubImage:T:" title="SubImage&lt;T&gt;"><tt class="xref cpp cpp-class docutils literal"><span class="pre">SubImage&lt;T&gt;</span></tt></a> object of the same type that it is extracting from.</p>
 </dd></dl>
 
 <div class="highlight-c++"><div class="highlight"><pre><span class="n">RGBImage</span> <span class="n">my_img</span><span class="p">(</span><span class="s">&quot;...&quot;</span><span class="p">);</span>
@@ -138,13 +140,28 @@ return an <a class="reference internal" href="#Image" title="Image"><tt class="x
 
 <span class="c1">// Extract a 15x15 subimage centered at the middle pixel.</span>
 <span class="kt">int</span> <span class="n">patch_size</span> <span class="o">=</span> <span class="mi">15</span><span class="p">;</span>
-<span class="n">RGBImage</span> <span class="n">middle_sub_img</span> <span class="o">=</span> <span class="n">my_img</span><span class="p">.</span><span class="n">SubImage</span><span class="p">(</span><span class="n">middle_row</span> <span class="o">-</span> <span class="n">patch_size</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-                                          <span class="n">middle_col</span> <span class="o">-</span> <span class="n">patch_size</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-                                          <span class="n">patch_size</span><span class="p">,</span>
-                                          <span class="n">patch_size</span><span class="p">);</span>
+<span class="n">RGBSubImage</span> <span class="n">middle_sub_img</span> <span class="o">=</span> <span class="n">my_img</span><span class="p">.</span><span class="n">SubImage</span><span class="p">(</span><span class="n">middle_row</span> <span class="o">-</span> <span class="n">patch_size</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                             <span class="n">middle_col</span> <span class="o">-</span> <span class="n">patch_size</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                             <span class="n">patch_size</span><span class="p">,</span>
+                                             <span class="n">patch_size</span><span class="p">);</span>
 </pre></div>
 </div>
 </dd></dl>
+
+<dl class="class">
+<dt id="SubImage:T:">
+<em class="property">class </em><tt class="descname">SubImage&lt;T&gt;</tt><a class="headerlink" href="#SubImage:T:" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="RGBSubImage">
+<em class="property">class </em><tt class="descname">RGBSubImage</tt><a class="headerlink" href="#RGBSubImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="GraySubImage">
+<em class="property">class </em><tt class="descname">GraySubImage</tt><a class="headerlink" href="#GraySubImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 
