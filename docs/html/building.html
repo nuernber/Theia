@@ -32,7 +32,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" />
-    <link rel="next" title="Theia Documentation" href="documentation.html" />
+    <link rel="next" title="Documentation" href="documentation.html" />
     <link rel="prev" title="Theia" href="index.html" /> 
   </head>
   <body>
@@ -43,7 +43,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="documentation.html" title="Theia Documentation"
+          <a href="documentation.html" title="Documentation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Theia"
@@ -67,13 +67,17 @@
 <li>C++11 is needed for certain functionality and added models to the stdlib. C++0x will probably work in most cases, but is not guaranteed. As such, you need a compiler that supports C++11 appropriately.</li>
 <li><a class="reference external" href="http://www.cmake.org">CMake</a> is a cross platform build system. Theia needs a relatively recent version of CMake (version 2.8.0 or better).</li>
 <li><a class="reference external" href="http://eigen.tuxfamily.org/index.php?title=Main_Page">eigen3</a> is used extensively for doing nearly all the matrix and linear algebra operations.</li>
+<li><a class="reference external" href="http://www.edwardrosten.com/cvd">libCVD</a> is used as the underlying image class for Theia.</li>
 <li><a class="reference external" href="https://code.google.com/p/ceres-solver/">Ceres Solver</a> is a library for solving non-linear least squares problems. In particular, Theia uses it for Bundle Adjustment. Install Ceres to the &#8220;libraries&#8221; folder inside the Theia source.</li>
 </ol>
 <p><strong>NOTE</strong>: Theia also depends on the following libraries, but they are included in the installation of Ceres so you do not need to reinstall them.</p>
-<ol class="arabic simple" start="5">
-<li><a class="reference external" href="http://http://code.google.com/p/googletest">googletest</a> is used for unit tests. Every file in Theia (with a few minor exceptions) is covered by a unittest.</li>
+<ol class="arabic simple" start="6">
 <li><a class="reference external" href="http://http://code.google.com/p/google-glog">google-glog</a> is used for error checking and logging. Ceres needs glog version 0.3.1 or later. Version 0.3 (which ships with Fedora 16) has a namespace bug which prevents Ceres from building.</li>
 <li><a class="reference external" href="http://code.google.com/p/gflags">gflags</a> is a library for processing command line flags. It is used by some of the examples and tests. While it is not strictly necessary to build the library, we strongly recommend building the library with gflags.</li>
+</ol>
+<p>The following libraries are also used, but are included with the Theia distribution</p>
+<ol class="arabic simple" start="8">
+<li><a class="reference external" href="http://http://code.google.com/p/googletest">googletest</a> is used for unit tests. Every file in Theia (with a few minor exceptions) is covered by a unittest.</li>
 </ol>
 </div>
 <div class="section" id="building">
@@ -119,7 +123,7 @@ make <span class="nb">test</span>
 <li class="toctree-l2"><a class="reference internal" href="#customizing-the-build">Customizing the build</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="documentation.html">Theia Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributions.html">Contributing to Theia</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
@@ -132,7 +136,7 @@ make <span class="nb">test</span>
                         title="previous chapter">Theia</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="documentation.html"
-                        title="next chapter">Theia Documentation</a></p>
+                        title="next chapter">Documentation</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -157,7 +161,7 @@ make <span class="nb">test</span>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="documentation.html" title="Theia Documentation"
+          <a href="documentation.html" title="Documentation"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Theia"
