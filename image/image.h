@@ -35,14 +35,15 @@
 #define IMAGE_IMAGE_H_
 
 #define _USE_MATH_DEFINES
-#include <algorithm>
-#include <cmath>
+
 #include <cvd/image.h>
 #include <cvd/image_convert.h>
 #include <cvd/image_io.h>
 #include <glog/logging.h>
 
+#include <algorithm>
 #include <cmath>
+#include <limits>
 #include <string>
 
 namespace theia {
@@ -55,92 +56,92 @@ class Image;
 
 template <typename T>
 class SubImage {
-public:
-explicit SubImage(CVD::SubImage<T> sub) : sub_image_(sub) {}
-~SubImage() {}
+ public:
+  explicit SubImage(CVD::SubImage<T> sub) : sub_image_(sub) {}
+  ~SubImage() {}
 
-// Rows, cols.
-int Rows() const { return sub_image_.size().y; }
-int Cols() const { return sub_image_.size().x; }
+  // Rows, cols.
+  int Rows() const { return sub_image_.size().y; }
+  int Cols() const { return sub_image_.size().x; }
 
-// Accessors.
-T* operator[] (int row) { return sub_image_[row]; }
-const T* operator[] (int row) const { return sub_image_[row]; }
+  // Accessors.
+  T* operator[] (int row) { return sub_image_[row]; }
+  const T* operator[] (int row) const { return sub_image_[row]; }
 
-// Get the Sub Image.
-CVD::SubImage<T>& GetCVDImage() { return sub_image_; }
-const CVD::SubImage<T>& GetCVDImage() const { return sub_image_; }
+  // Get the Sub Image.
+  CVD::SubImage<T>& GetCVDImage() { return sub_image_; }
+  const CVD::SubImage<T>& GetCVDImage() const { return sub_image_; }
 
-// Get a pointer to the data. Note this only returns a pointer to the first
-// position in the sub-image, so it is still possible to access pixels outside
-// of the subimage, since SubImages are pointers to data managed elsewhere.
-T* GetData() { return sub_image_.data(); }
+  // Get a pointer to the data. Note this only returns a pointer to the first
+  // position in the sub-image, so it is still possible to access pixels outside
+  // of the subimage, since SubImages are pointers to data managed elsewhere.
+  T* GetData() { return sub_image_.data(); }
 
-// Return the current SubImage as an Image i.e. copy the data so that the
-// returned Image object owns the copy of the data.
-Image<T> CopyAsImage () const{
-Image<T> new_img;
-new_img.image_.copy_from(sub_image_);
-return new_img;
-}
+  // Return the current SubImage as an Image i.e. copy the data so that the
+  // returned Image object owns the copy of the data.
+  Image<T> CopyAsImage() const {
+    Image<T> new_img;
+    new_img.image_.copy_from(sub_image_);
+    return new_img;
+  }
 
-protected:
-// Only for internal use!
-SubImage() : sub_image_(NULL, CVD::ImageRef(0, 0), 0) {}
-CVD::SubImage<T> sub_image_;
+ protected:
+  // Only for internal use!
+  SubImage() : sub_image_(NULL, CVD::ImageRef(0, 0), 0) {}
+  CVD::SubImage<T> sub_image_;
 };
 
 template <typename T>
 class Image : public SubImage<T> {
-public:
-Image() {}
-~Image() {}
+ public:
+  Image() {}
+  ~Image() {}
 
-// Copy from a CVD image. Only copies the pointer by default. Set to true if
-// you want this object to own the data.
-explicit Image(const CVD::Image<T> copy_img, bool copy = false);
-// Read from file.
-explicit Image(std::string filename);
-// Initialize empty image.
-explicit Image(int rows, int cols);
+  // Copy from a CVD image. Only copies the pointer by default. Set to true if
+  // you want this object to own the data.
+  explicit Image(const CVD::Image<T> copy_img, bool copy = false);
+  // Read from file.
+  explicit Image(std::string filename);
+  // Initialize empty image.
+  explicit Image(int rows, int cols);
 
-// Clones via deep copy.
-Image<T> Clone() const { return Image(image_.copy_from_me()); }
+  // Clones via deep copy.
+  Image<T> Clone() const { return Image(image_.copy_from_me()); }
 
-// Deep copies the input to this.
-void DeepCopy(Image<T> copy_img);
+  // Deep copies the input to this.
+  void DeepCopy(Image<T> copy_img);
 
-// Read image from file.
-void Read(std::string filename) { *this = Image(filename); }
+  // Read image from file.
+  void Read(std::string filename) { *this = Image(filename); }
 
-// Write image to file.
-void Write(std::string filename) { CVD::img_save(image_, filename); }
+  // Write image to file.
+  void Write(std::string filename) { CVD::img_save(image_, filename); }
 
-// Get the full Image.
-CVD::Image<T>& GetCVDImage() { return image_; }
-const CVD::Image<T>& GetCVDImage() const { return image_; }
+  // Get the full Image.
+  CVD::Image<T>& GetCVDImage() { return image_; }
+  const CVD::Image<T>& GetCVDImage() const { return image_; }
 
-// Get pixel data as array.
-T* Data() { return image_.data(); }
-const T* Data() const { return image_.data(); }
+  // Get pixel data as array.
+  T* Data() { return image_.data(); }
+  const T* Data() const { return image_.data(); }
 
-// Extract SubImages from the Image. Note that this does not give ownership of
-// the data to the subimage, the original Image class still owns it.
-// row, col specify the top-left corner of the sub image to extract.
-SubImage<T> GetSubImage(int row, int col, int num_rows, int num_cols);
-const SubImage<T> GetSubImage(int row, int col,
+  // Extract SubImages from the Image. Note that this does not give ownership of
+  // the data to the subimage, the original Image class still owns it.
+  // row, col specify the top-left corner of the sub image to extract.
+  SubImage<T> GetSubImage(int row, int col, int num_rows, int num_cols);
+  const SubImage<T> GetSubImage(int row, int col,
                                 int num_rows, int num_cols) const;
 
-// Resize using a Lanczos 3 filter.
-void Resize(int new_rows, int new_cols);
-void Resize(double scale);
-Image<T> ResizeAndCopy(int new_rows, int new_cols);
-Image<T> ResizeAndCopy(double scale);
+  // Resize using a Lanczos 3 filter.
+  void Resize(int new_rows, int new_cols);
+  void Resize(double scale);
+  Image<T> ResizeAndCopy(int new_rows, int new_cols);
+  Image<T> ResizeAndCopy(double scale);
 
-protected:
-friend class SubImage<T>;
-CVD::Image<T> image_;
-using SubImage<T>::sub_image_;
+ protected:
+  friend class SubImage<T>;
+  CVD::Image<T> image_;
+  using SubImage<T>::sub_image_;
 
  private:
   // Internal method for resizing images.
@@ -263,8 +264,10 @@ template <typename T>
 CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
   int old_cols = image_.size().x;
   int old_rows = image_.size().y;
-  double col_scale = static_cast<double>(new_cols)/static_cast<double>(old_cols);
-  double row_scale = static_cast<double>(new_rows)/static_cast<double>(old_rows);
+  double col_scale =
+      static_cast<double>(new_cols)/static_cast<double>(old_cols);
+  double row_scale =
+      static_cast<double>(new_rows)/static_cast<double>(old_rows);
 
   double clamped_col_scale = std::min(1.0, col_scale);
   double clamped_row_scale = std::min(1.0, row_scale);
@@ -285,7 +288,6 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
       double weight = 0.0;
       // Add up terms across the filter.
       for (int cur_col = src_begin; cur_col <= src_end; cur_col++) {
-        //VLOG(0) << "x = " << src_col << "\ti = " << cur_col;
         double src_filter_dist = static_cast<double>(cur_col) + 0.5 - src_col;
         double dest_filter_dist = src_filter_dist*clamped_col_scale;
         double lanc_term = LanczosFilter(lanczos_size_, dest_filter_dist);

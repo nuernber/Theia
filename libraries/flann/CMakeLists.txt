@@ -156,7 +156,7 @@ endif(WIN32)
 add_subdirectory( cmake )
 add_subdirectory( src )
 add_subdirectory( examples )
-add_subdirectory( test )
+#add_subdirectory( test )
 add_subdirectory( doc )
 
 

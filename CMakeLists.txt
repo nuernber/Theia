@@ -14,6 +14,12 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # build Third party libraries
 ADD_SUBDIRECTORY(libraries)
 
+# Add GTest if testing is enabled
+OPTION(BUILD_TESTING
+       "Enable testing"
+       ON)
+ENABLE_TESTING()
+
 # Add Third party includes
 INCLUDE_DIRECTORIES(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR} ${flann_SOURCE_DIR}/src/cpp)
 
@@ -208,7 +214,6 @@ MACRO (CC_BINARY NAME)
 ENDMACRO (CC_BINARY)
 
 # Include all source directories.
-ADD_SUBDIRECTORY(experiments)
 ADD_SUBDIRECTORY(image)
 ADD_SUBDIRECTORY(math)
 ADD_SUBDIRECTORY(solvers)

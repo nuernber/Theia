@@ -31,12 +31,12 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
+#include <cvd/image.h>
+#include <gflags/gflags.h>
 #include <stdio.h>
+
 #include <string>
 
-#include <cvd/image.h>
-
-#include <gflags/gflags.h>
 #include "gtest/gtest.h"
 #include "image/image.h"
 #include "test/test_utils.h"
@@ -239,55 +239,4 @@ TEST(Image, GrayChangeSubImage) {
   // See if the change propogates to the subimage.
   ASSERT_EQ(theia_img[50][50], theia_img_sub[0][0]);
 }
-
-TEST(Image, GrayResize) {
-  /*
-  GrayImage theia_img(img_filename);
-  
-  std::string new_filename =
-      THEIA_TEST_DATA_DIR + std::string("/test_gray.jpg");
-  theia_img.Write(new_filename);
-
-  GrayImage new_img(new_filename);
-  
-  new_filename = THEIA_TEST_DATA_DIR + std::string("/test_gray_up.jpg");
-  new_img.Resize(0.33);
-  new_img.Write(new_filename);
-  */
-  
-  GrayImage small_img(1, 10);
-  for (int i = 0; i < 10; i++)
-    small_img[0][i] = 0.0;
-  small_img[0][5] = 1.0;
-
-  std::string small_filename =
-      THEIA_TEST_DATA_DIR + std::string("/small_img.png");
-  small_img.Write(small_filename);
-  small_img.Resize(1, 20);
-  std::string bigger_filename =
-      THEIA_TEST_DATA_DIR + std::string("/small_down.png");
-  small_img.Write(bigger_filename);
-
-  for (int i = 0; i < 20; i++)
-    VLOG(0) << "i = " << i << " = " << small_img[0][i];
-
-
-  // Test for downsampling.    
-  GrayImage big_img(1, 20);
-  for (int i = 0; i < 20; i++)
-    big_img[0][i] = 0.0;
-  big_img[0][9] = 1.0;
-
-  std::string big_filename =
-      THEIA_TEST_DATA_DIR + std::string("/small_img.png");
-  big_img.Write(small_filename);
-  big_img.Resize(1, 10);
-  std::string smaller_filename =
-      THEIA_TEST_DATA_DIR + std::string("/small_down.png");
-  big_img.Write(bigger_filename);
-
-  for (int i = 0; i < 10; i++)
-    VLOG(0) << "i = " << i << " = " << big_img[0][i];
-}
-
 }  // namespace theia
