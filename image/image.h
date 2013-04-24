@@ -45,6 +45,7 @@
 #include <cmath>
 #include <limits>
 #include <string>
+#include <vector>
 
 namespace theia {
 
@@ -277,22 +278,41 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
   double src_row_support = lanczos_size_/clamped_row_scale;
 
   CVD::Image<T> horiz_image(CVD::ImageRef(new_cols, old_rows));
+  horiz_image.zero();
+
+  // Precalculate the lanczos kernel so we can take advantage of row-major
+  // locality.
+  std::vector<double> lanc_kernel_terms;
+  for (int c = 0; c < new_cols; c++) {
+    // "Overlay" new image onto the old image.
+    double src_col = static_cast<double>(c + 0.5)*inv_col_scale;
+    // The old col corresponding to the closest new col.
+    int src_begin = std::max(0, FloorInt(src_col - src_col_support));
+    int src_end = std::min(old_cols - 1, CeilInt(src_col + src_col_support));
+    // Add up terms across the filter.
+    for (int cur_col = src_begin; cur_col <= src_end; cur_col++) {
+      double src_filter_dist = static_cast<double>(cur_col) + 0.5 - src_col;
+      double dest_filter_dist = src_filter_dist*clamped_col_scale;
+      double lanc_term = LanczosFilter(lanczos_size_, dest_filter_dist);
+      lanc_kernel_terms.push_back(lanc_term);
+    }
+  }
+
+  // Using the pre-calculated kernel, apply the filter.
   for (int r = 0; r < old_rows; r++) {
+    int i = 0;
     for (int c = 0; c < new_cols; c++) {
       // "Overlay" new image onto the old image.
       double src_col = static_cast<double>(c + 0.5)*inv_col_scale;
       // The old col corresponding to the closest new col.
       int src_begin = std::max(0, FloorInt(src_col - src_col_support));
       int src_end = std::min(old_cols - 1, CeilInt(src_col + src_col_support));
-      horiz_image[r][c] = 0.0;
       double weight = 0.0;
       // Add up terms across the filter.
       for (int cur_col = src_begin; cur_col <= src_end; cur_col++) {
-        double src_filter_dist = static_cast<double>(cur_col) + 0.5 - src_col;
-        double dest_filter_dist = src_filter_dist*clamped_col_scale;
-        double lanc_term = LanczosFilter(lanczos_size_, dest_filter_dist);
-        horiz_image[r][c] += image_[r][cur_col]*lanc_term;
+        double lanc_term = lanc_kernel_terms[i++];
         weight += lanc_term;
+        horiz_image[r][c] += image_[r][cur_col]*lanc_term;
       }
       // Normalize the filter (save capping to valid float image values until
       // vertical stretching).
@@ -302,24 +322,32 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
 
   // Now apply a vertical filter to the horiz image.
   CVD::Image<T> new_image(CVD::ImageRef(new_cols, new_rows));
+  new_image.zero();
   for (int r = 0; r < new_rows; r++) {
     double src_row = static_cast<double>(r + 0.5)*inv_row_scale;
     int src_begin = std::max(0, FloorInt(src_row - src_row_support));
     int src_end = std::min(old_rows - 1, CeilInt(src_row + src_row_support));
-    for (int c = 0; c < new_cols; c++) {
-      new_image[r][c] = 0.0;
-      double weight = 0.0;
-      for (int cur_row = src_begin; cur_row <= src_end; cur_row++) {
-        double src_filter_dist = static_cast<double>(cur_row) + 0.5 - src_row;
-        double dest_filter_dist = src_filter_dist*clamped_row_scale;
-        double lanc_term = LanczosFilter(lanczos_size_, dest_filter_dist);
+    double weight = 0.0;
+
+    // Calculate the lanczos kernel for this row. Doing it this way allows us to
+    // only calculate the kernel values once.
+    for (int cur_row = src_begin; cur_row <= src_end; cur_row++) {
+      double src_filter_dist = static_cast<double>(cur_row) + 0.5 - src_row;
+      double dest_filter_dist = src_filter_dist*clamped_row_scale;
+      double lanc_term = LanczosFilter(lanczos_size_, dest_filter_dist);
+      weight += lanc_term;
+      // Add the kernel contribution. Doing it this way takes advantage of the
+      // row-major locality of CVD images.
+      for (int c = 0; c < new_cols; c++) {
         new_image[r][c] += horiz_image[cur_row][c]*lanc_term;
-        weight += lanc_term;
       }
-      new_image[r][c] /= weight;
-      new_image[r][c] = (new_image[r][c] > 1.0) ? 1.0 : new_image[r][c];
-      new_image[r][c] = (new_image[r][c] < 0.0) ? 0.0 : new_image[r][c];
     }
+
+    // Fix the weight for all values in this row.
+    for (int c = 0; c < new_cols; c++)
+      new_image[r][c] /= weight;
+    new_image[r][c] = (new_image[r][c] > 1.0) ? 1.0 : new_image[r][c];
+    new_image[r][c] = (new_image[r][c] < 0.0) ? 0.0 : new_image[r][c];
   }
   return new_image;
 }
