@@ -122,10 +122,6 @@ class Image : public SubImage<T> {
   CVD::Image<T>& GetCVDImage() { return image_; }
   const CVD::Image<T>& GetCVDImage() const { return image_; }
 
-  // Get pixel data as array.
-  T* Data() { return image_.data(); }
-  const T* Data() const { return image_.data(); }
-
   // Extract SubImages from the Image. Note that this does not give ownership of
   // the data to the subimage, the original Image class still owns it.
   // row, col specify the top-left corner of the sub image to extract.
@@ -289,12 +285,19 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
     // The old col corresponding to the closest new col.
     int src_begin = std::max(0, FloorInt(src_col - src_col_support));
     int src_end = std::min(old_cols - 1, CeilInt(src_col + src_col_support));
+    double weight = 0.0;
+    int last_index = lanc_kernel_terms.size();
     // Add up terms across the filter.
     for (int cur_col = src_begin; cur_col <= src_end; cur_col++) {
       double src_filter_dist = static_cast<double>(cur_col) + 0.5 - src_col;
       double dest_filter_dist = src_filter_dist*clamped_col_scale;
       double lanc_term = LanczosFilter(lanczos_size_, dest_filter_dist);
       lanc_kernel_terms.push_back(lanc_term);
+      weight += lanc_term;
+    }
+    // Normalize the filter.
+    for (; last_index < lanc_kernel_terms.size(); last_index++) {
+      lanc_kernel_terms[last_index] /= weight;
     }
   }
 
@@ -307,16 +310,11 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
       // The old col corresponding to the closest new col.
       int src_begin = std::max(0, FloorInt(src_col - src_col_support));
       int src_end = std::min(old_cols - 1, CeilInt(src_col + src_col_support));
-      double weight = 0.0;
       // Add up terms across the filter.
       for (int cur_col = src_begin; cur_col <= src_end; cur_col++) {
         double lanc_term = lanc_kernel_terms[i++];
-        weight += lanc_term;
         horiz_image[r][c] += image_[r][cur_col]*lanc_term;
       }
-      // Normalize the filter (save capping to valid float image values until
-      // vertical stretching).
-      horiz_image[r][c] /= weight;
     }
   }
 
@@ -344,10 +342,11 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
     }
 
     // Fix the weight for all values in this row.
-    for (int c = 0; c < new_cols; c++)
+    for (int c = 0; c < new_cols; c++) {
       new_image[r][c] /= weight;
-    new_image[r][c] = (new_image[r][c] > 1.0) ? 1.0 : new_image[r][c];
-    new_image[r][c] = (new_image[r][c] < 0.0) ? 0.0 : new_image[r][c];
+      new_image[r][c] = (new_image[r][c] > 1.0) ? 1.0 : new_image[r][c];
+      new_image[r][c] = (new_image[r][c] < 0.0) ? 0.0 : new_image[r][c];
+    }
   }
   return new_image;
 }
