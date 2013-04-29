@@ -155,7 +155,7 @@ TEST(Image, RGBChangeSubImage) {
 
 // Test that inputting the old fashioned way is the same as through our class.
 TEST(Image, GrayInput) {
-  CVD::Image<Pixel> cvd_img = CVD::img_load(img_filename);
+  CVD::Image<float> cvd_img = CVD::img_load(img_filename);
   GrayImage theia_img(img_filename);
 
   int rows = cvd_img.size().y;
@@ -167,7 +167,7 @@ TEST(Image, GrayInput) {
 
 // Test that width and height methods work.
 TEST(Image, GrayColsRows) {
-  CVD::Image<Pixel> cvd_img = CVD::img_load(img_filename);
+  CVD::Image<float> cvd_img = CVD::img_load(img_filename);
   GrayImage theia_img(img_filename);
 
   int true_height = cvd_img.size().y;
@@ -178,9 +178,9 @@ TEST(Image, GrayColsRows) {
 }
 
 TEST(Image, GrayGetImage) {
-  CVD::Image<Pixel> cvd_img = CVD::img_load(img_filename);
+  CVD::Image<float> cvd_img = CVD::img_load(img_filename);
   GrayImage theia_img(img_filename);
-  CVD::Image<Pixel> theia_cvd_img = theia_img.GetCVDImage();
+  CVD::Image<float> theia_cvd_img = theia_img.GetCVDImage();
 
   int rows = cvd_img.size().y;
   int cols = cvd_img.size().x;
@@ -209,13 +209,13 @@ TEST(Image, GraySubImage) {
   ASSERT_GRAY_IMG_EQ(theia_img, theia_img_dup, rows, cols);
 
   // Test that random image patches from CVD and Image are equal.
-  CVD::Image<Pixel> cvd_img = CVD::img_load(img_filename);
+  CVD::Image<float> cvd_img = CVD::img_load(img_filename);
   test::InitRandomGenerator();
   int patch_size = 10;
   for (int its = 0; its < 1000; its++) {
     int rand_row = test::RandInt(0, rows - patch_size - 1);
     int rand_col = test::RandInt(0, cols - patch_size - 1);
-    CVD::SubImage<Pixel> cvd_sub =
+    CVD::SubImage<float> cvd_sub =
         cvd_img.sub_image(CVD::ImageRef(rand_col, rand_row),
                           CVD::ImageRef(patch_size, patch_size));
     GraySubImage theia_sub = theia_img.GetSubImage(rand_row, rand_col,
@@ -234,7 +234,7 @@ TEST(Image, GrayChangeSubImage) {
   GraySubImage theia_img_sub = theia_img.GetSubImage(50, 50, 50, 50);
 
   // Change a pixel in the original image.
-  theia_img[50][50] = Pixel(0);
+  theia_img[50][50] = 0;
 
   // See if the change propogates to the subimage.
   ASSERT_EQ(theia_img[50][50], theia_img_sub[0][0]);

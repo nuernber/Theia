@@ -152,15 +152,14 @@ class Image : public SubImage<T> {
 };
 
 typedef CVD::Rgb<float> RGBPixel;
-typedef float Pixel;
 
 // RGB Image shorthand.
 typedef SubImage<RGBPixel> RGBSubImage;
 typedef Image<RGBPixel> RGBImage;
 
 // Grayscale Image shorthand.
-typedef SubImage<Pixel> GraySubImage;
-typedef Image<Pixel> GrayImage;
+typedef SubImage<float> GraySubImage;
+typedef Image<float> GrayImage;
 
 // ----------------- Implementation ----------------- //
 // Copy from a CVD image. Only copies the pointer. See DeepCopy for a full
