@@ -37,11 +37,10 @@ allows for more general use.
   Once an image is loaded, pixel values can be accessed with standard ``[]``
   operators. Pixels are referenced in row then column order.
 
-  When accessing image pixels, either a :class:`RGBPixel` or a :class:`Pixel`
+  When accessing image pixels, either a :class:`RGBPixel` or a :class:`float`
   will be returned (for :class:`RBGImage` and :class:`GrayImage`
-  respectively). The :class:`Pixel` class is merely a typedef for
-  :class:`float`, while the :class:`RGBPixel` contains members
-  :member:`red`, :member:`green`, and :member:`blue` (all type :class:`float`).
+  respectively). The :class:`RGBPixel` contains members :member:`red`,
+  :member:`green`, and :member:`blue` (all of type :class:`float`).
 
   .. code-block:: c++
   
@@ -55,7 +54,7 @@ allows for more general use.
 
     // Grab the middle pixel.
     RGBPixel middle_rgb_pixel = my_rgb_img[middle_row][middle_col];
-    Pixel middle_gray_pixel = my_gray_img[middle_row][middle_col];
+    float middle_gray_pixel = my_gray_img[middle_row][middle_col];
 
     // Output the RGB Pixel value.
     std::cout << "red = " << middle_rgb_pixel.red 

@@ -61,7 +61,7 @@
             
   <div class="section" id="image">
 <span id="documentation-image"></span><h1>Image<a class="headerlink" href="#image" title="Permalink to this headline">¶</a></h1>
-<p>Theia provides a basic <tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt> class to use for SfM and SLAM
+<p>Theia provides a basic <a class="reference internal" href="#Image:T:" title="Image&lt;T&gt;"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image&lt;T&gt;</span></tt></a> class to use for SfM and SLAM
 applications. The class is very lightweight, and is largely a wrapper for the
 <a class="reference external" href="http://www.edwardrosten.com/cvd/cvd/html/index.html">CVD Image class</a> but
 allows for more general use.</p>
@@ -93,11 +93,10 @@ the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Read()</spa
 </div>
 <p>Once an image is loaded, pixel values can be accessed with standard <tt class="docutils literal"><span class="pre">[]</span></tt>
 operators. Pixels are referenced in row then column order.</p>
-<p>When accessing image pixels, either a <tt class="xref cpp cpp-class docutils literal"><span class="pre">RGBPixel</span></tt> or a <tt class="xref cpp cpp-class docutils literal"><span class="pre">Pixel</span></tt>
+<p>When accessing image pixels, either a <tt class="xref cpp cpp-class docutils literal"><span class="pre">RGBPixel</span></tt> or a <tt class="xref cpp cpp-class docutils literal"><span class="pre">float</span></tt>
 will be returned (for <tt class="xref cpp cpp-class docutils literal"><span class="pre">RBGImage</span></tt> and <a class="reference internal" href="#GrayImage" title="GrayImage"><tt class="xref cpp cpp-class docutils literal"><span class="pre">GrayImage</span></tt></a>
-respectively). The <tt class="xref cpp cpp-class docutils literal"><span class="pre">Pixel</span></tt> class is merely a typedef for
-<tt class="xref cpp cpp-class docutils literal"><span class="pre">float</span></tt>, while the <tt class="xref cpp cpp-class docutils literal"><span class="pre">RGBPixel</span></tt> contains members
-<tt class="xref cpp cpp-member docutils literal"><span class="pre">red</span></tt>, <tt class="xref cpp cpp-member docutils literal"><span class="pre">green</span></tt>, and <tt class="xref cpp cpp-member docutils literal"><span class="pre">blue</span></tt> (all type <tt class="xref cpp cpp-class docutils literal"><span class="pre">float</span></tt>).</p>
+respectively). The <tt class="xref cpp cpp-class docutils literal"><span class="pre">RGBPixel</span></tt> contains members <tt class="xref cpp cpp-member docutils literal"><span class="pre">red</span></tt>,
+<tt class="xref cpp cpp-member docutils literal"><span class="pre">green</span></tt>, and <tt class="xref cpp cpp-member docutils literal"><span class="pre">blue</span></tt> (all of type <tt class="xref cpp cpp-class docutils literal"><span class="pre">float</span></tt>).</p>
 <div class="highlight-c++"><div class="highlight"><pre><span class="c1">// Load RGB and Grayscale images.</span>
 <span class="n">RGBImage</span> <span class="n">my_rgb_img</span><span class="p">(</span><span class="s">&quot;test_img.jpg&quot;</span><span class="p">);</span>
 <span class="n">GrayImage</span> <span class="n">my_gray_img</span><span class="p">(</span><span class="s">&quot;test_img.jpg&quot;</span><span class="p">);</span>
@@ -108,7 +107,7 @@ respectively). The <tt class="xref cpp cpp-class docutils literal"><span class="
 
 <span class="c1">// Grab the middle pixel.</span>
 <span class="n">RGBPixel</span> <span class="n">middle_rgb_pixel</span> <span class="o">=</span> <span class="n">my_rgb_img</span><span class="p">[</span><span class="n">middle_row</span><span class="p">][</span><span class="n">middle_col</span><span class="p">];</span>
-<span class="n">Pixel</span> <span class="n">middle_gray_pixel</span> <span class="o">=</span> <span class="n">my_gray_img</span><span class="p">[</span><span class="n">middle_row</span><span class="p">][</span><span class="n">middle_col</span><span class="p">];</span>
+<span class="kt">float</span> <span class="n">middle_gray_pixel</span> <span class="o">=</span> <span class="n">my_gray_img</span><span class="p">[</span><span class="n">middle_row</span><span class="p">][</span><span class="n">middle_col</span><span class="p">];</span>
 
 <span class="c1">// Output the RGB Pixel value.</span>
 <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;red = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_rgb_pixel</span><span class="p">.</span><span class="n">red</span>
