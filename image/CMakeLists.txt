@@ -6,3 +6,5 @@ HEADER_LIBRARY(image image.h)
 IF (${BUILD_TESTING})
   GTEST(image_test)
 ENDIF (${BUILD_TESTING})
+
+ADD_SUBDIRECTORY(keypoint_detector)
