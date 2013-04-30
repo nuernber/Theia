@@ -31,43 +31,9 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
-#define IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
-
-#include <vector>
-
 namespace theia {
-class GrayImage;
-class Keypoint;
-class KeypointsProto;
-class RGBImage;
-
-// A pure virtual class for keypoint detectors. We assume that the keypoint
-// detectors only use grayimages for now.
-class KeypointDetector {
- public:
-  KeypointDetector() {}
-  virtual ~KeypointDetector() {}
-
-  // Use this method to initialize any internals. Only use the constructor for
-  // basic operations since the debug trace is limited for errors in the
-  // constructor.
-  virtual bool Initialize() { return true; }
-
-  virtual bool DetectKeypoints(const GrayImage& image,
-                               std::vector<Keypoint*>* keypoints) = 0;
-  virtual bool DetectKeypoints(const RGBImage& image,
-                               std::vector<Keypoint*>* keypoints) = 0;
-
-  // Methods to load/store keypoints in protocol buffers. Each derived class
-  // should implement these methods (if desired) and load/store all appropriate
-  // fields in the protocol buffer.
-#ifndef THEIA_NO_PROTOCOL_BUFFERS
-  virtual bool LoadFromProto(const KeypointsProto& proto,
-                             std::vector<Keypoint*>* keypoints) = 0;
-  virtual bool ToProto(KeypointsProto* proto) = 0;
-#endif
+struct Keypoint {
+  double x;
+  double y;
 };
 }  // namespace theia
-
-#endif  // IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_

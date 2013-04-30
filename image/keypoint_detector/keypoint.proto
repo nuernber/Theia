@@ -65,9 +65,11 @@ message KeypointProto {
   optional double strength = 5;
   // Orientation of keypoint (if applicable).
   optional double orientation = 6;
-
+  // Scale of the keypoint (if applicable).
+  optional double scale = 7;
+    
   // Track id for 3D points.
-  optional int32 track_id = 7;
+  optional int32 track_id = 8;
 }
 
 message KeypointsProto {

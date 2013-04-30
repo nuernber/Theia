@@ -31,43 +31,55 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
-#define IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
+#include "image/keypoint_detector/fast_detector.h"
 
-#include <vector>
+#include <cvd/fast_corner.h>
+
+#include "image/image.h"
+#include "image/keypoint_detector/keypoint.h"
+#ifndef THEIA_NO_PROTOCOL_BUFFERS
+#include "image/keypoint_detector/keypoint.pb.h"
+#endif
 
 namespace theia {
-class GrayImage;
-class Keypoint;
-class KeypointsProto;
-class RGBImage;
+bool FastDetector::DetectKeypoints(const GrayImage& image,
+                                   std::vector<Keypoint*>* keypoints) {
+  CVD::Image<byte>& cvd_img = image.cvd_image();
+  
+  std::vector<ImageRef> fast_corners;
+  if (nonmax_suppression_) {
+    cvd::fast_corner_detect_9_nonmax(cvd_img, fast_corners, threshold_);
+  } else {
+    cvd::fast_corner_detect_9(cvd_img, fast_corners, threshold_);
+  }
 
-// A pure virtual class for keypoint detectors. We assume that the keypoint
-// detectors only use grayimages for now.
-class KeypointDetector {
- public:
-  KeypointDetector() {}
-  virtual ~KeypointDetector() {}
+  // This will initalize all values to 0.
+  std::vector<int> fast_scores(fast_corners.size());
+  // If we want the scores returned, calculate them here (otherwise, leave the
+  // scores all at 0).
+  if (score_)
+    cvd::fast_corner_score_9(cvd_img, fast_corners, threshold_, fast_scores);
+  
+  for (int i = 0; i < fast_corners.size(); i++) {
+    FastKeypoint* fast_keypoint = new FastKeypoint;
+    fast_keypoint->x = static_cast<double>(fast_corners[i].x);
+    fast_keypoint->y = static_cast<double>(fast_corners[i].y);
+    fast_keypoint->strength = static_cast<double>(fast_scores[i]);
+    keypoints->push_back(fast_keypoint);
+  }
 
-  // Use this method to initialize any internals. Only use the constructor for
-  // basic operations since the debug trace is limited for errors in the
-  // constructor.
-  virtual bool Initialize() { return true; }
+  return true;
+}
 
-  virtual bool DetectKeypoints(const GrayImage& image,
-                               std::vector<Keypoint*>* keypoints) = 0;
-  virtual bool DetectKeypoints(const RGBImage& image,
-                               std::vector<Keypoint*>* keypoints) = 0;
-
-  // Methods to load/store keypoints in protocol buffers. Each derived class
-  // should implement these methods (if desired) and load/store all appropriate
-  // fields in the protocol buffer.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-  virtual bool LoadFromProto(const KeypointsProto& proto,
-                             std::vector<Keypoint*>* keypoints) = 0;
-  virtual bool ToProto(KeypointsProto* proto) = 0;
-#endif
-};
-}  // namespace theia
+bool FastDetector::LoadFromProto(const KeypointsProto& proto,
+                                 std::vector<Keypoint*>* keypoints) {
 
-#endif  // IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
+}
+
+bool FastDetector::ToProto(KeypointsProto* proto) {
+
+}
+#endif
+
+}  // namespace theia

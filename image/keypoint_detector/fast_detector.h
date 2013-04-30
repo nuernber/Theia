@@ -31,43 +31,54 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
-#define IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
+#ifndef IMAGE_KEYPOINT_DETECTOR_FAST_DETECTOR_H_
+#define IMAGE_KEYPOINT_DETECTOR_FAST_DETECTOR_H_
 
-#include <vector>
+#include "image/keypoint_detector/keypoint.h"
+#include "image/keypoint_detector/keypoint_detector.h"
 
 namespace theia {
 class GrayImage;
-class Keypoint;
 class KeypointsProto;
-class RGBImage;
 
-// A pure virtual class for keypoint detectors. We assume that the keypoint
-// detectors only use grayimages for now.
-class KeypointDetector {
+// Inherits x, y from keypoint.
+struct FastKeypoint : public Keypoint {
+  double strength;
+};
+
+// Detect features as described in Machine Learning for High Speed Corner
+// Detection" by Rosten and Drummand (ECCV 2006).
+class FastDetector : public KeypointDetector {
  public:
-  KeypointDetector() {}
-  virtual ~KeypointDetector() {}
+  // Set the feature score threshold and indicate whether nonmax suppression
+  // should be used to reduce the number of features. A good value for the
+  // threshold is usually 20.
+  FastDetector(int threshold, bool nonmax_suppression, bool score)
+      : threshold_(threshold),
+        nonmax_suppression_(nonmax_suppression),
+        score_(score) {}
+  ~FastDetector() {}
 
-  // Use this method to initialize any internals. Only use the constructor for
-  // basic operations since the debug trace is limited for errors in the
-  // constructor.
-  virtual bool Initialize() { return true; }
+  bool DetectKeypoints(const GrayImage& image,
+                       std::vector<Keypoint*>* keypoints) = 0;
 
-  virtual bool DetectKeypoints(const GrayImage& image,
-                               std::vector<Keypoint*>* keypoints) = 0;
-  virtual bool DetectKeypoints(const RGBImage& image,
-                               std::vector<Keypoint*>* keypoints) = 0;
-
-  // Methods to load/store keypoints in protocol buffers. Each derived class
-  // should implement these methods (if desired) and load/store all appropriate
-  // fields in the protocol buffer.
+  // Methods to load/store keypoints in protocol buffers.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-  virtual bool LoadFromProto(const KeypointsProto& proto,
-                             std::vector<Keypoint*>* keypoints) = 0;
-  virtual bool ToProto(KeypointsProto* proto) = 0;
+  bool LoadFromProto(const KeypointsProto& proto,
+                     std::vector<Keypoint*>* keypoints) = 0;
+  bool ToProto(KeypointsProto* proto) = 0;
 #endif
+
+ private:
+  // Threshold for the minimum corner score allowed.
+  int threshold_;
+
+  // True if you want to perform nonmaximum suppresion.
+  bool nonmax_suppression_;
+
+  // True if you want the scores of the features.
+  bool score_;
 };
 }  // namespace theia
 
-#endif  // IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
+#endif  // IMAGE_KEYPOINT_DETECTOR_FAST_DETECTOR_H_

@@ -256,8 +256,12 @@ ENDMACRO (CC_BINARY)
 MACRO(PROTO_LIBRARY NAME SRCS)
   # If protobufs are enabled, compile them here.
   If (${PROTOBUF_FOUND})
+    # Generate cpp files.
     PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${SRCS})
-    MESSAGE("proto is at: ${SRCS}")
+    # Move the generated files to our source dir.
+    FILE(COPY ${PROTO_SRCS} DESTINATION ${CMAKE_CURRENT_LIST_DIR})
+    FILE(COPY ${PROTO_HDRS} DESTINATION ${CMAKE_CURRENT_LIST_DIR})
+    # Add library per usual.
     STRING(REPLACE "${CMAKE_SOURCE_DIR}/" "" TARGETDIR ${CMAKE_CURRENT_LIST_DIR})
     ADD_LIBRARY(${TARGETDIR}/${NAME} STATIC ${PROTO_SRCS} ${PROTO_HDRS})
     SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY OUTPUT_NAME ${NAME})
@@ -265,12 +269,12 @@ MACRO(PROTO_LIBRARY NAME SRCS)
     TARGET_LINK_LIBRARIES(${TARGETDIR}/${NAME} ${ARGN} ${THEIA_LIBRARY_DEPENDENCIES})
     LIST(APPEND THEIA_LIBS ${TARGETDIR}/${NAME})
 
-  # Otherwise, generate a dummy archive so that it will compile without consequence.
+  # Otherwise, generate a dummy archive so that it will create a target without
+  # consequence.
   ELSE (${PROTOBUF_FOUND})
     HEADER_LIBRARY(${NAME} dummy.h)
   ENDIF (${PROTOBUF_FOUND})
 ENDMACRO(PROTO_LIBRARY)
-
 
 
 
@@ -289,7 +293,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR} DESTINATION include
   PATTERN "*git*" EXCLUDE)
 
 # Install the library
-FILE(GLOB_RECURSE THEIA_FILES "${CMAKE_SOURCE_DIR}/*.cc")
+FILE(GLOB_RECURSE THEIA_FILES "${CMAKE_SOURCE_DIR}/*.cc" PATTERN "build*" EXCLUDE)
 FOREACH(THEIA_FILE ${THEIA_FILES})
   IF("${THEIA_FILE}" MATCHES ".*gtest.*" OR "${THEIA_FILE}" MATCHES ".*test.cc")
     LIST(REMOVE_ITEM THEIA_FILES ${THEIA_FILE})
