@@ -59,7 +59,7 @@ message KeypointProto {
     // Y-location in the image of the keypoint
     optional double y = 2;
   }
-  optional Location position = 4;
+  optional Location location = 4;
 
   // Strength of keypoint (if applicable).
   optional double strength = 5;
@@ -74,5 +74,5 @@ message KeypointProto {
 
 message KeypointsProto {
   // "Container" for all keypoints.
-  repeated KeypointProto keypoints = 1;
+  repeated KeypointProto keypoint = 1;
 }

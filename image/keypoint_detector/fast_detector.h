@@ -47,12 +47,14 @@ class KeypointsProto;
 // Inherits x, y from keypoint.
 struct FastKeypoint : public Keypoint {
   double strength;
+  // Methods to load/store keypoints in protocol buffers.
 };
 
 // Detect features as described in Machine Learning for High Speed Corner
 // Detection" by Rosten and Drummand (ECCV 2006).
 class FastDetector : public KeypointDetector {
  public:
+  FastDetector() {}
   // Set the feature score threshold and indicate whether nonmax suppression
   // should be used to reduce the number of features. A good value for the
   // threshold is usually 20.
@@ -65,11 +67,11 @@ class FastDetector : public KeypointDetector {
   bool DetectKeypoints(const GrayImage& image,
                        std::vector<Keypoint*>* keypoints);
 
-  // Methods to load/store keypoints in protocol buffers.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-  bool LoadFromProto(const KeypointsProto& proto,
-                     std::vector<Keypoint*>* keypoints);
-  bool ToProto(KeypointsProto* proto);
+  bool ProtoToKeypoint(const KeypointsProto& proto,
+                       std::vector<Keypoint*>* keypoints) const;
+  bool KeypointToProto(const std::vector<Keypoint*>& keypoints,
+                       KeypointsProto* proto) const;
 #endif
 
  private:

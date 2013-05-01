@@ -252,13 +252,13 @@ class KeypointProto : public ::google::protobuf::Message {
   inline ::theia::KeypointProto_KeypointType keypoint_detector() const;
   inline void set_keypoint_detector(::theia::KeypointProto_KeypointType value);
   
-  // optional .theia.KeypointProto.Location position = 4;
-  inline bool has_position() const;
-  inline void clear_position();
-  static const int kPositionFieldNumber = 4;
-  inline const ::theia::KeypointProto_Location& position() const;
-  inline ::theia::KeypointProto_Location* mutable_position();
-  inline ::theia::KeypointProto_Location* release_position();
+  // optional .theia.KeypointProto.Location location = 4;
+  inline bool has_location() const;
+  inline void clear_location();
+  static const int kLocationFieldNumber = 4;
+  inline const ::theia::KeypointProto_Location& location() const;
+  inline ::theia::KeypointProto_Location* mutable_location();
+  inline ::theia::KeypointProto_Location* release_location();
   
   // optional double strength = 5;
   inline bool has_strength() const;
@@ -296,8 +296,8 @@ class KeypointProto : public ::google::protobuf::Message {
   inline void clear_has_image_id();
   inline void set_has_keypoint_detector();
   inline void clear_has_keypoint_detector();
-  inline void set_has_position();
-  inline void clear_has_position();
+  inline void set_has_location();
+  inline void clear_has_location();
   inline void set_has_strength();
   inline void clear_has_strength();
   inline void set_has_orientation();
@@ -311,7 +311,7 @@ class KeypointProto : public ::google::protobuf::Message {
   
   ::google::protobuf::int32 keypoint_id_;
   ::google::protobuf::int32 image_id_;
-  ::theia::KeypointProto_Location* position_;
+  ::theia::KeypointProto_Location* location_;
   double strength_;
   int keypoint_detector_;
   ::google::protobuf::int32 track_id_;
@@ -384,24 +384,24 @@ class KeypointsProto : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // repeated .theia.KeypointProto keypoints = 1;
-  inline int keypoints_size() const;
-  inline void clear_keypoints();
-  static const int kKeypointsFieldNumber = 1;
-  inline const ::theia::KeypointProto& keypoints(int index) const;
-  inline ::theia::KeypointProto* mutable_keypoints(int index);
-  inline ::theia::KeypointProto* add_keypoints();
+  // repeated .theia.KeypointProto keypoint = 1;
+  inline int keypoint_size() const;
+  inline void clear_keypoint();
+  static const int kKeypointFieldNumber = 1;
+  inline const ::theia::KeypointProto& keypoint(int index) const;
+  inline ::theia::KeypointProto* mutable_keypoint(int index);
+  inline ::theia::KeypointProto* add_keypoint();
   inline const ::google::protobuf::RepeatedPtrField< ::theia::KeypointProto >&
-      keypoints() const;
+      keypoint() const;
   inline ::google::protobuf::RepeatedPtrField< ::theia::KeypointProto >*
-      mutable_keypoints();
+      mutable_keypoint();
   
   // @@protoc_insertion_point(class_scope:theia.KeypointsProto)
  private:
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
-  ::google::protobuf::RepeatedPtrField< ::theia::KeypointProto > keypoints_;
+  ::google::protobuf::RepeatedPtrField< ::theia::KeypointProto > keypoint_;
   
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
@@ -535,32 +535,32 @@ inline void KeypointProto::set_keypoint_detector(::theia::KeypointProto_Keypoint
   keypoint_detector_ = value;
 }
 
-// optional .theia.KeypointProto.Location position = 4;
-inline bool KeypointProto::has_position() const {
+// optional .theia.KeypointProto.Location location = 4;
+inline bool KeypointProto::has_location() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void KeypointProto::set_has_position() {
+inline void KeypointProto::set_has_location() {
   _has_bits_[0] |= 0x00000008u;
 }
-inline void KeypointProto::clear_has_position() {
+inline void KeypointProto::clear_has_location() {
   _has_bits_[0] &= ~0x00000008u;
 }
-inline void KeypointProto::clear_position() {
-  if (position_ != NULL) position_->::theia::KeypointProto_Location::Clear();
-  clear_has_position();
+inline void KeypointProto::clear_location() {
+  if (location_ != NULL) location_->::theia::KeypointProto_Location::Clear();
+  clear_has_location();
 }
-inline const ::theia::KeypointProto_Location& KeypointProto::position() const {
-  return position_ != NULL ? *position_ : *default_instance_->position_;
+inline const ::theia::KeypointProto_Location& KeypointProto::location() const {
+  return location_ != NULL ? *location_ : *default_instance_->location_;
 }
-inline ::theia::KeypointProto_Location* KeypointProto::mutable_position() {
-  set_has_position();
-  if (position_ == NULL) position_ = new ::theia::KeypointProto_Location;
-  return position_;
+inline ::theia::KeypointProto_Location* KeypointProto::mutable_location() {
+  set_has_location();
+  if (location_ == NULL) location_ = new ::theia::KeypointProto_Location;
+  return location_;
 }
-inline ::theia::KeypointProto_Location* KeypointProto::release_position() {
-  clear_has_position();
-  ::theia::KeypointProto_Location* temp = position_;
-  position_ = NULL;
+inline ::theia::KeypointProto_Location* KeypointProto::release_location() {
+  clear_has_location();
+  ::theia::KeypointProto_Location* temp = location_;
+  location_ = NULL;
   return temp;
 }
 
@@ -656,29 +656,29 @@ inline void KeypointProto::set_track_id(::google::protobuf::int32 value) {
 
 // KeypointsProto
 
-// repeated .theia.KeypointProto keypoints = 1;
-inline int KeypointsProto::keypoints_size() const {
-  return keypoints_.size();
+// repeated .theia.KeypointProto keypoint = 1;
+inline int KeypointsProto::keypoint_size() const {
+  return keypoint_.size();
 }
-inline void KeypointsProto::clear_keypoints() {
-  keypoints_.Clear();
+inline void KeypointsProto::clear_keypoint() {
+  keypoint_.Clear();
 }
-inline const ::theia::KeypointProto& KeypointsProto::keypoints(int index) const {
-  return keypoints_.Get(index);
+inline const ::theia::KeypointProto& KeypointsProto::keypoint(int index) const {
+  return keypoint_.Get(index);
 }
-inline ::theia::KeypointProto* KeypointsProto::mutable_keypoints(int index) {
-  return keypoints_.Mutable(index);
+inline ::theia::KeypointProto* KeypointsProto::mutable_keypoint(int index) {
+  return keypoint_.Mutable(index);
 }
-inline ::theia::KeypointProto* KeypointsProto::add_keypoints() {
-  return keypoints_.Add();
+inline ::theia::KeypointProto* KeypointsProto::add_keypoint() {
+  return keypoint_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::theia::KeypointProto >&
-KeypointsProto::keypoints() const {
-  return keypoints_;
+KeypointsProto::keypoint() const {
+  return keypoint_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::theia::KeypointProto >*
-KeypointsProto::mutable_keypoints() {
-  return &keypoints_;
+KeypointsProto::mutable_keypoint() {
+  return &keypoint_;
 }
 
 

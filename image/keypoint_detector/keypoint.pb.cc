@@ -42,7 +42,7 @@ void protobuf_AssignDesc_keypoint_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, keypoint_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, image_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, keypoint_detector_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, position_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, location_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, strength_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, orientation_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, scale_),
@@ -78,7 +78,7 @@ void protobuf_AssignDesc_keypoint_2eproto() {
   KeypointProto_KeypointType_descriptor_ = KeypointProto_descriptor_->enum_type(0);
   KeypointsProto_descriptor_ = file->message_type(1);
   static const int KeypointsProto_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointsProto, keypoints_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointsProto, keypoint_),
   };
   KeypointsProto_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -132,14 +132,14 @@ void protobuf_AddDesc_keypoint_2eproto() {
     "\n\016keypoint.proto\022\005theia\"\277\002\n\rKeypointProt"
     "o\022\023\n\013keypoint_id\030\001 \001(\005\022\020\n\010image_id\030\002 \001(\005"
     "\022<\n\021keypoint_detector\030\003 \001(\0162!.theia.Keyp"
-    "ointProto.KeypointType\022/\n\010position\030\004 \001(\013"
+    "ointProto.KeypointType\022/\n\010location\030\004 \001(\013"
     "2\035.theia.KeypointProto.Location\022\020\n\010stren"
     "gth\030\005 \001(\001\022\023\n\013orientation\030\006 \001(\001\022\r\n\005scale\030"
     "\007 \001(\001\022\020\n\010track_id\030\010 \001(\005\032 \n\010Location\022\t\n\001x"
     "\030\001 \001(\001\022\t\n\001y\030\002 \001(\001\".\n\014KeypointType\022\010\n\004HAA"
-    "R\020\000\022\010\n\004FAST\020\001\022\n\n\006HARRIS\020\002\"9\n\016KeypointsPr"
-    "oto\022\'\n\tkeypoints\030\001 \003(\0132\024.theia.KeypointP"
-    "roto", 404);
+    "R\020\000\022\010\n\004FAST\020\001\022\n\n\006HARRIS\020\002\"8\n\016KeypointsPr"
+    "oto\022&\n\010keypoint\030\001 \003(\0132\024.theia.KeypointPr"
+    "oto", 403);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "keypoint.proto", &protobuf_RegisterTypes);
   KeypointProto::default_instance_ = new KeypointProto();
@@ -431,7 +431,7 @@ void KeypointProto_Location::Swap(KeypointProto_Location* other) {
 const int KeypointProto::kKeypointIdFieldNumber;
 const int KeypointProto::kImageIdFieldNumber;
 const int KeypointProto::kKeypointDetectorFieldNumber;
-const int KeypointProto::kPositionFieldNumber;
+const int KeypointProto::kLocationFieldNumber;
 const int KeypointProto::kStrengthFieldNumber;
 const int KeypointProto::kOrientationFieldNumber;
 const int KeypointProto::kScaleFieldNumber;
@@ -444,7 +444,7 @@ KeypointProto::KeypointProto()
 }
 
 void KeypointProto::InitAsDefaultInstance() {
-  position_ = const_cast< ::theia::KeypointProto_Location*>(&::theia::KeypointProto_Location::default_instance());
+  location_ = const_cast< ::theia::KeypointProto_Location*>(&::theia::KeypointProto_Location::default_instance());
 }
 
 KeypointProto::KeypointProto(const KeypointProto& from)
@@ -458,7 +458,7 @@ void KeypointProto::SharedCtor() {
   keypoint_id_ = 0;
   image_id_ = 0;
   keypoint_detector_ = 0;
-  position_ = NULL;
+  location_ = NULL;
   strength_ = 0;
   orientation_ = 0;
   scale_ = 0;
@@ -472,7 +472,7 @@ KeypointProto::~KeypointProto() {
 
 void KeypointProto::SharedDtor() {
   if (this != default_instance_) {
-    delete position_;
+    delete location_;
   }
 }
 
@@ -501,8 +501,8 @@ void KeypointProto::Clear() {
     keypoint_id_ = 0;
     image_id_ = 0;
     keypoint_detector_ = 0;
-    if (has_position()) {
-      if (position_ != NULL) position_->::theia::KeypointProto_Location::Clear();
+    if (has_location()) {
+      if (location_ != NULL) location_->::theia::KeypointProto_Location::Clear();
     }
     strength_ = 0;
     orientation_ = 0;
@@ -567,17 +567,17 @@ bool KeypointProto::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_position;
+        if (input->ExpectTag(34)) goto parse_location;
         break;
       }
       
-      // optional .theia.KeypointProto.Location position = 4;
+      // optional .theia.KeypointProto.Location location = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_position:
+         parse_location:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_position()));
+               input, mutable_location()));
         } else {
           goto handle_uninterpreted;
         }
@@ -683,10 +683,10 @@ void KeypointProto::SerializeWithCachedSizes(
       3, this->keypoint_detector(), output);
   }
   
-  // optional .theia.KeypointProto.Location position = 4;
-  if (has_position()) {
+  // optional .theia.KeypointProto.Location location = 4;
+  if (has_location()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      4, this->position(), output);
+      4, this->location(), output);
   }
   
   // optional double strength = 5;
@@ -733,11 +733,11 @@ void KeypointProto::SerializeWithCachedSizes(
       3, this->keypoint_detector(), target);
   }
   
-  // optional .theia.KeypointProto.Location position = 4;
-  if (has_position()) {
+  // optional .theia.KeypointProto.Location location = 4;
+  if (has_location()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        4, this->position(), target);
+        4, this->location(), target);
   }
   
   // optional double strength = 5;
@@ -791,11 +791,11 @@ int KeypointProto::ByteSize() const {
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->keypoint_detector());
     }
     
-    // optional .theia.KeypointProto.Location position = 4;
-    if (has_position()) {
+    // optional .theia.KeypointProto.Location location = 4;
+    if (has_location()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->position());
+          this->location());
     }
     
     // optional double strength = 5;
@@ -856,8 +856,8 @@ void KeypointProto::MergeFrom(const KeypointProto& from) {
     if (from.has_keypoint_detector()) {
       set_keypoint_detector(from.keypoint_detector());
     }
-    if (from.has_position()) {
-      mutable_position()->::theia::KeypointProto_Location::MergeFrom(from.position());
+    if (from.has_location()) {
+      mutable_location()->::theia::KeypointProto_Location::MergeFrom(from.location());
     }
     if (from.has_strength()) {
       set_strength(from.strength());
@@ -897,7 +897,7 @@ void KeypointProto::Swap(KeypointProto* other) {
     std::swap(keypoint_id_, other->keypoint_id_);
     std::swap(image_id_, other->image_id_);
     std::swap(keypoint_detector_, other->keypoint_detector_);
-    std::swap(position_, other->position_);
+    std::swap(location_, other->location_);
     std::swap(strength_, other->strength_);
     std::swap(orientation_, other->orientation_);
     std::swap(scale_, other->scale_);
@@ -920,7 +920,7 @@ void KeypointProto::Swap(KeypointProto* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int KeypointsProto::kKeypointsFieldNumber;
+const int KeypointsProto::kKeypointFieldNumber;
 #endif  // !_MSC_VER
 
 KeypointsProto::KeypointsProto()
@@ -972,7 +972,7 @@ KeypointsProto* KeypointsProto::New() const {
 }
 
 void KeypointsProto::Clear() {
-  keypoints_.Clear();
+  keypoint_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -983,17 +983,17 @@ bool KeypointsProto::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .theia.KeypointProto keypoints = 1;
+      // repeated .theia.KeypointProto keypoint = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_keypoints:
+         parse_keypoint:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_keypoints()));
+                input, add_keypoint()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(10)) goto parse_keypoints;
+        if (input->ExpectTag(10)) goto parse_keypoint;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1016,10 +1016,10 @@ bool KeypointsProto::MergePartialFromCodedStream(
 
 void KeypointsProto::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated .theia.KeypointProto keypoints = 1;
-  for (int i = 0; i < this->keypoints_size(); i++) {
+  // repeated .theia.KeypointProto keypoint = 1;
+  for (int i = 0; i < this->keypoint_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->keypoints(i), output);
+      1, this->keypoint(i), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -1030,11 +1030,11 @@ void KeypointsProto::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* KeypointsProto::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // repeated .theia.KeypointProto keypoints = 1;
-  for (int i = 0; i < this->keypoints_size(); i++) {
+  // repeated .theia.KeypointProto keypoint = 1;
+  for (int i = 0; i < this->keypoint_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        1, this->keypoints(i), target);
+        1, this->keypoint(i), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -1047,12 +1047,12 @@ void KeypointsProto::SerializeWithCachedSizes(
 int KeypointsProto::ByteSize() const {
   int total_size = 0;
   
-  // repeated .theia.KeypointProto keypoints = 1;
-  total_size += 1 * this->keypoints_size();
-  for (int i = 0; i < this->keypoints_size(); i++) {
+  // repeated .theia.KeypointProto keypoint = 1;
+  total_size += 1 * this->keypoint_size();
+  for (int i = 0; i < this->keypoint_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->keypoints(i));
+        this->keypoint(i));
   }
   
   if (!unknown_fields().empty()) {
@@ -1080,7 +1080,7 @@ void KeypointsProto::MergeFrom(const ::google::protobuf::Message& from) {
 
 void KeypointsProto::MergeFrom(const KeypointsProto& from) {
   GOOGLE_CHECK_NE(&from, this);
-  keypoints_.MergeFrom(from.keypoints_);
+  keypoint_.MergeFrom(from.keypoint_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -1103,7 +1103,7 @@ bool KeypointsProto::IsInitialized() const {
 
 void KeypointsProto::Swap(KeypointsProto* other) {
   if (other != this) {
-    keypoints_.Swap(&other->keypoints_);
+    keypoint_.Swap(&other->keypoint_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

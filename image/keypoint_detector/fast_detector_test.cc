@@ -37,11 +37,17 @@
 #include <cvd/image_convert.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#ifndef THEIA_NO_PROTOCOL_BUFFERS
+#include <google/protobuf/text_format.h>
+#endif
 #include <gtest/gtest.h>
 
 #include <string>
 
 #include "image/image.h"
+#ifndef THEIA_NO_PROTOCOL_BUFFERS
+#include "image/keypoint_detector/keypoint.pb.h"
+#endif
 #include "test/test_utils.h"
 
 DEFINE_string(test_img, "image/keypoint_detector/img1.png",
@@ -113,7 +119,7 @@ TEST(FastDetector, Score) {
   CVD::fast_corner_detect_9_nonmax(cvd_img, cvd_corners, 20);
   std::vector<int> cvd_scores;
   CVD::fast_corner_score_9(cvd_img, cvd_corners, 20, cvd_scores);
-  
+
   // Compare to ensure that they are equal!
   ASSERT_EQ(fast_keypoints.size(), cvd_corners.size());
   ASSERT_GT(fast_keypoints.size(), 0);
@@ -124,4 +130,38 @@ TEST(FastDetector, Score) {
     ASSERT_EQ(fast_keypoint->strength, cvd_scores[i]);
   }
 }
+
+// Protocol buffer tests.
+#ifndef THEIA_NO_PROTOCOL_BUFFERS
+TEST(FastDetector, ProtoTest) {
+  test::InitRandomGenerator();
+  std::vector<Keypoint*> fast_keypoints;
+  for (int i = 0; i < 100; i++) {
+    FastKeypoint* fast_keypoint = new FastKeypoint;
+    fast_keypoint->x = test::RandDouble(0, 500);
+    fast_keypoint->y = test::RandDouble(0, 500);
+    fast_keypoint->strength = test::RandDouble(0, 100);
+    fast_keypoints.push_back(fast_keypoint);
+  }
+
+  KeypointsProto fast_proto;
+  FastDetector fast_detector;
+  fast_detector.KeypointToProto(fast_keypoints, &fast_proto);
+
+  std::vector<Keypoint*> proto_keypoints;
+  fast_detector.ProtoToKeypoint(fast_proto, &proto_keypoints);
+
+  ASSERT_EQ(fast_keypoints.size(), 100);
+  ASSERT_EQ(fast_keypoints.size(), proto_keypoints.size());
+  for (int i = 0; i < fast_keypoints.size(); i++) {
+    FastKeypoint* fast_keypoint = static_cast<FastKeypoint*>(fast_keypoints[i]);
+    FastKeypoint* proto_keypoint =
+        static_cast<FastKeypoint*>(proto_keypoints[i]);
+    ASSERT_EQ(fast_keypoint->x, proto_keypoint->x);
+    ASSERT_EQ(fast_keypoint->y, proto_keypoint->y);
+    ASSERT_EQ(fast_keypoint->strength, proto_keypoint->strength);
+  }
+}
+#endif  // THEIA_NO_PROTOCOL_BUFFERS
+
 }  // namespace theia

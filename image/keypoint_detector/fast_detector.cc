@@ -78,11 +78,33 @@ bool FastDetector::DetectKeypoints(const GrayImage& image,
 }
 
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-bool FastDetector::LoadFromProto(const KeypointsProto& proto,
-                                 std::vector<Keypoint*>* keypoints) {
+bool FastDetector::ProtoToKeypoint(const KeypointsProto& proto,
+                                   std::vector<Keypoint*>* keypoints) const {
+  for (const KeypointProto& proto_keypoint : proto.keypoint()) {
+    FastKeypoint* fast_keypoint = new FastKeypoint;
+    fast_keypoint->x = proto_keypoint.location().x();
+    fast_keypoint->y = proto_keypoint.location().y();
+    // Strength does not have to be set in the proto. It will return the default
+    // value (0) if it is not set.
+    fast_keypoint->strength = proto_keypoint.strength();
+    keypoints->push_back(fast_keypoint);
+  }
+  return true;
 }
 
-bool FastDetector::ToProto(KeypointsProto* proto) {
+bool FastDetector::KeypointToProto(const std::vector<Keypoint*>& keypoints,
+                                   KeypointsProto* proto) const {
+  for (const Keypoint* keypoint : keypoints) {
+    const FastKeypoint* fast_keypoint =
+        static_cast<const FastKeypoint*>(keypoint);
+    KeypointProto* keypoint_proto = proto->add_keypoint();
+    KeypointProto_Location* keypoint_location =
+        keypoint_proto->mutable_location();
+    keypoint_location->set_x(fast_keypoint->x);
+    keypoint_location->set_y(fast_keypoint->y);
+    keypoint_proto->set_strength(fast_keypoint->strength);
+    keypoint_proto->set_keypoint_detector(KeypointProto::FAST);
+  }
 }
 #endif
 
