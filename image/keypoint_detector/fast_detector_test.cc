@@ -44,7 +44,6 @@
 #include "image/image.h"
 #include "test/test_utils.h"
 
-
 DEFINE_string(test_img, "image/keypoint_detector/img1.png",
               "Name of test image file.");
 
@@ -87,7 +86,7 @@ TEST(FastDetector, NonmaxSuppression) {
 
   // Get the keypoints through CVD.
   std::vector<CVD::ImageRef> cvd_corners;
-  CVD::fast_corner_detect_9(cvd_img, cvd_corners, 20);
+  CVD::fast_corner_detect_9_nonmax(cvd_img, cvd_corners, 20);
 
   // Compare to ensure that they are equal!
   ASSERT_EQ(fast_keypoints.size(), cvd_corners.size());
@@ -97,6 +96,32 @@ TEST(FastDetector, NonmaxSuppression) {
     ASSERT_EQ(fast_keypoint->x, cvd_corners[i].x);
     ASSERT_EQ(fast_keypoint->y, cvd_corners[i].y);
     ASSERT_EQ(fast_keypoint->strength, 0);
+  }
+}
+
+TEST(FastDetector, Score) {
+  GrayImage input_img(img_filename);
+  CVD::Image<CVD::byte> cvd_img = CVD::convert_image(input_img.GetCVDImage());
+
+  // Get the keypoints our way.
+  FastDetector fast_detector(20, true, true);
+  std::vector<Keypoint*> fast_keypoints;
+  fast_detector.DetectKeypoints(input_img, &fast_keypoints);
+
+  // Get the keypoints through CVD.
+  std::vector<CVD::ImageRef> cvd_corners;
+  CVD::fast_corner_detect_9_nonmax(cvd_img, cvd_corners, 20);
+  std::vector<int> cvd_scores;
+  CVD::fast_corner_score_9(cvd_img, cvd_corners, 20, cvd_scores);
+  
+  // Compare to ensure that they are equal!
+  ASSERT_EQ(fast_keypoints.size(), cvd_corners.size());
+  ASSERT_GT(fast_keypoints.size(), 0);
+  for (int i = 0; i < fast_keypoints.size(); i++) {
+    FastKeypoint* fast_keypoint = static_cast<FastKeypoint*>(fast_keypoints[i]);
+    ASSERT_EQ(fast_keypoint->x, cvd_corners[i].x);
+    ASSERT_EQ(fast_keypoint->y, cvd_corners[i].y);
+    ASSERT_EQ(fast_keypoint->strength, cvd_scores[i]);
   }
 }
 }  // namespace theia

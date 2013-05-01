@@ -56,12 +56,14 @@ bool FastDetector::DetectKeypoints(const GrayImage& image,
     CVD::fast_corner_detect_9(cvd_img, fast_corners, threshold_);
   }
 
-  // This will initalize all values to 0.
-  std::vector<int> fast_scores(fast_corners.size());
+  std::vector<int> fast_scores;
   // If we want the scores returned, calculate them here (otherwise, leave the
   // scores all at 0).
-  if (score_)
+  if (score_) {
     CVD::fast_corner_score_9(cvd_img, fast_corners, threshold_, fast_scores);
+  } else {
+    fast_scores.resize(fast_corners.size());
+  }
 
   keypoints->reserve(fast_corners.size());
   for (int i = 0; i < fast_corners.size(); i++) {
