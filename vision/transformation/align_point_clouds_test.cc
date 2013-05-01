@@ -31,10 +31,12 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include <Eigen/Dense>
-#include <cmath>
-#include "gtest/gtest.h"
 #include "vision/transformation/align_point_clouds.h"
+
+#include <Eigen/Dense>
+#include <gtest/gtest.h>
+
+#include <cmath>
 
 namespace theia {
 using Eigen::Matrix;

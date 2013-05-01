@@ -34,6 +34,7 @@
 #include "math/polynomial.h"
 
 #include <glog/logging.h>
+#include <gtest/gtest.h>
 #include <stdlib.h>
 
 #include <algorithm>
@@ -41,7 +42,6 @@
 #include <iostream>
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "test/test_utils.h"
 
 namespace theia {

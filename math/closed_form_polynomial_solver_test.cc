@@ -31,9 +31,10 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include <complex>
-#include "gtest/gtest.h"
 #include "math/closed_form_polynomial_solver.h"
+
+#include <gtest/gtest.h>
+#include <complex>
 
 using std::complex;
 

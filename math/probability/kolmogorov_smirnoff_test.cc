@@ -32,12 +32,13 @@
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
 #include "math/probability/kolmogorov_smirnoff.h"
-#include "gtest/gtest.h"
 
-#include <algorithm>
 #include <chrono>
+#include <gtest/gtest.h>
 #include <math.h>
 #include <random>
+
+#include <algorithm>
 #include <vector>
 
 namespace theia {
@@ -60,7 +61,7 @@ TEST(KolmogorovSmirnoff, SameDistributionGaussian) {
 
   // These two distros should definitely be equal!
   EXPECT_TRUE(KolmogorovSmirnoffTest(data1, data2));
-  
+
   // test for several values of n, all of which should be true.
   for (int n = num_pts/10; n < num_pts; n += num_pts/10)
     EXPECT_TRUE(KolmogorovSmirnoffTest(data1, data2, n));

@@ -33,15 +33,15 @@
 
 #include <cvd/image.h>
 #include <gflags/gflags.h>
+#include <gtest/gtest.h>
 #include <stdio.h>
 
 #include <string>
 
-#include "gtest/gtest.h"
 #include "image/image.h"
 #include "test/test_utils.h"
 
-DEFINE_string(test_img, "test1.jpg", "Name of test image file.");
+DEFINE_string(test_img, "image/test1.jpg", "Name of test image file.");
 
 namespace theia {
 namespace {

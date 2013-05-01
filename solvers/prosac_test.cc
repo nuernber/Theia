@@ -32,10 +32,10 @@
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
 #include <chrono>
+#include <gtest/gtest.h>
 #include <math.h>
 #include <random>
 
-#include "gtest/gtest.h"
 #include "solvers/estimator.h"
 #include "solvers/prosac.h"
 #include "test/test_utils.h"

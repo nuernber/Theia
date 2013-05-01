@@ -34,11 +34,12 @@
 #include "vision/models/essential_matrix.h"
 
 #include <chrono>
+#include <Eigen/Dense>
+#include <gtest/gtest.h>
+#include <glog/logging.h>
 #include <math.h>
 #include <random>
-#include "gtest/gtest.h"
-#include <glog/logging.h>
-#include <Eigen/Dense>
+
 #include "test/test_utils.h"
 
 namespace theia {
