@@ -34,11 +34,14 @@
 #ifndef IMAGE_KEYPOINT_DETECTOR_FAST_DETECTOR_H_
 #define IMAGE_KEYPOINT_DETECTOR_FAST_DETECTOR_H_
 
+#include <vector>
+
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/keypoint_detector.h"
 
 namespace theia {
-class GrayImage;
+template<class T> class Image;
+typedef Image<float> GrayImage;
 class KeypointsProto;
 
 // Inherits x, y from keypoint.
@@ -60,13 +63,13 @@ class FastDetector : public KeypointDetector {
   ~FastDetector() {}
 
   bool DetectKeypoints(const GrayImage& image,
-                       std::vector<Keypoint*>* keypoints) = 0;
+                       std::vector<Keypoint*>* keypoints);
 
   // Methods to load/store keypoints in protocol buffers.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
   bool LoadFromProto(const KeypointsProto& proto,
-                     std::vector<Keypoint*>* keypoints) = 0;
-  bool ToProto(KeypointsProto* proto) = 0;
+                     std::vector<Keypoint*>* keypoints);
+  bool ToProto(KeypointsProto* proto);
 #endif
 
  private:

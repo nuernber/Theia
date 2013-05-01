@@ -274,10 +274,17 @@ class KeypointProto : public ::google::protobuf::Message {
   inline double orientation() const;
   inline void set_orientation(double value);
   
-  // optional int32 track_id = 7;
+  // optional double scale = 7;
+  inline bool has_scale() const;
+  inline void clear_scale();
+  static const int kScaleFieldNumber = 7;
+  inline double scale() const;
+  inline void set_scale(double value);
+  
+  // optional int32 track_id = 8;
   inline bool has_track_id() const;
   inline void clear_track_id();
-  static const int kTrackIdFieldNumber = 7;
+  static const int kTrackIdFieldNumber = 8;
   inline ::google::protobuf::int32 track_id() const;
   inline void set_track_id(::google::protobuf::int32 value);
   
@@ -295,6 +302,8 @@ class KeypointProto : public ::google::protobuf::Message {
   inline void clear_has_strength();
   inline void set_has_orientation();
   inline void clear_has_orientation();
+  inline void set_has_scale();
+  inline void clear_has_scale();
   inline void set_has_track_id();
   inline void clear_has_track_id();
   
@@ -307,9 +316,10 @@ class KeypointProto : public ::google::protobuf::Message {
   int keypoint_detector_;
   ::google::protobuf::int32 track_id_;
   double orientation_;
+  double scale_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
   
   friend void  protobuf_AddDesc_keypoint_2eproto();
   friend void protobuf_AssignDesc_keypoint_2eproto();
@@ -598,15 +608,37 @@ inline void KeypointProto::set_orientation(double value) {
   orientation_ = value;
 }
 
-// optional int32 track_id = 7;
-inline bool KeypointProto::has_track_id() const {
+// optional double scale = 7;
+inline bool KeypointProto::has_scale() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void KeypointProto::set_has_track_id() {
+inline void KeypointProto::set_has_scale() {
   _has_bits_[0] |= 0x00000040u;
 }
-inline void KeypointProto::clear_has_track_id() {
+inline void KeypointProto::clear_has_scale() {
   _has_bits_[0] &= ~0x00000040u;
+}
+inline void KeypointProto::clear_scale() {
+  scale_ = 0;
+  clear_has_scale();
+}
+inline double KeypointProto::scale() const {
+  return scale_;
+}
+inline void KeypointProto::set_scale(double value) {
+  set_has_scale();
+  scale_ = value;
+}
+
+// optional int32 track_id = 8;
+inline bool KeypointProto::has_track_id() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void KeypointProto::set_has_track_id() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void KeypointProto::clear_has_track_id() {
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void KeypointProto::clear_track_id() {
   track_id_ = 0;

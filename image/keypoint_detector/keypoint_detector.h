@@ -37,10 +37,10 @@
 #include <vector>
 
 namespace theia {
-class GrayImage;
+template<class T> class Image;
+typedef Image<float> GrayImage;
 class Keypoint;
 class KeypointsProto;
-class RGBImage;
 
 // A pure virtual class for keypoint detectors. We assume that the keypoint
 // detectors only use grayimages for now.
@@ -54,9 +54,12 @@ class KeypointDetector {
   // constructor.
   virtual bool Initialize() { return true; }
 
+  // Detect keypoints using the desired method (and fill Keypoint with the
+  // desired Keypoint, which may be a subclass!). This means the caller will
+  // have to cast the pointers from the vector appropriately in order to get
+  // access to the derived class object (e.g. cast keypoints[i] as a
+  // FastKeypoint*). Caller owns the data returned.
   virtual bool DetectKeypoints(const GrayImage& image,
-                               std::vector<Keypoint*>* keypoints) = 0;
-  virtual bool DetectKeypoints(const RGBImage& image,
                                std::vector<Keypoint*>* keypoints) = 0;
 
   // Methods to load/store keypoints in protocol buffers. Each derived class

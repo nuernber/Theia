@@ -31,9 +31,13 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
+#ifndef IMAGE_KEYPOINT_DETECTOR_KEYPOINT_H_
+#define IMAGE_KEYPOINT_DETECTOR_KEYPOINT_H_
+
 namespace theia {
 struct Keypoint {
   double x;
   double y;
 };
 }  // namespace theia
+#endif  // IMAGE_KEYPOINT_DETECTOR_KEYPOINT_H_

@@ -38,13 +38,14 @@ void protobuf_AssignDesc_keypoint_2eproto() {
       "keypoint.proto");
   GOOGLE_CHECK(file != NULL);
   KeypointProto_descriptor_ = file->message_type(0);
-  static const int KeypointProto_offsets_[7] = {
+  static const int KeypointProto_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, keypoint_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, image_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, keypoint_detector_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, position_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, strength_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, orientation_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, scale_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeypointProto, track_id_),
   };
   KeypointProto_reflection_ =
@@ -128,16 +129,17 @@ void protobuf_AddDesc_keypoint_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\016keypoint.proto\022\005theia\"\260\002\n\rKeypointProt"
+    "\n\016keypoint.proto\022\005theia\"\277\002\n\rKeypointProt"
     "o\022\023\n\013keypoint_id\030\001 \001(\005\022\020\n\010image_id\030\002 \001(\005"
     "\022<\n\021keypoint_detector\030\003 \001(\0162!.theia.Keyp"
     "ointProto.KeypointType\022/\n\010position\030\004 \001(\013"
     "2\035.theia.KeypointProto.Location\022\020\n\010stren"
-    "gth\030\005 \001(\001\022\023\n\013orientation\030\006 \001(\001\022\020\n\010track_"
-    "id\030\007 \001(\005\032 \n\010Location\022\t\n\001x\030\001 \001(\001\022\t\n\001y\030\002 \001"
-    "(\001\".\n\014KeypointType\022\010\n\004HAAR\020\000\022\010\n\004FAST\020\001\022\n"
-    "\n\006HARRIS\020\002\"9\n\016KeypointsProto\022\'\n\tkeypoint"
-    "s\030\001 \003(\0132\024.theia.KeypointProto", 389);
+    "gth\030\005 \001(\001\022\023\n\013orientation\030\006 \001(\001\022\r\n\005scale\030"
+    "\007 \001(\001\022\020\n\010track_id\030\010 \001(\005\032 \n\010Location\022\t\n\001x"
+    "\030\001 \001(\001\022\t\n\001y\030\002 \001(\001\".\n\014KeypointType\022\010\n\004HAA"
+    "R\020\000\022\010\n\004FAST\020\001\022\n\n\006HARRIS\020\002\"9\n\016KeypointsPr"
+    "oto\022\'\n\tkeypoints\030\001 \003(\0132\024.theia.KeypointP"
+    "roto", 404);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "keypoint.proto", &protobuf_RegisterTypes);
   KeypointProto::default_instance_ = new KeypointProto();
@@ -432,6 +434,7 @@ const int KeypointProto::kKeypointDetectorFieldNumber;
 const int KeypointProto::kPositionFieldNumber;
 const int KeypointProto::kStrengthFieldNumber;
 const int KeypointProto::kOrientationFieldNumber;
+const int KeypointProto::kScaleFieldNumber;
 const int KeypointProto::kTrackIdFieldNumber;
 #endif  // !_MSC_VER
 
@@ -458,6 +461,7 @@ void KeypointProto::SharedCtor() {
   position_ = NULL;
   strength_ = 0;
   orientation_ = 0;
+  scale_ = 0;
   track_id_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -502,6 +506,7 @@ void KeypointProto::Clear() {
     }
     strength_ = 0;
     orientation_ = 0;
+    scale_ = 0;
     track_id_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -608,12 +613,28 @@ bool KeypointProto::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(56)) goto parse_track_id;
+        if (input->ExpectTag(57)) goto parse_scale;
         break;
       }
       
-      // optional int32 track_id = 7;
+      // optional double scale = 7;
       case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_scale:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &scale_)));
+          set_has_scale();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(64)) goto parse_track_id;
+        break;
+      }
+      
+      // optional int32 track_id = 8;
+      case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_track_id:
@@ -678,9 +699,14 @@ void KeypointProto::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->orientation(), output);
   }
   
-  // optional int32 track_id = 7;
+  // optional double scale = 7;
+  if (has_scale()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->scale(), output);
+  }
+  
+  // optional int32 track_id = 8;
   if (has_track_id()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->track_id(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->track_id(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -724,9 +750,14 @@ void KeypointProto::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->orientation(), target);
   }
   
-  // optional int32 track_id = 7;
+  // optional double scale = 7;
+  if (has_scale()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->scale(), target);
+  }
+  
+  // optional int32 track_id = 8;
   if (has_track_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->track_id(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->track_id(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -777,7 +808,12 @@ int KeypointProto::ByteSize() const {
       total_size += 1 + 8;
     }
     
-    // optional int32 track_id = 7;
+    // optional double scale = 7;
+    if (has_scale()) {
+      total_size += 1 + 8;
+    }
+    
+    // optional int32 track_id = 8;
     if (has_track_id()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
@@ -829,6 +865,9 @@ void KeypointProto::MergeFrom(const KeypointProto& from) {
     if (from.has_orientation()) {
       set_orientation(from.orientation());
     }
+    if (from.has_scale()) {
+      set_scale(from.scale());
+    }
     if (from.has_track_id()) {
       set_track_id(from.track_id());
     }
@@ -861,6 +900,7 @@ void KeypointProto::Swap(KeypointProto* other) {
     std::swap(position_, other->position_);
     std::swap(strength_, other->strength_);
     std::swap(orientation_, other->orientation_);
+    std::swap(scale_, other->scale_);
     std::swap(track_id_, other->track_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);

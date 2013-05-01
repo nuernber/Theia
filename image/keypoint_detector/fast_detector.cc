@@ -34,6 +34,9 @@
 #include "image/keypoint_detector/fast_detector.h"
 
 #include <cvd/fast_corner.h>
+#include <cvd/image_convert.h>
+
+#include <vector>
 
 #include "image/image.h"
 #include "image/keypoint_detector/keypoint.h"
@@ -44,13 +47,13 @@
 namespace theia {
 bool FastDetector::DetectKeypoints(const GrayImage& image,
                                    std::vector<Keypoint*>* keypoints) {
-  CVD::Image<byte>& cvd_img = image.cvd_image();
-  
-  std::vector<ImageRef> fast_corners;
+  CVD::Image<CVD::byte> cvd_img = CVD::convert_image(image.GetCVDImage());
+
+  std::vector<CVD::ImageRef> fast_corners;
   if (nonmax_suppression_) {
-    cvd::fast_corner_detect_9_nonmax(cvd_img, fast_corners, threshold_);
+    CVD::fast_corner_detect_9_nonmax(cvd_img, fast_corners, threshold_);
   } else {
-    cvd::fast_corner_detect_9(cvd_img, fast_corners, threshold_);
+    CVD::fast_corner_detect_9(cvd_img, fast_corners, threshold_);
   }
 
   // This will initalize all values to 0.
@@ -58,8 +61,9 @@ bool FastDetector::DetectKeypoints(const GrayImage& image,
   // If we want the scores returned, calculate them here (otherwise, leave the
   // scores all at 0).
   if (score_)
-    cvd::fast_corner_score_9(cvd_img, fast_corners, threshold_, fast_scores);
-  
+    CVD::fast_corner_score_9(cvd_img, fast_corners, threshold_, fast_scores);
+
+  keypoints->reserve(fast_corners.size());
   for (int i = 0; i < fast_corners.size(); i++) {
     FastKeypoint* fast_keypoint = new FastKeypoint;
     fast_keypoint->x = static_cast<double>(fast_corners[i].x);
@@ -74,11 +78,9 @@ bool FastDetector::DetectKeypoints(const GrayImage& image,
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 bool FastDetector::LoadFromProto(const KeypointsProto& proto,
                                  std::vector<Keypoint*>* keypoints) {
-
 }
 
 bool FastDetector::ToProto(KeypointsProto* proto) {
-
 }
 #endif
 
