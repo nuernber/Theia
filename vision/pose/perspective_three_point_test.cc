@@ -31,11 +31,13 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include <math.h>
-#include <Eigen/Core>
-#include "gtest/gtest.h"
-#include "test/test_utils.h"
 #include "vision/pose/perspective_three_point.h"
+
+#include <Eigen/Core>
+#include <gtest/gtest.h>
+#include <math.h>
+
+#include "test/test_utils.h"
 
 namespace theia {
 using Eigen::Matrix3d;

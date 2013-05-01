@@ -35,12 +35,11 @@
 #define TEST_TEST_UTILS_H_
 
 #include <chrono>
-#include <random>
-
 #include <Eigen/Dense>
 #include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <random>
 
-#include "gtest/gtest.h"
 namespace theia {
 namespace test {
 std::default_random_engine generator;

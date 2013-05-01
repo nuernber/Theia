@@ -31,10 +31,10 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
+#include <gtest/gtest.h>
 #include <math.h>
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "solvers/estimator.h"
 #include "math/probability/sequential_probability_ratio.h"
 #include "test/test_utils.h"
