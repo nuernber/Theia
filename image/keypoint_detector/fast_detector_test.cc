@@ -37,18 +37,20 @@
 #include <cvd/image_convert.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <gtest/gtest.h>
 
-#include "gtest/gtest.h"
-#include "test/test_utils.h"
+#include <string>
 
 #include "image/image.h"
+#include "test/test_utils.h"
+
 
 DEFINE_string(test_img, "image/keypoint_detector/img1.png",
               "Name of test image file.");
 
 namespace theia {
 std::string img_filename = THEIA_TEST_DATA_DIR + std::string("/") +
-    FLAGS_test_img;
+                           FLAGS_test_img;
 
 TEST(FastDetector, BasicTest) {
   GrayImage input_img(img_filename);
@@ -62,7 +64,7 @@ TEST(FastDetector, BasicTest) {
   // Get the keypoints through CVD.
   std::vector<CVD::ImageRef> cvd_corners;
   CVD::fast_corner_detect_9(cvd_img, cvd_corners, 20);
-  
+
   // Compare to ensure that they are equal!
   ASSERT_EQ(fast_keypoints.size(), cvd_corners.size());
   ASSERT_GT(fast_keypoints.size(), 0);
@@ -74,9 +76,6 @@ TEST(FastDetector, BasicTest) {
   }
 }
 
-
-
-// TODOOOOOOOOOO(cmsweeney)
 TEST(FastDetector, NonmaxSuppression) {
   GrayImage input_img(img_filename);
   CVD::Image<CVD::byte> cvd_img = CVD::convert_image(input_img.GetCVDImage());
@@ -89,7 +88,7 @@ TEST(FastDetector, NonmaxSuppression) {
   // Get the keypoints through CVD.
   std::vector<CVD::ImageRef> cvd_corners;
   CVD::fast_corner_detect_9(cvd_img, cvd_corners, 20);
-  
+
   // Compare to ensure that they are equal!
   ASSERT_EQ(fast_keypoints.size(), cvd_corners.size());
   ASSERT_GT(fast_keypoints.size(), 0);
