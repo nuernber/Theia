@@ -37,9 +37,6 @@
 #include <cvd/image_convert.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#ifndef THEIA_NO_PROTOCOL_BUFFERS
-#include <google/protobuf/text_format.h>
-#endif
 #include <gtest/gtest.h>
 
 #include <string>

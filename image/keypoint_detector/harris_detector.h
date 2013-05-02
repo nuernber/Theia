@@ -31,8 +31,8 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef IMAGE_KEYPOINT_DETECTOR_FAST_DETECTOR_H_
-#define IMAGE_KEYPOINT_DETECTOR_FAST_DETECTOR_H_
+#ifndef IMAGE_KEYPOINT_DETECTOR_HARRIS_DETECTOR_H_
+#define IMAGE_KEYPOINT_DETECTOR_HARRIS_DETECTOR_H_
 
 #include <vector>
 
@@ -44,24 +44,18 @@ template<class T> class Image;
 typedef Image<float> GrayImage;
 class KeypointsProto;
 
-// Inherits x, y from keypoint.
-struct FastKeypoint : public Keypoint {
+struct HarrisKeypoint : public Keypoint {
   double strength;
 };
 
-// Detect features as described in Machine Learning for High Speed Corner
-// Detection" by Rosten and Drummand (ECCV 2006).
-class FastDetector : public KeypointDetector {
+class HarrisDetector : public KeypointDetector {
  public:
-  FastDetector() {}
-  // Set the feature score threshold and indicate whether nonmax suppression
-  // should be used to reduce the number of features. A good value for the
-  // threshold is usually 20.
-  FastDetector(int threshold, bool nonmax_suppression, bool score)
-      : threshold_(threshold),
-        nonmax_suppression_(nonmax_suppression),
-        score_(score) {}
-  ~FastDetector() {}
+  HarrisDetector() {}
+
+  // Set the number of corners to detect, and the blur settings.
+  HarrisDetector(int num_corners, double blur = 1.0, double sigma = 3.0)
+      : num_corners_(num_corners), blur_(blur), sigma_(sigma) {}
+  ~HarrisDetector() {}
 
   bool DetectKeypoints(const GrayImage& image,
                        std::vector<Keypoint*>* keypoints);
@@ -74,15 +68,13 @@ class FastDetector : public KeypointDetector {
 #endif
 
  private:
-  // Threshold for the minimum corner score allowed.
-  int threshold_;
-
-  // True if you want to perform nonmaximum suppresion.
-  bool nonmax_suppression_;
-
-  // True if you want the scores of the features.
-  bool score_;
+  // Number of corners to find.
+  int num_corners_;
+  // Blur radius to use on the image.
+  double blur_;
+  // Number of sigmas to use in the blur.
+  double sigma_;
 };
 }  // namespace theia
 
-#endif  // IMAGE_KEYPOINT_DETECTOR_FAST_DETECTOR_H_
+#endif  // IMAGE_KEYPOINT_DETECTOR_HARRIS_DETECTOR_H_

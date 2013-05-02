@@ -31,84 +31,72 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "image/keypoint_detector/fast_detector.h"
+#include "image/keypoint_detector/harris_detector.h"
 
-#include <cvd/fast_corner.h>
-#include <cvd/image_convert.h>
-
+#include <cvd/harris_corner.h>
+#include <utility>
 #include <vector>
 
 #include "image/image.h"
 #include "image/keypoint_detector/keypoint.h"
+#include "image/keypoint_detector/keypoint_detector.h"
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 #include "image/keypoint_detector/keypoint.pb.h"
 #endif
 
 namespace theia {
-bool FastDetector::DetectKeypoints(const GrayImage& image,
-                                   std::vector<Keypoint*>* keypoints) {
-  CVD::Image<CVD::byte> cvd_img = CVD::convert_image(image.GetCVDImage());
-
-  std::vector<CVD::ImageRef> fast_corners;
-  if (nonmax_suppression_) {
-    CVD::fast_corner_detect_9_nonmax(cvd_img, fast_corners, threshold_);
-  } else {
-    CVD::fast_corner_detect_9(cvd_img, fast_corners, threshold_);
+bool HarrisDetector::DetectKeypoints(const GrayImage& image,
+                                     std::vector<Keypoint*>* keypoints) {
+  std::vector<std::pair<float, CVD::ImageRef> > harris_corners;
+  const CVD::Image<float>& cvd_img = image.GetCVDImage();
+  CVD::Image<float> xx(cvd_img.size()), xy(cvd_img.size()), yy(cvd_img.size());
+  CVD::harrislike_corner_detect<CVD::Harris::HarrisScore,
+                                CVD::Harris::PairInserter>(cvd_img,
+                                                           harris_corners,
+                                                           num_corners_,
+                                                           blur_,
+                                                           sigma_,
+                                                           xx, xy, yy);
+  for (const std::pair<float, CVD::ImageRef>& harris_corner : harris_corners) {
+    HarrisKeypoint* harris_keypoint = new HarrisKeypoint;
+    harris_keypoint->x = harris_corner.second.x;
+    harris_keypoint->y = harris_corner.second.y;
+    harris_keypoint->strength = harris_corner.first;
+    keypoints->push_back(harris_keypoint);
   }
-
-  std::vector<int> fast_scores;
-  // If we want the scores returned, calculate them here (otherwise, leave the
-  // scores all at 0).
-  if (score_) {
-    CVD::fast_corner_score_9(cvd_img, fast_corners, threshold_, fast_scores);
-  } else {
-    fast_scores.resize(fast_corners.size());
-  }
-
-  keypoints->reserve(fast_corners.size());
-  for (int i = 0; i < fast_corners.size(); i++) {
-    FastKeypoint* fast_keypoint = new FastKeypoint;
-    fast_keypoint->x = static_cast<double>(fast_corners[i].x);
-    fast_keypoint->y = static_cast<double>(fast_corners[i].y);
-    fast_keypoint->strength = static_cast<double>(fast_scores[i]);
-    keypoints->push_back(fast_keypoint);
-  }
-
-  return true;
 }
 
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-bool FastDetector::ProtoToKeypoint(const KeypointsProto& proto,
-                                   std::vector<Keypoint*>* keypoints) const {
+bool HarrisDetector::ProtoToKeypoint(const KeypointsProto& proto,
+                                     std::vector<Keypoint*>* keypoints) const {
   for (const KeypointProto& proto_keypoint : proto.keypoint()) {
-    FastKeypoint* fast_keypoint = new FastKeypoint;
-    CHECK_EQ(proto_keypoint.keypoint_detector(), KeypointProto::FAST)
-        << "Keypoint in proto was of type other than FAST!";
-    fast_keypoint->x = proto_keypoint.location().x();
-    fast_keypoint->y = proto_keypoint.location().y();
+    HarrisKeypoint* harris_keypoint = new HarrisKeypoint;
+    CHECK_EQ(proto_keypoint.keypoint_detector(), KeypointProto::HARRIS)
+        << "Keypoint in proto was of type other than HARRIS!";
+    harris_keypoint->x = proto_keypoint.location().x();
+    harris_keypoint->y = proto_keypoint.location().y();
     // Strength does not have to be set in the proto. It will return the default
     // value (0) if it is not set.
-    fast_keypoint->strength = proto_keypoint.strength();
-    keypoints->push_back(fast_keypoint);
+    harris_keypoint->strength = proto_keypoint.strength();
+    keypoints->push_back(harris_keypoint);
   }
   return true;
 }
 
-bool FastDetector::KeypointToProto(const std::vector<Keypoint*>& keypoints,
-                                   KeypointsProto* proto) const {
+bool HarrisDetector::KeypointToProto(const std::vector<Keypoint*>& keypoints,
+                                     KeypointsProto* proto) const {
   for (const Keypoint* keypoint : keypoints) {
-    const FastKeypoint* fast_keypoint =
-        static_cast<const FastKeypoint*>(keypoint);
+    const HarrisKeypoint* harris_keypoint =
+        static_cast<const HarrisKeypoint*>(keypoint);
     KeypointProto* keypoint_proto = proto->add_keypoint();
     KeypointProto_Location* keypoint_location =
         keypoint_proto->mutable_location();
-    keypoint_location->set_x(fast_keypoint->x);
-    keypoint_location->set_y(fast_keypoint->y);
-    keypoint_proto->set_strength(fast_keypoint->strength);
-    keypoint_proto->set_keypoint_detector(KeypointProto::FAST);
+    keypoint_location->set_x(harris_keypoint->x);
+    keypoint_location->set_y(harris_keypoint->y);
+    keypoint_proto->set_strength(harris_keypoint->strength);
+    keypoint_proto->set_keypoint_detector(KeypointProto::HARRIS);
   }
   return true;
 }
 #endif
-
 }  // namespace theia
