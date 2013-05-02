@@ -69,6 +69,9 @@ class SubImage {
   T* operator[] (int row) { return sub_image_[row]; }
   const T* operator[] (int row) const { return sub_image_[row]; }
 
+  // Fill with a scalar.
+  void Fill(const T& val) { sub_image_.fill(val); }
+  
   // Get the Sub Image.
   CVD::SubImage<T>& GetCVDImage() { return sub_image_; }
   const CVD::SubImage<T>& GetCVDImage() const { return sub_image_; }

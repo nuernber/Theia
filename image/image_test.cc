@@ -153,6 +153,19 @@ TEST(Image, RGBChangeSubImage) {
   ASSERT_EQ(theia_img[50][50].blue, theia_img_sub[0][0].blue);
 }
 
+TEST(Image, RGBFillSubImage) {
+  RGBImage theia_img(img_filename);
+  RGBSubImage theia_img_sub = theia_img.GetSubImage(50, 50, 50, 50);
+  theia_img_sub.Fill(RGBPixel(0,0,0));
+  for (int i = 0; i < 50; i++) {
+    for (int j = 0; j < 50; j++) {
+      ASSERT_EQ(theia_img_sub[i][j].red, 0);
+      ASSERT_EQ(theia_img_sub[i][j].green, 0);
+      ASSERT_EQ(theia_img_sub[i][j].blue, 0);
+    }
+  }
+}
+
 // Test that inputting the old fashioned way is the same as through our class.
 TEST(Image, GrayInput) {
   CVD::Image<float> cvd_img = CVD::img_load(img_filename);
@@ -238,5 +251,16 @@ TEST(Image, GrayChangeSubImage) {
 
   // See if the change propogates to the subimage.
   ASSERT_EQ(theia_img[50][50], theia_img_sub[0][0]);
+}
+
+TEST(Image, GrayFillSubImage) {
+  GrayImage theia_img(img_filename);
+  GraySubImage theia_img_sub = theia_img.GetSubImage(50, 50, 50, 50);
+  theia_img_sub.Fill(0.0);
+  for (int i = 0; i < 50; i++) {
+    for (int j = 0; j < 50; j++) {
+      ASSERT_EQ(theia_img_sub[i][j], 0);
+    }
+  }
 }
 }  // namespace theia
