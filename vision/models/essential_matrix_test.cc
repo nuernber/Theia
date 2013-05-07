@@ -35,7 +35,7 @@
 
 #include <chrono>
 #include <Eigen/Dense>
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <glog/logging.h>
 #include <math.h>
 #include <random>

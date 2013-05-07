@@ -47,9 +47,8 @@ message KeypointProto {
   optional int32 image_id = 2;
   
   enum KeypointType {
-    HAAR = 0;
-    FAST = 1;
-    HARRIS = 2;
+    FAST = 0;
+    HARRIS = 1;
   }
   optional KeypointType keypoint_detector = 3;
   
@@ -67,9 +66,6 @@ message KeypointProto {
   optional double orientation = 6;
   // Scale of the keypoint (if applicable).
   optional double scale = 7;
-    
-  // Track id for 3D points.
-  optional int32 track_id = 8;
 }
 
 message KeypointsProto {

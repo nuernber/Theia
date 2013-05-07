@@ -34,7 +34,7 @@
 #include "math/polynomial.h"
 
 #include <glog/logging.h>
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <stdlib.h>
 
 #include <algorithm>

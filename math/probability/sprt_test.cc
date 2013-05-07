@@ -31,7 +31,7 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <math.h>
 #include <vector>
 

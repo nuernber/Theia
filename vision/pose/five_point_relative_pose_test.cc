@@ -34,7 +34,7 @@
 #include "vision/pose/five_point_relative_pose.h"
 
 #include <Eigen/Core>
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <vector>
 
 #include "vision/models/essential_matrix.h"

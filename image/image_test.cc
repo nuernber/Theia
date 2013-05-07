@@ -33,7 +33,7 @@
 
 #include <cvd/image.h>
 #include <gflags/gflags.h>
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <stdio.h>
 
 #include <string>
