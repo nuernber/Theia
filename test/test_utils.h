@@ -37,7 +37,7 @@
 #include <chrono>
 #include <Eigen/Dense>
 #include <glog/logging.h>
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include <random>
 
 namespace theia {

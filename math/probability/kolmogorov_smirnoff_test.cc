@@ -34,7 +34,7 @@
 #include "math/probability/kolmogorov_smirnoff.h"
 
 #include <chrono>
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include <math.h>
 #include <random>
 

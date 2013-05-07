@@ -21,7 +21,7 @@ OPTION(BUILD_TESTING
 ENABLE_TESTING()
 
 # Add Third party includes
-INCLUDE_DIRECTORIES("${gtest_SOURCE_DIR}/include" ${gtest_SOURCE_DIR} "${flann_SOURCE_DIR}/src/cpp")
+INCLUDE_DIRECTORIES(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR} ${flann_SOURCE_DIR}/src/cpp)
 
 # Make libraries more static.
 #SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -159,8 +159,6 @@ OPTION(PROTOBUF
 IF (${PROTOBUF})
   FIND_PACKAGE(Protobuf)
   IF (${PROTOBUF_FOUND})
-    list(APPEND _protobuf_include_path "-I ${CMAKE_SOURCE_DIR} --include_imports")
-    MESSAGE("proto include path = ${_protobuf_include_path}")
     INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIRS})
     MESSAGE("-- Found Protocol Buffer library!")
     #INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/internal)
@@ -189,6 +187,7 @@ IF (NOT EXISTS ${CVD_INCLUDE})
 ENDIF (NOT EXISTS ${CVD_INCLUDE})
 MESSAGE("-- Found libCVD header in: ${CVD_INCLUDE}")
 INCLUDE_DIRECTORIES(${CVD_INCLUDE})
+
 
 # Create Theia dependency module.
 # Required dependemcies.
@@ -253,20 +252,17 @@ MACRO (CC_BINARY NAME)
   TARGET_LINK_LIBRARIES(${NAME} ${ARGN} ${THEIA_LIBRARY_DEPENDENCIES})
 ENDMACRO (CC_BINARY)
 
-# Macro for protocol buffers.
+# Macro for protocol buffers
 MACRO(PROTO_LIBRARY NAME SRCS)
   # If protobufs are enabled, compile them here.
   If (${PROTOBUF_FOUND})
     # Generate cpp files.
     PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${SRCS})
+    # Move the generated files to our source dir.
+    FILE(COPY ${PROTO_SRCS} DESTINATION ${CMAKE_CURRENT_LIST_DIR})
+    FILE(COPY ${PROTO_HDRS} DESTINATION ${CMAKE_CURRENT_LIST_DIR})
     # Add library per usual.
-    STRING(REPLACE "${CMAKE_SOURCE_DIR}/" "" TARGETDIR ${CMAKE_CURRENT_LIST_DIR})
-    ADD_LIBRARY(${TARGETDIR}/${NAME} STATIC ${PROTO_SRCS} ${PROTO_HDRS})
-    SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY OUTPUT_NAME ${NAME})
-    SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY LINKER_LANGUAGE CXX)
-    TARGET_LINK_LIBRARIES(${TARGETDIR}/${NAME} ${ARGN} ${THEIA_LIBRARY_DEPENDENCIES})
-    LIST(APPEND THEIA_LIBS ${TARGETDIR}/${NAME})
-
+    CC_LIBRARY(${NAME} ${PROTO_SRCS} ${ARGN})
   # Otherwise, generate a dummy archive so that it will create a target without
   # consequence.
   ELSE (${PROTOBUF_FOUND})

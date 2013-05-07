@@ -33,7 +33,7 @@
 
 #include "math/closed_form_polynomial_solver.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include <complex>
 
 using std::complex;
