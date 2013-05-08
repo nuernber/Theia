@@ -74,5 +74,5 @@ message DescriptorProto {
 
 message DescriptorsProto {
   // "Container" for all descriptors.
-  repeated DescriptorProto descriptor = 1;
+  repeated DescriptorProto feature_descriptor = 1;
 }

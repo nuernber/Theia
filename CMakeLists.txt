@@ -161,11 +161,11 @@ OPTION(PROTOBUF
 IF (${PROTOBUF})
   FIND_PACKAGE(Protobuf)
   IF (${PROTOBUF_FOUND})
-    #INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIRS})
+    INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIRS})
     MESSAGE("-- Found Protocol Buffer library!")
     LIST(APPEND PROTOBUF_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
     SET(THEIA_LIBRARY_DEPENDENCIES ${THEIA_LIBRARY_DEPENDENCIES} ${PROTOBUF_LIBRARY})
-    #INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/internal)
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/internal)
   ELSE (${PROTOBUF_FOUND})
     ADD_DEFINITIONS(-DTHEIA_NO_PROTOCOL_BUFFERS)
   ENDIF (${PROTOBUF_FOUND})
@@ -192,7 +192,6 @@ ENDIF (NOT EXISTS ${CVD_INCLUDE})
 MESSAGE("-- Found libCVD header in: ${CVD_INCLUDE}")
 INCLUDE_DIRECTORIES(${CVD_INCLUDE})
 SET(THEIA_LIBRARY_DEPENDENCIES ${THEIA_LIBRARY_DEPENDENCIES} ${CVD_LIB})
-
 # Macro for tests
 #   Ex: Your test is written in myclass_test.cc  and uses a class in myclass.cc
 #       which has been compiled as target: myclass then calling
@@ -211,7 +210,10 @@ SET(THEIA_SRC_FILES CACHE INTERNAL "include files" FORCE)
 SET(THEIA_SRC_DEPS CACHE INTERNAL "include deps" FORCE)
 # Macro for CC Libraries.
 MACRO (CC_LIBRARY NAME SRCS)
+  MESSAGE("CC sources = ${SRCS}")
+  MESSAGE("argn = ${ARGN}")
   STRING(REPLACE "${CMAKE_SOURCE_DIR}/" "" TARGETDIR ${CMAKE_CURRENT_LIST_DIR})
+  MESSAGE("CC target dir = ${TARGETDIR}")
   ADD_LIBRARY(${TARGETDIR}/${NAME} STATIC ${SRCS})
   SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY OUTPUT_NAME ${NAME})
   SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY LINKER_LANGUAGE CXX)
@@ -240,7 +242,7 @@ ENDMACRO (CC_BINARY)
 
 # Function to generate Protocol buffers in the same dir that the source is in.
 function(THEIA_PROTOBUF_GENERATE_CPP SRCS HDRS)
-  if(NOT ARGN)
+   if(NOT ARGN)
     message(SEND_ERROR "Error: THEIA_PROTOBUF_GENERATE_CPP() called without any proto files")
     return()
   endif()
@@ -251,7 +253,7 @@ function(THEIA_PROTOBUF_GENERATE_CPP SRCS HDRS)
       get_filename_component(ABS_PATH ${DIR} ABSOLUTE)
       list(FIND _protobuf_include_path ${ABS_PATH} _contains_already)
       if(${_contains_already} EQUAL -1)
-          list(APPEND _protobuf_include_path -I ${ABS_PATH})
+          list(APPEND _protobuf_include_path -I${ABS_PATH})
       endif()
     endforeach()
   endif()
@@ -264,11 +266,13 @@ function(THEIA_PROTOBUF_GENERATE_CPP SRCS HDRS)
 
     list(APPEND ${SRCS} "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.cc")
     list(APPEND ${HDRS} "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.h")
+    MESSAGE("current source dir ${CMAKE_CURRENT_SOURCE_DIR}")
+    MESSAGE("current binary dir ${CMAKE_CURRENT_BINARY_DIR}")
     add_custom_command(
-      OUTPUT "${CMAKE_SOURCE_DIR}/${FIL_WE}.pb.cc"
-             "${CMAKE_SOURCE_DIR}/${FIL_WE}.pb.h"
+      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.cc"
+             "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.h"
       COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
-      ARGS --cpp_out  ${CMAKE_SOURCE_DIR} ${_protobuf_include_path} ${ABS_FIL}
+      ARGS --cpp_out ${CMAKE_SOURCE_DIR} ${_protobuf_include_path} ${ABS_FIL}
       DEPENDS ${ABS_FIL}
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
@@ -285,7 +289,10 @@ MACRO(PROTO_LIBRARY NAME SRCS)
   If (${PROTOBUF_FOUND})
     # Generate cpp files.
     THEIA_PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${SRCS})
-    CC_LIBRARY(${NAME} ${PROTO_SRCS})
+    MESSAGE("Proto sources = ${PROTO_SRCS}")
+    get_filename_component(TARGETFILE ${PROTO_SRCS} NAME)
+    MESSAGE("proto target = ${TARGETFILE}")
+    CC_LIBRARY(${NAME} ${TARGETFILE} ${ARGN})
   # Otherwise, generate a dummy archive so that it will create a target without
   # consequence.
   ELSE (${PROTOBUF_FOUND})
@@ -301,12 +308,10 @@ ADD_SUBDIRECTORY(solvers)
 ADD_SUBDIRECTORY(vision)
 
 # Compile protos first if desired.
-IF(${PROTOBUF_FOUND})
-  file(GLOB_RECURSE ProtoFiles "${CMAKE_SOURCE_DIR}/*.proto")
-  FOREACH(PROTO_FILE ${ProtoFiles})
-    THEIA_PROTOBUF_GENERATE_CPP(ProtoSource ProtoHeader ${PROTO_FILE})
-  ENDFOREACH(PROTO_FILE)
-ENDIF(${PROTOBUF_FOUND})
+# IF(${PROTOBUF_FOUND})
+#   file(GLOB_RECURSE ProtoFiles "${CMAKE_SOURCE_DIR}/*.proto")
+#   THEIA_PROTOBUF_GENERATE_CPP(ProtoSource ProtoHeader ${ProtoFiles})
+# ENDIF(${PROTOBUF_FOUND})
 
 # Install the .h files
 install(DIRECTORY ${CMAKE_SOURCE_DIR} DESTINATION include
@@ -318,7 +323,6 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR} DESTINATION include
   PATTERN "*git*" EXCLUDE)
 
 # Install the library
-ADD_LIBRARY(theia STATIC ${THEIA_SRC_FILES})
-TARGET_LINK_LIBRARIES(theia ${THEIA_LIBRARY_DEPENDENCIES} ${THEIA_SRC_DEPS})
-INSTALL(TARGETS theia DESTINATION lib)
-
+#ADD_LIBRARY(theia STATIC ${THEIA_SRC_FILES})
+#TARGET_LINK_LIBRARIES(theia ${THEIA_LIBRARY_DEPENDENCIES} ${THEIA_SRC_DEPS})
+#INSTALL(TARGETS theia DESTINATION lib)
