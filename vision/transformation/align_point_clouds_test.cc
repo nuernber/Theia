@@ -34,7 +34,7 @@
 #include "vision/transformation/align_point_clouds.h"
 
 #include <Eigen/Dense>
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 #include <cmath>
 

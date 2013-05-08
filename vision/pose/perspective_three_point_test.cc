@@ -34,7 +34,7 @@
 #include "vision/pose/perspective_three_point.h"
 
 #include <Eigen/Core>
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <math.h>
 
 #include "test/test_utils.h"

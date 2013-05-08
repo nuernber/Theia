@@ -34,7 +34,7 @@
 #include "math/matrix/gauss_jordan.h"
 
 #include <Eigen/Dense>
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 namespace theia {
 
