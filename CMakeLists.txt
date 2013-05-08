@@ -219,7 +219,6 @@ MACRO (CC_LIBRARY NAME SRCS)
 
   get_filename_component(ABS_PATH ${SRCS} ABSOLUTE)
   list(FIND THEIA_SRC_FILES ${ABS_PATH} _contains_already)
-  MESSAGE("adding file to theia lib: ${ABS_PATH}")
   SET(THEIA_SRC_FILES ${THEIA_SRC_FILES} ${ABS_PATH} CACHE INTERNAL "include files")
   SET(THEIA_SRC_DEPS ${THEIA_SRC_DEPS} ${TARGETDIR}/${NAME} CACHE INTERNAL "include files")
 ENDMACRO (CC_LIBRARY)
@@ -239,13 +238,14 @@ MACRO (CC_BINARY NAME)
   TARGET_LINK_LIBRARIES(${NAME} ${ARGN} ${THEIA_LIBRARY_DEPENDENCIES})
 ENDMACRO (CC_BINARY)
 
-
+# Function to generate Protocol buffers in the same dir that the source is in.
 function(THEIA_PROTOBUF_GENERATE_CPP SRCS HDRS)
   if(NOT ARGN)
     message(SEND_ERROR "Error: THEIA_PROTOBUF_GENERATE_CPP() called without any proto files")
     return()
   endif()
 
+  # Add any predefined dirs to search for other protos.
   if(DEFINED PROTOBUF_IMPORT_DIRS)
     foreach(DIR ${PROTOBUF_IMPORT_DIRS})
       get_filename_component(ABS_PATH ${DIR} ABSOLUTE)
@@ -264,7 +264,6 @@ function(THEIA_PROTOBUF_GENERATE_CPP SRCS HDRS)
 
     list(APPEND ${SRCS} "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.cc")
     list(APPEND ${HDRS} "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.h")
-    MESSAGE("about to exec proto")
     add_custom_command(
       OUTPUT "${CMAKE_SOURCE_DIR}/${FIL_WE}.pb.cc"
              "${CMAKE_SOURCE_DIR}/${FIL_WE}.pb.h"
@@ -273,14 +272,12 @@ function(THEIA_PROTOBUF_GENERATE_CPP SRCS HDRS)
       DEPENDS ${ABS_FIL}
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
-    MESSAGE("executed proto")
   endforeach()
 
   set_source_files_properties(${${SRCS}} ${${HDRS}} PROPERTIES GENERATED TRUE)
   set(${SRCS} ${${SRCS}} PARENT_SCOPE)
   set(${HDRS} ${${HDRS}} PARENT_SCOPE)
 endfunction()
-
 
 # Macro for protocol buffers
 MACRO(PROTO_LIBRARY NAME SRCS)
@@ -297,7 +294,6 @@ MACRO(PROTO_LIBRARY NAME SRCS)
 ENDMACRO(PROTO_LIBRARY)
 
 
-
 # Include all source directories.
 ADD_SUBDIRECTORY(image)
 ADD_SUBDIRECTORY(math)
@@ -308,25 +304,20 @@ ADD_SUBDIRECTORY(vision)
 IF(${PROTOBUF_FOUND})
   file(GLOB_RECURSE ProtoFiles "${CMAKE_SOURCE_DIR}/*.proto")
   FOREACH(PROTO_FILE ${ProtoFiles})
-    MESSAGE("proto files = ${PROTO_FILE}")
     THEIA_PROTOBUF_GENERATE_CPP(ProtoSource ProtoHeader ${PROTO_FILE})
   ENDFOREACH(PROTO_FILE)
 ENDIF(${PROTOBUF_FOUND})
 
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
-
 # Install the .h files
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/theia DESTINATION include
-  FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_SOURCE_DIR} DESTINATION include
+  FILES_MATCHING REGEX PATTERN "*.h"
+  PATTERN "data*" EXCLUDE
+  PATTERN "docs*" EXCLUDE
+  PATTERN "build*" EXCLUDE
+  PATTERN "libraries*" EXCLUDE
+  PATTERN "*git*" EXCLUDE)
 
 # Install the library
-FOREACH(THEIA_FILE ${THEIA_SRC_FILES})
-  MESSAGE("theia files = ${THEIA_FILE}")
-ENDFOREACH(THEIA_FILE)
-
 ADD_LIBRARY(theia STATIC ${THEIA_SRC_FILES})
 TARGET_LINK_LIBRARIES(theia ${THEIA_LIBRARY_DEPENDENCIES} ${THEIA_SRC_DEPS})
 INSTALL(TARGETS theia DESTINATION lib)
