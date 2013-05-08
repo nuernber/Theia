@@ -210,10 +210,7 @@ SET(THEIA_SRC_FILES CACHE INTERNAL "include files" FORCE)
 SET(THEIA_SRC_DEPS CACHE INTERNAL "include deps" FORCE)
 # Macro for CC Libraries.
 MACRO (CC_LIBRARY NAME SRCS)
-  MESSAGE("CC sources = ${SRCS}")
-  MESSAGE("argn = ${ARGN}")
   STRING(REPLACE "${CMAKE_SOURCE_DIR}/" "" TARGETDIR ${CMAKE_CURRENT_LIST_DIR})
-  MESSAGE("CC target dir = ${TARGETDIR}")
   ADD_LIBRARY(${TARGETDIR}/${NAME} STATIC ${SRCS})
   SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY OUTPUT_NAME ${NAME})
   SET_PROPERTY(TARGET ${TARGETDIR}/${NAME} PROPERTY LINKER_LANGUAGE CXX)
@@ -263,14 +260,12 @@ function(THEIA_PROTOBUF_GENERATE_CPP SRCS HDRS)
   foreach(FIL ${ARGN})
     get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
     get_filename_component(FIL_WE ${FIL} NAME_WE)
-
-    list(APPEND ${SRCS} "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.cc")
-    list(APPEND ${HDRS} "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.h")
-    MESSAGE("current source dir ${CMAKE_CURRENT_SOURCE_DIR}")
-    MESSAGE("current binary dir ${CMAKE_CURRENT_BINARY_DIR}")
+    get_filename_component(FIL_PATH ${ABS_FIL} PATH)
+    list(APPEND ${SRCS} "${FIL_PATH}/${FIL_WE}.pb.cc")
+    list(APPEND ${HDRS} "${FIL_PATH}/${FIL_WE}.pb.h")
     add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.cc"
-             "${CMAKE_CURRENT_SOURCE_DIR}/${FIL_WE}.pb.h"
+      OUTPUT "${FIL_PATH}/${FIL_WE}.pb.cc"
+             "${FIL_PATH}/${FIL_WE}.pb.h"
       COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
       ARGS --cpp_out ${CMAKE_SOURCE_DIR} ${_protobuf_include_path} ${ABS_FIL}
       DEPENDS ${ABS_FIL}
@@ -289,9 +284,7 @@ MACRO(PROTO_LIBRARY NAME SRCS)
   If (${PROTOBUF_FOUND})
     # Generate cpp files.
     THEIA_PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${SRCS})
-    MESSAGE("Proto sources = ${PROTO_SRCS}")
     get_filename_component(TARGETFILE ${PROTO_SRCS} NAME)
-    MESSAGE("proto target = ${TARGETFILE}")
     CC_LIBRARY(${NAME} ${TARGETFILE} ${ARGN})
   # Otherwise, generate a dummy archive so that it will create a target without
   # consequence.
@@ -308,10 +301,10 @@ ADD_SUBDIRECTORY(solvers)
 ADD_SUBDIRECTORY(vision)
 
 # Compile protos first if desired.
-# IF(${PROTOBUF_FOUND})
-#   file(GLOB_RECURSE ProtoFiles "${CMAKE_SOURCE_DIR}/*.proto")
-#   THEIA_PROTOBUF_GENERATE_CPP(ProtoSource ProtoHeader ${ProtoFiles})
-# ENDIF(${PROTOBUF_FOUND})
+IF(${PROTOBUF_FOUND})
+  file(GLOB_RECURSE ProtoFiles "${CMAKE_SOURCE_DIR}/*.proto")
+  THEIA_PROTOBUF_GENERATE_CPP(ProtoSource ProtoHeader ${ProtoFiles})
+ENDIF(${PROTOBUF_FOUND})
 
 # Install the .h files
 install(DIRECTORY ${CMAKE_SOURCE_DIR} DESTINATION include
@@ -323,6 +316,6 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR} DESTINATION include
   PATTERN "*git*" EXCLUDE)
 
 # Install the library
-#ADD_LIBRARY(theia STATIC ${THEIA_SRC_FILES})
-#TARGET_LINK_LIBRARIES(theia ${THEIA_LIBRARY_DEPENDENCIES} ${THEIA_SRC_DEPS})
-#INSTALL(TARGETS theia DESTINATION lib)
+ADD_LIBRARY(theia STATIC ${THEIA_SRC_FILES})
+TARGET_LINK_LIBRARIES(theia ${THEIA_LIBRARY_DEPENDENCIES} ${THEIA_SRC_DEPS})
+INSTALL(TARGETS theia DESTINATION lib)
