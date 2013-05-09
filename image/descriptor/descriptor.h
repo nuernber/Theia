@@ -41,23 +41,34 @@ namespace theia {
 // The descriptor will hold N dimensions of type T (e.g. SIFT is 128 dims of
 // float). Most new descriptors should derive from either the Descriptor or
 // BinaryDescriptor class. Those classes have been specifically optimized for
-// fixed-size descriptors of various data types (float, int, binary, etc.).
+// fixed-size descriptors of various data types (float, int, binary,
+// etc.).
+//
+// Also, note that templating this class will ensure that only descriptors with
+// the same template parameters can be compared (for matching, etc.). This is
+// opposed to allocating data pointers to arrays at runtime, which provides no
+// guarantees that two classes will have the same structure!
 template<class T, std::size_t N>
 class GenericDescriptor {
  public:
-  virutal ~GenericDescriptor() {}
+  virtual ~GenericDescriptor() {}
 
   // Accessor methods (implemented by Descriptor and BinaryDescriptor classes).
   virtual inline T& operator[](std::size_t i) = 0;
   virtual inline T operator[](std::size_t i) const = 0;
+
+  // Dimensionality of the descriptor.
+  virtual inline std::size_t Dimensions() const { return N; }
 };
 
 // Class for **NON-BINARY** descriptors.
 template<class T, std::size_t N>
-class Descriptor : GenericDescriptor<T, N> {
+class Descriptor : public GenericDescriptor<T, N> {
  public:
+  virtual ~Descriptor() {}
   virtual inline T& operator[](std::size_t i) { return data_[i]; }
   virtual inline T operator[](std::size_t i) const { return data_[i]; }
+  virtual inline T* Data() { return data_.data(); }
 
  protected:
   std::array<T, N> data_;
@@ -67,8 +78,11 @@ class Descriptor : GenericDescriptor<T, N> {
 template<std::size_t N>
 class BinaryDescriptor : public GenericDescriptor<bool, N> {
  public:
+  virtual ~BinaryDescriptor() {}
   virtual inline bool& operator[](std::size_t i) { return binary_data_[i]; }
   virtual inline bool operator[](std::size_t i) const {return binary_data_[i]; }
+
+  // TODO(cmsweeney): Should we add a data() method that returns the string?
 
  protected:
   std::bitset<N> binary_data_;

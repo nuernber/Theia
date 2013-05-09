@@ -80,6 +80,7 @@ bool FastDetector::DetectKeypoints(const GrayImage& image,
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 bool FastDetector::ProtoToKeypoint(const KeypointsProto& proto,
                                    std::vector<Keypoint*>* keypoints) const {
+  keypoints->reserve(proto.keypoint_size());
   for (const KeypointProto& proto_keypoint : proto.keypoint()) {
     FastKeypoint* fast_keypoint = new FastKeypoint;
     CHECK_EQ(proto_keypoint.keypoint_detector(), KeypointProto::FAST)

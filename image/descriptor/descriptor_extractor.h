@@ -35,10 +35,16 @@
 #define IMAGE_DESCRIPTOR_DESCRIPTOR_EXTRACTOR_H_
 
 namespace theia {
-class GenericDescriptor;
-class GrayImage;
+class DescriptorsProto;
+template<class T, std::size_t N> class GenericDescriptor;
+template<class T> class Image;
+typedef Image<float> GrayImage;
 class Keypoint;
 
+// Templating this class is a little bit ugly, but it guarantees coupling
+// between your extractors and descriptors. This is a high priority from a
+// design perspective.
+template<class D>
 class DescriptorExtractor {
  public:
   DescriptorExtractor() {}
@@ -53,13 +59,13 @@ class DescriptorExtractor {
   // Computes a descriptor at a single keypoint.
   virtual bool ComputeDescriptor(const GrayImage& image,
                                  const Keypoint* keypoint,
-                                 GenericDescriptor* descriptor) = 0;
+                                 D* descriptor) = 0;
 
   // Compute the descriptor for multiple keypoints in a given image.
   virtual bool ComputeDescriptors(
       const GrayImage& image,
-      const std::vector<Keypoint*>& keypoint,
-      std::vector<GenericDescriptor*>* descriptor) = 0;
+      const std::vector<Keypoint*>& keypoints,
+      std::vector<D*>* descriptors);
 
   // Methods to load/store descriptors in protocol buffers. Each derived class
   // should implement these methods (if desired) and load/store all appropriate
@@ -69,13 +75,31 @@ class DescriptorExtractor {
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
   virtual bool ProtoToDescriptor(
       const DescriptorsProto& proto,
-      std::vector<GenericDescriptor*>* descriptors) const = 0;
+      std::vector<D*>* descriptors) const = 0;
+
   virtual bool DescriptorToProto(
-      const std::vector<GenericDescriptor*>& descriptors,
+      const std::vector<D*>& descriptors,
       DescriptorsProto* proto) const = 0;
 #endif
 
 };
+
+// ------------------- IMPLEMENTATION ------------------- //
+// Compute the descriptor for multiple keypoints in a given image.
+template<class D>
+bool DescriptorExtractor<D>::ComputeDescriptors(
+    const GrayImage& image,
+    const std::vector<Keypoint*>& keypoints,
+    std::vector<D*>* descriptors) {
+    descriptors->reserve(keypoints.size());
+  for (const Keypoint* img_keypoint : keypoints) {
+    D* descriptor = new D;
+    ComputeDescriptor(image, img_keypoint, descriptor);
+    descriptors->push_back(descriptor);
+  }
+  return true;
+}
+
 
 }  // namespace theia
 

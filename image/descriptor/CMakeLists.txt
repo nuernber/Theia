@@ -10,8 +10,8 @@ PROTO_LIBRARY(descriptor_proto descriptor.proto image/keypoint_detector/keypoint
 HEADER_LIBRARY(descriptor_extractor descriptor_extractor.h)
 
 # Patch Descriptor
-#CC_LIBRARY(harris_detector harris_detector.cc image/keypoint_detector/keypoint_detector image/keypoint_detector/keypoint_proto image/image)
+HEADER_LIBRARY(patch_descriptor patch_descriptor.h image/descriptor/descriptor image/descriptor/descriptor_proto image/image)
 
 IF (${BUILD_TESTING})
-  #GTEST(harris_detector_test image/keypoint_detector/harris_detector)
+  GTEST(patch_descriptor_test image/descriptor/patch_descriptor image/descriptor/descriptor_proto image/image image/keypoint_detector/fast_detector)
 ENDIF (${BUILD_TESTING})
