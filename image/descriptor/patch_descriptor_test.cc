@@ -33,6 +33,7 @@
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <string>
 #include "gtest/gtest.h"
 
 #include "image/keypoint_detector/fast_detector.h"

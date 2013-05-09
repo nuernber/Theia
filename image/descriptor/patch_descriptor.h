@@ -93,7 +93,7 @@ bool PatchDescriptorExtractor<D>::ComputeDescriptor(
   int patch_c_begin = keypoint->x - descriptor->patch_cols_/2;
   int patch_r_end = patch_r_begin + descriptor->patch_rows_;
   int patch_c_end = patch_c_begin + descriptor->patch_cols_;
-  
+
   // Check the bounds to make sure the patch is within the image.
   CHECK_GE(patch_r_begin, 0) << "Extracting patch outside of image.";
   CHECK_GE(patch_c_begin, 0) << "Extracting patch outside of image.";

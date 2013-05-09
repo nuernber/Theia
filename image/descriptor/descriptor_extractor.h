@@ -34,6 +34,8 @@
 #ifndef IMAGE_DESCRIPTOR_DESCRIPTOR_EXTRACTOR_H_
 #define IMAGE_DESCRIPTOR_DESCRIPTOR_EXTRACTOR_H_
 
+#include <vector>
+
 namespace theia {
 class DescriptorsProto;
 template<class T, std::size_t N> class GenericDescriptor;
@@ -55,7 +57,7 @@ class DescriptorExtractor {
   // computationally expensive or non-trivial operations should go in the
   // Initialize method.
   virtual bool Initialize() { return true; }
-  
+
   // Computes a descriptor at a single keypoint.
   virtual bool ComputeDescriptor(const GrayImage& image,
                                  const Keypoint* keypoint,
@@ -81,7 +83,6 @@ class DescriptorExtractor {
       const std::vector<D*>& descriptors,
       DescriptorsProto* proto) const = 0;
 #endif
-
 };
 
 // ------------------- IMPLEMENTATION ------------------- //
@@ -91,7 +92,7 @@ bool DescriptorExtractor<D>::ComputeDescriptors(
     const GrayImage& image,
     const std::vector<Keypoint*>& keypoints,
     std::vector<D*>* descriptors) {
-    descriptors->reserve(keypoints.size());
+  descriptors->reserve(keypoints.size());
   for (const Keypoint* img_keypoint : keypoints) {
     D* descriptor = new D;
     ComputeDescriptor(image, img_keypoint, descriptor);
