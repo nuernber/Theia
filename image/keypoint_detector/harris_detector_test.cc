@@ -20,30 +20,30 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "image/keypoint_detector/harris_detector.h"
-
 #include <cvd/harris_corner.h>
 #include <cvd/image_convert.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include "gtest/gtest.h"
 
 #include <string>
 #include <utility>
 
+#include "gtest/gtest.h"
 #include "image/image.h"
+#include "image/keypoint_detector/harris_detector.h"
+#include "image/keypoint_detector/keypoint.h"
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 #include "image/keypoint_detector/keypoint.pb.h"
 #endif
@@ -80,11 +80,10 @@ TEST(HarrisDetector, BasicTest) {
   ASSERT_EQ(harris_keypoints.size(), 500);
   ASSERT_EQ(harris_keypoints.size(), cvd_corners.size());
   for (int i = 0; i < harris_keypoints.size(); i++) {
-    HarrisKeypoint* harris_keypoint =
-        static_cast<HarrisKeypoint*>(harris_keypoints[i]);
-    ASSERT_EQ(harris_keypoint->x, cvd_corners[i].second.x);
-    ASSERT_EQ(harris_keypoint->y, cvd_corners[i].second.y);
-    ASSERT_EQ(harris_keypoint->strength, cvd_corners[i].first);
+    ASSERT_EQ(harris_keypoints[i]->keypoint_type(), Keypoint::HARRIS);
+    ASSERT_EQ(harris_keypoints[i]->x(), cvd_corners[i].second.x);
+    ASSERT_EQ(harris_keypoints[i]->y(), cvd_corners[i].second.y);
+    ASSERT_EQ(harris_keypoints[i]->strength(), cvd_corners[i].first);
   }
 }
 
@@ -94,30 +93,27 @@ TEST(HarrisDetector, ProtoTest) {
   test::InitRandomGenerator();
   std::vector<Keypoint*> harris_keypoints;
   for (int i = 0; i < 100; i++) {
-    HarrisKeypoint* harris_keypoint = new HarrisKeypoint;
-    harris_keypoint->x = test::RandDouble(0, 500);
-    harris_keypoint->y = test::RandDouble(0, 500);
-    harris_keypoint->strength = test::RandDouble(0, 100);
+    Keypoint* harris_keypoint = new Keypoint(test::RandDouble(0, 500),
+                                             test::RandDouble(0, 500),
+                                             Keypoint::HARRIS);
+    harris_keypoint->set_strength(test::RandDouble(0, 100));
     harris_keypoints.push_back(harris_keypoint);
   }
 
   KeypointsProto harris_proto;
-  HarrisDetector harris_detector;
-  harris_detector.KeypointToProto(harris_keypoints, &harris_proto);
+  KeypointToProto(harris_keypoints, &harris_proto);
 
   std::vector<Keypoint*> proto_keypoints;
-  harris_detector.ProtoToKeypoint(harris_proto, &proto_keypoints);
+  ProtoToKeypoint(harris_proto, &proto_keypoints);
 
   ASSERT_EQ(harris_keypoints.size(), 100);
   ASSERT_EQ(harris_keypoints.size(), proto_keypoints.size());
   for (int i = 0; i < harris_keypoints.size(); i++) {
-    HarrisKeypoint* harris_keypoint =
-        static_cast<HarrisKeypoint*>(harris_keypoints[i]);
-    HarrisKeypoint* proto_keypoint =
-        static_cast<HarrisKeypoint*>(proto_keypoints[i]);
-    ASSERT_EQ(harris_keypoint->x, proto_keypoint->x);
-    ASSERT_EQ(harris_keypoint->y, proto_keypoint->y);
-    ASSERT_EQ(harris_keypoint->strength, proto_keypoint->strength);
+    ASSERT_EQ(harris_keypoints[i]->keypoint_type(),
+              proto_keypoints[i]->keypoint_type());
+    ASSERT_EQ(harris_keypoints[i]->x(), proto_keypoints[i]->x());
+    ASSERT_EQ(harris_keypoints[i]->y(), proto_keypoints[i]->y());
+    ASSERT_EQ(harris_keypoints[i]->strength(), proto_keypoints[i]->strength());
   }
 }
 #endif  // THEIA_NO_PROTOCOL_BUFFERS

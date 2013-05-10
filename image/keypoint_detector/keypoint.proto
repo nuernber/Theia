@@ -47,7 +47,7 @@ message KeypointProto {
   optional int32 image_id = 2;
   
   enum KeypointType {
-    HAAR = 0;
+    OTHER = 0;
     FAST = 1;
     HARRIS = 2;
   }

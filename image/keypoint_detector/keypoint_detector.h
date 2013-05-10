@@ -41,7 +41,6 @@ namespace theia {
 template<class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
-class KeypointsProto;
 
 // A pure virtual class for keypoint detectors. We assume that the keypoint
 // detectors only use grayimages for now.
@@ -63,17 +62,6 @@ class KeypointDetector {
   virtual bool DetectKeypoints(const GrayImage& image,
                                std::vector<Keypoint*>* keypoints) = 0;
 
-  // Methods to load/store keypoints in protocol buffers. Each derived class
-  // should implement these methods (if desired) and load/store all appropriate
-  // fields in the protocol buffer. This is kind of a sucky paradigm since these
-  // methods act more like static methods, but it is the best way to make sure
-  // these methods are paired to the keypoints.
-#ifndef THEIA_NO_PROTOCOL_BUFFERS
-  virtual bool ProtoToKeypoint(const KeypointsProto& proto,
-                               std::vector<Keypoint*>* keypoints) const = 0;
-  virtual bool KeypointToProto(const std::vector<Keypoint*>& keypoints,
-                               KeypointsProto* proto) const = 0;
-#endif
 };
 }  // namespace theia
 

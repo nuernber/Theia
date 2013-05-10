@@ -1,16 +1,19 @@
 # See CMakeLists.txt in base dir for macro definition
 
+# Keypoint class.
+CC_LIBRARY(keypoint keypoint.cc image/keypoint_detector/keypoint_proto)
+
 # Interface for keypoint detectors.
-HEADER_LIBRARY(keypoint_detector keypoint_detector.h image/keypoint_detector/keypoint_proto)
+HEADER_LIBRARY(keypoint_detector keypoint_detector.h)
 
 # Keypoint protocol buffer
 PROTO_LIBRARY(keypoint_proto keypoint.proto)
 
 # Fast Keypoint detector
-CC_LIBRARY(fast_detector fast_detector.cc image/keypoint_detector/keypoint_detector image/keypoint_detector/keypoint_proto image/image)
+CC_LIBRARY(fast_detector fast_detector.cc image/keypoint_detector/keypoint_detector image/keypoint_detector/keypoint image/image)
 
 # Harris Corner detector
-CC_LIBRARY(harris_detector harris_detector.cc image/keypoint_detector/keypoint_detector image/keypoint_detector/keypoint_proto image/image)
+CC_LIBRARY(harris_detector harris_detector.cc image/keypoint_detector/keypoint_detector image/keypoint_detector/keypoint image/image)
 
 IF (${BUILD_TESTING})
   GTEST(fast_detector_test image/keypoint_detector/fast_detector)

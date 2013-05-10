@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -37,18 +37,12 @@
 
 #include <vector>
 
-#include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/keypoint_detector.h"
 
 namespace theia {
 template<class T> class Image;
 typedef Image<float> GrayImage;
-class KeypointsProto;
-
-// Inherits x, y from keypoint.
-struct FastKeypoint : public Keypoint {
-  double strength;
-};
+class Keypoint;
 
 // Detect features as described in Machine Learning for High Speed Corner
 // Detection" by Rosten and Drummand (ECCV 2006).
@@ -66,13 +60,6 @@ class FastDetector : public KeypointDetector {
 
   bool DetectKeypoints(const GrayImage& image,
                        std::vector<Keypoint*>* keypoints);
-
-#ifndef THEIA_NO_PROTOCOL_BUFFERS
-  bool ProtoToKeypoint(const KeypointsProto& proto,
-                       std::vector<Keypoint*>* keypoints) const;
-  bool KeypointToProto(const std::vector<Keypoint*>& keypoints,
-                       KeypointsProto* proto) const;
-#endif
 
  private:
   // Threshold for the minimum corner score allowed.

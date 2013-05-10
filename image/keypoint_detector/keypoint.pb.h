@@ -39,12 +39,12 @@ class KeypointProto_Location;
 class KeypointsProto;
 
 enum KeypointProto_KeypointType {
-  KeypointProto_KeypointType_HAAR = 0,
+  KeypointProto_KeypointType_OTHER = 0,
   KeypointProto_KeypointType_FAST = 1,
   KeypointProto_KeypointType_HARRIS = 2
 };
 bool KeypointProto_KeypointType_IsValid(int value);
-const KeypointProto_KeypointType KeypointProto_KeypointType_KeypointType_MIN = KeypointProto_KeypointType_HAAR;
+const KeypointProto_KeypointType KeypointProto_KeypointType_KeypointType_MIN = KeypointProto_KeypointType_OTHER;
 const KeypointProto_KeypointType KeypointProto_KeypointType_KeypointType_MAX = KeypointProto_KeypointType_HARRIS;
 const int KeypointProto_KeypointType_KeypointType_ARRAYSIZE = KeypointProto_KeypointType_KeypointType_MAX + 1;
 
@@ -207,7 +207,7 @@ class KeypointProto : public ::google::protobuf::Message {
   typedef KeypointProto_Location Location;
 
   typedef KeypointProto_KeypointType KeypointType;
-  static const KeypointType HAAR = KeypointProto_KeypointType_HAAR;
+  static const KeypointType OTHER = KeypointProto_KeypointType_OTHER;
   static const KeypointType FAST = KeypointProto_KeypointType_FAST;
   static const KeypointType HARRIS = KeypointProto_KeypointType_HARRIS;
   static inline bool KeypointType_IsValid(int value) {
