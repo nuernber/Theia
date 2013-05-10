@@ -48,7 +48,6 @@ class Keypoint;
 // Detection" by Rosten and Drummand (ECCV 2006).
 class FastDetector : public KeypointDetector {
  public:
-  FastDetector() {}
   // Set the feature score threshold and indicate whether nonmax suppression
   // should be used to reduce the number of features. A good value for the
   // threshold is usually 20.

@@ -46,7 +46,6 @@ class Keypoint;
 // detectors only use grayimages for now.
 class KeypointDetector {
  public:
-  KeypointDetector() {}
   virtual ~KeypointDetector() {}
 
   // Use this method to initialize any internals. Only use the constructor for
