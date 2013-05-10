@@ -90,8 +90,8 @@ bool PatchDescriptorExtractor<D>::ComputeDescriptor(
     const GrayImage& image,
     const Keypoint* keypoint,
     D* descriptor) {
-  int patch_r_begin = keypoint->y - descriptor->patch_rows_/2;
-  int patch_c_begin = keypoint->x - descriptor->patch_cols_/2;
+  int patch_r_begin = keypoint->y() - descriptor->patch_rows_/2;
+  int patch_c_begin = keypoint->x() - descriptor->patch_cols_/2;
   int patch_r_end = patch_r_begin + descriptor->patch_rows_;
   int patch_c_end = patch_c_begin + descriptor->patch_cols_;
 

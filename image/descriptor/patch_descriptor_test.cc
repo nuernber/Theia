@@ -68,8 +68,8 @@ TEST(PatchDescriptor, CompWithSubImage) {
 
   // Compare to SubImage.
   for (int i = 0; i < patch_descriptors.size(); i++) {
-    GraySubImage sub_img = input_img.GetSubImage((*fast_keypoints[i]).y - 3,
-                                                 (*fast_keypoints[i]).x - 3,
+    GraySubImage sub_img = input_img.GetSubImage((*fast_keypoints[i]).y() - 3,
+                                                 (*fast_keypoints[i]).x() - 3,
                                                  7,
                                                  7);
     int j = 0;
