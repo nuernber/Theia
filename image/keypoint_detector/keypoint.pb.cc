@@ -133,16 +133,16 @@ void protobuf_AddDesc_image_2fkeypoint_5fdetector_2fkeypoint_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n&image/keypoint_detector/keypoint.proto"
-    "\022\005theia\"\300\002\n\rKeypointProto\022\023\n\013keypoint_id"
+    "\022\005theia\"\312\002\n\rKeypointProto\022\023\n\013keypoint_id"
     "\030\001 \001(\005\022\020\n\010image_id\030\002 \001(\005\022<\n\021keypoint_det"
     "ector\030\003 \001(\0162!.theia.KeypointProto.Keypoi"
     "ntType\022/\n\010location\030\004 \001(\0132\035.theia.Keypoin"
     "tProto.Location\022\020\n\010strength\030\005 \001(\001\022\023\n\013ori"
     "entation\030\006 \001(\001\022\r\n\005scale\030\007 \001(\001\022\020\n\010track_i"
     "d\030\010 \001(\005\032 \n\010Location\022\t\n\001x\030\001 \001(\001\022\t\n\001y\030\002 \001("
-    "\001\"/\n\014KeypointType\022\t\n\005OTHER\020\000\022\010\n\004FAST\020\001\022\n"
-    "\n\006HARRIS\020\002\"8\n\016KeypointsProto\022&\n\010keypoint"
-    "\030\001 \003(\0132\024.theia.KeypointProto", 428);
+    "\001\"9\n\014KeypointType\022\t\n\005OTHER\020\000\022\010\n\004FAST\020\001\022\n"
+    "\n\006HARRIS\020\002\022\010\n\004SIFT\020\003\"8\n\016KeypointsProto\022&"
+    "\n\010keypoint\030\001 \003(\0132\024.theia.KeypointProto", 438);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "image/keypoint_detector/keypoint.proto", &protobuf_RegisterTypes);
   KeypointProto::default_instance_ = new KeypointProto();
@@ -172,6 +172,7 @@ bool KeypointProto_KeypointType_IsValid(int value) {
     case 0:
     case 1:
     case 2:
+    case 3:
       return true;
     default:
       return false;
@@ -182,6 +183,7 @@ bool KeypointProto_KeypointType_IsValid(int value) {
 const KeypointProto_KeypointType KeypointProto::OTHER;
 const KeypointProto_KeypointType KeypointProto::FAST;
 const KeypointProto_KeypointType KeypointProto::HARRIS;
+const KeypointProto_KeypointType KeypointProto::SIFT;
 const KeypointProto_KeypointType KeypointProto::KeypointType_MIN;
 const KeypointProto_KeypointType KeypointProto::KeypointType_MAX;
 const int KeypointProto::KeypointType_ARRAYSIZE;

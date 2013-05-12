@@ -50,6 +50,7 @@ message KeypointProto {
     OTHER = 0;
     FAST = 1;
     HARRIS = 2;
+    SIFT = 3;
   }
   optional KeypointType keypoint_detector = 3;
   

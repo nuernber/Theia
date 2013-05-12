@@ -126,6 +126,10 @@ class Image : public SubImage<T> {
   CVD::Image<T>& GetCVDImage() { return image_; }
   const CVD::Image<T>& GetCVDImage() const { return image_; }
 
+  // Get a pointer to the data.
+  T* GetData() { return image_.data(); }
+  const T* GetData() const { return image_.data(); }
+  
   // Extract SubImages from the Image. Note that this does not give ownership of
   // the data to the subimage, the original Image class still owns it.
   // row, col specify the top-left corner of the sub image to extract.

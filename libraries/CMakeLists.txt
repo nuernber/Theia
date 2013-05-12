@@ -5,3 +5,5 @@ ENDIF (${BUILD_TESTING})
 # Add Flann
 ADD_SUBDIRECTORY(flann)
 
+# Add VLFeat
+ADD_SUBDIRECTORY(vlfeat)

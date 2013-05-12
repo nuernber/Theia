@@ -51,7 +51,8 @@ class Keypoint {
     INVALID = -1,
     OTHER = 0,
     FAST,
-    HARRIS
+    HARRIS,
+    SIFT
   };
 
   Keypoint(double x, double y, KeypointType type) :

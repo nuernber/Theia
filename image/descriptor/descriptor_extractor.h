@@ -64,11 +64,10 @@ class DescriptorExtractor {
                                  const Keypoint* keypoint,
                                  D* descriptor) = 0;
 
-  // Compute the descriptor for multiple keypoints in a given image.
-  virtual bool ComputeDescriptors(
-      const GrayImage& image,
-      const std::vector<Keypoint*>& keypoints,
-      std::vector<D*>* descriptors);
+  // Compute the descriptors for multiple keypoints in a given image.
+  virtual bool ComputeDescriptors(const GrayImage& image,
+                                  const std::vector<Keypoint*>& keypoints,
+                                  std::vector<D*>* descriptors);
 
   // Methods to load/store descriptors in protocol buffers. Each derived class
   // should implement these methods (if desired) and load/store all appropriate
@@ -76,13 +75,11 @@ class DescriptorExtractor {
   // methods act more like static methods, but it is the best way to make sure
   // these methods are paired to the descriptors.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-  virtual bool ProtoToDescriptor(
-      const DescriptorsProto& proto,
-      std::vector<D*>* descriptors) const = 0;
+  virtual bool ProtoToDescriptor(const DescriptorsProto& proto,
+                                 std::vector<D*>* descriptors) const = 0;
 
-  virtual bool DescriptorToProto(
-      const std::vector<D*>& descriptors,
-      DescriptorsProto* proto) const = 0;
+  virtual bool DescriptorToProto(const std::vector<D*>& descriptors,
+                                 DescriptorsProto* proto) const = 0;
 #endif
 };
 

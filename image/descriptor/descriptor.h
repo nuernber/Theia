@@ -57,7 +57,7 @@ class GenericDescriptor {
   // Accessor methods (implemented by Descriptor and BinaryDescriptor classes).
   virtual inline T& operator[](std::size_t i) = 0;
   virtual inline T operator[](std::size_t i) const = 0;
-
+  
   // Dimensionality of the descriptor.
   virtual inline std::size_t Dimensions() const { return N; }
 };
