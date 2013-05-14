@@ -1,10 +1,12 @@
 # See CMakeLists.txt in base dir for macro definition
 
 # ARRSAC
-HEADER_LIBRARY(arrsac arrsac.h math/probability/sequential_probability_ratio)
+HEADER_LIBRARY(arrsac arrsac.h 
+  math/probability/sequential_probability_ratio)
 
 # RECON
-HEADER_LIBRARY(recon recon.h math/probability/kolmogorov_smirnoff)
+HEADER_LIBRARY(recon recon.h 
+  math/probability/kolmogorov_smirnoff)
 
 # Tests:
 IF (${BUILD_TESTING})

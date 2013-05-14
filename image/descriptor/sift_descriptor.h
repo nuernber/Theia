@@ -59,7 +59,8 @@ class SiftDescriptorExtractor : DescriptorExtractor<SiftDescriptor> {
   // should be used to reduce the number of features. A good value for the
   // threshold is usually 20.
   SiftDescriptorExtractor(int num_octaves, int num_levels, int first_octave)
-      : num_octaves_(num_octaves),
+      : sift_filter_(nullptr),
+        num_octaves_(num_octaves),
         num_levels_(num_levels),
         first_octave_(first_octave) {}
   ~SiftDescriptorExtractor();

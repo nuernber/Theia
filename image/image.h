@@ -51,10 +51,19 @@
 namespace theia {
 
 // A general Image class for all images used in Theia. This is basically a
-// wrapper for the libCVD Image class. Note the typedefs after the class
-// definition as well.
-template <typename T>
-class Image;
+// wrapper for the libCVD Image class.
+template <typename T> class Image;
+template <typename T> class SubImage;
+
+typedef CVD::Rgb<float> RGBPixel;
+
+// RGB Image shorthand.
+typedef SubImage<RGBPixel> RGBSubImage;
+typedef Image<RGBPixel> RGBImage;
+
+// Grayscale Image shorthand.
+typedef SubImage<float> GraySubImage;
+typedef Image<float> GrayImage;
 
 template <typename T>
 class SubImage {
@@ -110,6 +119,10 @@ class Image : public SubImage<T> {
   // Initialize empty image.
   explicit Image(int rows, int cols);
 
+  // Convert to other image types.
+  RGBImage ConvertToRGB() const;
+  GrayImage ConvertToGray() const;
+  
   // Clones via deep copy.
   Image<T> Clone() const { return Image(image_.copy_from_me()); }
 
@@ -120,7 +133,7 @@ class Image : public SubImage<T> {
   void Read(std::string filename) { *this = Image(filename); }
 
   // Write image to file.
-  void Write(std::string filename) { CVD::img_save(image_, filename); }
+  void Write(const std::string& filename) { CVD::img_save(image_, filename); }
 
   // Get the full Image.
   CVD::Image<T>& GetCVDImage() { return image_; }
@@ -159,16 +172,6 @@ class Image : public SubImage<T> {
   inline int FloorInt(double val) { return static_cast<int>(floor(val)); }
 };
 
-typedef CVD::Rgb<float> RGBPixel;
-
-// RGB Image shorthand.
-typedef SubImage<RGBPixel> RGBSubImage;
-typedef Image<RGBPixel> RGBImage;
-
-// Grayscale Image shorthand.
-typedef SubImage<float> GraySubImage;
-typedef Image<float> GrayImage;
-
 // ----------------- Implementation ----------------- //
 // Copy from a CVD image. Only copies the pointer. See DeepCopy for a full
 // copy.
@@ -194,6 +197,17 @@ Image<T>::Image(int rows, int cols) {
   image_.resize(CVD::ImageRef(cols, rows));
   image_.zero();
   sub_image_ = image_;
+}
+
+// Convert the image to an RGB image.
+template <typename T>
+RGBImage Image<T>::ConvertToRGB() const {
+    return RGBImage(CVD::convert_image(image_));
+}
+
+template <typename T>
+GrayImage Image<T>::ConvertToGray() const {
+    return GrayImage(CVD::convert_image(image_));
 }
 
 // Deep copies the input to this.

@@ -38,14 +38,17 @@
 #include <vector>
 
 #include "image/image.h"
+#include "image/image_canvas.h"
 #include "image/descriptor/sift_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/sift_detector.h"
 
 DEFINE_string(input_image, "image.png",
               "Image to extract SIFT keypoints and descriptors from.");
+DEFINE_string(output_file, "output.png", "Name of output image file.");
 
 using theia::GrayImage;
+using theia::ImageCanvas;
 using theia::Keypoint;
 using theia::SiftDescriptor;
 using theia::SiftDescriptorExtractor;
@@ -70,6 +73,10 @@ int main (int argc, char *argv[]) {
   std::vector<SiftDescriptor*> sift_descriptors;
   sift_extractor.ComputeDescriptors(image, sift_keypoints, &sift_descriptors);
   VLOG(0) << "extracted " << sift_descriptors.size() << " descriptors.";
-  for (SiftDescriptor* desc : sift_descriptors)
-    VLOG(0) << (*desc)[0];
+
+  // Get an image canvas to draw the features on.
+  ImageCanvas image_canvas;
+  image_canvas.AddImage(image);
+  image_canvas.DrawFeatures(sift_keypoints, theia::RGBPixel(0, 0, 1.0));
+  image_canvas.Write(FLAGS_output_file);
 }
