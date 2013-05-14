@@ -58,12 +58,18 @@ int main (int argc, char *argv[]) {
   GrayImage image(FLAGS_input_image);
 
   // Detect keypoints.
+  VLOG(0) << "detecting keypoints";
   SiftDetector keypoint_detector;
   std::vector<Keypoint*> sift_keypoints;
   keypoint_detector.DetectKeypoints(image, &sift_keypoints);
+  VLOG(0) << "detected " << sift_keypoints.size() << " keypoints.";
   
   // Extract descriptors.
+  VLOG(0) << "extracting descriptors.";
   SiftDescriptorExtractor sift_extractor;
   std::vector<SiftDescriptor*> sift_descriptors;
   sift_extractor.ComputeDescriptors(image, sift_keypoints, &sift_descriptors);
+  VLOG(0) << "extracted " << sift_descriptors.size() << " descriptors.";
+  for (SiftDescriptor* desc : sift_descriptors)
+    VLOG(0) << (*desc)[0];
 }

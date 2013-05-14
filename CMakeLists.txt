@@ -12,20 +12,21 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 set(CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmakeFindModules)
 include(FindTheiaDependencies)
-include(theia_macros)
-
-set_compile_parameters()
-find_theia_dependencies()
-
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Add GTest if testing is enabled
 OPTION(BUILD_TESTING
        "Enable testing"
        ON)
 ENABLE_TESTING()
+
+set_compile_parameters()
+find_theia_dependencies()
+include(theia_macros)
+
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
 
 # build Third party libraries
 ADD_SUBDIRECTORY(libraries)
@@ -41,9 +42,6 @@ ADD_SUBDIRECTORY(math)
 ADD_SUBDIRECTORY(solvers)
 ADD_SUBDIRECTORY(tutorials)
 ADD_SUBDIRECTORY(vision)
-
-# Make libraries more static.
-#SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
 # ---------------- Install commands ----------------- #
 # Compile protos first if desired.

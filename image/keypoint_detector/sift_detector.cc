@@ -45,43 +45,59 @@ extern "C" {
 
 namespace theia {
 SiftDetector::~SiftDetector() {
-  if (sift_filter_ != NULL)
+  if (sift_filter_ != nullptr)
     vl_sift_delete(sift_filter_);
 }
 
 bool SiftDetector::DetectKeypoints(const GrayImage& image,
                                    std::vector<Keypoint*>* keypoints) {
+  // NOTE: This is a bug in vlfeat! These functions are not set by default.
+  vl_set_alloc_func(malloc, realloc, calloc, free);
+
   // If the filter has been set, but is not usable for the input image (i.e. the
   // width and height are different) then we must make a new filter. Adding this
   // statement will save the function from regenerating the filter for
   // successive calls with images of the same size (e.g. a video sequence).
-  if (sift_filter_ != NULL && (sift_filter_->width != image.Cols() ||
-                               sift_filter_->height != image.Rows()))
+  VLOG(0) << "checking if filter is null";
+  if (sift_filter_ != nullptr && (sift_filter_->width != image.Cols() ||
+                               sift_filter_->height != image.Rows())) {
+    VLOG(0) << "deleting pointer you should not delete!";
     vl_sift_delete(sift_filter_);
-
+  }
   // If the filter has not been set (or was deleted in the previous if), then we
   // need to create a new filter.
-  if (sift_filter_ == NULL)
+  VLOG(0) << "potentially creating new filter: "
+          << "\n\timage width, height = " << image.Cols() << ", " << image.Rows()
+          << "\n\toctaves = " << num_octaves_
+          << "\n\tlevels = " << num_levels_
+          << "\n\tfirst octaves = " << first_octave_;
+  if (sift_filter_ == nullptr)
     sift_filter_ = vl_sift_new(image.Cols(), image.Rows(),
                                num_octaves_,
                                num_levels_,
                                first_octave_);
-
+  
   // The VLFeat functions take in a non-const image pointer so that it can
   // calculate gaussian pyramids. Obviously, we do not want to break our const
   // input, so the best solution (for now) is to copy the image.
+  VLOG(0) << "cloning image.";
   GrayImage mutable_image = image.Clone();
 
   // Calculate the first octave to process.
+  VLOG(0) << "processing first filter";
   int vl_status = vl_sift_process_first_octave(sift_filter_,
                                                mutable_image.GetData());
   // Process octaves until you can't anymore.
   while (vl_status != VL_ERR_EOF) {
     // Detect the keypoints.
+    VLOG(0) << "detecting keypoints";
     vl_sift_detect(sift_filter_);
     // Get the keypoints.
+    VLOG(0) << "getting keypoints";
     const VlSiftKeypoint* vl_keypoints = vl_sift_get_keypoints(sift_filter_);
     int num_keypoints = vl_sift_get_nkeypoints(sift_filter_);
+    VLOG(0) << "got " << num_keypoints << " keypoints!";
+
     for (int i = 0; i < num_keypoints; i++) {
       // Calculate (up to 4) orientations of the keypoint.
       double angles[4];
@@ -99,8 +115,9 @@ bool SiftDetector::DetectKeypoints(const GrayImage& image,
         keypoints->push_back(keypoint);
       }
     }
+    VLOG(0) << "processing next octave";
     // Attempt to process the next octave.
-    vl_sift_process_next_octave(sift_filter_);
+    vl_status = vl_sift_process_next_octave(sift_filter_);
   }
   return true;
 }

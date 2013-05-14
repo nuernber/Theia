@@ -36,7 +36,7 @@
 #define IMAGE_KEYPOINT_DETECTOR_SIFT_DETECTOR_H_
 
 extern "C" {
-#include <vl/sift.h>
+  #include <vl/sift.h>
 }
 
 #include <vector>
@@ -59,7 +59,8 @@ class SiftDetector : public KeypointDetector {
   SiftDetector(int num_octaves, int num_levels, int first_octave)
       : num_octaves_(num_octaves),
         num_levels_(num_levels),
-        first_octave_(first_octave) {}
+        first_octave_(first_octave),
+        sift_filter_(nullptr) {}
   ~SiftDetector();
 
   // Given an image, detect keypoints using the sift descriptor.

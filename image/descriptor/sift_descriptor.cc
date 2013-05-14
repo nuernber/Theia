@@ -58,6 +58,9 @@ SiftDescriptorExtractor::~SiftDescriptorExtractor() {
 bool SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
                                                 const Keypoint* keypoint,
                                                 SiftDescriptor* descriptor) {
+  // NOTE: This is a bug in vlfeat! These functions are not set by default.
+  vl_set_alloc_func(malloc, realloc, calloc, free);
+
   CHECK(keypoint->has_scale() && keypoint->has_orientation())
       << "Keypoint must have scale and orientation to compute a SIFT "
       << "descriptor.";
@@ -113,6 +116,9 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image,
     const std::vector<Keypoint*>& keypoints,
     std::vector<SiftDescriptor*>* descriptors) {
+  // NOTE: This is a bug in vlfeat! These functions are not set by default.
+  vl_set_alloc_func(malloc, realloc, calloc, free);
+
   // If the filter has been set, but is not usable for the input image (i.e. the
   // width and height are different) then we must make a new filter. Adding this
   // statement will save the function from regenerating the filter for
@@ -154,17 +160,18 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
   // first resize the descriptors vector so that the keypoint indicies will be
   // properly matched to the descriptors.
   descriptors->resize(keypoints.size(), nullptr);
-  while (vl_status == VL_ERR_EOF) {
+  while (vl_status != VL_ERR_EOF) {
     // Go through each keypoint to see if it came from this octave.
     for (int i = 0; i < sift_keypoints.size(); i++) {
       if (sift_keypoints[i].o != sift_filter_->o_cur)
         continue;
+      (*descriptors)[i] = new SiftDescriptor;
       vl_sift_calc_keypoint_descriptor(sift_filter_,
                                        (*descriptors)[i]->Data(),
                                        &sift_keypoints[i],
                                        keypoints[i]->orientation());
     }
-    vl_sift_process_next_octave(sift_filter_);
+    vl_status = vl_sift_process_next_octave(sift_filter_);
   }
   return true;
 }
