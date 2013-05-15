@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -123,6 +123,15 @@ bool PatchDescriptorExtractor<D>::ProtoToDescriptor(
         << "Descriptor in proto is not a patch descriptor.";
     CHECK_EQ(proto_descriptor.float_descriptor_size(), descriptor->Dimensions())
         << "Dimension mismatch in the proto and descriptors.";
+    descriptor->set_x(proto_descriptor.x());
+    descriptor->set_y(proto_descriptor.y());
+    if (proto_descriptor.has_strength())
+      descriptor->set_strength(proto_descriptor.strength());
+    if (proto_descriptor.has_orientation())
+      descriptor->set_orientation(proto_descriptor.orientation());
+    if (proto_descriptor.has_scale())
+      descriptor->set_scale(proto_descriptor.scale());
+
     // Get float array.
     for (int i = 0; i < descriptor->Dimensions(); i++)
       (*descriptor)[i] = proto_descriptor.float_descriptor(i);
@@ -142,6 +151,14 @@ bool PatchDescriptorExtractor<D>::DescriptorToProto(
       descriptor_proto->add_float_descriptor((*descriptor)[i]);
     // Set the proto type to patch.
     descriptor_proto->set_descriptor_type(DescriptorProto::PATCH);
+    descriptor_proto->set_x(descriptor->x());
+    descriptor_proto->set_y(descriptor->y());
+    if (descriptor->has_strength())
+      descriptor_proto->set_strength(descriptor->strength());
+    if (descriptor->has_orientation())
+      descriptor_proto->set_orientation(descriptor->orientation());
+    if (descriptor->has_scale())
+      descriptor_proto->set_scale(descriptor->scale());
   }
   return true;
 }

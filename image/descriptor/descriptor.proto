@@ -51,15 +51,18 @@ message DescriptorProto {
   // Float array for descriptors.
   repeated float float_descriptor = 5;
 
+  optional int32 x = 6;
+  optional int32 y = 7;
+  
   // Strength of keypoint (if applicable).
-  optional double strength = 6;
+  optional double strength = 8;
   // Orientation of keypoint (if applicable).
-  optional double orientation = 7;
+  optional double orientation = 9;
   // Scale of the keypoint (if applicable).
-  optional double scale = 8;
+  optional double scale = 10;
 
   // 3D Track associated with this descriptor.
-  optional int32 track_id = 9;
+  optional int32 track_id = 11;
 
   // Color used for point cloud reconstruction.
   message Color {
@@ -67,7 +70,7 @@ message DescriptorProto {
     optional float g = 2;
     optional float b = 3;
   }
-  optional Color color = 10;
+  optional Color color = 12;
 
   // What type of descriptor extracted this.
   enum DescriptorType {
@@ -78,7 +81,7 @@ message DescriptorProto {
     SIFT = 4;
     BRISK = 5;
   }
-  optional DescriptorType descriptor_type = 11;
+  optional DescriptorType descriptor_type = 13;
 }
 
 message DescriptorsProto {

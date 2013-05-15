@@ -41,12 +41,14 @@ void protobuf_AssignDesc_image_2fdescriptor_2fdescriptor_2eproto() {
       "image/descriptor/descriptor.proto");
   GOOGLE_CHECK(file != NULL);
   DescriptorProto_descriptor_ = file->message_type(0);
-  static const int DescriptorProto_offsets_[11] = {
+  static const int DescriptorProto_offsets_[13] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, descriptor_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, image_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, keypoint_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, binary_descriptor_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, float_descriptor_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, x_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, y_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, strength_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, orientation_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, scale_),
@@ -139,20 +141,20 @@ void protobuf_AddDesc_image_2fdescriptor_2fdescriptor_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n!image/descriptor/descriptor.proto\022\005the"
     "ia\032&image/keypoint_detector/keypoint.pro"
-    "to\"\311\003\n\017DescriptorProto\022\025\n\rdescriptor_id\030"
+    "to\"\337\003\n\017DescriptorProto\022\025\n\rdescriptor_id\030"
     "\001 \001(\005\022\020\n\010image_id\030\002 \001(\005\022&\n\010keypoint\030\003 \001("
     "\0132\024.theia.KeypointProto\022\031\n\021binary_descri"
-    "ptor\030\004 \001(\t\022\030\n\020float_descriptor\030\005 \003(\002\022\020\n\010"
-    "strength\030\006 \001(\001\022\023\n\013orientation\030\007 \001(\001\022\r\n\005s"
-    "cale\030\010 \001(\001\022\020\n\010track_id\030\t \001(\005\022+\n\005color\030\n "
-    "\001(\0132\034.theia.DescriptorProto.Color\022>\n\017des"
-    "criptor_type\030\013 \001(\0162%.theia.DescriptorPro"
-    "to.DescriptorType\032(\n\005Color\022\t\n\001r\030\001 \001(\002\022\t\n"
-    "\001g\030\002 \001(\002\022\t\n\001b\030\003 \001(\002\"Q\n\016DescriptorType\022\t\n"
-    "\005OTHER\020\000\022\t\n\005BRIEF\020\001\022\t\n\005DAISY\020\002\022\t\n\005PATCH\020"
-    "\003\022\010\n\004SIFT\020\004\022\t\n\005BRISK\020\005\"F\n\020DescriptorsPro"
-    "to\0222\n\022feature_descriptor\030\001 \003(\0132\026.theia.D"
-    "escriptorProto", 614);
+    "ptor\030\004 \001(\t\022\030\n\020float_descriptor\030\005 \003(\002\022\t\n\001"
+    "x\030\006 \001(\005\022\t\n\001y\030\007 \001(\005\022\020\n\010strength\030\010 \001(\001\022\023\n\013"
+    "orientation\030\t \001(\001\022\r\n\005scale\030\n \001(\001\022\020\n\010trac"
+    "k_id\030\013 \001(\005\022+\n\005color\030\014 \001(\0132\034.theia.Descri"
+    "ptorProto.Color\022>\n\017descriptor_type\030\r \001(\016"
+    "2%.theia.DescriptorProto.DescriptorType\032"
+    "(\n\005Color\022\t\n\001r\030\001 \001(\002\022\t\n\001g\030\002 \001(\002\022\t\n\001b\030\003 \001("
+    "\002\"Q\n\016DescriptorType\022\t\n\005OTHER\020\000\022\t\n\005BRIEF\020"
+    "\001\022\t\n\005DAISY\020\002\022\t\n\005PATCH\020\003\022\010\n\004SIFT\020\004\022\t\n\005BRI"
+    "SK\020\005\"F\n\020DescriptorsProto\0222\n\022feature_desc"
+    "riptor\030\001 \003(\0132\026.theia.DescriptorProto", 636);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "image/descriptor/descriptor.proto", &protobuf_RegisterTypes);
   DescriptorProto::default_instance_ = new DescriptorProto();
@@ -490,6 +492,8 @@ const int DescriptorProto::kImageIdFieldNumber;
 const int DescriptorProto::kKeypointFieldNumber;
 const int DescriptorProto::kBinaryDescriptorFieldNumber;
 const int DescriptorProto::kFloatDescriptorFieldNumber;
+const int DescriptorProto::kXFieldNumber;
+const int DescriptorProto::kYFieldNumber;
 const int DescriptorProto::kStrengthFieldNumber;
 const int DescriptorProto::kOrientationFieldNumber;
 const int DescriptorProto::kScaleFieldNumber;
@@ -520,6 +524,8 @@ void DescriptorProto::SharedCtor() {
   image_id_ = 0;
   keypoint_ = NULL;
   binary_descriptor_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  x_ = 0;
+  y_ = 0;
   strength_ = 0;
   orientation_ = 0;
   scale_ = 0;
@@ -576,11 +582,13 @@ void DescriptorProto::Clear() {
         binary_descriptor_->clear();
       }
     }
+    x_ = 0;
+    y_ = 0;
     strength_ = 0;
-    orientation_ = 0;
-    scale_ = 0;
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    orientation_ = 0;
+    scale_ = 0;
     track_id_ = 0;
     if (has_color()) {
       if (color_ != NULL) color_->::theia::DescriptorProto_Color::Clear();
@@ -678,12 +686,44 @@ bool DescriptorProto::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(45)) goto parse_float_descriptor;
-        if (input->ExpectTag(49)) goto parse_strength;
+        if (input->ExpectTag(48)) goto parse_x;
         break;
       }
 
-      // optional double strength = 6;
+      // optional int32 x = 6;
       case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_x:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &x_)));
+          set_has_x();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(56)) goto parse_y;
+        break;
+      }
+
+      // optional int32 y = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_y:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &y_)));
+          set_has_y();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(65)) goto parse_strength;
+        break;
+      }
+
+      // optional double strength = 8;
+      case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
          parse_strength:
@@ -694,12 +734,12 @@ bool DescriptorProto::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(57)) goto parse_orientation;
+        if (input->ExpectTag(73)) goto parse_orientation;
         break;
       }
 
-      // optional double orientation = 7;
-      case 7: {
+      // optional double orientation = 9;
+      case 9: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
          parse_orientation:
@@ -710,12 +750,12 @@ bool DescriptorProto::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(65)) goto parse_scale;
+        if (input->ExpectTag(81)) goto parse_scale;
         break;
       }
 
-      // optional double scale = 8;
-      case 8: {
+      // optional double scale = 10;
+      case 10: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
          parse_scale:
@@ -726,12 +766,12 @@ bool DescriptorProto::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(72)) goto parse_track_id;
+        if (input->ExpectTag(88)) goto parse_track_id;
         break;
       }
 
-      // optional int32 track_id = 9;
-      case 9: {
+      // optional int32 track_id = 11;
+      case 11: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_track_id:
@@ -742,12 +782,12 @@ bool DescriptorProto::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(82)) goto parse_color;
+        if (input->ExpectTag(98)) goto parse_color;
         break;
       }
 
-      // optional .theia.DescriptorProto.Color color = 10;
-      case 10: {
+      // optional .theia.DescriptorProto.Color color = 12;
+      case 12: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_color:
@@ -756,12 +796,12 @@ bool DescriptorProto::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(88)) goto parse_descriptor_type;
+        if (input->ExpectTag(104)) goto parse_descriptor_type;
         break;
       }
 
-      // optional .theia.DescriptorProto.DescriptorType descriptor_type = 11;
-      case 11: {
+      // optional .theia.DescriptorProto.DescriptorType descriptor_type = 13;
+      case 13: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_descriptor_type:
@@ -772,7 +812,7 @@ bool DescriptorProto::MergePartialFromCodedStream(
           if (::theia::DescriptorProto_DescriptorType_IsValid(value)) {
             set_descriptor_type(static_cast< ::theia::DescriptorProto_DescriptorType >(value));
           } else {
-            mutable_unknown_fields()->AddVarint(11, value);
+            mutable_unknown_fields()->AddVarint(13, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -830,36 +870,46 @@ void DescriptorProto::SerializeWithCachedSizes(
       5, this->float_descriptor(i), output);
   }
 
-  // optional double strength = 6;
+  // optional int32 x = 6;
+  if (has_x()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->x(), output);
+  }
+
+  // optional int32 y = 7;
+  if (has_y()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->y(), output);
+  }
+
+  // optional double strength = 8;
   if (has_strength()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->strength(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(8, this->strength(), output);
   }
 
-  // optional double orientation = 7;
+  // optional double orientation = 9;
   if (has_orientation()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->orientation(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(9, this->orientation(), output);
   }
 
-  // optional double scale = 8;
+  // optional double scale = 10;
   if (has_scale()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(8, this->scale(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(10, this->scale(), output);
   }
 
-  // optional int32 track_id = 9;
+  // optional int32 track_id = 11;
   if (has_track_id()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->track_id(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(11, this->track_id(), output);
   }
 
-  // optional .theia.DescriptorProto.Color color = 10;
+  // optional .theia.DescriptorProto.Color color = 12;
   if (has_color()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      10, this->color(), output);
+      12, this->color(), output);
   }
 
-  // optional .theia.DescriptorProto.DescriptorType descriptor_type = 11;
+  // optional .theia.DescriptorProto.DescriptorType descriptor_type = 13;
   if (has_descriptor_type()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      11, this->descriptor_type(), output);
+      13, this->descriptor_type(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -903,37 +953,47 @@ void DescriptorProto::SerializeWithCachedSizes(
       WriteFloatToArray(5, this->float_descriptor(i), target);
   }
 
-  // optional double strength = 6;
+  // optional int32 x = 6;
+  if (has_x()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->x(), target);
+  }
+
+  // optional int32 y = 7;
+  if (has_y()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->y(), target);
+  }
+
+  // optional double strength = 8;
   if (has_strength()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->strength(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(8, this->strength(), target);
   }
 
-  // optional double orientation = 7;
+  // optional double orientation = 9;
   if (has_orientation()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->orientation(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(9, this->orientation(), target);
   }
 
-  // optional double scale = 8;
+  // optional double scale = 10;
   if (has_scale()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(8, this->scale(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(10, this->scale(), target);
   }
 
-  // optional int32 track_id = 9;
+  // optional int32 track_id = 11;
   if (has_track_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->track_id(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(11, this->track_id(), target);
   }
 
-  // optional .theia.DescriptorProto.Color color = 10;
+  // optional .theia.DescriptorProto.Color color = 12;
   if (has_color()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        10, this->color(), target);
+        12, this->color(), target);
   }
 
-  // optional .theia.DescriptorProto.DescriptorType descriptor_type = 11;
+  // optional .theia.DescriptorProto.DescriptorType descriptor_type = 13;
   if (has_descriptor_type()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      11, this->descriptor_type(), target);
+      13, this->descriptor_type(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -975,38 +1035,52 @@ int DescriptorProto::ByteSize() const {
           this->binary_descriptor());
     }
 
-    // optional double strength = 6;
+    // optional int32 x = 6;
+    if (has_x()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->x());
+    }
+
+    // optional int32 y = 7;
+    if (has_y()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->y());
+    }
+
+    // optional double strength = 8;
     if (has_strength()) {
-      total_size += 1 + 8;
-    }
-
-    // optional double orientation = 7;
-    if (has_orientation()) {
-      total_size += 1 + 8;
-    }
-
-    // optional double scale = 8;
-    if (has_scale()) {
       total_size += 1 + 8;
     }
 
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    // optional int32 track_id = 9;
+    // optional double orientation = 9;
+    if (has_orientation()) {
+      total_size += 1 + 8;
+    }
+
+    // optional double scale = 10;
+    if (has_scale()) {
+      total_size += 1 + 8;
+    }
+
+    // optional int32 track_id = 11;
     if (has_track_id()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->track_id());
     }
 
-    // optional .theia.DescriptorProto.Color color = 10;
+    // optional .theia.DescriptorProto.Color color = 12;
     if (has_color()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->color());
     }
 
-    // optional .theia.DescriptorProto.DescriptorType descriptor_type = 11;
+    // optional .theia.DescriptorProto.DescriptorType descriptor_type = 13;
     if (has_descriptor_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->descriptor_type());
@@ -1059,17 +1133,23 @@ void DescriptorProto::MergeFrom(const DescriptorProto& from) {
     if (from.has_binary_descriptor()) {
       set_binary_descriptor(from.binary_descriptor());
     }
+    if (from.has_x()) {
+      set_x(from.x());
+    }
+    if (from.has_y()) {
+      set_y(from.y());
+    }
     if (from.has_strength()) {
       set_strength(from.strength());
     }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_orientation()) {
       set_orientation(from.orientation());
     }
     if (from.has_scale()) {
       set_scale(from.scale());
     }
-  }
-  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_track_id()) {
       set_track_id(from.track_id());
     }
@@ -1107,6 +1187,8 @@ void DescriptorProto::Swap(DescriptorProto* other) {
     std::swap(keypoint_, other->keypoint_);
     std::swap(binary_descriptor_, other->binary_descriptor_);
     float_descriptor_.Swap(&other->float_descriptor_);
+    std::swap(x_, other->x_);
+    std::swap(y_, other->y_);
     std::swap(strength_, other->strength_);
     std::swap(orientation_, other->orientation_);
     std::swap(scale_, other->scale_);
