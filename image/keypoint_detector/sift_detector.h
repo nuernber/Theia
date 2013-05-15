@@ -52,15 +52,11 @@ class Keypoint;
 // source software VLFeat (www.vlfeat.org) to detect keypoints.
 class SiftDetector : public KeypointDetector {
  public:
-  SiftDetector() : SiftDetector(-1, 3, 0) {}
   // Set the feature score threshold and indicate whether nonmax suppression
   // should be used to reduce the number of features. A good value for the
   // threshold is usually 20.
-  SiftDetector(int num_octaves, int num_levels, int first_octave)
-      : num_octaves_(num_octaves),
-        num_levels_(num_levels),
-        first_octave_(first_octave),
-        sift_filter_(nullptr) {}
+  SiftDetector(int num_octaves, int num_levels, int first_octave);
+  SiftDetector() : SiftDetector(-1, 3, 0) {}
   ~SiftDetector();
 
   // Given an image, detect keypoints using the sift descriptor.

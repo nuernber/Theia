@@ -50,30 +50,32 @@ typedef Image<float> GrayImage;
 class Keypoint;
 
 class SiftDescriptor : public Descriptor<float, 128> {
+ public:
+  SiftDescriptor() : Descriptor(DescriptorType::SIFT) {}
 };
 
-class SiftDescriptorExtractor : DescriptorExtractor<SiftDescriptor> {
+class SiftDescriptorExtractor : public DescriptorExtractor<SiftDescriptor> {
  public:
-  SiftDescriptorExtractor() : SiftDescriptorExtractor(-1, 3, 0) {}
   // Set the feature score threshold and indicate whether nonmax suppression
   // should be used to reduce the number of features. A good value for the
   // threshold is usually 20.
-  SiftDescriptorExtractor(int num_octaves, int num_levels, int first_octave)
-      : sift_filter_(nullptr),
-        num_octaves_(num_octaves),
-        num_levels_(num_levels),
-        first_octave_(first_octave) {}
+  SiftDescriptorExtractor(int num_octaves, int num_levels, int first_octave);
+  SiftDescriptorExtractor() : SiftDescriptorExtractor(-1, 3, 0) {}
   ~SiftDescriptorExtractor();
 
   // Computes a descriptor at a single keypoint.
   bool ComputeDescriptor(const GrayImage& image,
-                         const Keypoint* keypoint,
+                         const Keypoint& keypoint,
                          SiftDescriptor* descriptor);
 
   // Compute multiple descriptors for keypoints from a single image.
   bool ComputeDescriptors(const GrayImage& image,
                           const std::vector<Keypoint*>& keypoints,
                           std::vector<SiftDescriptor*>* descriptors);
+
+  bool DetectAndExtractDescriptors(const GrayImage& image,
+                                   std::vector<SiftDescriptor*>* descriptors);
+
   // Methods to load/store descriptors in protocol buffers. Each derived class
   // should implement these methods (if desired) and load/store all appropriate
   // fields in the protocol buffer. This is kind of a sucky paradigm since these

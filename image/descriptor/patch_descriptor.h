@@ -53,7 +53,8 @@ template<class D> class PatchDescriptorExtractor;
 template<int R, int C>
 class PatchDescriptor : public Descriptor<float, R*C> {
  public:
-  PatchDescriptor() : patch_rows_(R), patch_cols_(C) {}
+  PatchDescriptor() : Descriptor<float, R*C>(DescriptorType::PATCH),
+                      patch_rows_(R), patch_cols_(C) {}
  private:
   friend class PatchDescriptorExtractor<PatchDescriptor<R, C> >;
   int patch_rows_;
@@ -69,7 +70,7 @@ class PatchDescriptorExtractor : public DescriptorExtractor<D> {
   // Computes a descriptor at a single keypoint.
   bool ComputeDescriptor(
       const GrayImage& image,
-      const Keypoint* keypoint,
+      const Keypoint& keypoint,
       D* descriptor);
 
   // Methods to load/store descriptors in protocol buffers.
@@ -88,10 +89,10 @@ class PatchDescriptorExtractor : public DescriptorExtractor<D> {
 template<class D>
 bool PatchDescriptorExtractor<D>::ComputeDescriptor(
     const GrayImage& image,
-    const Keypoint* keypoint,
+    const Keypoint& keypoint,
     D* descriptor) {
-  int patch_r_begin = keypoint->y() - descriptor->patch_rows_/2;
-  int patch_c_begin = keypoint->x() - descriptor->patch_cols_/2;
+  int patch_r_begin = keypoint.y() - descriptor->patch_rows_/2;
+  int patch_c_begin = keypoint.x() - descriptor->patch_cols_/2;
   int patch_r_end = patch_r_begin + descriptor->patch_rows_;
   int patch_c_end = patch_c_begin + descriptor->patch_cols_;
 
@@ -106,6 +107,7 @@ bool PatchDescriptorExtractor<D>::ComputeDescriptor(
       (*descriptor)[i++] = image[r][c];
     }
   }
+  descriptor->SetKeypoint(keypoint);
 }
 
 // Methods to load/store descriptors in protocol buffers.

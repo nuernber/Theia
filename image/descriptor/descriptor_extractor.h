@@ -61,10 +61,12 @@ class DescriptorExtractor {
 
   // Computes a descriptor at a single keypoint.
   virtual bool ComputeDescriptor(const GrayImage& image,
-                                 const Keypoint* keypoint,
+                                 const Keypoint& keypoint,
                                  D* descriptor) = 0;
 
-  // Compute the descriptors for multiple keypoints in a given image.
+  // Compute the descriptors for multiple keypoints in a given image. This
+  // method will allocate the D* pointers, but the caller owns the data and must
+  // delete it.
   virtual bool ComputeDescriptors(const GrayImage& image,
                                   const std::vector<Keypoint*>& keypoints,
                                   std::vector<D*>* descriptors);
@@ -93,7 +95,7 @@ bool DescriptorExtractor<D>::ComputeDescriptors(
   descriptors->reserve(keypoints.size());
   for (const Keypoint* img_keypoint : keypoints) {
     D* descriptor = new D;
-    ComputeDescriptor(image, img_keypoint, descriptor);
+    ComputeDescriptor(image, *img_keypoint, descriptor);
     descriptors->push_back(descriptor);
   }
   return true;

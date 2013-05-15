@@ -40,14 +40,16 @@ class DescriptorProto_Color;
 class DescriptorsProto;
 
 enum DescriptorProto_DescriptorType {
-  DescriptorProto_DescriptorType_BRIEF = 0,
-  DescriptorProto_DescriptorType_DAISY = 1,
-  DescriptorProto_DescriptorType_PATCH = 2,
-  DescriptorProto_DescriptorType_SIFT = 3
+  DescriptorProto_DescriptorType_OTHER = 0,
+  DescriptorProto_DescriptorType_BRIEF = 1,
+  DescriptorProto_DescriptorType_DAISY = 2,
+  DescriptorProto_DescriptorType_PATCH = 3,
+  DescriptorProto_DescriptorType_SIFT = 4,
+  DescriptorProto_DescriptorType_BRISK = 5
 };
 bool DescriptorProto_DescriptorType_IsValid(int value);
-const DescriptorProto_DescriptorType DescriptorProto_DescriptorType_DescriptorType_MIN = DescriptorProto_DescriptorType_BRIEF;
-const DescriptorProto_DescriptorType DescriptorProto_DescriptorType_DescriptorType_MAX = DescriptorProto_DescriptorType_SIFT;
+const DescriptorProto_DescriptorType DescriptorProto_DescriptorType_DescriptorType_MIN = DescriptorProto_DescriptorType_OTHER;
+const DescriptorProto_DescriptorType DescriptorProto_DescriptorType_DescriptorType_MAX = DescriptorProto_DescriptorType_BRISK;
 const int DescriptorProto_DescriptorType_DescriptorType_ARRAYSIZE = DescriptorProto_DescriptorType_DescriptorType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* DescriptorProto_DescriptorType_descriptor();
@@ -219,10 +221,12 @@ class DescriptorProto : public ::google::protobuf::Message {
   typedef DescriptorProto_Color Color;
 
   typedef DescriptorProto_DescriptorType DescriptorType;
+  static const DescriptorType OTHER = DescriptorProto_DescriptorType_OTHER;
   static const DescriptorType BRIEF = DescriptorProto_DescriptorType_BRIEF;
   static const DescriptorType DAISY = DescriptorProto_DescriptorType_DAISY;
   static const DescriptorType PATCH = DescriptorProto_DescriptorType_PATCH;
   static const DescriptorType SIFT = DescriptorProto_DescriptorType_SIFT;
+  static const DescriptorType BRISK = DescriptorProto_DescriptorType_BRISK;
   static inline bool DescriptorType_IsValid(int value) {
     return DescriptorProto_DescriptorType_IsValid(value);
   }
@@ -293,26 +297,47 @@ class DescriptorProto : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_float_descriptor();
 
-  // optional int32 track_id = 6;
+  // optional double strength = 6;
+  inline bool has_strength() const;
+  inline void clear_strength();
+  static const int kStrengthFieldNumber = 6;
+  inline double strength() const;
+  inline void set_strength(double value);
+
+  // optional double orientation = 7;
+  inline bool has_orientation() const;
+  inline void clear_orientation();
+  static const int kOrientationFieldNumber = 7;
+  inline double orientation() const;
+  inline void set_orientation(double value);
+
+  // optional double scale = 8;
+  inline bool has_scale() const;
+  inline void clear_scale();
+  static const int kScaleFieldNumber = 8;
+  inline double scale() const;
+  inline void set_scale(double value);
+
+  // optional int32 track_id = 9;
   inline bool has_track_id() const;
   inline void clear_track_id();
-  static const int kTrackIdFieldNumber = 6;
+  static const int kTrackIdFieldNumber = 9;
   inline ::google::protobuf::int32 track_id() const;
   inline void set_track_id(::google::protobuf::int32 value);
 
-  // optional .theia.DescriptorProto.Color color = 7;
+  // optional .theia.DescriptorProto.Color color = 10;
   inline bool has_color() const;
   inline void clear_color();
-  static const int kColorFieldNumber = 7;
+  static const int kColorFieldNumber = 10;
   inline const ::theia::DescriptorProto_Color& color() const;
   inline ::theia::DescriptorProto_Color* mutable_color();
   inline ::theia::DescriptorProto_Color* release_color();
   inline void set_allocated_color(::theia::DescriptorProto_Color* color);
 
-  // optional .theia.DescriptorProto.DescriptorType descriptor_type = 8;
+  // optional .theia.DescriptorProto.DescriptorType descriptor_type = 11;
   inline bool has_descriptor_type() const;
   inline void clear_descriptor_type();
-  static const int kDescriptorTypeFieldNumber = 8;
+  static const int kDescriptorTypeFieldNumber = 11;
   inline ::theia::DescriptorProto_DescriptorType descriptor_type() const;
   inline void set_descriptor_type(::theia::DescriptorProto_DescriptorType value);
 
@@ -326,6 +351,12 @@ class DescriptorProto : public ::google::protobuf::Message {
   inline void clear_has_keypoint();
   inline void set_has_binary_descriptor();
   inline void clear_has_binary_descriptor();
+  inline void set_has_strength();
+  inline void clear_has_strength();
+  inline void set_has_orientation();
+  inline void clear_has_orientation();
+  inline void set_has_scale();
+  inline void clear_has_scale();
   inline void set_has_track_id();
   inline void clear_has_track_id();
   inline void set_has_color();
@@ -340,12 +371,15 @@ class DescriptorProto : public ::google::protobuf::Message {
   ::theia::KeypointProto* keypoint_;
   ::std::string* binary_descriptor_;
   ::google::protobuf::RepeatedField< float > float_descriptor_;
+  double strength_;
+  double orientation_;
+  double scale_;
   ::theia::DescriptorProto_Color* color_;
   ::google::protobuf::int32 track_id_;
   int descriptor_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
 
   friend void  protobuf_AddDesc_image_2fdescriptor_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_image_2fdescriptor_2fdescriptor_2eproto();
@@ -693,15 +727,81 @@ DescriptorProto::mutable_float_descriptor() {
   return &float_descriptor_;
 }
 
-// optional int32 track_id = 6;
-inline bool DescriptorProto::has_track_id() const {
+// optional double strength = 6;
+inline bool DescriptorProto::has_strength() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void DescriptorProto::set_has_track_id() {
+inline void DescriptorProto::set_has_strength() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void DescriptorProto::clear_has_track_id() {
+inline void DescriptorProto::clear_has_strength() {
   _has_bits_[0] &= ~0x00000020u;
+}
+inline void DescriptorProto::clear_strength() {
+  strength_ = 0;
+  clear_has_strength();
+}
+inline double DescriptorProto::strength() const {
+  return strength_;
+}
+inline void DescriptorProto::set_strength(double value) {
+  set_has_strength();
+  strength_ = value;
+}
+
+// optional double orientation = 7;
+inline bool DescriptorProto::has_orientation() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void DescriptorProto::set_has_orientation() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void DescriptorProto::clear_has_orientation() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void DescriptorProto::clear_orientation() {
+  orientation_ = 0;
+  clear_has_orientation();
+}
+inline double DescriptorProto::orientation() const {
+  return orientation_;
+}
+inline void DescriptorProto::set_orientation(double value) {
+  set_has_orientation();
+  orientation_ = value;
+}
+
+// optional double scale = 8;
+inline bool DescriptorProto::has_scale() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void DescriptorProto::set_has_scale() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void DescriptorProto::clear_has_scale() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void DescriptorProto::clear_scale() {
+  scale_ = 0;
+  clear_has_scale();
+}
+inline double DescriptorProto::scale() const {
+  return scale_;
+}
+inline void DescriptorProto::set_scale(double value) {
+  set_has_scale();
+  scale_ = value;
+}
+
+// optional int32 track_id = 9;
+inline bool DescriptorProto::has_track_id() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void DescriptorProto::set_has_track_id() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void DescriptorProto::clear_has_track_id() {
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void DescriptorProto::clear_track_id() {
   track_id_ = 0;
@@ -715,15 +815,15 @@ inline void DescriptorProto::set_track_id(::google::protobuf::int32 value) {
   track_id_ = value;
 }
 
-// optional .theia.DescriptorProto.Color color = 7;
+// optional .theia.DescriptorProto.Color color = 10;
 inline bool DescriptorProto::has_color() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void DescriptorProto::set_has_color() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void DescriptorProto::clear_has_color() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void DescriptorProto::clear_color() {
   if (color_ != NULL) color_->::theia::DescriptorProto_Color::Clear();
@@ -753,15 +853,15 @@ inline void DescriptorProto::set_allocated_color(::theia::DescriptorProto_Color*
   }
 }
 
-// optional .theia.DescriptorProto.DescriptorType descriptor_type = 8;
+// optional .theia.DescriptorProto.DescriptorType descriptor_type = 11;
 inline bool DescriptorProto::has_descriptor_type() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void DescriptorProto::set_has_descriptor_type() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void DescriptorProto::clear_has_descriptor_type() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void DescriptorProto::clear_descriptor_type() {
   descriptor_type_ = 0;

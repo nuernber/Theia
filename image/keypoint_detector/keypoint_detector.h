@@ -53,11 +53,9 @@ class KeypointDetector {
   // constructor.
   virtual bool Initialize() { return true; }
 
-  // Detect keypoints using the desired method (and fill Keypoint with the
-  // desired Keypoint, which may be a subclass!). This means the caller will
-  // have to cast the pointers from the vector appropriately in order to get
-  // access to the derived class object (e.g. cast keypoints[i] as a
-  // FastKeypoint*). Caller owns the data returned.
+  // Detect keypoints using the desired method. This method will allocate the
+  // Keypoint pointers in the vector with new, but the caller owns the data
+  // returned (and must delete the pointers).
   virtual bool DetectKeypoints(const GrayImage& image,
                                std::vector<Keypoint*>* keypoints) = 0;
 

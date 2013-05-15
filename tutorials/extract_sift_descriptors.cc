@@ -45,7 +45,7 @@
 
 DEFINE_string(input_image, "image.png",
               "Image to extract SIFT keypoints and descriptors from.");
-DEFINE_string(output_file, "output.png", "Name of output image file.");
+DEFINE_string(output_dir, "output.png", "Name of output image file.");
 
 using theia::GrayImage;
 using theia::ImageCanvas;
@@ -54,7 +54,7 @@ using theia::SiftDescriptor;
 using theia::SiftDescriptorExtractor;
 using theia::SiftDetector;
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
@@ -66,7 +66,7 @@ int main (int argc, char *argv[]) {
   std::vector<Keypoint*> sift_keypoints;
   keypoint_detector.DetectKeypoints(image, &sift_keypoints);
   VLOG(0) << "detected " << sift_keypoints.size() << " keypoints.";
-  
+
   // Extract descriptors.
   VLOG(0) << "extracting descriptors.";
   SiftDescriptorExtractor sift_extractor;
@@ -78,5 +78,18 @@ int main (int argc, char *argv[]) {
   ImageCanvas image_canvas;
   image_canvas.AddImage(image);
   image_canvas.DrawFeatures(sift_keypoints, theia::RGBPixel(0, 0, 1.0));
-  image_canvas.Write(FLAGS_output_file);
+  image_canvas.Write(FLAGS_output_dir +
+                     std::string("/detect_then_extract.png"));
+
+  // Detect and Extract in one shot!
+  VLOG(0) << "detect and extract together.";
+  std::vector<SiftDescriptor*> sift_features;
+  SiftDescriptorExtractor feature_extractor;
+  feature_extractor.DetectAndExtractDescriptors(image, &sift_features);
+
+  ImageCanvas image_canvas2;
+  image_canvas2.AddImage(image);
+  image_canvas2.DrawFeatures(sift_features, theia::RGBPixel(0, 0, 1));
+  image_canvas2.Write(FLAGS_output_dir +
+                      std::string("/detect_and_extract.png"));
 }

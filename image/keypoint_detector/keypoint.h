@@ -55,16 +55,15 @@ class Keypoint {
     SIFT
   };
 
-  Keypoint(double x, double y, KeypointType type) :
-      x_(x), y_(y), keypoint_type_(type),
-      strength_(THEIA_INVALID_KEYPOINT_VAR),
-      scale_(THEIA_INVALID_KEYPOINT_VAR),
-      orientation_(THEIA_INVALID_KEYPOINT_VAR) {}
+  Keypoint(double x, double y, KeypointType type)
+      : x_(x), y_(y), keypoint_type_(type),
+        strength_(THEIA_INVALID_KEYPOINT_VAR),
+        scale_(THEIA_INVALID_KEYPOINT_VAR),
+        orientation_(THEIA_INVALID_KEYPOINT_VAR) {}
 
-  Keypoint()
-      : Keypoint(THEIA_INVALID_KEYPOINT_VAR,
-                 THEIA_INVALID_KEYPOINT_VAR,
-                 Keypoint::INVALID) {}
+  Keypoint() : Keypoint(THEIA_INVALID_KEYPOINT_VAR,
+                        THEIA_INVALID_KEYPOINT_VAR,
+                        Keypoint::INVALID) {}
 
   ~Keypoint() {}
 

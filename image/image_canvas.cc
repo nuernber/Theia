@@ -66,6 +66,8 @@ int ImageCanvas::AddImage(const RGBImage& image) {
 // Draw a circle in the image at image_index.
 void ImageCanvas::DrawCircle(int image_index, int x, int y, int radius,
                              const RGBPixel& color) {
+  CHECK_GT(pixel_offsets_.size(), image_index)
+      << "Trying to draw in an image index that does not exist!";
   DrawCircle(pixel_offsets_[image_index] + x, y, radius, color);
 }
 // Draw a circle onto the canvas.
@@ -77,6 +79,8 @@ void ImageCanvas::DrawCircle(int x, int y, int radius, const RGBPixel& color) {
 // Draw a line in the image at image_index.
 void ImageCanvas::DrawLine(int image_index, int x1, int y1, int x2, int y2,
                            const RGBPixel& color) {
+  CHECK_GT(pixel_offsets_.size(), image_index)
+      << "Trying to draw in an image index that does not exist!";
   DrawLine(pixel_offsets_[image_index] + x1, y1,
            pixel_offsets_[image_index] + x2, y2, color);
 }
@@ -90,6 +94,8 @@ void ImageCanvas::DrawLine(int x1, int y1, int x2, int y2,
 // Draw a cross in the image at image_index.
 void ImageCanvas::DrawCross(int image_index, int x, int y, int length,
                             const RGBPixel& color) {
+  CHECK_GT(pixel_offsets_.size(), image_index)
+      << "Trying to draw in an image index that does not exist!";
   DrawCross(pixel_offsets_[image_index] + x, y, length, color);
 }
 // Draw a cross onto the image canvas.
@@ -102,6 +108,8 @@ void ImageCanvas::DrawBox(int image_index,
                           int x, int y,
                           int x_length, int y_length,
                           const RGBPixel& color) {
+  CHECK_GT(pixel_offsets_.size(), image_index)
+      << "Trying to draw in an image index that does not exist!";
   DrawBox(pixel_offsets_[image_index] + x, y, x_length, y_length, color);
 }
 
@@ -112,69 +120,21 @@ void ImageCanvas::DrawBox(int x, int y, int x_length, int y_length,
                CVD::ImageRef(x + x_length, y + y_length), color);
 }
 
-// Draw keypoint in the image at image_index.
-void ImageCanvas::DrawFeature(int image_index, const Keypoint& keypoint,
-                              const RGBPixel& color, double scale) {
+void ImageCanvas::DrawFeature(int image_index,
+                              int x, int y,
+                              int radius,
+                              double orientation,
+                              const RGBPixel& color) {
+  CHECK_GT(pixel_offsets_.size(), image_index)
+      << "Trying to draw in an image index that does not exist!";
   // Draw circle at keypoint with size scale*strength.
-  double radius = keypoint.has_strength() ? keypoint.strength()*scale : scale;
-  DrawCircle(image_index, keypoint.x(), keypoint.y(), radius, color);
+  DrawCircle(image_index, x, y, radius, color);
 
   // Draw line in direction of the orientation if applicable.
-  double angle = keypoint.has_orientation() ? keypoint.orientation() : 0.0;
-  DrawLine(image_index, keypoint.x(), keypoint.y(),
-           keypoint.x() + radius*cos(angle), keypoint.y() + radius*sin(angle),
+  DrawLine(image_index,
+           x, y,
+           x + radius*cos(orientation), y + radius*sin(orientation),
            color);
-}
-
-// Draw the keypoint onto the image canvas.
-void ImageCanvas::DrawFeature(const Keypoint& keypoint, const RGBPixel& color,
-                              double scale) {
-  DrawFeature(0, keypoint, color, scale);
-}
-
-// Draw keypoint in the image at image_index.
-void ImageCanvas::DrawFeatures(int image_index,
-                               const std::vector<Keypoint*>& keypoints,
-                               const std::vector<RGBPixel>& colors,
-                               double scale) {
-  for (int i = 0; i < keypoints.size(); i++) {
-    DrawFeature(image_index, *(keypoints[i]), colors[i], scale);
-  }
-}
-
-// Draw keypoint in the image at image_index.
-void ImageCanvas::DrawFeatures(int image_index,
-                               const std::vector<Keypoint*>& keypoints,
-                               const RGBPixel& color,
-                               double scale) {
-  for (int i = 0; i < keypoints.size(); i++) {
-    DrawFeature(image_index, *(keypoints[i]), color, scale);
-  }
-}
-
-// Draw the keypoint onto the image canvas.
-void ImageCanvas::DrawFeatures(const std::vector<Keypoint*>& keypoints,
-                               const std::vector<RGBPixel>& colors,
-                               double scale) {
-  for (int i = 0; i < keypoints.size(); i++) {
-    DrawFeature(*(keypoints[i]), colors[i], scale);
-  }
-}
-
-// Draw the keypoint onto the image canvas.
-void ImageCanvas::DrawFeatures(const std::vector<Keypoint*>& keypoints,
-                               const RGBPixel& color,
-                               double scale) {
-  for (int i = 0; i < keypoints.size(); i++) {
-    DrawFeature(*(keypoints[i]), color, scale);
-  }
-}
-
-// Draw matching keypoints in the image.
-void ImageCanvas::DrawMatchedFeatures(
-    int image_index1, const std::vector<Keypoint*>& keypoints1,
-    int image_index2, const std::vector<Keypoint*>& keypoints2) {
-  CHECK(false) << "DrawMatchedFeatures not implemented yet!";
 }
 
 // Write the image canvas to a file.

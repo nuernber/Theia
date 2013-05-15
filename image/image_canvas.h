@@ -91,35 +91,48 @@ class ImageCanvas {
   void DrawBox(int x, int y, int x_length, int y_length,
                const RGBPixel& color);
 
-  // Draw keypoint in the image at image_index.
-  void DrawFeature(int image_index, const Keypoint& keypoint,
+  // Draw feature in the image at image_index. We template these methods so that
+  // you can use Keypoint or Descriptor types.
+  template<class Feature>
+  void DrawFeature(int image_index, const Feature& feature,
                    const RGBPixel& color, double scale = 10.0);
-  // Draw the keypoint onto the image canvas.
-  void DrawFeature(const Keypoint& keypoint, const RGBPixel& color,
+  // Draw the feature onto the image canvas.
+  template<class Feature>
+  void DrawFeature(const Feature& feature, const RGBPixel& color,
                    double scale = 10.0);
 
-  // Draw keypoint in the image at image_index.
-  void DrawFeatures(int image_index, const std::vector<Keypoint*>& keypoints,
+  // Draw feature in the image at image_index.
+  template<class Feature>
+  void DrawFeatures(int image_index, const std::vector<Feature*>& features,
                     const std::vector<RGBPixel>& colors, double scale = 10.0);
-  void DrawFeatures(int image_index, const std::vector<Keypoint*>& keypoints,
+  template<class Feature>
+  void DrawFeatures(int image_index, const std::vector<Feature*>& features,
                     const RGBPixel& color, double scale = 10.0);
-  // Draw the keypoint onto the image canvas.
-  void DrawFeatures(const std::vector<Keypoint*>& keypoints,
+  // Draw the feature onto the image canvas.
+  template<class Feature>
+  void DrawFeatures(const std::vector<Feature*>& features,
                     const std::vector<RGBPixel>& colors, double scale = 10.0);
-  void DrawFeatures(const std::vector<Keypoint*>& keypoints,
+  template<class Feature>
+  void DrawFeatures(const std::vector<Feature*>& features,
                     const RGBPixel& color, double scale = 10.0);
 
-  // Draw matching keypoints in the image by drawing a line from keypoints1[i]
-  // to keypoints2[i].
+  // Draw matching features in the image by drawing a line from features1[i]
+  // to features2[i].
+  template<class Feature>
   void DrawMatchedFeatures(int image_index1,
-                           const std::vector<Keypoint*>& keypoints1,
+                           const std::vector<Feature*>& features1,
                            int image_index2,
-                           const std::vector<Keypoint*>& keypoints2);
+                           const std::vector<Feature*>& features2);
 
   // Write the image canvas to a file.
   void Write(const std::string& output_name);
 
  private:
+  void DrawFeature(int image_index,
+                   int x, int y,
+                   int radius,
+                   double orientation,
+                   const RGBPixel& color);
   // The local copy of the canvas. This can be comprised of image(s), shape(s),
   // and more.
   CVD::Image<RGBPixel> image_;
@@ -129,5 +142,72 @@ class ImageCanvas {
   // when there are multiple images on the canvas.
   std::vector<int> pixel_offsets_;
 };
+
+// ------------------ Implementation of template funcs ------------------ //
+// Draw feature in the image at image_index.
+template<class Feature>
+void ImageCanvas::DrawFeature(int image_index, const Feature& feature,
+                              const RGBPixel& color, double scale) {
+  double radius = feature.has_strength() ? feature.strength()*scale : scale;
+  double angle = feature.has_orientation() ? feature.orientation() : 0.0;
+  DrawFeature(image_index, feature.x(), feature.y(), radius, angle, color);
+}
+
+// Draw the feature onto the image canvas.
+template<class Feature>
+void ImageCanvas::DrawFeature(const Feature& feature, const RGBPixel& color,
+                              double scale) {
+  DrawFeature(0, feature, color, scale);
+}
+
+// Draw feature in the image at image_index.
+template<class Feature>
+void ImageCanvas::DrawFeatures(int image_index,
+                               const std::vector<Feature*>& features,
+                               const std::vector<RGBPixel>& colors,
+                               double scale) {
+  for (int i = 0; i < features.size(); i++) {
+    DrawFeature(image_index, *(features[i]), colors[i], scale);
+  }
+}
+
+// Draw feature in the image at image_index.
+template<class Feature>
+void ImageCanvas::DrawFeatures(int image_index,
+                               const std::vector<Feature*>& features,
+                               const RGBPixel& color,
+                               double scale) {
+  for (int i = 0; i < features.size(); i++) {
+    DrawFeature(image_index, *(features[i]), color, scale);
+  }
+}
+
+// Draw the feature onto the image canvas.
+template<class Feature>
+void ImageCanvas::DrawFeatures(const std::vector<Feature*>& features,
+                               const std::vector<RGBPixel>& colors,
+                               double scale) {
+  for (int i = 0; i < features.size(); i++) {
+    DrawFeature(*(features[i]), colors[i], scale);
+  }
+}
+
+// Draw the feature onto the image canvas.
+template<class Feature>
+void ImageCanvas::DrawFeatures(const std::vector<Feature*>& features,
+                               const RGBPixel& color,
+                               double scale) {
+  for (int i = 0; i < features.size(); i++) {
+    DrawFeature(*(features[i]), color, scale);
+  }
+}
+
+// Draw matching features in the image.
+template<class Feature>
+void ImageCanvas::DrawMatchedFeatures(
+    int image_index1, const std::vector<Feature*>& features1,
+    int image_index2, const std::vector<Feature*>& features2) {
+  CHECK(false) << "DrawMatchedFeatures not implemented yet!";
+}
 }  // namespace theia
 #endif  // IMAGE_IMAGE_CANVAS_H_
