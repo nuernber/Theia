@@ -52,7 +52,8 @@ class Keypoint {
     OTHER = 0,
     FAST,
     HARRIS,
-    SIFT
+    SIFT,
+    AGAST
   };
 
   Keypoint(double x, double y, KeypointType type)

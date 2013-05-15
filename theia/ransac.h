@@ -45,7 +45,8 @@
 #include "solvers/quality_measurement.h"
 #include "solvers/random_sampler.h"
 #include "solvers/ransac.h"
-#include "solvers/recon.h"
+// Not currently supported
+// #include "solvers/recon.h"
 #include "solvers/sample_consensus_estimator.h"
 #include "solvers/sampler.h"
 

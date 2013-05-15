@@ -27,6 +27,12 @@ CC_LIBRARY(sift_detector sift_detector.cc
   image/image
   vlfeat)
 
+CC_LIBRARY(agast_detector agast_detector.cc
+  image/keypoint_detector/keypoint_detector
+  image/keypoint_detector/keypoint
+  image/image
+  agast)
+
 IF (${BUILD_TESTING})
   GTEST(fast_detector_test image/keypoint_detector/fast_detector)
   GTEST(harris_detector_test image/keypoint_detector/harris_detector)

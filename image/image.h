@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -81,7 +81,7 @@ class SubImage {
 
   // Fill with a scalar.
   void Fill(const T& val) { sub_image_.fill(val); }
-  
+
   // Get the Sub Image.
   CVD::SubImage<T>& GetCVDImage() { return sub_image_; }
   const CVD::SubImage<T>& GetCVDImage() const { return sub_image_; }
@@ -120,9 +120,11 @@ class Image : public SubImage<T> {
   explicit Image(int rows, int cols);
 
   // Convert to other image types.
-  RGBImage ConvertToRGB() const;
-  GrayImage ConvertToGray() const;
-  
+  // NOTE: the way to call this would be theia_image.ConvertTo<RGBPixel>()
+  // because you need explicit template arguments for the conversion.
+  template<typename C>
+  Image<C> ConvertTo() const;
+
   // Clones via deep copy.
   Image<T> Clone() const { return Image(image_.copy_from_me()); }
 
@@ -142,7 +144,7 @@ class Image : public SubImage<T> {
   // Get a pointer to the data.
   T* GetData() { return image_.data(); }
   const T* GetData() const { return image_.data(); }
-  
+
   // Extract SubImages from the Image. Note that this does not give ownership of
   // the data to the subimage, the original Image class still owns it.
   // row, col specify the top-left corner of the sub image to extract.
@@ -201,13 +203,9 @@ Image<T>::Image(int rows, int cols) {
 
 // Convert the image to an RGB image.
 template <typename T>
-RGBImage Image<T>::ConvertToRGB() const {
-    return RGBImage(CVD::convert_image(image_));
-}
-
-template <typename T>
-GrayImage Image<T>::ConvertToGray() const {
-    return GrayImage(CVD::convert_image(image_));
+template <typename C>
+Image<C> Image<T>::ConvertTo() const {
+  return Image<C>(CVD::convert_image(image_));
 }
 
 // Deep copies the input to this.

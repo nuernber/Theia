@@ -41,6 +41,7 @@
 #include <string>
 #include <vector>
 
+#include "image/image.h"
 #include "image/keypoint_detector/keypoint.h"
 
 #define _USE_MATH_DEFINES
@@ -49,7 +50,8 @@ namespace theia {
 // Add an image to the canvas such that all the images that have been added
 // are now side-by-side on the canvas. This is useful for feature matching.
 int ImageCanvas::AddImage(const GrayImage& image) {
-  AddImage(image.ConvertToRGB());
+  RGBImage rgb_img(image.ConvertTo<RGBPixel>());
+  AddImage(rgb_img);
 }
 
 int ImageCanvas::AddImage(const RGBImage& image) {

@@ -1,4 +1,4 @@
-# project(vlfeat)
+project(vlfeat)
 
 INCLUDE_DIRECTORIES(./vl)
 SET(vl_sources

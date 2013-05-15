@@ -15,8 +15,8 @@ include(FindTheiaDependencies)
 
 # Add GTest if testing is enabled
 OPTION(BUILD_TESTING
-       "Enable testing"
-       ON)
+  "Enable testing"
+  ON)
 ENABLE_TESTING()
 
 set_compile_parameters()
@@ -34,7 +34,8 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/libraries
   ${flann_SOURCE_DIR}/src/cpp
   ${gtest_SOURCE_DIR}/include
   ${gtest_SOURCE_DIR}
-  ${vlfeat_SOURCE_DIR}/vl)
+  ${vlfeat_SOURCE_DIR}/vl
+  ${agast_SOURCE_DIR})
 
 # Include all source directories.
 ADD_SUBDIRECTORY(image)
@@ -60,6 +61,9 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR} DESTINATION include
   PATTERN "*git*" EXCLUDE)
 
 # Install the library
+MESSAGE("theia lib dependencies: ${THEIA_LIBRARY_DEPENDENCIES}")
+LIST(REMOVE_DUPLICATES THEIA_SRC_DEPS)
+MESSAGE("theia src dependencies: ${THEIA_SRC_DEPS}")
 ADD_LIBRARY(theia STATIC ${THEIA_SRC_FILES})
 TARGET_LINK_LIBRARIES(theia ${THEIA_LIBRARY_DEPENDENCIES} ${THEIA_SRC_DEPS})
 INSTALL(TARGETS theia DESTINATION lib)

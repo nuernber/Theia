@@ -173,7 +173,4 @@ macro(find_theia_dependencies)
   INCLUDE_DIRECTORIES(${CVD_INCLUDE})
   SET(THEIA_LIBRARY_DEPENDENCIES ${THEIA_LIBRARY_DEPENDENCIES} ${CVD_LIB})
 
-  # VLFeat in libraries folder
-  SET(THEIA_LIBRARY_DEPENDENCIES ${THEIA_LIBRARY_DEPENDENCIES} vlfeat)
-  MESSAGE("theia lib dependencies: ${THEIA_LIBRARY_DEPENDENCIES}")
 endmacro(find_theia_dependencies)
