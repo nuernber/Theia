@@ -59,7 +59,11 @@ class SiftDescriptorExtractor : public DescriptorExtractor<SiftDescriptor> {
   // Set the feature score threshold and indicate whether nonmax suppression
   // should be used to reduce the number of features. A good value for the
   // threshold is usually 20.
-  SiftDescriptorExtractor(int num_octaves, int num_levels, int first_octave);
+  SiftDescriptorExtractor(int num_octaves, int num_levels, int first_octave)
+      : sift_filter_(nullptr),
+        num_octaves_(num_octaves),
+        num_levels_(num_levels),
+        first_octave_(first_octave) {}
   SiftDescriptorExtractor() : SiftDescriptorExtractor(-1, 3, 0) {}
   ~SiftDescriptorExtractor();
 

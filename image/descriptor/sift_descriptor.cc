@@ -49,16 +49,6 @@ extern "C" {
 #include "image/keypoint_detector/keypoint.h"
 
 namespace theia {
-SiftDescriptorExtractor::SiftDescriptorExtractor(
-    int num_octaves, int num_levels, int first_octave)
-    : sift_filter_(nullptr),
-      num_octaves_(num_octaves),
-      num_levels_(num_levels),
-      first_octave_(first_octave) {
-  // NOTE: This is a bug in vlfeat! These functions are not set by default.
-  vl_set_alloc_func(malloc, realloc, calloc, free);
-}
-
 SiftDescriptorExtractor::~SiftDescriptorExtractor() {
   if (sift_filter_ != nullptr)
     vl_sift_delete(sift_filter_);

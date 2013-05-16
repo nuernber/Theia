@@ -312,7 +312,6 @@ defined(__DOXYGEN__)
 #endif
 /** @} */
 
-
 #if defined(VL_COMPILER_MSC) & ! defined(__DOXYGEN__)
 #  define VL_UNUSED
 #  define VL_INLINE static __inline
@@ -326,13 +325,12 @@ defined(__DOXYGEN__)
 #    endif
 #  else
 #    ifdef __cplusplus
-#      define VL_EXPORT extern "C" //__declspec(dllimport)
+#      define VL_EXPORT extern "C" __declspec(dllimport)
 #    else
-#      define VL_EXPORT extern //__declspec(dllimport)
+#      define VL_EXPORT extern __declspec(dllimport)
 #    endif
 #  endif
 #endif
-
 
 #if defined(VL_COMPILER_LCC) & ! defined(__DOXYGEN__)
 #  define VL_UNUSED
@@ -364,12 +362,6 @@ VL_INLINE float fabsf(float x) { return (float) fabs((double) x) ; }
 #    endif
 #  endif
 #endif
-
-# if defined(VL_OS_MACOSX)
-# undef VL_EXPORT
-# define VL_EXPORT 
-#endif
-
 
 VL_EXPORT char * vl_static_configuration_to_string_copy () ;
 
