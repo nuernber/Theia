@@ -302,7 +302,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
           keypoints[k]->y() <= pattern_sizes_[kp_scale_idx[k]] ||
           keypoints[k]->x() >= image.Cols() - pattern_sizes_[kp_scale_idx[k]] ||
           keypoints[k]->y() >= image.Rows() - pattern_sizes_[kp_scale_idx[k]]) {
-        VLOG(0) << "could not compute descriptor at this position and scale.";
+        //VLOG(0) << "could not compute descriptor at this position and scale.";
         (*descriptors)[k] = nullptr;
       } else {
         (*descriptors)[k] = new FreakDescriptor;
@@ -318,15 +318,11 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
     }
     for (size_t k = keypoints.size(); k--;) {
       kp_scale_idx[k] = scIdx;
-      VLOG(0) << "pattern size = " << pattern_sizes_[kp_scale_idx[k]];
-      VLOG(0) << "kpt check x: " << keypoints[k]->x();
-      VLOG(0) << "kpt check y: " << keypoints[k]->y();
-
       if (keypoints[k]->x() <= pattern_sizes_[kp_scale_idx[k]] ||
           keypoints[k]->y() <= pattern_sizes_[kp_scale_idx[k]] ||
           keypoints[k]->x() >= image.Cols() - pattern_sizes_[kp_scale_idx[k]] ||
           keypoints[k]->y() >= image.Rows() - pattern_sizes_[kp_scale_idx[k]]) {
-        VLOG(0) << "could not compute descriptor at this position and scale.";
+        //VLOG(0) << "could not compute descriptor at this position and scale.";
         (*descriptors)[k] = nullptr;
       } else {
         (*descriptors)[k] = new FreakDescriptor;
@@ -340,12 +336,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
   for (size_t k = keypoints.size(); k--;) {
     FreakDescriptor* freak_descriptor = (*descriptors)[k];
     if (freak_descriptor == nullptr) {
-      VLOG(0) << "skipping keypoint at " << keypoints[k]->x()
-              << ", " << keypoints[k]->y();
       continue;
     }
-    VLOG(0) << "evaluating keypoint " << k << ":";
-    VLOG(0) << "\t" << keypoints[k]->x() << ", " << keypoints[k]->y();
     // estimate orientation (gradient)
     if (!orientation_normalized_) {
       // assign 0° to all keypoints
@@ -399,6 +391,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       }
     }
   }
+  return true;
 }
 
 // simply take average on a square patch, not even gaussian approx
@@ -414,8 +407,6 @@ float FreakDescriptorExtractor::MeanIntensity(
   const PatternPoint& freak_point =
       pattern_lookup_[scale*kNumOrientation*kNumPoints +
                       rot*kNumPoints + point];
-  VLOG(0) << "freak points: " << freak_point.x << " " << freak_point.y
-          << " " << freak_point.sigma;
   const float xf = freak_point.x + kp_x;
   const float yf = freak_point.y + kp_y;
   const int x = static_cast<int>(xf);
