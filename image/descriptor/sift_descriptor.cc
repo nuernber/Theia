@@ -238,19 +238,17 @@ bool SiftDescriptorExtractor::ProtoToDescriptor(
   descriptors->reserve(proto.feature_descriptor_size());
   for (const DescriptorProto& proto_descriptor: proto.feature_descriptor()) {
     SiftDescriptor* descriptor = new SiftDescriptor;
-    CHECK_EQ(proto_descriptor.descriptor_type(), DescriptorProto::PATCH)
+    CHECK_EQ(proto_descriptor.descriptor_type(), DescriptorProto::SIFT)
         << "Descriptor in proto is not a patch descriptor.";
     CHECK_EQ(proto_descriptor.float_descriptor_size(), descriptor->Dimensions())
         << "Dimension mismatch in the proto and descriptors.";
     descriptor->set_x(proto_descriptor.x());
     descriptor->set_y(proto_descriptor.y());
+    descriptor->set_orientation(proto_descriptor.orientation());
+    descriptor->set_scale(proto_descriptor.scale());
     if (proto_descriptor.has_strength())
       descriptor->set_strength(proto_descriptor.strength());
-    if (proto_descriptor.has_orientation())
-      descriptor->set_orientation(proto_descriptor.orientation());
-    if (proto_descriptor.has_scale())
-      descriptor->set_scale(proto_descriptor.scale());
-
+    
     // Get float array.
     for (int i = 0; i < descriptor->Dimensions(); i++)
       (*descriptor)[i] = proto_descriptor.float_descriptor(i);
@@ -268,15 +266,13 @@ bool SiftDescriptorExtractor::DescriptorToProto(
     for (int i = 0; i < descriptor->Dimensions(); i++)
       descriptor_proto->add_float_descriptor((*descriptor)[i]);
     // Set the proto type to patch.
-    descriptor_proto->set_descriptor_type(DescriptorProto::PATCH);
+    descriptor_proto->set_descriptor_type(DescriptorProto::SIFT);
     descriptor_proto->set_x(descriptor->x());
     descriptor_proto->set_y(descriptor->y());
+    descriptor_proto->set_orientation(descriptor->orientation());
+    descriptor_proto->set_scale(descriptor->scale());
     if (descriptor->has_strength())
       descriptor_proto->set_strength(descriptor->strength());
-    if (descriptor->has_orientation())
-      descriptor_proto->set_orientation(descriptor->orientation());
-    if (descriptor->has_scale())
-      descriptor_proto->set_scale(descriptor->scale());
   }
   return true;
 }

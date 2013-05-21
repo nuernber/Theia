@@ -45,11 +45,25 @@ namespace theia {
 enum DescriptorType {
   INVALID = -1,
   OTHER = 0,
-  BRIEF,
-  DAISY,
   PATCH,
   SIFT,
-  BRISK
+  FREAK
+};
+
+// Helper struct so that we can overload the operator[]. Bitsets return a
+// special type of bitset::reference for non-const operator [], so it is not as
+// simple to overload that operator from GenericDescriptor as just using the
+// template type T for the lhs value.
+template<typename T, std::size_t N>
+struct TypeDeference {
+  typedef typename std::array<T, N>::const_reference ConstRef;
+  typedef typename std::array<T, N>::reference Ref;
+};
+// Specialization for bools and bitsets!
+template<std::size_t N>
+struct TypeDeference<bool, N>  {
+  typedef bool ConstRef;
+  typedef typename std::bitset<N>::reference Ref;
 };
 
 // The descriptor will hold N dimensions of type T (e.g. SIFT is 128 dims of
@@ -79,7 +93,7 @@ class GenericDescriptor {
 
   ~GenericDescriptor() {}
   
-  virtual inline void SetKeypoint(const Keypoint keypoint) {
+  virtual inline void SetKeypoint(const Keypoint& keypoint) {
     x_ =keypoint.x();
     y_ = keypoint.y();
     strength_ = keypoint.strength();
@@ -88,15 +102,20 @@ class GenericDescriptor {
   }
 
   // Accessor methods (implemented by Descriptor and BinaryDescriptor classes).
-  virtual inline T& operator[](std::size_t i) = 0;
-  virtual inline T operator[](std::size_t i) const = 0;
+  typedef typename TypeDeference<T, N>::Ref TRef;
+  typedef typename TypeDeference<T, N>::ConstRef TConstRef;
+  virtual inline TRef operator[](std::size_t i) = 0;
+  virtual inline TConstRef operator[](std::size_t i)
+      const = 0;
 
   // Dimensionality of the descriptor.
   virtual inline std::size_t Dimensions() const { return N; }
 
   // Descriptor type.
   inline DescriptorType descriptor_type() const { return descriptor_type_; }
-  inline void set_descriptor_type(DescriptorType type) { descriptor_type_ = type; }
+  inline void set_descriptor_type(DescriptorType type) {
+    descriptor_type_ = type;
+  }
 
   // Variable x.
   inline double x() const { return x_; }
@@ -113,7 +132,9 @@ class GenericDescriptor {
   inline void set_strength(double strength) { strength_ = strength; }
 
   // Optional variable scale.
-  inline bool has_scale() const { return scale_ != THEIA_INVALID_DESCRIPTOR_VAR; }
+  inline bool has_scale() const {
+    return scale_ != THEIA_INVALID_DESCRIPTOR_VAR;
+  }
   inline double scale() const { return scale_; }
   inline void set_scale(double scale) { scale_ = scale; }
 
@@ -139,8 +160,12 @@ class Descriptor : public GenericDescriptor<T, N> {
  public:
   Descriptor(DescriptorType type) : GenericDescriptor<T, N>(type) {}
   virtual ~Descriptor() {}
-  virtual inline T& operator[](std::size_t i) { return data_[i]; }
-  virtual inline T operator[](std::size_t i) const { return data_[i]; }
+  
+  typedef typename TypeDeference<T, N>::Ref TRef;
+  typedef typename TypeDeference<T, N>::ConstRef TConstRef;
+  virtual inline TRef operator[](std::size_t i) {return data_[i]; }
+  virtual inline TConstRef operator[](std::size_t i) const { return data_[i]; }
+  
   virtual inline T* Data() { return data_.data(); }
 
  protected:
@@ -151,17 +176,21 @@ class Descriptor : public GenericDescriptor<T, N> {
 template<std::size_t N>
 class BinaryDescriptor : public GenericDescriptor<bool, N> {
  public:
+  typedef typename std::bitset<N>::reference bitref;
   BinaryDescriptor(DescriptorType type) : GenericDescriptor<bool, N>(type) {}
   virtual ~BinaryDescriptor() {}
-  virtual inline bool& operator[](std::size_t i) { return binary_data_[i]; }
-  virtual inline bool operator[](std::size_t i) const {return binary_data_[i]; }
+
+  typedef typename TypeDeference<bool, N>::Ref TRef;
+  typedef typename TypeDeference<bool, N>::ConstRef TConstRef;
+  virtual inline TRef operator[](std::size_t i) { return binary_data_[i]; }
+  virtual inline TConstRef operator[](std::size_t i) const {
+    return binary_data_[i];
+  }
 
   // TODO(cmsweeney): Should we add a data() method that returns the string?
 
  protected:
   std::bitset<N> binary_data_;
 };
-
 }  // namespace theia
-
 #endif  // IMAGE_DESCRIPTOR_DESCRIPTOR_H_

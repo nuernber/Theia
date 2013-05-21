@@ -40,6 +40,7 @@
 #include <cvd/image.h>
 #include <cvd/image_convert.h>
 #include <cvd/image_io.h>
+#include <cvd/integral_image.h>
 #include <glog/logging.h>
 
 #include <algorithm>
@@ -90,7 +91,7 @@ class SubImage {
   // position in the sub-image, so it is still possible to access pixels outside
   // of the subimage, since SubImages are pointers to data managed elsewhere.
   T* GetData() { return sub_image_.data(); }
-
+  
   // Return the current SubImage as an Image i.e. copy the data so that the
   // returned Image object owns the copy of the data.
   Image<T> CopyAsImage() const {
@@ -152,6 +153,10 @@ class Image : public SubImage<T> {
   const SubImage<T> GetSubImage(int row, int col,
                                 int num_rows, int num_cols) const;
 
+  // Compute the integral image where pixel (x, y) is equal to the sum of all
+  // values in the rectangle from (0, 0) to (x, y).
+  Image<T> Integrate() const;
+  
   // Resize using a Lanczos 3 filter.
   void Resize(int new_rows, int new_cols);
   void Resize(double scale);
@@ -227,6 +232,12 @@ const SubImage<T> Image<T>::GetSubImage(int row, int col,
                                         int num_rows, int num_cols) const {
   return SubImage<T>(image_.sub_image(CVD::ImageRef(col, row),
                                       CVD::ImageRef(num_cols, num_rows)));
+}
+
+template <typename T>
+Image<T> Image<T>::Integrate() const {
+  CVD::Image<T> integral_image = CVD::integral_image(image_);
+  return Image<T>(integral_image);
 }
 
 template <typename T>

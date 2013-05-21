@@ -39,7 +39,7 @@
 
 #include "image/image.h"
 #include "image/image_canvas.h"
-#include "image/descriptor/patch_descriptor.h"
+#include "image/descriptor/freak_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/agast_detector.h"
 
@@ -51,8 +51,8 @@ using theia::AgastDetector;
 using theia::GrayImage;
 using theia::ImageCanvas;
 using theia::Keypoint;
-using theia::PatchDescriptor;
-using theia::PatchDescriptorExtractor;
+using theia::FreakDescriptor;
+using theia::FreakDescriptorExtractor;
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
@@ -67,18 +67,24 @@ int main(int argc, char *argv[]) {
   keypoint_detector.DetectKeypoints(image, &agast_keypoints);
   VLOG(0) << "detected " << agast_keypoints.size() << " keypoints.";
 
-  // Extract descriptors.
-  /*
+  // Extract descriptors. 
   VLOG(0) << "extracting descriptors.";
-  PatchDescriptorExtractor<PatchDescriptor<7, 7> > patch_extractor;
-  std::vector<PatchDescriptor<7, 7>*> patch_descriptors;
-  patch_extractor.ComputeDescriptors(image, agast_keypoints, &patch_descriptors);
-  VLOG(0) << "extracted " << patch_descriptors.size() << " descriptors.";
-  */
+  FreakDescriptorExtractor freak_extractor(false, false, 1);
+  std::vector<FreakDescriptor*> freak_descriptors;
+  freak_extractor.Initialize();
+  freak_extractor.ComputeDescriptors(image, agast_keypoints, &freak_descriptors);
+  int num_descriptors;
+  for (int i = 0; i < freak_descriptors.size(); i++)
+    if (freak_descriptors[i] != nullptr)
+      num_descriptors++;
+      
+  VLOG(0) << "extracted " << num_descriptors << " descriptors.";
+ 
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
   image_canvas.AddImage(image);
-  image_canvas.DrawFeatures(agast_keypoints, theia::RGBPixel(0, 0, 1.0));
+  image_canvas.DrawFeatures(agast_keypoints, theia::RGBPixel(1.0, 0, 0));
+  image_canvas.DrawFeatures(freak_descriptors, theia::RGBPixel(0, 0, 1.0));
   image_canvas.Write(FLAGS_output_dir +
                      std::string("/agast_keypoints.png"));
 }

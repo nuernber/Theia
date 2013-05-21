@@ -41,15 +41,13 @@ class DescriptorsProto;
 
 enum DescriptorProto_DescriptorType {
   DescriptorProto_DescriptorType_OTHER = 0,
-  DescriptorProto_DescriptorType_BRIEF = 1,
-  DescriptorProto_DescriptorType_DAISY = 2,
-  DescriptorProto_DescriptorType_PATCH = 3,
-  DescriptorProto_DescriptorType_SIFT = 4,
-  DescriptorProto_DescriptorType_BRISK = 5
+  DescriptorProto_DescriptorType_PATCH = 1,
+  DescriptorProto_DescriptorType_SIFT = 2,
+  DescriptorProto_DescriptorType_FREAK = 3
 };
 bool DescriptorProto_DescriptorType_IsValid(int value);
 const DescriptorProto_DescriptorType DescriptorProto_DescriptorType_DescriptorType_MIN = DescriptorProto_DescriptorType_OTHER;
-const DescriptorProto_DescriptorType DescriptorProto_DescriptorType_DescriptorType_MAX = DescriptorProto_DescriptorType_BRISK;
+const DescriptorProto_DescriptorType DescriptorProto_DescriptorType_DescriptorType_MAX = DescriptorProto_DescriptorType_FREAK;
 const int DescriptorProto_DescriptorType_DescriptorType_ARRAYSIZE = DescriptorProto_DescriptorType_DescriptorType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* DescriptorProto_DescriptorType_descriptor();
@@ -222,11 +220,9 @@ class DescriptorProto : public ::google::protobuf::Message {
 
   typedef DescriptorProto_DescriptorType DescriptorType;
   static const DescriptorType OTHER = DescriptorProto_DescriptorType_OTHER;
-  static const DescriptorType BRIEF = DescriptorProto_DescriptorType_BRIEF;
-  static const DescriptorType DAISY = DescriptorProto_DescriptorType_DAISY;
   static const DescriptorType PATCH = DescriptorProto_DescriptorType_PATCH;
   static const DescriptorType SIFT = DescriptorProto_DescriptorType_SIFT;
-  static const DescriptorType BRISK = DescriptorProto_DescriptorType_BRISK;
+  static const DescriptorType FREAK = DescriptorProto_DescriptorType_FREAK;
   static inline bool DescriptorType_IsValid(int value) {
     return DescriptorProto_DescriptorType_IsValid(value);
   }
