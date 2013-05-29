@@ -39,46 +39,73 @@
 
 #include "image/image.h"
 #include "image/image_canvas.h"
-#include "image/descriptor/patch_descriptor.h"
+#include "image/descriptor/freak_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/agast_detector.h"
 
-DEFINE_string(input_image, "image.png",
-              "Image to extract PATCH keypoints and descriptors from.");
-DEFINE_string(output_dir, "output.png", "Name of output image file.");
+DEFINE_string(img_input_dir, "input", "Directory of two input images.");
+DEFINE_string(img_output_dir, "output", "Name of output image file.");
 
 using theia::AgastDetector;
 using theia::GrayImage;
 using theia::ImageCanvas;
 using theia::Keypoint;
-using theia::PatchDescriptor;
-using theia::PatchDescriptorExtractor;
+using theia::FreakDescriptor;
+using theia::FreakDescriptorExtractor;
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
-  GrayImage image(FLAGS_input_image);
+  GrayImage image_left(FLAGS_img_input_dir + std::string("/img1.png"));
+  GrayImage image_right(FLAGS_img_input_dir + std::string("/img2.png"));
 
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
   AgastDetector keypoint_detector;
-  std::vector<Keypoint*> agast_keypoints;
-  keypoint_detector.DetectKeypoints(image, &agast_keypoints);
-  VLOG(0) << "detected " << agast_keypoints.size() << " keypoints.";
+  std::vector<Keypoint*> left_keypoints;
+  keypoint_detector.DetectKeypoints(image_left, &left_keypoints);
+  VLOG(0) << "detected " << left_keypoints.size()
+          << " keypoints in left image.";
+  std::vector<Keypoint*> right_keypoints;
+  keypoint_detector.DetectKeypoints(image_left, &right_keypoints);
+  VLOG(0) << "detected " << right_keypoints.size()
+          << " keypoints in right image.";
 
   // Extract descriptors.
-  /*
   VLOG(0) << "extracting descriptors.";
-  PatchDescriptorExtractor<PatchDescriptor<7, 7> > patch_extractor;
-  std::vector<PatchDescriptor<7, 7>*> patch_descriptors;
-  patch_extractor.ComputeDescriptors(image, agast_keypoints, &patch_descriptors);
-  VLOG(0) << "extracted " << patch_descriptors.size() << " descriptors.";
-  */
+  FreakDescriptorExtractor freak_extractor(false, false, 1);
+  std::vector<FreakDescriptor*> left_descriptors;
+  std::vector<FreakDescriptor*> right_descriptors;
+  freak_extractor.Initialize();
+  freak_extractor.ComputeDescriptors(image_left,
+                                     left_keypoints,
+                                     &left_descriptors);
+  freak_extractor.ComputeDescriptors(image_right,
+                                     right_keypoints,
+                                     &right_descriptors);
+
+  int num_descriptors;
+  for (int i = 0; i < left_descriptors.size(); i++)
+    if (left_descriptors[i] != nullptr)
+      num_descriptors++;
+
+  VLOG(0) << "extracted " << num_descriptors << " descriptors.";
+  
+  std::vector<FreakDescriptor*> pruned_descriptors;
+  freak_extractor.ComputeDescriptorsPruned(image_left,
+                                           left_keypoints,
+                                           &pruned_descriptors);
+  VLOG(0) << "pruned descriptors size = " << pruned_descriptors.size();
+  
+  // Match descriptors!
+
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
-  image_canvas.AddImage(image);
-  image_canvas.DrawFeatures(agast_keypoints, theia::RGBPixel(0, 0, 1.0));
-  image_canvas.Write(FLAGS_output_dir +
+  image_canvas.AddImage(image_left);
+  image_canvas.DrawFeatures(left_descriptors, theia::RGBPixel(1.0, 0, 0));
+  image_canvas.AddImage(image_right);
+  image_canvas.DrawFeatures(right_descriptors, theia::RGBPixel(0, 0, 1.0));
+  image_canvas.Write(FLAGS_img_output_dir +
                      std::string("/agast_keypoints.png"));
 }

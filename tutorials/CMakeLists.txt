@@ -8,6 +8,6 @@ CC_BINARY(extract_sift_descriptors
 CC_BINARY(extract_freak_descriptors
   image/image
   image/image_canvas
-  image/descriptor/patch_descriptor
+  image/descriptor/freak_descriptor
   image/keypoint_detector/keypoint
   image/keypoint_detector/agast_detector)

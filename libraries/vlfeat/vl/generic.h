@@ -286,14 +286,9 @@ VL_EXPORT double vl_toc () ;
 VL_EXPORT double vl_get_cpu_time () ;
 /** @} */
 
-VL_EXPORT void vl_constructor () ;
-VL_EXPORT void vl_destructor () ;
-
 /* -------------------------------------------------------------------
  *                                                    Inline functions
  * ---------------------------------------------------------------- */
-
-
 
 VL_INLINE VlState *
 vl_get_state ()

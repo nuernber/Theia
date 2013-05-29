@@ -10,6 +10,13 @@ PROTO_LIBRARY(descriptor_proto descriptor.proto
 # Base class for descriptor extraction.
 HEADER_LIBRARY(descriptor_extractor descriptor_extractor.h)
 
+# FREAK Descriptor
+CC_LIBRARY(freak_descriptor freak_descriptor.cc
+   image/descriptor/descriptor
+   image/descriptor/descriptor_proto
+   image/keypoint_detector/keypoint
+   image/image)
+
 # Patch Descriptor
 HEADER_LIBRARY(patch_descriptor patch_descriptor.h
   image/descriptor/descriptor

@@ -3,22 +3,12 @@ project(vlfeat)
 INCLUDE_DIRECTORIES(./vl)
 SET(vl_sources
   vl/generic.c
-  vl/generic.h
-  vl/host.h
-  vl/imopv_sse2.c
-  vl/mathop.h
-  vl/sift.c
-  vl/generic.h
-  vl/imopv.c
-  vl/imopv_sse2.h
-  vl/mathop_sse2.c
-  vl/sift.h
-  vl/sift.c
   vl/host.c
-  vl/imopv.h
+  vl/imopv.c
+  vl/imopv_sse2.c
   vl/mathop.c
-  vl/mathop_sse2.h
-  vl/random.h
-  vl/random.c)
+  vl/mathop_sse2.c
+  vl/random.c
+  vl/sift.c)
 SET_SOURCE_FILES_PROPERTIES(${vl_sources} PROPERTIES LANGUAGE C)
-ADD_LIBRARY(vlfeat ${vl_sources})
+ADD_LIBRARY(vlfeat SHARED ${vl_sources})

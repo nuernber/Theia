@@ -75,11 +75,9 @@ message DescriptorProto {
   // What type of descriptor extracted this.
   enum DescriptorType {
     OTHER = 0;
-    BRIEF = 1;
-    DAISY = 2;
-    PATCH = 3;
-    SIFT = 4;
-    BRISK = 5;
+    PATCH = 1;
+    SIFT = 2;
+    FREAK = 3;
   }
   optional DescriptorType descriptor_type = 13;
 }

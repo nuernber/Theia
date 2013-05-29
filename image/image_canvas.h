@@ -167,7 +167,8 @@ void ImageCanvas::DrawFeatures(int image_index,
                                const std::vector<RGBPixel>& colors,
                                double scale) {
   for (int i = 0; i < features.size(); i++) {
-    DrawFeature(image_index, *(features[i]), colors[i], scale);
+    if (features[i] != nullptr)
+      DrawFeature(image_index, *(features[i]), colors[i], scale);
   }
 }
 
@@ -178,7 +179,8 @@ void ImageCanvas::DrawFeatures(int image_index,
                                const RGBPixel& color,
                                double scale) {
   for (int i = 0; i < features.size(); i++) {
-    DrawFeature(image_index, *(features[i]), color, scale);
+    if (features[i] !=  nullptr)
+      DrawFeature(image_index, *(features[i]), color, scale);
   }
 }
 
@@ -187,9 +189,7 @@ template<class Feature>
 void ImageCanvas::DrawFeatures(const std::vector<Feature*>& features,
                                const std::vector<RGBPixel>& colors,
                                double scale) {
-  for (int i = 0; i < features.size(); i++) {
-    DrawFeature(*(features[i]), colors[i], scale);
-  }
+  DrawFeatures(0, features, colors, scale);
 }
 
 // Draw the feature onto the image canvas.
@@ -197,9 +197,7 @@ template<class Feature>
 void ImageCanvas::DrawFeatures(const std::vector<Feature*>& features,
                                const RGBPixel& color,
                                double scale) {
-  for (int i = 0; i < features.size(); i++) {
-    DrawFeature(*(features[i]), color, scale);
-  }
+  DrawFeatures(0, features, color, scale);
 }
 
 // Draw matching features in the image.
