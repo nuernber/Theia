@@ -37,6 +37,7 @@
 
 #define _USE_MATH_DEFINES
 
+#include <cvd/convolution.h>
 #include <cvd/image.h>
 #include <cvd/image_convert.h>
 #include <cvd/image_io.h>
@@ -152,6 +153,10 @@ class Image : public SubImage<T> {
   const SubImage<T> GetSubImage(int row, int col,
                                 int num_rows, int num_cols) const;
 
+  // Gaussian blur.
+  void GaussianBlur(double sigma, Image<T>* out);
+  void GaussianBlur(double sigma);
+  
   // Resize using a Lanczos 3 filter.
   void Resize(int new_rows, int new_cols);
   void Resize(double scale);
@@ -227,6 +232,16 @@ const SubImage<T> Image<T>::GetSubImage(int row, int col,
                                         int num_rows, int num_cols) const {
   return SubImage<T>(image_.sub_image(CVD::ImageRef(col, row),
                                       CVD::ImageRef(num_cols, num_rows)));
+}
+
+template <typename T>
+void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
+  CVD::convolveGaussian(image_, *out, sigma);
+}
+
+template <typename T>
+void Image<T>::GaussianBlur(double sigma) {
+  GaussianBlur(image_, sigma);
 }
 
 template <typename T>

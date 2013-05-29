@@ -264,4 +264,11 @@ TEST(Image, GrayFillSubImage) {
     }
   }
 }
+
+TEST(Image, GrayGauss) {
+  GrayImage theia_img(img_filename);
+  theia_img.Write("output/theia_gray.png");
+  theia_img.GaussianBlur(1.0);
+  theia_img.Write("output/theia_gauss_1.png");
+}
 }  // namespace theia
