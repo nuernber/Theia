@@ -190,12 +190,12 @@ class BinaryDescriptor : public GenericDescriptor<bool, N> {
 
   typedef typename TypeDeference<bool, N>::Ref TRef;
   typedef typename TypeDeference<bool, N>::ConstRef TConstRef;
-  typedef typename TypeDeference<T, N>::Container TContainer;
+  typedef typename TypeDeference<bool, N>::Container TContainer;
   virtual inline TRef operator[](std::size_t i) { return binary_data_[i]; }
   virtual inline TConstRef operator[](std::size_t i) const {
     return binary_data_[i];
   }
-  virtual inline const TContainer& GetContainer() const { return data_; }
+  virtual inline const TContainer& GetContainer() const { return binary_data_; }
   
  protected:
   std::bitset<N> binary_data_;
