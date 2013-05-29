@@ -92,7 +92,7 @@ class SubImage {
   // position in the sub-image, so it is still possible to access pixels outside
   // of the subimage, since SubImages are pointers to data managed elsewhere.
   T* GetData() { return sub_image_.data(); }
-  
+
   // Return the current SubImage as an Image i.e. copy the data so that the
   // returned Image object owns the copy of the data.
   Image<T> CopyAsImage() const {
@@ -161,7 +161,7 @@ class Image : public SubImage<T> {
   // Compute the integral image where pixel (x, y) is equal to the sum of all
   // values in the rectangle from (0, 0) to (x, y).
   Image<T> Integrate() const;
-  
+
   // Resize using a Lanczos 3 filter.
   void Resize(int new_rows, int new_cols);
   void Resize(double scale);
@@ -241,12 +241,12 @@ const SubImage<T> Image<T>::GetSubImage(int row, int col,
 
 template <typename T>
 void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
-  CVD::convolveGaussian(image_, *out, sigma);
+  CVD::convolveGaussian(image_, out->image_, sigma);
 }
 
 template <typename T>
 void Image<T>::GaussianBlur(double sigma) {
-  GaussianBlur(image_, sigma);
+  GaussianBlur(sigma, this);
 }
 
 template <typename T>
