@@ -32,11 +32,9 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef IMAGE_KEYPOINT_DETECTOR_AGAST_DETECTOR_H_
-#define IMAGE_KEYPOINT_DETECTOR_AGAST_DETECTOR_H_
+#ifndef IMAGE_KEYPOINT_DETECTOR_BRISK_DETECTOR_H_
+#define IMAGE_KEYPOINT_DETECTOR_BRISK_DETECTOR_H_
 
-#include <agast/AstDetector.h>
-#include <memory>
 #include <vector>
 
 #include "image/keypoint_detector/keypoint_detector.h"
@@ -46,36 +44,24 @@ template<class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
 
-// Detect keypoints using the AGAST method from "Adaptive and Generic Corner
-// Detection Based on the Accelerated Segment Test" by Mair et. al.
-class AgastDetector : public KeypointDetector {
+// Detect keypoints using the BRISK method from "BRISK: Binary Robust Invariant
+// Scalable Keypoints" by Leutenegger et. al. (ICCV 2011). This is a version
+// ported from the reference implementation.
+class BriskDetector : public KeypointDetector {
  public:
-  enum AstPattern {
-    AGAST5_8,
-    AGAST7_12D,
-    AGAST7_12S,
-    OAST9_16
-  };
-  // There are multiple patterns you can use for the AGAST detector. As the
-  // pattern grows, the cost for computing keypoints increases. See the paper
-  // for more details. The threshold should be specified, as well as whether
-  // nonmaximum suppression should be run on the corners detected.
-  AgastDetector(AstPattern pattern, int threshold, bool nonmax_suppression);
-  AgastDetector(AstPattern pattern, int threshold)
-      : AgastDetector(pattern, threshold, true) {}
-  explicit AgastDetector(AstPattern pattern) : AgastDetector(pattern, 30) {}
-  AgastDetector() : AgastDetector(AGAST5_8) {}
+  BriskDetector(int thresh, int octaves) : threshold_(thresh),
+                                           octaves_(octaves) {}
+  BriskDetector(int thresh) : BriskDetector(thresh, 3) {}
 
-  ~AgastDetector() {}
+  ~BriskDetector() {}
 
   bool DetectKeypoints(const GrayImage& image,
                        std::vector<Keypoint*>* keypoints);
-  void SetThreshold(int threshold);
- private:
-  std::unique_ptr<AstDetector> ast_detector_;
 
-  bool nonmax_suppression_;
+ private:
+  int threshold_;
+  int octaves_;
 };
 }  // namespace theia
 
-#endif  // IMAGE_KEYPOINT_DETECTOR_AGAST_DETECTOR_H_
+#endif  // IMAGE_KEYPOINT_DETECTOR_BRISK_DETECTOR_H_

@@ -94,4 +94,7 @@ bool AgastDetector::DetectKeypoints(const GrayImage& image,
                                       Keypoint::AGAST));
   }
 }
+void AgastDetector::SetThreshold(int threshold) {
+  ast_detector_->set_threshold(threshold);
+}
 }  // namespace theia

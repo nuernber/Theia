@@ -32,50 +32,57 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef IMAGE_KEYPOINT_DETECTOR_AGAST_DETECTOR_H_
-#define IMAGE_KEYPOINT_DETECTOR_AGAST_DETECTOR_H_
-
-#include <agast/AstDetector.h>
+#ifndef IMAGE_KEYPOINT_DETECTOR_BRISK_HELPER_H_
+#define IMAGE_KEYPOINT_DETECTOR_BRISK_HELPER_H_
 #include <memory>
-#include <vector>
-
-#include "image/keypoint_detector/keypoint_detector.h"
 
 namespace theia {
-template<class T> class Image;
-typedef Image<float> GrayImage;
-class Keypoint;
-
-// Detect keypoints using the AGAST method from "Adaptive and Generic Corner
-// Detection Based on the Accelerated Segment Test" by Mair et. al.
-class AgastDetector : public KeypointDetector {
+// a layer in the Brisk detector pyramid
+class BriskLayer {
  public:
-  enum AstPattern {
-    AGAST5_8,
-    AGAST7_12D,
-    AGAST7_12S,
-    OAST9_16
+  // constructor arguments
+  struct CommonParams {
+    static const int HALFSAMPLE = 0;
+    static const int TWOTHIRDSAMPLE = 1;
   };
-  // There are multiple patterns you can use for the AGAST detector. As the
-  // pattern grows, the cost for computing keypoints increases. See the paper
-  // for more details. The threshold should be specified, as well as whether
-  // nonmaximum suppression should be run on the corners detected.
-  AgastDetector(AstPattern pattern, int threshold, bool nonmax_suppression);
-  AgastDetector(AstPattern pattern, int threshold)
-      : AgastDetector(pattern, threshold, true) {}
-  explicit AgastDetector(AstPattern pattern) : AgastDetector(pattern, 30) {}
-  AgastDetector() : AgastDetector(AGAST5_8) {}
+  // construct a base layer
+  BriskLayer(const GrayImage& img, float scale, float offset);
+  BriskLayer(const GrayImage& img) : BriskLayer(img, 1.0f, 0.0f) {}
+  // derive a layer
+  BriskLayer(const BriskLayer& layer, int mode);
 
-  ~AgastDetector() {}
+  // Fast/Agast without non-max suppression
+  void getAgastPoints(uint8_t threshold, std::vector<CvPoint>& keypoints);
 
-  bool DetectKeypoints(const GrayImage& image,
-                       std::vector<Keypoint*>* keypoints);
-  void SetThreshold(int threshold);
+  // get scores - attention, this is in layer coordinates, not scale=1 coordinates!
+  inline uint8_t getAgastScore(int x, int y, uint8_t threshold);
+  inline uint8_t getAgastScore_5_8(int x, int y, uint8_t threshold);
+  inline uint8_t getAgastScore(float xf, float yf, uint8_t threshold, float scale=1.0f);
+
+  // accessors
+  inline const GrayImage& img() const {return img_;}
+  inline const GrayImage& scores() const {return scores_;}
+  inline float scale() const {return scale_;}
+  inline float offset() const {return offset_;}
+
+  // half sampling
+  static inline void halfsample(const cv::Mat& srcimg, cv::Mat& dstimg);
+  // two third sampling
+  static inline void twothirdsample(const cv::Mat& srcimg, cv::Mat& dstimg);
+
  private:
-  std::unique_ptr<AstDetector> ast_detector_;
-
-  bool nonmax_suppression_;
+  // access gray values (smoothed/
+  inline uint8_t value(const cv::Mat& mat, float xf, float yf, float scale);
+  // the image
+  GrayImage img_;
+  // its Fast scores
+  GrayImage scores_;
+  // coordinate transformation
+  float scale_;
+  float offset_;
+  // agast
+  std::unique_ptr<agast::OastDetector9_16> oastDetector_;
+  std::unique_ptr<agast::AgastDetector5_8> agastDetector_5_8_;
 };
 }  // namespace theia
-
-#endif  // IMAGE_KEYPOINT_DETECTOR_AGAST_DETECTOR_H_
+#endif  // IMAGE_KEYPOINT_DETECTOR_BRISK_HELPER_H_
