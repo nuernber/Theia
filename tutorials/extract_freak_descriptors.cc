@@ -41,12 +41,12 @@
 #include "image/image_canvas.h"
 #include "image/descriptor/freak_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
-#include "image/keypoint_detector/agast_detector.h"
+#include "image/keypoint_detector/brisk_detector.h"
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
 
-using theia::AgastDetector;
+using theia::BriskDetector;
 using theia::GrayImage;
 using theia::ImageCanvas;
 using theia::Keypoint;
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
-  AgastDetector keypoint_detector;
+  BriskDetector keypoint_detector(30);
   std::vector<Keypoint*> left_keypoints;
   keypoint_detector.DetectKeypoints(image_left, &left_keypoints);
   VLOG(0) << "detected " << left_keypoints.size()

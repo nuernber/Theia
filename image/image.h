@@ -166,8 +166,8 @@ class Image : public SubImage<T> {
   // Resize using a Lanczos 3 filter.
   void Resize(int new_rows, int new_cols);
   void Resize(double scale);
-  Image<T> ResizeAndCopy(int new_rows, int new_cols) const;
-  Image<T> ResizeAndCopy(double scale) const;
+  Image<T> ResizeAndCopy(int new_rows, int new_cols);
+  Image<T> ResizeAndCopy(double scale);
 
  protected:
   friend class SubImage<T>;
@@ -176,13 +176,13 @@ class Image : public SubImage<T> {
 
  private:
   // Internal method for resizing images.
-  CVD::Image<T> ResizeInternal(int new_rows, int new_cols) const;
+  CVD::Image<T> ResizeInternal(int new_rows, int new_cols);
 
   // Computes gaussian function at x given mu (mean) and sigma;
   inline double Gaussian(double x, double mu, double sigma);
 
   double lanczos_size_ = 3.0;
-  inline double LanczosFilter(double filter_size, double x) const;
+  inline double LanczosFilter(double filter_size, double x);
   // Returns the ceiling/floor as an integer.
   inline int CeilInt(double val) { return static_cast<int>(ceil(val)); }
   inline int FloorInt(double val) { return static_cast<int>(floor(val)); }
@@ -344,12 +344,12 @@ void Image<T>::Resize(double scale) {
 }
 
 template <typename T>
-Image<T> Image<T>::ResizeAndCopy(int new_rows, int new_cols) const {
+Image<T> Image<T>::ResizeAndCopy(int new_rows, int new_cols) {
   return Image<T>(this->ResizeInternal(new_rows, new_cols), true);
 }
 
 template <typename T>
-Image<T> Image<T>::ResizeAndCopy(double scale) const {
+Image<T> Image<T>::ResizeAndCopy(double scale) {
   // Add 0.5 so that it will round to the nearest integer pixel size.
   return ResizeAndCopy(scale*this->Rows() + 0.5, scale*this->Cols() + 0.5);
 }
@@ -364,7 +364,7 @@ Image<T> Image<T>::ResizeAndCopy(double scale) const {
 // where
 //   sinc(x) = sin(pi*x) / (pi*x);
 template <typename T>
-inline double Image<T>::LanczosFilter(double filter_size, double x) const {
+inline double Image<T>::LanczosFilter(double filter_size, double x) {
   // Outside of the window.
   if (x <= -filter_size || x >= filter_size)
     return 0.0f;
@@ -378,7 +378,7 @@ inline double Image<T>::LanczosFilter(double filter_size, double x) const {
 }
 
 template <typename T>
-CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) const {
+CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
   int old_cols = image_.size().x;
   int old_rows = image_.size().y;
   double col_scale =

@@ -53,7 +53,8 @@ class Keypoint {
     FAST,
     HARRIS,
     SIFT,
-    AGAST
+    AGAST,
+    BRISK
   };
 
   Keypoint(double x, double y, KeypointType type)

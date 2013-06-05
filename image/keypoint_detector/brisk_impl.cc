@@ -34,6 +34,8 @@
 */
 
 #include "image/keypoint_detector/brisk_impl.h"
+#include "image/keypoint_detector/keypoint.h"
+
 #include <agast/oast9_16.h>
 #include <agast/agast7_12s.h>
 #include <agast/agast5_8.h>
@@ -41,491 +43,494 @@
 #include <stdlib.h>
 #include <tmmintrin.h>
 
+namespace theia {
 /*
-const float BriskDescriptorExtractor::basicSize_    =12.0;
-const unsigned int BriskDescriptorExtractor::scales_=64;
-const float BriskDescriptorExtractor::scalerange_   =30;        // 40->4 Octaves - else, this needs to be adjusted...
-const unsigned int BriskDescriptorExtractor::n_rot_ =1024;       // discretization of the rotation look-up
+  const float BriskDescriptorExtractor::basicSize_    =12.0;
+  const unsigned int BriskDescriptorExtractor::scales_=64;
+  const float BriskDescriptorExtractor::scalerange_   =30;        // 40->4 Octaves - else, this needs to be adjusted...
+  const unsigned int BriskDescriptorExtractor::n_rot_ =1024;       // discretization of the rotation look-up
 */
+
 const float BriskScaleSpace::safetyFactor_          =1.0;
 const float BriskScaleSpace::basicSize_             =12.0;
+typedef unsigned char uchar;
 /*
 // constructors
 BriskDescriptorExtractor::BriskDescriptorExtractor(bool rotationInvariant,
-                                                   bool scaleInvariant, float patternScale){
+bool scaleInvariant, float patternScale){
 
-  std::vector<float> rList;
-  std::vector<int> nList;
+std::vector<float> rList;
+std::vector<int> nList;
 
-  // this is the standard pattern found to be suitable also
-  rList.resize(5);
-  nList.resize(5);
-  const double f=0.85*patternScale;
+// this is the standard pattern found to be suitable also
+rList.resize(5);
+nList.resize(5);
+const double f=0.85*patternScale;
 
-  rList[0]=f*0;
-  rList[1]=f*2.9;
-  rList[2]=f*4.9;
-  rList[3]=f*7.4;
-  rList[4]=f*10.8;
+rList[0]=f*0;
+rList[1]=f*2.9;
+rList[2]=f*4.9;
+rList[3]=f*7.4;
+rList[4]=f*10.8;
 
-  nList[0]=1;
-  nList[1]=10;
-  nList[2]=14;
-  nList[3]=15;
-  nList[4]=20;
+nList[0]=1;
+nList[1]=10;
+nList[2]=14;
+nList[3]=15;
+nList[4]=20;
 
-  rotationInvariance=rotationInvariant;
-  scaleInvariance=scaleInvariant;
-  generateKernel(rList,nList,5.85*patternScale,8.2*patternScale);
+rotationInvariance=rotationInvariant;
+scaleInvariance=scaleInvariant;
+generateKernel(rList,nList,5.85*patternScale,8.2*patternScale);
 
 }
 BriskDescriptorExtractor::BriskDescriptorExtractor(std::vector<float> &radiusList,
-                                                   std::vector<int> &numberList, bool rotationInvariant, bool scaleInvariant,
-                                                   float dMax, float dMin, std::vector<int> indexChange){
-  rotationInvariance=rotationInvariant;
-  scaleInvariance=scaleInvariant;
-  generateKernel(radiusList,numberList,dMax,dMin,indexChange);
+std::vector<int> &numberList, bool rotationInvariant, bool scaleInvariant,
+float dMax, float dMin, std::vector<int> indexChange){
+rotationInvariance=rotationInvariant;
+scaleInvariance=scaleInvariant;
+generateKernel(radiusList,numberList,dMax,dMin,indexChange);
 }
 
 void BriskDescriptorExtractor::generateKernel(std::vector<float> &radiusList,
-                                              std::vector<int> &numberList, float dMax, float dMin,
-                                              std::vector<int> indexChange){
+std::vector<int> &numberList, float dMax, float dMin,
+std::vector<int> indexChange){
 
-  dMax_=dMax;
-  dMin_=dMin;
+dMax_=dMax;
+dMin_=dMin;
 
-  // get the total number of points
-  const int rings=radiusList.size();
-  assert(radiusList.size()!=0&&radiusList.size()==numberList.size());
-  points_=0; // remember the total number of points
-  for (int ring = 0; ring<rings; ring++){
-    points_+=numberList[ring];
-  }
-  // set up the patterns
-  patternPoints_=new BriskPatternPoint[points_*scales_*n_rot_];
-  BriskPatternPoint* patternIterator=patternPoints_;
+// get the total number of points
+const int rings=radiusList.size();
+assert(radiusList.size()!=0&&radiusList.size()==numberList.size());
+points_=0; // remember the total number of points
+for (int ring = 0; ring<rings; ring++){
+points_+=numberList[ring];
+}
+// set up the patterns
+patternPoints_=new BriskPatternPoint[points_*scales_*n_rot_];
+BriskPatternPoint* patternIterator=patternPoints_;
 
-  // define the scale discretization:
-  static const float lb_scale=log(scalerange_)/log(2.0);
-  static const float lb_scale_step = lb_scale/(scales_);
+// define the scale discretization:
+static const float lb_scale=log(scalerange_)/log(2.0);
+static const float lb_scale_step = lb_scale/(scales_);
 
-  scaleList_=new float[scales_];
-  sizeList_=new unsigned int[scales_];
+scaleList_=new float[scales_];
+sizeList_=new unsigned int[scales_];
 
-  const float sigma_scale=1.3;
+const float sigma_scale=1.3;
 
-  for (unsigned int scale = 0; scale <scales_; ++scale){
-    scaleList_[scale]=pow((double)2.0,(double)(scale*lb_scale_step));
-    sizeList_[scale]=0;
+for (unsigned int scale = 0; scale <scales_; ++scale){
+scaleList_[scale]=pow((double)2.0,(double)(scale*lb_scale_step));
+sizeList_[scale]=0;
 
-    // generate the pattern points look-up
-    double alpha, theta;
-    for (size_t rot=0; rot<n_rot_; ++rot){
-      theta = double(rot)*2*M_PI/double(n_rot_); // this is the rotation of the feature
-      for (int ring = 0; ring<rings; ++ring){
-        for (int num=0; num<numberList[ring]; ++num){
-          // the actual coordinates on the circle
-          alpha = (double(num))*2*M_PI/double(numberList[ring]);
-          patternIterator->x=scaleList_[scale]*radiusList[ring]*cos(alpha+theta); // feature rotation plus angle of the point
-          patternIterator->y=scaleList_[scale]*radiusList[ring]*sin(alpha+theta);
-          // and the gaussian kernel sigma
-          if (ring==0){
-            patternIterator->sigma = sigma_scale*scaleList_[scale]*0.5;
-          } else {
-            patternIterator->sigma = sigma_scale*scaleList_[scale]*(double(radiusList[ring]))*sin(M_PI/numberList[ring]);
-          }
-          // adapt the sizeList if necessary
-          const unsigned int size=ceil(((scaleList_[scale]*radiusList[ring])+patternIterator->sigma))+1;
-          if (sizeList_[scale]<size){
-            sizeList_[scale]=size;
-          }
+// generate the pattern points look-up
+double alpha, theta;
+for (size_t rot=0; rot<n_rot_; ++rot){
+theta = double(rot)*2*M_PI/double(n_rot_); // this is the rotation of the feature
+for (int ring = 0; ring<rings; ++ring){
+for (int num=0; num<numberList[ring]; ++num){
+// the actual coordinates on the circle
+alpha = (double(num))*2*M_PI/double(numberList[ring]);
+patternIterator->x=scaleList_[scale]*radiusList[ring]*cos(alpha+theta); // feature rotation plus angle of the point
+patternIterator->y=scaleList_[scale]*radiusList[ring]*sin(alpha+theta);
+// and the gaussian kernel sigma
+if (ring==0){
+patternIterator->sigma = sigma_scale*scaleList_[scale]*0.5;
+} else {
+patternIterator->sigma = sigma_scale*scaleList_[scale]*(double(radiusList[ring]))*sin(M_PI/numberList[ring]);
+}
+// adapt the sizeList if necessary
+const unsigned int size=ceil(((scaleList_[scale]*radiusList[ring])+patternIterator->sigma))+1;
+if (sizeList_[scale]<size){
+sizeList_[scale]=size;
+}
 
-          // increment the iterator
-          ++patternIterator;
-        }
-      }
-    }
-  }
+// increment the iterator
+++patternIterator;
+}
+}
+}
+}
 
-  // now also generate pairings
-  shortPairs_ = new BriskShortPair[points_*(points_-1)/2];
-  longPairs_ = new BriskLongPair[points_*(points_-1)/2];
-  noShortPairs_=0;
-  noLongPairs_=0;
+// now also generate pairings
+shortPairs_ = new BriskShortPair[points_*(points_-1)/2];
+longPairs_ = new BriskLongPair[points_*(points_-1)/2];
+noShortPairs_=0;
+noLongPairs_=0;
 
-  // fill indexChange with 0..n if empty
-  unsigned int indSize=indexChange.size();
-  if (indSize==0) {
-    indexChange.resize(points_*(points_-1)/2);
-    indSize=indexChange.size();
-  }
-  for (unsigned int i=0; i<indSize; i++){
-    indexChange[i]=i;
-  }
-  const float dMin_sq =dMin_*dMin_;
-  const float dMax_sq =dMax_*dMax_;
-  for (unsigned int i= 1; i<points_; i++){
-    for (unsigned int j= 0; j<i; j++){ //(find all the pairs)
-      // point pair distance:
-      const float dx=patternPoints_[j].x-patternPoints_[i].x;
-      const float dy=patternPoints_[j].y-patternPoints_[i].y;
-      const float norm_sq=(dx*dx+dy*dy);
-      if (norm_sq>dMin_sq){
-        // save to long pairs
-        BriskLongPair& longPair=longPairs_[noLongPairs_];
-        longPair.weighted_dx=int((dx/(norm_sq))*2048.0+0.5);
-        longPair.weighted_dy=int((dy/(norm_sq))*2048.0+0.5);
-        longPair.i = i;
-        longPair.j = j;
-        ++noLongPairs_;
-      } else if (norm_sq<dMax_sq){
-        // save to short pairs
-        assert(noShortPairs_<indSize); // make sure the user passes something sensible
-        BriskShortPair& shortPair = shortPairs_[indexChange[noShortPairs_]];
-        shortPair.j = j;
-        shortPair.i = i;
-        ++noShortPairs_;
-      }
-    }
-  }
+// fill indexChange with 0..n if empty
+unsigned int indSize=indexChange.size();
+if (indSize==0) {
+indexChange.resize(points_*(points_-1)/2);
+indSize=indexChange.size();
+}
+for (unsigned int i=0; i<indSize; i++){
+indexChange[i]=i;
+}
+const float dMin_sq =dMin_*dMin_;
+const float dMax_sq =dMax_*dMax_;
+for (unsigned int i= 1; i<points_; i++){
+for (unsigned int j= 0; j<i; j++){ //(find all the pairs)
+// point pair distance:
+const float dx=patternPoints_[j].x-patternPoints_[i].x;
+const float dy=patternPoints_[j].y-patternPoints_[i].y;
+const float norm_sq=(dx*dx+dy*dy);
+if (norm_sq>dMin_sq){
+// save to long pairs
+BriskLongPair& longPair=longPairs_[noLongPairs_];
+longPair.weighted_dx=int((dx/(norm_sq))*2048.0+0.5);
+longPair.weighted_dy=int((dy/(norm_sq))*2048.0+0.5);
+longPair.i = i;
+longPair.j = j;
+++noLongPairs_;
+} else if (norm_sq<dMax_sq){
+// save to short pairs
+assert(noShortPairs_<indSize); // make sure the user passes something sensible
+BriskShortPair& shortPair = shortPairs_[indexChange[noShortPairs_]];
+shortPair.j = j;
+shortPair.i = i;
+++noShortPairs_;
+}
+}
+}
 
-  // no bits:
-  strings_=(int)ceil((float(noShortPairs_))/128.0)*4*4;
+// no bits:
+strings_=(int)ceil((float(noShortPairs_))/128.0)*4*4;
 }
 
 // simple alternative:
 inline int BriskDescriptorExtractor::smoothedIntensity(const cv::Mat& image,
-                                                       const cv::Mat& integral,const float key_x,
-                                                       const float key_y, const unsigned int scale,
-                                                       const unsigned int rot, const unsigned int point) const{
+const cv::Mat& integral,const float key_x,
+const float key_y, const unsigned int scale,
+const unsigned int rot, const unsigned int point) const{
 
-  // get the float position
-  const BriskPatternPoint& briskPoint = patternPoints_[scale*n_rot_*points_ + rot*points_ + point];
-  const float xf=briskPoint.x+key_x;
-  const float yf=briskPoint.y+key_y;
-  const int x = int(xf);
-  const int y = int(yf);
-  const int& imagecols=image.cols;
+// get the float position
+const BriskPatternPoint& briskPoint = patternPoints_[scale*n_rot_*points_ + rot*points_ + point];
+const float xf=briskPoint.x+key_x;
+const float yf=briskPoint.y+key_y;
+const int x = int(xf);
+const int y = int(yf);
+const int& imagecols=image.cols;
 
-  // get the sigma:
-  const float sigma_half=briskPoint.sigma;
-  const float area=4.0*sigma_half*sigma_half;
+// get the sigma:
+const float sigma_half=briskPoint.sigma;
+const float area=4.0*sigma_half*sigma_half;
 
-  // calculate output:
-  int ret_val;
-  if (sigma_half<0.5){
-    //interpolation multipliers:
-    const int r_x=(xf-x)*1024;
-    const int r_y=(yf-y)*1024;
-    const int r_x_1=(1024-r_x);
-    const int r_y_1=(1024-r_y);
-    uchar* ptr=image.data+x+y*imagecols;
-    // just interpolate:
-    ret_val=(r_x_1*r_y_1*int(*ptr));
-    ptr++;
-    ret_val+=(r_x*r_y_1*int(*ptr));
-    ptr+=imagecols;
-    ret_val+=(r_x*r_y*int(*ptr));
-    ptr--;
-    ret_val+=(r_x_1*r_y*int(*ptr));
-    return (ret_val+512)/1024;
-  }
+// calculate output:
+int ret_val;
+if (sigma_half<0.5){
+//interpolation multipliers:
+const int r_x=(xf-x)*1024;
+const int r_y=(yf-y)*1024;
+const int r_x_1=(1024-r_x);
+const int r_y_1=(1024-r_y);
+uchar* ptr=image.data+x+y*imagecols;
+// just interpolate:
+ret_val=(r_x_1*r_y_1*int(*ptr));
+ptr++;
+ret_val+=(r_x*r_y_1*int(*ptr));
+ptr+=imagecols;
+ret_val+=(r_x*r_y*int(*ptr));
+ptr--;
+ret_val+=(r_x_1*r_y*int(*ptr));
+return (ret_val+512)/1024;
+}
 
-  // this is the standard case (simple, not speed optimized yet):
+// this is the standard case (simple, not speed optimized yet):
 
-  // scaling:
-  const int scaling = 4194304.0/area;
-  const int scaling2=float(scaling)*area/1024.0;
+// scaling:
+const int scaling = 4194304.0/area;
+const int scaling2=float(scaling)*area/1024.0;
 
-  // the integral image is larger:
-  const int integralcols=imagecols+1;
+// the integral image is larger:
+const int integralcols=imagecols+1;
 
-  // calculate borders
-  const float x_1=xf-sigma_half;
-  const float x1=xf+sigma_half;
-  const float y_1=yf-sigma_half;
-  const float y1=yf+sigma_half;
+// calculate borders
+const float x_1=xf-sigma_half;
+const float x1=xf+sigma_half;
+const float y_1=yf-sigma_half;
+const float y1=yf+sigma_half;
 
-  const int x_left=int(x_1+0.5);
-  const int y_top=int(y_1+0.5);
-  const int x_right=int(x1+0.5);
-  const int y_bottom=int(y1+0.5);
+const int x_left=int(x_1+0.5);
+const int y_top=int(y_1+0.5);
+const int x_right=int(x1+0.5);
+const int y_bottom=int(y1+0.5);
 
-  // overlap area - multiplication factors:
-  const float r_x_1=float(x_left)-x_1+0.5;
-  const float r_y_1=float(y_top)-y_1+0.5;
-  const float r_x1=x1-float(x_right)+0.5;
-  const float r_y1=y1-float(y_bottom)+0.5;
-  const int dx=x_right-x_left-1;
-  const int dy=y_bottom-y_top-1;
-  const int A=(r_x_1*r_y_1)*scaling;
-  const int B=(r_x1*r_y_1)*scaling;
-  const int C=(r_x1*r_y1)*scaling;
-  const int D=(r_x_1*r_y1)*scaling;
-  const int r_x_1_i=r_x_1*scaling;
-  const int r_y_1_i=r_y_1*scaling;
-  const int r_x1_i=r_x1*scaling;
-  const int r_y1_i=r_y1*scaling;
+// overlap area - multiplication factors:
+const float r_x_1=float(x_left)-x_1+0.5;
+const float r_y_1=float(y_top)-y_1+0.5;
+const float r_x1=x1-float(x_right)+0.5;
+const float r_y1=y1-float(y_bottom)+0.5;
+const int dx=x_right-x_left-1;
+const int dy=y_bottom-y_top-1;
+const int A=(r_x_1*r_y_1)*scaling;
+const int B=(r_x1*r_y_1)*scaling;
+const int C=(r_x1*r_y1)*scaling;
+const int D=(r_x_1*r_y1)*scaling;
+const int r_x_1_i=r_x_1*scaling;
+const int r_y_1_i=r_y_1*scaling;
+const int r_x1_i=r_x1*scaling;
+const int r_y1_i=r_y1*scaling;
 
-  if (dx+dy>2){
-    // now the calculation:
-    uchar* ptr=image.data+x_left+imagecols*y_top;
-    // first the corners:
-    ret_val=A*int(*ptr);
-    ptr+=dx+1;
-    ret_val+=B*int(*ptr);
-    ptr+=dy*imagecols+1;
-    ret_val+=C*int(*ptr);
-    ptr-=dx+1;
-    ret_val+=D*int(*ptr);
+if (dx+dy>2){
+// now the calculation:
+uchar* ptr=image.data+x_left+imagecols*y_top;
+// first the corners:
+ret_val=A*int(*ptr);
+ptr+=dx+1;
+ret_val+=B*int(*ptr);
+ptr+=dy*imagecols+1;
+ret_val+=C*int(*ptr);
+ptr-=dx+1;
+ret_val+=D*int(*ptr);
 
-    // next the edges:
-    int* ptr_integral=(int*)integral.data+x_left+integralcols*y_top+1;
-    // find a simple path through the different surface corners
-    const int tmp1=(*ptr_integral);
-    ptr_integral+=dx;
-    const int tmp2=(*ptr_integral);
-    ptr_integral+=integralcols;
-    const int tmp3=(*ptr_integral);
-    ptr_integral++;
-    const int tmp4=(*ptr_integral);
-    ptr_integral+=dy*integralcols;
-    const int tmp5=(*ptr_integral);
-    ptr_integral--;
-    const int tmp6=(*ptr_integral);
-    ptr_integral+=integralcols;
-    const int tmp7=(*ptr_integral);
-    ptr_integral-=dx;
-    const int tmp8=(*ptr_integral);
-    ptr_integral-=integralcols;
-    const int tmp9=(*ptr_integral);
-    ptr_integral--;
-    const int tmp10=(*ptr_integral);
-    ptr_integral-=dy*integralcols;
-    const int tmp11=(*ptr_integral);
-    ptr_integral++;
-    const int tmp12=(*ptr_integral);
+// next the edges:
+int* ptr_integral=(int*)integral.data+x_left+integralcols*y_top+1;
+// find a simple path through the different surface corners
+const int tmp1=(*ptr_integral);
+ptr_integral+=dx;
+const int tmp2=(*ptr_integral);
+ptr_integral+=integralcols;
+const int tmp3=(*ptr_integral);
+ptr_integral++;
+const int tmp4=(*ptr_integral);
+ptr_integral+=dy*integralcols;
+const int tmp5=(*ptr_integral);
+ptr_integral--;
+const int tmp6=(*ptr_integral);
+ptr_integral+=integralcols;
+const int tmp7=(*ptr_integral);
+ptr_integral-=dx;
+const int tmp8=(*ptr_integral);
+ptr_integral-=integralcols;
+const int tmp9=(*ptr_integral);
+ptr_integral--;
+const int tmp10=(*ptr_integral);
+ptr_integral-=dy*integralcols;
+const int tmp11=(*ptr_integral);
+ptr_integral++;
+const int tmp12=(*ptr_integral);
 
-    // assign the weighted surface integrals:
-    const int upper=(tmp3-tmp2+tmp1-tmp12)*r_y_1_i;
-    const int middle=(tmp6-tmp3+tmp12-tmp9)*scaling;
-    const int left=(tmp9-tmp12+tmp11-tmp10)*r_x_1_i;
-    const int right=(tmp5-tmp4+tmp3-tmp6)*r_x1_i;
-    const int bottom=(tmp7-tmp6+tmp9-tmp8)*r_y1_i;
+// assign the weighted surface integrals:
+const int upper=(tmp3-tmp2+tmp1-tmp12)*r_y_1_i;
+const int middle=(tmp6-tmp3+tmp12-tmp9)*scaling;
+const int left=(tmp9-tmp12+tmp11-tmp10)*r_x_1_i;
+const int right=(tmp5-tmp4+tmp3-tmp6)*r_x1_i;
+const int bottom=(tmp7-tmp6+tmp9-tmp8)*r_y1_i;
 
-    return (ret_val+upper+middle+left+right+bottom+scaling2/2)/scaling2;
-  }
+return (ret_val+upper+middle+left+right+bottom+scaling2/2)/scaling2;
+}
 
-  // now the calculation:
-  uchar* ptr=image.data+x_left+imagecols*y_top;
-  // first row:
-  ret_val=A*int(*ptr);
-  ptr++;
-  const uchar* end1 = ptr+dx;
-  for (; ptr<end1; ptr++){
-    ret_val+=r_y_1_i*int(*ptr);
-  }
-  ret_val+=B*int(*ptr);
-  // middle ones:
-  ptr+=imagecols-dx-1;
-  uchar* end_j=ptr+dy*imagecols;
-  for (; ptr<end_j; ptr+=imagecols-dx-1){
-    ret_val+=r_x_1_i*int(*ptr);
-    ptr++;
-    const uchar* end2 = ptr+dx;
-    for (; ptr<end2; ptr++){
-      ret_val+=int(*ptr)*scaling;
-    }
-    ret_val+=r_x1_i*int(*ptr);
-  }
-  // last row:
-  ret_val+=D*int(*ptr);
-  ptr++;
-  const uchar* end3 = ptr+dx;
-  for (; ptr<end3; ptr++){
-    ret_val+=r_y1_i*int(*ptr);
-  }
-  ret_val+=C*int(*ptr);
+// now the calculation:
+uchar* ptr=image.data+x_left+imagecols*y_top;
+// first row:
+ret_val=A*int(*ptr);
+ptr++;
+const uchar* end1 = ptr+dx;
+for (; ptr<end1; ptr++){
+ret_val+=r_y_1_i*int(*ptr);
+}
+ret_val+=B*int(*ptr);
+// middle ones:
+ptr+=imagecols-dx-1;
+uchar* end_j=ptr+dy*imagecols;
+for (; ptr<end_j; ptr+=imagecols-dx-1){
+ret_val+=r_x_1_i*int(*ptr);
+ptr++;
+const uchar* end2 = ptr+dx;
+for (; ptr<end2; ptr++){
+ret_val+=int(*ptr)*scaling;
+}
+ret_val+=r_x1_i*int(*ptr);
+}
+// last row:
+ret_val+=D*int(*ptr);
+ptr++;
+const uchar* end3 = ptr+dx;
+for (; ptr<end3; ptr++){
+ret_val+=r_y1_i*int(*ptr);
+}
+ret_val+=C*int(*ptr);
 
-  return (ret_val+scaling2/2)/scaling2;
+return (ret_val+scaling2/2)/scaling2;
 }
 
 bool RoiPredicate(const float minX, const float minY,
-                  const float maxX, const float maxY, const KeyPoint& keyPt){
-  const Point2f& pt = keyPt.pt;
-  return (pt.x < minX) || (pt.x >= maxX) || (pt.y < minY) || (pt.y >= maxY);
+const float maxX, const float maxY, const KeyPoint& keyPt){
+const Point2f& pt = keyPt.pt;
+return (pt.x < minX) || (pt.x >= maxX) || (pt.y < minY) || (pt.y >= maxY);
 }
 
 // computes the descriptor
 void BriskDescriptorExtractor::computeImpl(const Mat& image,
-                                           std::vector<KeyPoint>& keypoints, Mat& descriptors) const{
+std::vector<KeyPoint>& keypoints, Mat& descriptors) const{
 
-  //Remove keypoints very close to the border
-  size_t ksize=keypoints.size();
-  std::vector<int> kscales; // remember the scale per keypoint
-  kscales.resize(ksize);
-  static const float log2 = 0.693147180559945;
-  static const float lb_scalerange = log(scalerange_)/(log2);
-  std::vector<cv::KeyPoint>::iterator beginning = keypoints.begin();
-  std::vector<int>::iterator beginningkscales = kscales.begin();
-  static const float basicSize06=basicSize_*0.6;
-  unsigned int basicscale=0;
-  if (!scaleInvariance)
-    basicscale=std::max((int)(scales_/lb_scalerange*(log(1.45*basicSize_/(basicSize06))/log2)+0.5),0);
-  for (size_t k=0; k<ksize; k++){
-    unsigned int scale;
-    if (scaleInvariance){
-      scale=std::max((int)(scales_/lb_scalerange*(log(keypoints[k].size/(basicSize06))/log2)+0.5),0);
-      // saturate
-      if (scale>=scales_) scale = scales_-1;
-      kscales[k]=scale;
-    } else {
-      scale = basicscale;
-      kscales[k]=scale;
-    }
-    const int border = sizeList_[scale];
-    const int border_x=image.cols-border;
-    const int border_y=image.rows-border;
-    if (RoiPredicate(border, border,border_x,border_y,keypoints[k])){
-      keypoints.erase(beginning+k);
-      kscales.erase(beginningkscales+k);
-      if (k==0){
-        beginning=keypoints.begin();
-        beginningkscales = kscales.begin();
-      }
-      ksize--;
-      k--;
-    }
-  }
+//Remove keypoints very close to the border
+size_t ksize=keypoints.size();
+std::vector<int> kscales; // remember the scale per keypoint
+kscales.resize(ksize);
+static const float log2 = 0.693147180559945;
+static const float lb_scalerange = log(scalerange_)/(log2);
+std::vector<cv::KeyPoint>::iterator beginning = keypoints.begin();
+std::vector<int>::iterator beginningkscales = kscales.begin();
+static const float basicSize06=basicSize_*0.6;
+unsigned int basicscale=0;
+if (!scaleInvariance)
+basicscale=std::max((int)(scales_/lb_scalerange*(log(1.45*basicSize_/(basicSize06))/log2)+0.5),0);
+for (size_t k=0; k<ksize; k++){
+unsigned int scale;
+if (scaleInvariance){
+scale=std::max((int)(scales_/lb_scalerange*(log(keypoints[k].size/(basicSize06))/log2)+0.5),0);
+// saturate
+if (scale>=scales_) scale = scales_-1;
+kscales[k]=scale;
+} else {
+scale = basicscale;
+kscales[k]=scale;
+}
+const int border = sizeList_[scale];
+const int border_x=image.cols-border;
+const int border_y=image.rows-border;
+if (RoiPredicate(border, border,border_x,border_y,keypoints[k])){
+keypoints.erase(beginning+k);
+kscales.erase(beginningkscales+k);
+if (k==0){
+beginning=keypoints.begin();
+beginningkscales = kscales.begin();
+}
+ksize--;
+k--;
+}
+}
 
-  // first, calculate the integral image over the whole image:
-  // current integral image
-  cv::Mat _integral; // the integral image
-  cv::integral(image, _integral);
+// first, calculate the integral image over the whole image:
+// current integral image
+cv::Mat _integral; // the integral image
+cv::integral(image, _integral);
 
-  int* _values=new int[points_]; // for temporary use
+int* _values=new int[points_]; // for temporary use
 
-  // resize the descriptors:
-  descriptors=cv::Mat::zeros(ksize,strings_, CV_8U);
+// resize the descriptors:
+descriptors=cv::Mat::zeros(ksize,strings_, CV_8U);
 
-  // now do the extraction for all keypoints:
+// now do the extraction for all keypoints:
 
-  // temporary variables containing gray values at sample points:
-  int t1;
-  int t2;
+// temporary variables containing gray values at sample points:
+int t1;
+int t2;
 
-  // the feature orientation
-  int direction0;
-  int direction1;
+// the feature orientation
+int direction0;
+int direction1;
 
-  uchar* ptr = descriptors.data;
-  for (size_t k=0; k<ksize; k++){
-    int theta;
-    cv::KeyPoint& kp=keypoints[k];
-    const int& scale=kscales[k];
-    int shifter=0;
-    int* pvalues =_values;
-    const float& x=kp.pt.x;
-    const float& y=kp.pt.y;
-    //if (kp.angle==-1){
-      if (true){
-        if (!rotationInvariance) {
-        // don't compute the gradient direction, just assign a rotation of 0°
-        theta=0;
-      } else {
-        // get the gray values in the unrotated pattern
-        for (unsigned int i = 0; i<points_; i++){
-          *(pvalues++)=smoothedIntensity(image, _integral, x,
-                                         y, scale, 0, i);
-        }
+uchar* ptr = descriptors.data;
+for (size_t k=0; k<ksize; k++){
+int theta;
+cv::KeyPoint& kp=keypoints[k];
+const int& scale=kscales[k];
+int shifter=0;
+int* pvalues =_values;
+const float& x=kp.pt.x;
+const float& y=kp.pt.y;
+//if (kp.angle==-1){
+if (true){
+if (!rotationInvariance) {
+// don't compute the gradient direction, just assign a rotation of 0°
+theta=0;
+} else {
+// get the gray values in the unrotated pattern
+for (unsigned int i = 0; i<points_; i++){
+*(pvalues++)=smoothedIntensity(image, _integral, x,
+y, scale, 0, i);
+}
 
-        direction0=0;
-        direction1=0;
-        // now iterate through the long pairings
-        const BriskLongPair* max=longPairs_+noLongPairs_;
-        for (BriskLongPair* iter=longPairs_; iter<max; ++iter){
-          t1=*(_values+iter->i);
-          t2=*(_values+iter->j);
-          const int delta_t=(t1-t2);
-          // update the direction:
-          const int tmp0=delta_t*(iter->weighted_dx)/1024;
-          const int tmp1=delta_t*(iter->weighted_dy)/1024;
-          direction0+=tmp0;
-          direction1+=tmp1;
-        }
-        kp.angle=atan2((float)direction1,(float)direction0)/M_PI*180.0;
-        theta=int((n_rot_*kp.angle)/(360.0)+0.5);
-        if (theta<0)
-          theta+=n_rot_;
-        if (theta>=int(n_rot_))
-          theta-=n_rot_;
-      }
-    } else {
-      // figure out the direction:
-      //int theta=rotationInvariance*round((_n_rot*atan2(direction.at<int>(0,0),direction.at<int>(1,0)))/(2*M_PI));
-      if (!rotationInvariance){
-        theta=0;
-      } else {
-        theta=(int)(n_rot_*(kp.angle/(360.0))+0.5);
-        if (theta<0)
-          theta+=n_rot_;
-        if (theta>=int(n_rot_))
-          theta-=n_rot_;
-      }
-    }
+direction0=0;
+direction1=0;
+// now iterate through the long pairings
+const BriskLongPair* max=longPairs_+noLongPairs_;
+for (BriskLongPair* iter=longPairs_; iter<max; ++iter){
+t1=*(_values+iter->i);
+t2=*(_values+iter->j);
+const int delta_t=(t1-t2);
+// update the direction:
+const int tmp0=delta_t*(iter->weighted_dx)/1024;
+const int tmp1=delta_t*(iter->weighted_dy)/1024;
+direction0+=tmp0;
+direction1+=tmp1;
+}
+kp.angle=atan2((float)direction1,(float)direction0)/M_PI*180.0;
+theta=int((n_rot_*kp.angle)/(360.0)+0.5);
+if (theta<0)
+theta+=n_rot_;
+if (theta>=int(n_rot_))
+theta-=n_rot_;
+}
+} else {
+// figure out the direction:
+//int theta=rotationInvariance*round((_n_rot*atan2(direction.at<int>(0,0),direction.at<int>(1,0)))/(2*M_PI));
+if (!rotationInvariance){
+theta=0;
+} else {
+theta=(int)(n_rot_*(kp.angle/(360.0))+0.5);
+if (theta<0)
+theta+=n_rot_;
+if (theta>=int(n_rot_))
+theta-=n_rot_;
+}
+}
 
-    // now also extract the stuff for the actual direction:
-    // let us compute the smoothed values
-    shifter=0;
+// now also extract the stuff for the actual direction:
+// let us compute the smoothed values
+shifter=0;
 
-    //unsigned int mean=0;
-    pvalues =_values;
-    // get the gray values in the rotated pattern
-    for (unsigned int i = 0; i<points_; i++){
-      *(pvalues++)=smoothedIntensity(image, _integral, x,
-                                     y, scale, theta, i);
-    }
+//unsigned int mean=0;
+pvalues =_values;
+// get the gray values in the rotated pattern
+for (unsigned int i = 0; i<points_; i++){
+*(pvalues++)=smoothedIntensity(image, _integral, x,
+y, scale, theta, i);
+}
 
-    // now iterate through all the pairings
-    UINT32_ALIAS* ptr2=(UINT32_ALIAS*)ptr;
-    const BriskShortPair* max=shortPairs_+noShortPairs_;
-    for (BriskShortPair* iter=shortPairs_; iter<max;++iter){
-      t1=*(_values+iter->i);
-      t2=*(_values+iter->j);
-      if (t1>t2){
-        *ptr2|=((1)<<shifter);
+// now iterate through all the pairings
+UINT32_ALIAS* ptr2=(UINT32_ALIAS*)ptr;
+const BriskShortPair* max=shortPairs_+noShortPairs_;
+for (BriskShortPair* iter=shortPairs_; iter<max;++iter){
+t1=*(_values+iter->i);
+t2=*(_values+iter->j);
+if (t1>t2){
+*ptr2|=((1)<<shifter);
 
-      } // else already initialized with zero
-      // take care of the iterators:
-      ++shifter;
-      if (shifter==32){
-        shifter=0;
-        ++ptr2;
-      }
-    }
+} // else already initialized with zero
+// take care of the iterators:
+++shifter;
+if (shifter==32){
+shifter=0;
+++ptr2;
+}
+}
 
-    ptr+=strings_;
-  }
+ptr+=strings_;
+}
 
-  // clean-up
-  _integral.release();
-  delete [] _values;
+// clean-up
+_integral.release();
+delete [] _values;
 }
 
 int BriskDescriptorExtractor::descriptorSize() const{
-  return strings_;
+return strings_;
 }
 
 int BriskDescriptorExtractor::descriptorType() const{
-  return CV_8U;
+return CV_8U;
 }
 
 BriskDescriptorExtractor::~BriskDescriptorExtractor(){
-  delete [] patternPoints_;
-  delete [] shortPairs_;
-  delete [] longPairs_;
-  delete [] scaleList_;
-  delete [] sizeList_;
+delete [] patternPoints_;
+delete [] shortPairs_;
+delete [] longPairs_;
+delete [] scaleList_;
+delete [] sizeList_;
 }
 */
 
@@ -538,7 +543,7 @@ BriskScaleSpace::BriskScaleSpace(uint8_t _octaves) {
 }
 
 // construct the image pyramids
-void BriskScaleSpace::constructPyramid(const GrayImage& image) {
+void BriskScaleSpace::constructPyramid(const Image<unsigned char>& image) {
   // set correct size:
   pyramid_.clear();
 
@@ -559,15 +564,13 @@ void BriskScaleSpace::constructPyramid(const GrayImage& image) {
 }
 
 void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
-                                   std::vector<KeyPoint*>* keypoints) {
-  // make sure keypoints is empty
-  keypoints.resize(0);
-  keypoints.reserve(2000);
+                                   std::vector<Keypoint*>* keypoints) {
+  keypoints->reserve(2000);
 
   // assign thresholds
   threshold_=_threshold;
   safeThreshold_ = threshold_*safetyFactor_;
-  std::vector<std::vector<agast::CvPoint> > agastPoints;
+  std::vector<std::vector<CvPoint> > agastPoints;
   agastPoints.resize(layers_);
 
   // go through the octaves and intra layers and calculate fast corner scores:
@@ -587,7 +590,7 @@ void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
         continue;
 
       // let's do the subpixel and float scale refinement:
-      cv::BriskLayer& l=pyramid_[0];
+      BriskLayer& l=pyramid_[0];
       register int s_0_0 = l.getAgastScore(point.x-1, point.y-1, 1);
       register int s_1_0 = l.getAgastScore(point.x,   point.y-1, 1);
       register int s_2_0 = l.getAgastScore(point.x+1, point.y-1, 1);
@@ -604,14 +607,20 @@ void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
                              delta_x, delta_y);
 
       // store:
-      // TODO(cmsweeney): Convert this to Theia Keypoint.
-      keypoints->push_back(cv::KeyPoint(float(point.x)+delta_x,
-                                        float(point.y)+delta_y,
-                                        basicSize_,
-                                        -1,
-                                        max,
-                                        0));
-
+      Keypoint* new_keypoint = new Keypoint(point.x + delta_x,
+                                            point.y + delta_y,
+                                            Keypoint::BRISK);
+      new_keypoint->set_strength(max);
+      new_keypoint->set_scale(0);
+      keypoints->push_back(new_keypoint);
+      /*
+        keypoints->push_back(cv::KeyPoint(float(point.x)+delta_x,
+        float(point.y)+delta_y,
+        basicSize_,
+        -1,
+        max,
+        0));
+      */
     }
     return;
   }
@@ -653,11 +662,19 @@ void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
                                delta_x, delta_y);
 
         // store:
-        // TODO(cmsweeney): change this to Theia keypoints.
+        Keypoint* new_keypoint =
+            new Keypoint((point.x + delta_x)*l.scale() + l.offset(),
+                         (point.y + delta_y)*l.scale() + l.offset(),
+                         Keypoint::BRISK);
+        new_keypoint->set_strength(max);
+        new_keypoint->set_scale(l.scale());
+        keypoints->push_back(new_keypoint);
+        /*
         keypoints->push_back(
             cv::KeyPoint((float(point.x)+delta_x)*l.scale()+l.offset(),
                          (float(point.y)+delta_y)*l.scale()+l.offset(),
                          basicSize_*l.scale(), -1, max,i));
+        */
       }
     } else {
       // not the last layer:
@@ -677,8 +694,12 @@ void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
 
         // finally store the detected keypoint:
         if (score>float(threshold_)) {
-          // TODO(cmsweeney): change this to Theia Keypoints.
-          keypoints->push_back(cv::KeyPoint(x, y, basicSize_*scale, -1, score,i));
+          Keypoint* new_keypoint = new Keypoint(x, y, Keypoint::BRISK);
+          new_keypoint->set_strength(score);
+          new_keypoint->set_scale(scale);
+          keypoints->push_back(new_keypoint);
+
+          //keypoints->push_back(cv::KeyPoint(x, y, basicSize_*scale, -1, score,i));
         }
       }
     }
@@ -817,9 +838,9 @@ inline int BriskScaleSpace::getScoreBelow(const uint8_t layer,
 
 inline bool BriskScaleSpace::isMax2D(const uint8_t layer,
                                      const int x_layer, const int y_layer) {
-  const GrayImage& scores = pyramid_[layer].scores();
+  const Image<unsigned char>& scores = pyramid_[layer].scores();
   const int scorescols = scores.Cols();
-  uchar* data=scores.GetData() + y_layer*scorescols + x_layer;
+  const uchar* data=scores.GetData() + y_layer*scorescols + x_layer;
   // decision tree:
   const uchar center = (*data);
   data--;
@@ -890,7 +911,7 @@ inline bool BriskScaleSpace::isMax2D(const uint8_t layer,
     int smoothedcenter=4*center+2*(s_10+s10+s0_1+s01)+s_1_1+s1_1+s_11+s11;
     for (unsigned int i=0; i<deltasize;i+=2) {
       data = scores.GetData() + (y_layer-1+delta[i+1])*scorescols +
-           x_layer+delta[i]-1;
+             x_layer+delta[i]-1;
       int othercenter=*data;
       data++;
       othercenter+=2*(*data);
@@ -1619,9 +1640,9 @@ inline float BriskScaleSpace::subpixel2D(
 }
 
 // construct a layer
-BriskLayer::BriskLayer(const GrayImage& img, float scale, float offset) {
+BriskLayer::BriskLayer(const Image<unsigned char>& img, float scale, float offset) {
   img_=img;
-  scores_=GrayImage(img.Rows(), img.Cols(), 0.0);
+  scores_= Image<unsigned char>(img.Rows(), img.Cols(), 0.0);
   // attention: this means that the passed image reference must point to
   // persistent memory
   scale_=scale;
@@ -1645,7 +1666,7 @@ BriskLayer::BriskLayer(const BriskLayer& layer, int mode) {
     scale_= layer.scale()*1.5;
     offset_=0.5*scale_-0.5;
   }
-  scores_=GrayImage(img_.Rows(), img_.Cols(), 0.0);
+  scores_=Image<unsigned char>(img_.Rows(), img_.Cols(), 0.0);
   oastDetector_ = new agast::OastDetector9_16(img_.Cols(), img_.Rows(), 0);
   agastDetector_5_8_ = new agast::AgastDetector5_8(img_.Cols(), img_.Rows(), 0);
 }
@@ -1716,12 +1737,15 @@ inline uint8_t BriskLayer::getAgastScore(float xf, float yf, uint8_t threshold, 
 }
 
 // access gray values (smoothed/interpolated)
-inline uint8_t BriskLayer::value(const GrayImage& mat, float xf, float yf, float scale) {
-  assert(!mat.empty());
+inline uint8_t BriskLayer::value(const Image<unsigned char>& mat,
+                                 float xf, float yf, float scale) {
+  // assert(!mat.empty());
+  CHECK_GT(mat.Rows(), 0);
+  CHECK_GT(mat.Cols(), 0);
   // get the position
   const int x = floor(xf);
   const int y = floor(yf);
-  const GrayImage& image=mat;
+  const Image<unsigned char>& image=mat;
   const int& imagecols=image.Cols();
 
   // get the sigma_half:
@@ -1781,7 +1805,7 @@ inline uint8_t BriskLayer::value(const GrayImage& mat, float xf, float yf, float
   const int r_y1_i=r_y1*scaling;
 
   // now the calculation:
-  uchar* ptr=image.data+x_left+imagecols*y_top;
+  uchar* ptr=image.GetData()+x_left+imagecols*y_top;
   // first row:
   ret_val=A*int(*ptr);
   ptr++;
@@ -1815,7 +1839,8 @@ inline uint8_t BriskLayer::value(const GrayImage& mat, float xf, float yf, float
 }
 
 // half sampling
-inline void BriskLayer::halfsample(const GrayImage& srcimg, GrayImage& dstimg) {
+inline void BriskLayer::halfsample(const Image<unsigned char>& srcimg,
+                                   Image<unsigned char>& dstimg) {
   const unsigned short leftoverCols = ((srcimg.Cols()%16)/2);// take care with border...
   const bool noleftover = (srcimg.Cols()%16)==0; // note: leftoverCols can be zero but this still false...
 
@@ -1829,9 +1854,9 @@ inline void BriskLayer::halfsample(const GrayImage& srcimg, GrayImage& dstimg) {
   register __m128i ones = _mm_set_epi32 (0x11111111, 0x11111111, 0x11111111, 0x11111111);
 
   // data pointers:
-  __m128i* p1=(__m128i*)srcimg.data;
-  __m128i* p2=(__m128i*)(srcimg.data+srcimg.Cols());
-  __m128i* p_dest=(__m128i*)dstimg.data;
+  __m128i* p1=(__m128i*)srcimg.GetData();
+  __m128i* p2=(__m128i*)(srcimg.GetData()+srcimg.Cols());
+  __m128i* p_dest=(__m128i*)dstimg.GetData();
   unsigned char* p_dest_char;//=(unsigned char*)p_dest;
 
   // size:
@@ -1923,9 +1948,9 @@ inline void BriskLayer::halfsample(const GrayImage& srcimg, GrayImage& dstimg) {
 
     if (noleftover) {
       row++;
-      p_dest=(__m128i*)(dstimg.data+row*dstimg.Cols());
-      p1=(__m128i*)(srcimg.data+2*row*srcimg.Cols());
-      //p2=(__m128i*)(srcimg.data+(2*row+1)*srcimg.Cols());
+      p_dest=(__m128i*)(dstimg.GetData()+row*dstimg.Cols());
+      p1=(__m128i*)(srcimg.GetData()+2*row*srcimg.Cols());
+      //p2=(__m128i*)(srcimg.GetData()+(2*row+1)*srcimg.Cols());
       //p1+=hsize;
       p2=p1+hsize;
     } else {
@@ -1938,14 +1963,15 @@ inline void BriskLayer::halfsample(const GrayImage& srcimg, GrayImage& dstimg) {
       }
       // done with the two rows:
       row++;
-      p_dest=(__m128i*)(dstimg.data+row*dstimg.Cols());
-      p1=(__m128i*)(srcimg.data+2*row*srcimg.Cols());
-      p2=(__m128i*)(srcimg.data+(2*row+1)*srcimg.Cols());
+      p_dest=(__m128i*)(dstimg.GetData()+row*dstimg.Cols());
+      p1=(__m128i*)(srcimg.GetData()+2*row*srcimg.Cols());
+      p2=(__m128i*)(srcimg.GetData()+(2*row+1)*srcimg.Cols());
     }
   }
 }
 
-inline void BriskLayer::twothirdsample(const GrayImage& srcimg, GrayImage& dstimg) {
+inline void BriskLayer::twothirdsample(const Image<unsigned char>& srcimg,
+                                       Image<unsigned char>& dstimg) {
   const unsigned short leftoverCols = ((srcimg.Cols()/3)*3)%15;// take care with border...
 
   // make sure the destination image is of the right size:
@@ -1959,10 +1985,10 @@ inline void BriskLayer::twothirdsample(const GrayImage& srcimg, GrayImage& dstim
   register __m128i store_mask = _mm_set_epi8 (0,0,0,0,0,0,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80);
 
   // data pointers:
-  unsigned char* p1=srcimg.data;
+  unsigned char* p1=srcimg.GetData();
   unsigned char* p2=p1+srcimg.Cols();
   unsigned char* p3=p2+srcimg.Cols();
-  unsigned char* p_dest1 = dstimg.data;
+  unsigned char* p_dest1 = dstimg.GetData();
   unsigned char* p_dest2 = p_dest1+dstimg.Cols();
   unsigned char* p_end=p1+(srcimg.Cols()*srcimg.Rows());
 
@@ -2029,10 +2055,11 @@ inline void BriskLayer::twothirdsample(const GrayImage& srcimg, GrayImage& dstim
     row_dest+=2;
 
     // reset pointers
-    p1=srcimg.data+row*srcimg.Cols();
+    p1=srcimg.GetData()+row*srcimg.Cols();
     p2=p1+srcimg.Cols();
     p3=p2+srcimg.Cols();
-    p_dest1 = dstimg.data+row_dest*dstimg.Cols();
+    p_dest1 = dstimg.GetData()+row_dest*dstimg.Cols();
     p_dest2 = p_dest1+dstimg.Cols();
   }
 }
+}  // namespace theia

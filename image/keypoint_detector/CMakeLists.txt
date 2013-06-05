@@ -35,18 +35,18 @@ CC_LIBRARY(agast_detector agast_detector.cc
   agast)
 
 # Helper library for BRISK detector.
-#CC_LIBRARY(brisk_impl brisk_impl.cc
-#  image/keypoint_detector/keypoint
-#  image/image
-#  agast)
+CC_LIBRARY(brisk_impl brisk_impl.cc
+ image/keypoint_detector/keypoint
+ image/image
+ agast)
 
 # BRIEF detector.
-# CC_LIBRARY(brisk_detector brisk_detector.cc
-#   image/keypoint_detector/brisk_impl
-#   image/keypoint_detector/keypoint_detector
-#   image/keypoint_detector/keypoint
-#   image/image
-#   agast)
+CC_LIBRARY(brisk_detector brisk_detector.cc
+  image/keypoint_detector/brisk_impl
+  image/keypoint_detector/keypoint_detector
+  image/keypoint_detector/keypoint
+  image/image
+  agast)
 
 IF (${BUILD_TESTING})
   GTEST(fast_detector_test image/keypoint_detector/fast_detector)

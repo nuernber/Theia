@@ -1,6 +1,6 @@
 /*
   BRISK reference implementation, modified to remove OpenCV dependency and use
-  libCVD instead.
+  Theia's Image class instead.
   Changes Copyright (C) 2013 Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
   BRISK - Binary Robust Invariant Scalable Keypoints
@@ -40,6 +40,7 @@
 #ifndef IMAGE_KEYPOINT_DETECTOR_BRISK_IMPL_H_
 #define IMAGE_KEYPOINT_DETECTOR_BRISK_IMPL_H_
 
+#include "image/image.h"
 #include <agast/oast9_16.h>
 #include <agast/agast7_12s.h>
 #include <agast/agast5_8.h>
@@ -50,7 +51,8 @@
 #define M_PI 3.141592653589793
 #endif
 
-namespace brisk {
+namespace theia {
+class Keypoint;
 
 // some helper structures for the Brisk pattern representation
 struct BriskPatternPoint{
@@ -149,6 +151,7 @@ class BriskDescriptorExtractor {
   static const float basicSize_;
 };
 */
+
 // a layer in the Brisk detector pyramid
 class BriskLayer {
  public:
@@ -158,13 +161,12 @@ class BriskLayer {
     static const int TWOTHIRDSAMPLE = 1;
   };
   // construct a base layer
-  BriskLayer(const GrayImage& img, float scale=1.0f, float offset=0.0f);
+  BriskLayer(const Image<unsigned char>& img, float scale=1.0f, float offset=0.0f);
   // derive a layer
   BriskLayer(const BriskLayer& layer, int mode);
 
   // Fast/Agast without non-max suppression
-  void getAgastPoints(uint8_t threshold,
-                      std::vector<agast::CvPoint>& keypoints);
+  void getAgastPoints(uint8_t threshold, std::vector<CvPoint>& keypoints);
 
   // get scores - NOTE: this is in layer coordinates, not scale=1 coordinates!
   inline uint8_t getAgastScore(int x, int y, uint8_t threshold);
@@ -173,23 +175,23 @@ class BriskLayer {
   inline uint8_t getAgastScore_5_8(int x, int y, uint8_t threshold);
 
   // accessors
-  inline const GrayImage& img() const {return img_;}
-  inline const GrayImage& scores() const {return scores_;}
+  inline const Image<unsigned char>& img() const {return img_;}
+  inline const Image<unsigned char>& scores() const {return scores_;}
   inline float scale() const {return scale_;}
   inline float offset() const {return offset_;}
 
   // half sampling
-  static inline void halfsample(const GrayImage& srcimg, GrayImage* dstimg);
+  static inline void halfsample(const Image<unsigned char>& srcimg, Image<unsigned char>* dstimg);
   // two third sampling
-  static inline void twothirdsample(const GrayImage& srcimg, GrayImage* dstimg);
+  static inline void twothirdsample(const Image<unsigned char>& srcimg, Image<unsigned char>* dstimg);
 
  private:
   // access gray values (smoothed/interpolated)
-  inline uint8_t value(const GrayImage& mat, float xf, float yf, float scale);
+  inline uint8_t value(const Image<unsigned char>& mat, float xf, float yf, float scale);
   // the image
-  GrayImage img_;
+  Image<unsigned char> img_;
   // its Fast scores
-  GrayImage scores_;
+  Image<unsigned char> scores_;
   // coordinate transformation
   float scale_;
   float offset_;
@@ -205,10 +207,10 @@ class BriskScaleSpace {
   ~BriskScaleSpace() {}
 
   // construct the image pyramids
-  void constructPyramid(const GrayImage& image);
+  void constructPyramid(const Image<unsigned char>& image);
 
   // get Keypoints
-  void getKeypoints(const uint8_t _threshold, std::vector<KeyPoint*>* keypoints);
+  void getKeypoints(const uint8_t _threshold, std::vector<Keypoint*>* keypoints);
 
  private:
   // nonmax suppression:

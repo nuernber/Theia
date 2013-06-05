@@ -33,9 +33,7 @@
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
 #include "image/image.h"
-#include "image/keypoint_detector/agast_detector.h"
 #include "image/keypoint_detector/brisk_detector.h"
-#include "image/keypoint_detector/brisk_helpers.h"
 #include "image/keypoint_detector/keypoint.h"
 
 #include <vector>
@@ -43,7 +41,8 @@
 namespace theia {
 bool BriskDetector::DetectKeypoints(const GrayImage& image,
                                     std::vector<Keypoint*>* keypoints) {
-  briskScaleSpace.constructPyramid(image);
+  Image<unsigned char> uchar_image = image.ConvertTo<unsigned char>();
+  briskScaleSpace.constructPyramid(uchar_image);
   briskScaleSpace.getKeypoints(threshold, keypoints);
 }
 }  // namespace theia
