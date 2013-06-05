@@ -69,35 +69,46 @@ AgastDetector::AgastDetector(AstPattern pattern,
   ast_detector_->set_threshold(threshold);
 }
 
+void AgastDetector::SetThreshold(int threshold) {
+  ast_detector_->set_threshold(threshold);
+}
+
 bool AgastDetector::DetectKeypoints(const GrayImage& image,
                                     std::vector<Keypoint*>* keypoints) {
   ast_detector_->set_imageSize(image.Cols(), image.Rows());
   // Convert to uchar for algorithm.
   Image<unsigned char> uchar_image = image.ConvertTo<unsigned char>();
-  // Detect keypoints.
-  ast_detector_->detect(uchar_image.GetData());
+
 
   // Perform nonmax suppresion if necessary.
-  std::vector<struct agast::CvPoint> ast_keypoints;
   // TODO(cmsweeney): investigate how well the branch predictor is at making
   // this an efficient if statement for repeated calls of DetectKeypoints. If it
   // is wasting too much time, we could use a function pointer here and
   // initialize it in the constructor based on the nonmax_suppresion parameter.
-  if (nonmax_suppression_)
-    ast_keypoints = ast_detector_->nms(uchar_image.GetData());
+  std::vector<struct CvPoint> ast_keypoints;
+  if (nonmax_suppression_) {
+    std::vector<struct CvPoint> ast_nms_keypoints;
+
+    // Detect keypoints.
+    ast_detector_->detect(uchar_image.GetData(), ast_nms_keypoints);
+
+    ast_detector_->nms(uchar_image.GetData(),
+                       ast_nms_keypoints,
+                       ast_keypoints);
+  } else {
+    // Detect keypoints.
+    ast_detector_->detect(uchar_image.GetData(), ast_keypoints);
+  }
 
   keypoints->reserve(ast_keypoints.size());
-  for (struct agast::CvPoint ast_point : ast_keypoints) {
-    // TODO(cmsweeney): add score by cornerScore method. This will require
-    // moving cornerScore to public. The function takes a pointer so it will be
-    // something like ast_detector->cornerScore(image.GetData() + ast_point.x +
-    // ast_point.y*image.Cols())
-    keypoints->push_back(new Keypoint(ast_point.x,
-                                      ast_point.y,
-                                      Keypoint::AGAST));
+  for (struct CvPoint ast_point : ast_keypoints) {
+    Keypoint* new_keypoint = new Keypoint(ast_point.x,
+                                          ast_point.y,
+                                          Keypoint::AGAST);
+    new_keypoint->set_strength(ast_detector_->cornerScore(
+        uchar_image.GetData() + ast_point.x + ast_point.y*uchar_image.Cols()));
+                                                          
+    keypoints->push_back(new_keypoint);
   }
-}
-void AgastDetector::SetThreshold(int threshold) {
-  ast_detector_->set_threshold(threshold);
 }
 }  // namespace theia

@@ -103,9 +103,9 @@ int main(int argc, char *argv[]) {
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
   image_canvas.AddImage(image_left);
-  image_canvas.DrawFeatures(left_descriptors, theia::RGBPixel(1.0, 0, 0));
+  image_canvas.DrawFeatures(pruned_descriptors, theia::RGBPixel(1.0, 0, 0), 0.2);
   image_canvas.AddImage(image_right);
-  image_canvas.DrawFeatures(right_descriptors, theia::RGBPixel(0, 0, 1.0));
+  image_canvas.DrawFeatures(1, right_descriptors, theia::RGBPixel(0, 0, 1.0), 0.2);
   image_canvas.Write(FLAGS_img_output_dir +
                      std::string("/agast_keypoints.png"));
 }

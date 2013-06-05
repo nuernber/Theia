@@ -56,6 +56,7 @@ class AgastDetector : public KeypointDetector {
     AGAST7_12S,
     OAST9_16
   };
+  
   // There are multiple patterns you can use for the AGAST detector. As the
   // pattern grows, the cost for computing keypoints increases. See the paper
   // for more details. The threshold should be specified, as well as whether
@@ -68,6 +69,11 @@ class AgastDetector : public KeypointDetector {
 
   ~AgastDetector() {}
 
+  // Change the threshold for corner scores. You can do this without having to
+  // create a new object, as this is performed per image.
+  void SetThreshold(int threshold);
+
+  // Detect the AGAST keypoints in the image.
   bool DetectKeypoints(const GrayImage& image,
                        std::vector<Keypoint*>* keypoints);
   void SetThreshold(int threshold);
