@@ -33,7 +33,7 @@
 #include "oast9_16.h"
 
 using namespace std;
-namespace {
+namespace agast {
 //using also bisection as proposed by Edward Rosten in FAST,
 //but it is based on the OAST
 int OastDetector9_16::cornerScore(const unsigned char* p)
