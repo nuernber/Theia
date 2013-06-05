@@ -50,7 +50,7 @@ class Keypoint;
 class BriskDetector : public KeypointDetector {
  public:
   BriskDetector(int thresh, int octaves) : threshold_(thresh),
-                                           octaves_(octaves) {}
+                                           brisk_scale_space_(octaves) {}
   BriskDetector(int thresh) : BriskDetector(thresh, 3) {}
 
   ~BriskDetector() {}
@@ -60,7 +60,7 @@ class BriskDetector : public KeypointDetector {
 
  private:
   int threshold_;
-  int octaves_;
+  brisk::BriskScaleSpace brisk_scale_space_;
 };
 }  // namespace theia
 

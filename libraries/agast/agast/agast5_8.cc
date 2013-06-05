@@ -41,7 +41,7 @@
 #include "agast5_8.h"
 
 using namespace std;
-
+namespace agast {
 vector<CvPoint>& AgastDetector5_8::detect(const unsigned char* im)
 {
 	int total=0;
@@ -796,5 +796,5 @@ success_structured:
 	}										
 	return corners_all;
 }
-
+}  // namespace agast
 //end of file

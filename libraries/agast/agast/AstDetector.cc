@@ -30,7 +30,7 @@
 #include "cvWrapper.h"
 
 using namespace std;
-
+namespace agast {
 void AstDetector::score(const unsigned char* i)
 {
 	unsigned int n=0;
@@ -61,4 +61,5 @@ vector<CvPoint>& AstDetector::nms(const unsigned char* im)
 {
 	score(im);
 	return nonMaximumSuppression();
+}
 }

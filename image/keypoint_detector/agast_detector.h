@@ -72,7 +72,7 @@ class AgastDetector : public KeypointDetector {
                        std::vector<Keypoint*>* keypoints);
   void SetThreshold(int threshold);
  private:
-  std::unique_ptr<AstDetector> ast_detector_;
+  std::unique_ptr<agast::AstDetector> ast_detector_;
 
   bool nonmax_suppression_;
 };

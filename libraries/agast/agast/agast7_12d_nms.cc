@@ -33,7 +33,7 @@
 #include "agast7_12d.h"
 
 using namespace std;
-
+namespace agast {
 //using also bisection as proposed by Edward Rosten in FAST,
 //but it is based on the OAST
 int AgastDetector7_12d::cornerScore(const unsigned char* p)
@@ -1246,3 +1246,4 @@ int AgastDetector7_12d::cornerScore(const unsigned char* p)
 	}
 }
 
+}

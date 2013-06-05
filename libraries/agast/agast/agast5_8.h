@@ -32,7 +32,7 @@
 
 #include <stdint.h>
 #include "AstDetector.h"
-
+namespace agast {
 struct CvPoint;
 
 class AgastDetector5_8 : public AstDetector
@@ -69,5 +69,5 @@ class AgastDetector5_8 : public AstDetector
 			s_offset7=(-1)+(1)*xsize;
 		}
 };
-
+}  // namespace agast
 #endif /* AGAST5_8_H */

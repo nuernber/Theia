@@ -40,7 +40,7 @@
 #include "oast9_16.h"
 
 using namespace std;
-
+namespace agast {
 vector<CvPoint>& OastDetector9_16::detect(const unsigned char* im)
 {
 	int total=0;
@@ -2136,5 +2136,5 @@ vector<CvPoint>& OastDetector9_16::detect(const unsigned char* im)
 	}										
 	return corners_all;
 }
-
+}
 //end of file

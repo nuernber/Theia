@@ -41,7 +41,7 @@
 #include "agast7_12s.h"
 
 using namespace std;
-
+namespace agast {
 vector<CvPoint>& AgastDetector7_12s::detect(const unsigned char* im)
 {
 	int total=0;
@@ -2117,5 +2117,5 @@ success_structured:
 	}										
 	return corners_all;
 }
-
+}
 //end of file

@@ -28,16 +28,12 @@
 
 #ifndef CVWRAPPER_H_
 #define CVWRAPPER_H_
-
-#ifdef HAVE_OPENCV
-	#include <cv.h>
-#else
+namespace agast {
 	typedef struct CvPoint
 	{
 		int x;
 		int y;
 	}
 	CvPoint;
-#endif
-
+}
 #endif /* CVWRAPPER_H_ */

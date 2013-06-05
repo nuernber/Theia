@@ -35,7 +35,7 @@
 
 using namespace std;
 
-
+namespace agast {
 vector<CvPoint>& AstDetector::nonMaximumSuppression()
 {
 	int currCorner_ind;
@@ -165,3 +165,4 @@ vector<CvPoint>& AstDetector::nonMaximumSuppression()
 	return corners_nms;
 }
 
+}

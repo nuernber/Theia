@@ -33,7 +33,7 @@
 #include "agast5_8.h"
 
 using namespace std;
-
+namespace agast {
 //using also bisection as proposed by Edward Rosten in FAST,
 //but it is based on the OAST
 int AgastDetector5_8::cornerScore(const unsigned char* p)
@@ -397,3 +397,4 @@ int AgastDetector5_8::cornerScore(const unsigned char* p)
 }
 
 
+}  // namespace agast

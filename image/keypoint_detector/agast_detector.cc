@@ -52,16 +52,16 @@ AgastDetector::AgastDetector(AstPattern pattern,
     : nonmax_suppression_(nonmax_suppression) {
   switch (pattern) {
     case AGAST5_8:
-      ast_detector_.reset(new AgastDetector5_8());
+      ast_detector_.reset(new agast::AgastDetector5_8());
       break;
     case AGAST7_12D:
-      ast_detector_.reset(new AgastDetector7_12d());
+      ast_detector_.reset(new agast::AgastDetector7_12d());
       break;
     case AGAST7_12S:
-      ast_detector_.reset(new AgastDetector7_12s());
+      ast_detector_.reset(new agast::AgastDetector7_12s());
       break;
     case OAST9_16:
-      ast_detector_.reset(new OastDetector9_16());
+      ast_detector_.reset(new agast::OastDetector9_16());
       break;
     default:
       break;
@@ -79,7 +79,7 @@ bool AgastDetector::DetectKeypoints(const GrayImage& image,
   ast_detector_->detect(uchar_image.GetData());
 
   // Perform nonmax suppresion if necessary.
-  std::vector<struct CvPoint> ast_keypoints;
+  std::vector<struct agast::CvPoint> ast_keypoints;
   // TODO(cmsweeney): investigate how well the branch predictor is at making
   // this an efficient if statement for repeated calls of DetectKeypoints. If it
   // is wasting too much time, we could use a function pointer here and

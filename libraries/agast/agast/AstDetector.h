@@ -31,7 +31,7 @@
 
 #include <vector>
 #include "cvWrapper.h"
-
+namespace agast {
 class AstDetector
 {
 	public:
@@ -60,5 +60,5 @@ class AstDetector
 		int xsize, ysize;
 		int b;
 };
-
+}  // namespace agast
 #endif /* AGASTDETECTOR_H */

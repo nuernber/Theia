@@ -43,11 +43,7 @@
 namespace theia {
 bool BriskDetector::DetectKeypoints(const GrayImage& image,
                                     std::vector<Keypoint*>* keypoints) {
-  BriskScaleSpace briskScaleSpace(octaves);
   briskScaleSpace.constructPyramid(image);
-  briskScaleSpace.getKeypoints(threshold,keypoints);
-
-  // remove invalid points
-  removeInvalidPoints(mask, keypoints);
+  briskScaleSpace.getKeypoints(threshold, keypoints);
 }
 }  // namespace theia

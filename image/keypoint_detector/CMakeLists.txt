@@ -27,7 +27,22 @@ CC_LIBRARY(sift_detector sift_detector.cc
   image/image
   vlfeat)
 
+# Agast (improved Fast method) detector.
 CC_LIBRARY(agast_detector agast_detector.cc
+  image/keypoint_detector/keypoint_detector
+  image/keypoint_detector/keypoint
+  image/image
+  agast)
+
+# Helper library for BRIEF detector.
+CC_LIBRARY(brief_impl brief_impl.cc
+  image/keypoint_detector/keypoint
+  image/image
+  agast)
+
+# BRIEF detector.
+CC_LIBRARY(brief_detector brief_detector.cc
+  image/keypoint_detector/brief_impl
   image/keypoint_detector/keypoint_detector
   image/keypoint_detector/keypoint
   image/image
