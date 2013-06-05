@@ -1648,35 +1648,35 @@ BriskLayer::BriskLayer(const Image<unsigned char>& img, float scale, float offse
   scale_=scale;
   offset_=offset;
   // create an agast detector
-  oastDetector_ = new agast::OastDetector9_16(img.Cols(), img.Rows(), 0);
-  agastDetector_5_8_ = new agast::AgastDetector5_8(img.Cols(), img.Rows(), 0);
+  oastDetector_.reset(new agast::OastDetector9_16(img.Cols(), img.Rows(), 0));
+  agastDetector_5_8_.reset(new agast::AgastDetector5_8(img.Cols(), img.Rows(), 0));
 }
 // derive a layer
 BriskLayer::BriskLayer(const BriskLayer& layer, int mode) {
   if (mode==CommonParams::HALFSAMPLE) {
-    img_.create(layer.img().Rows()/2, layer.img().Cols()/2,CV_8U);
+    img_ = Image<unsigned char>(layer.img().Rows()/2, layer.img().Cols()/2);
     // TODO(cmsweeney): change this to CVD?
     halfsample(layer.img(), img_);
     scale_= layer.scale()*2;
     offset_=0.5*scale_-0.5;
   } else {
-    img_.create(2*(layer.img().Rows()/3), 2*(layer.img().Cols()/3),CV_8U);
+    img_ = Image<unsigned char>(2*(layer.img().Rows()/3), 2*(layer.img().Cols()/3));
     // TODO(cmsweeney): chagne this to CVD?
     twothirdsample(layer.img(), img_);
     scale_= layer.scale()*1.5;
     offset_=0.5*scale_-0.5;
   }
   scores_=Image<unsigned char>(img_.Rows(), img_.Cols(), 0.0);
-  oastDetector_ = new agast::OastDetector9_16(img_.Cols(), img_.Rows(), 0);
-  agastDetector_5_8_ = new agast::AgastDetector5_8(img_.Cols(), img_.Rows(), 0);
+  oastDetector_.reset(new agast::OastDetector9_16(img_.Cols(), img_.Rows(), 0));
+  agastDetector_5_8_.reset(new agast::AgastDetector5_8(img_.Cols(), img_.Rows(), 0));
 }
 
 // Fast/Agast
 // wraps the agast class
 void BriskLayer::getAgastPoints(uint8_t threshold,
-                                std::vector<agast::CvPoint>& keypoints) {
+                                std::vector<CvPoint>& keypoints) {
   oastDetector_->set_threshold(threshold);
-  oastDetector_->detect(img_.data,keypoints);
+  oastDetector_->detect(img_.GetData(),keypoints);
 
   // also write scores
   const int num=keypoints.size();
@@ -1684,17 +1684,17 @@ void BriskLayer::getAgastPoints(uint8_t threshold,
 
   for (int i=0; i<num; i++) {
     const int offs=keypoints[i].x+keypoints[i].y*imcols;
-    *(scores_.data+offs)=oastDetector_->cornerScore(img_.data+offs);
+    *(scores_.GetData()+offs)=oastDetector_->cornerScore(img_.GetData()+offs);
   }
 }
 
 inline uint8_t BriskLayer::getAgastScore(int x, int y, uint8_t threshold) {
   if (x<3||y<3) return 0;
   if (x>=img_.Cols()-3||y>=img_.Rows()-3) return 0;
-  uint8_t& score=*(scores_.data+x+y*scores_.Cols());
+  uint8_t& score=*(scores_.GetData()+x+y*scores_.Cols());
   if (score>2) { return score; }
   oastDetector_->set_threshold(threshold-1);
-  score = oastDetector_->cornerScore(img_.data+x+y*img_.Cols());
+  score = oastDetector_->cornerScore(img_.GetData()+x+y*img_.Cols());
   if (score<threshold) score = 0;
   return score;
 }
@@ -1703,7 +1703,7 @@ inline uint8_t BriskLayer::getAgastScore_5_8(int x, int y, uint8_t threshold) {
   if (x<2||y<2) return 0;
   if (x>=img_.Cols()-2||y>=img_.Rows()-2) return 0;
   agastDetector_5_8_->set_threshold(threshold-1);
-  uint8_t score = agastDetector_5_8_->cornerScore(img_.data+x+y*img_.Cols());
+  uint8_t score = agastDetector_5_8_->cornerScore(img_.GetData()+x+y*img_.Cols());
   if (score<threshold) score = 0;
   return score;
 }
@@ -1759,7 +1759,7 @@ inline uint8_t BriskLayer::value(const Image<unsigned char>& mat,
     const int r_y=(yf-y)*1024;
     const int r_x_1=(1024-r_x);
     const int r_y_1=(1024-r_y);
-    uchar* ptr=image.data+x+y*imagecols;
+    const uchar* ptr=image.GetData()+x+y*imagecols;
     // just interpolate:
     ret_val=(r_x_1*r_y_1*int(*ptr));
     ptr++;
@@ -1805,7 +1805,7 @@ inline uint8_t BriskLayer::value(const Image<unsigned char>& mat,
   const int r_y1_i=r_y1*scaling;
 
   // now the calculation:
-  uchar* ptr=image.GetData()+x_left+imagecols*y_top;
+  const uchar* ptr=image.GetData()+x_left+imagecols*y_top;
   // first row:
   ret_val=A*int(*ptr);
   ptr++;
@@ -1816,7 +1816,7 @@ inline uint8_t BriskLayer::value(const Image<unsigned char>& mat,
   ret_val+=B*int(*ptr);
   // middle ones:
   ptr+=imagecols-dx-1;
-  uchar* end_j=ptr+dy*imagecols;
+  const uchar* end_j=ptr+dy*imagecols;
   for (; ptr<end_j; ptr+=imagecols-dx-1) {
     ret_val+=r_x_1_i*int(*ptr);
     ptr++;
@@ -1985,12 +1985,12 @@ inline void BriskLayer::twothirdsample(const Image<unsigned char>& srcimg,
   register __m128i store_mask = _mm_set_epi8 (0,0,0,0,0,0,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80);
 
   // data pointers:
-  unsigned char* p1=srcimg.GetData();
-  unsigned char* p2=p1+srcimg.Cols();
-  unsigned char* p3=p2+srcimg.Cols();
+  const unsigned char* p1=srcimg.GetData();
+  const unsigned char* p2=p1+srcimg.Cols();
+  const unsigned char* p3=p2+srcimg.Cols();
   unsigned char* p_dest1 = dstimg.GetData();
   unsigned char* p_dest2 = p_dest1+dstimg.Cols();
-  unsigned char* p_end=p1+(srcimg.Cols()*srcimg.Rows());
+  const unsigned char* p_end=p1+(srcimg.Cols()*srcimg.Rows());
 
   unsigned int row=0;
   unsigned int row_dest=0;

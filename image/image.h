@@ -119,7 +119,8 @@ class Image : public SubImage<T> {
   // Read from file.
   explicit Image(std::string filename);
   // Initialize empty image.
-  explicit Image(int rows, int cols);
+  Image(int rows, int cols);
+  Image(int rows, int cols, T val);
 
   static Image<T> Zeros(int rows, int cols);
   // Convert to other image types.
@@ -211,6 +212,13 @@ template <typename T>
 Image<T>::Image(int rows, int cols) {
   image_.resize(CVD::ImageRef(cols, rows));
   image_.zero();
+  sub_image_ = image_;
+}
+
+template <typename T>
+Image<T>::Image(int rows, int cols, T val) {
+  image_.resize(CVD::ImageRef(cols, rows));
+  image_.fill(val);
   sub_image_ = image_;
 }
 

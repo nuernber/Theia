@@ -181,9 +181,9 @@ class BriskLayer {
   inline float offset() const {return offset_;}
 
   // half sampling
-  static inline void halfsample(const Image<unsigned char>& srcimg, Image<unsigned char>* dstimg);
+  static inline void halfsample(const Image<unsigned char>& srcimg, Image<unsigned char>& dstimg);
   // two third sampling
-  static inline void twothirdsample(const Image<unsigned char>& srcimg, Image<unsigned char>* dstimg);
+  static inline void twothirdsample(const Image<unsigned char>& srcimg, Image<unsigned char>& dstimg);
 
  private:
   // access gray values (smoothed/interpolated)
@@ -196,8 +196,8 @@ class BriskLayer {
   float scale_;
   float offset_;
   // agast
-  std::unique_ptr<agast::OastDetector9_16> oastDetector_;
-  std::unique_ptr<agast::AgastDetector5_8> agastDetector_5_8_;
+  std::shared_ptr<agast::OastDetector9_16> oastDetector_;
+  std::shared_ptr<agast::AgastDetector5_8> agastDetector_5_8_;
 };
 
 class BriskScaleSpace {
