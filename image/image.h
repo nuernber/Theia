@@ -247,6 +247,7 @@ const SubImage<T> Image<T>::GetSubImage(int row, int col,
                                       CVD::ImageRef(num_cols, num_rows)));
 }
 
+template <typename T>
 inline double Image<T>::Gaussian(double x, double mu, double sigma) {
   return std::exp(-(x - mu)*(x - mu)/(2.0*sigma*sigma));
 }
