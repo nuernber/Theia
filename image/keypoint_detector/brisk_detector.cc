@@ -32,11 +32,12 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "image/image.h"
 #include "image/keypoint_detector/brisk_detector.h"
-#include "image/keypoint_detector/keypoint.h"
 
 #include <vector>
+
+#include "image/image.h"
+#include "image/keypoint_detector/keypoint.h"
 
 namespace theia {
 bool BriskDetector::DetectKeypoints(const GrayImage& image,

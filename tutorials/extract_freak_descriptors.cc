@@ -34,6 +34,8 @@
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
+#include <time.h>
+
 #include <string>
 #include <vector>
 
@@ -42,7 +44,6 @@
 #include "image/descriptor/freak_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/brisk_detector.h"
-
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
@@ -73,11 +74,16 @@ int main(int argc, char *argv[]) {
   FreakDescriptorExtractor freak_extractor(false, false, 1);
   freak_extractor.Initialize();
   std::vector<FreakDescriptor*> pruned_descriptors;
+  clock_t t;
+  t = clock();
   freak_extractor.ComputeDescriptorsPruned(image,
                                            keypoints,
                                            &pruned_descriptors);
+  t = clock() - t;
+  VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
+          << " to extract FREAK descriptors";
   VLOG(0) << "pruned descriptors size = " << pruned_descriptors.size();
-  
+
   // Match descriptors!
 
   // Get an image canvas to draw the features on.

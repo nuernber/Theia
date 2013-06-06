@@ -297,7 +297,7 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
 
     // next the edges:
     const int* ptr_integral = integral.GetData() + x_left +
-                              integralcols*y_top+1; 
+                              integralcols*y_top+1;
     // find a simple path through the different surface corners
     const int tmp1 = (*ptr_integral);
     ptr_integral+=dx;
@@ -322,7 +322,7 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
     const int tmp11 = (*ptr_integral);
     ptr_integral++;
     const int tmp12 = (*ptr_integral);
-    
+
     // assign the weighted surface integrals:
     const int upper = (tmp3-tmp2+tmp1-tmp12)*r_y_1_i;
     const int middle = (tmp6-tmp3+tmp12-tmp9)*scaling;
@@ -508,8 +508,8 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
     for (unsigned int i = 0; i<points_; i++) {
       /*
         VLOG(0) << "smoothed intensity settings: " << x << ", " << y
-              << ", " << scale << ", " << theta << ", " << i;
-      VLOG(0) << "border = " << size_list_[scale];
+        << ", " << scale << ", " << theta << ", " << i;
+        VLOG(0) << "border = " << size_list_[scale];
       */
       *(pvalues++) = smoothedIntensity(uchar_image, _integral, x,
                                        y, scale, theta, i);

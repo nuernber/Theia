@@ -40,12 +40,15 @@
 #ifndef IMAGE_KEYPOINT_DETECTOR_BRISK_IMPL_H_
 #define IMAGE_KEYPOINT_DETECTOR_BRISK_IMPL_H_
 
-#include "image/image.h"
 #include <agast/oast9_16.h>
 #include <agast/agast7_12s.h>
 #include <agast/agast5_8.h>
 #include <agast/cvWrapper.h>
 #include <emmintrin.h>
+
+#include <vector>
+
+#include "image/image.h"
 
 #ifndef M_PI
 #define M_PI 3.141592653589793
@@ -63,7 +66,9 @@ class BriskLayer {
     static const int TWOTHIRDSAMPLE = 1;
   };
   // construct a base layer
-  BriskLayer(const Image<unsigned char>& img, float scale=1.0f, float offset=0.0f);
+  BriskLayer(const Image<unsigned char>& img,
+             float scale = 1.0f,
+             float offset = 0.0f);
   // derive a layer
   BriskLayer(const BriskLayer& layer, int mode);
 

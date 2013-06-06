@@ -34,6 +34,7 @@
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
+#include <time.h>
 #include <string>
 #include <vector>
 
@@ -42,7 +43,6 @@
 #include "image/descriptor/brisk_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/brisk_detector.h"
-
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
@@ -72,12 +72,18 @@ int main(int argc, char *argv[]) {
   VLOG(0) << "extracting descriptors.";
   BriskDescriptorExtractor brisk_extractor(false, false, 1);
   brisk_extractor.Initialize();
+
+  clock_t t;
+  t = clock();
   std::vector<BriskDescriptor*> pruned_descriptors;
   brisk_extractor.ComputeDescriptorsPruned(image,
                                            keypoints,
                                            &pruned_descriptors);
+  t = clock() - t;
+  VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
+          << " to extract BRISK descriptors";
   VLOG(0) << "pruned descriptors size = " << pruned_descriptors.size();
-  
+
   // Match descriptors!
 
   // Get an image canvas to draw the features on.

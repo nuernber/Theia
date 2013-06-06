@@ -485,6 +485,7 @@ bool FreakDescriptorExtractor::ProtoToDescriptor(
 bool FreakDescriptorExtractor::DescriptorToProto(
     const std::vector<FreakDescriptor*>& descriptors,
     DescriptorsProto* proto) const {
+  for (const FreakDescriptor* descriptor : descriptors) {
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the float array to the proto.
     for (int i = 0; i < descriptor->Dimensions(); i++)

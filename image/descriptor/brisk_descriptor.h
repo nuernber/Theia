@@ -112,16 +112,16 @@ class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
 
   // Pattern Properties.
   // some helper structures for the Brisk pattern representation
-  struct BriskPatternPoint{
+  struct BriskPatternPoint {
     float x;         // x coordinate relative to center
     float y;         // x coordinate relative to center
     float sigma;     // Gaussian smoothing sigma
   };
-  struct BriskShortPair{
+  struct BriskShortPair {
     unsigned int i;  // index of the first pattern point
     unsigned int j;  // index of other pattern point
   };
-  struct BriskLongPair{
+  struct BriskLongPair {
     unsigned int i;  // index of the first pattern point
     unsigned int j;  // index of other pattern point
     int weighted_dx; // 1024.0/dx
