@@ -47,7 +47,9 @@ class Keypoint;
 
 // Detect keypoints using the BRISK method from "BRISK: Binary Robust Invariant
 // Scalable Keypoints" by Leutenegger et. al. (ICCV 2011). This is a version
-// ported from the reference implementation.
+// ported from the reference implementation. NOTE: because this is ported, the
+// files brisk_impl.h/.cc do not adhere to the same style guides as the rest of
+// the code and, as a result, are incredibly ugly.
 class BriskDetector : public KeypointDetector {
  public:
   BriskDetector(int thresh, int octaves) : threshold_(thresh),

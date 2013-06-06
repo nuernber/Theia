@@ -54,7 +54,8 @@ class BriskDescriptor : public BinaryDescriptor<512> {
 // BRISK Descriptor ported from reference code of Stefan Leutenegger, Margarita
 // Chli and Roland Siegwart, "BRISK: Binary Robust Invariant Scalable
 // Keypoints", in Proceedings of the IEEE International Conference on Computer
-// Vision (ICCV 2011).
+// Vision (ICCV 2011). NOTE: because this code is ported, it does not adhere to
+// the same style guides as the rest of the code.
 class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
  public:
   BriskDescriptorExtractor(bool rotation_invariant,
