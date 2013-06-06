@@ -398,6 +398,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
 }
 
 // simply take average on a square patch, not even gaussian approx
+// TODO(cmsweeney): check and make sure we can actually use GrayImage here. The
+// reference implementation assumes an unsigned char image.
 float FreakDescriptorExtractor::MeanIntensity(
     const GrayImage& image,
     const GrayImage& integral,
