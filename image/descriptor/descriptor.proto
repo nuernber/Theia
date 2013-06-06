@@ -78,6 +78,7 @@ message DescriptorProto {
     PATCH = 1;
     SIFT = 2;
     FREAK = 3;
+    BRISK = 4;
   }
   optional DescriptorType descriptor_type = 13;
 }

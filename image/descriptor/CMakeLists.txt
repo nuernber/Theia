@@ -30,6 +30,12 @@ CC_LIBRARY(sift_descriptor sift_descriptor.cc
   image/image
   vlfeat)
 
+# BRISK Descriptor
+CC_LIBRARY(brisk_descriptor brisk_descriptor.cc
+  image/descriptor/descriptor
+  image/descriptor/descriptor_proto
+  image/image)
+
 IF (${BUILD_TESTING})
   # Test for patch descriptor.
   GTEST(patch_descriptor_test

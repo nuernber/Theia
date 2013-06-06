@@ -47,7 +47,8 @@ enum DescriptorType {
   OTHER = 0,
   PATCH,
   SIFT,
-  FREAK
+  FREAK,
+  BRISK
 };
 
 // Helper struct so that we can overload the operator[]. Bitsets return a

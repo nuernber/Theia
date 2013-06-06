@@ -42,11 +42,13 @@ enum KeypointProto_KeypointType {
   KeypointProto_KeypointType_OTHER = 0,
   KeypointProto_KeypointType_FAST = 1,
   KeypointProto_KeypointType_HARRIS = 2,
-  KeypointProto_KeypointType_SIFT = 3
+  KeypointProto_KeypointType_SIFT = 3,
+  KeypointProto_KeypointType_AGAST = 4,
+  KeypointProto_KeypointType_BRISK = 5
 };
 bool KeypointProto_KeypointType_IsValid(int value);
 const KeypointProto_KeypointType KeypointProto_KeypointType_KeypointType_MIN = KeypointProto_KeypointType_OTHER;
-const KeypointProto_KeypointType KeypointProto_KeypointType_KeypointType_MAX = KeypointProto_KeypointType_SIFT;
+const KeypointProto_KeypointType KeypointProto_KeypointType_KeypointType_MAX = KeypointProto_KeypointType_BRISK;
 const int KeypointProto_KeypointType_KeypointType_ARRAYSIZE = KeypointProto_KeypointType_KeypointType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* KeypointProto_KeypointType_descriptor();
@@ -212,6 +214,8 @@ class KeypointProto : public ::google::protobuf::Message {
   static const KeypointType FAST = KeypointProto_KeypointType_FAST;
   static const KeypointType HARRIS = KeypointProto_KeypointType_HARRIS;
   static const KeypointType SIFT = KeypointProto_KeypointType_SIFT;
+  static const KeypointType AGAST = KeypointProto_KeypointType_AGAST;
+  static const KeypointType BRISK = KeypointProto_KeypointType_BRISK;
   static inline bool KeypointType_IsValid(int value) {
     return KeypointProto_KeypointType_IsValid(value);
   }

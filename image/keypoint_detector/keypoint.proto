@@ -51,6 +51,8 @@ message KeypointProto {
     FAST = 1;
     HARRIS = 2;
     SIFT = 3;
+    AGAST = 4;
+    BRISK = 5;
   }
   optional KeypointType keypoint_detector = 3;
   

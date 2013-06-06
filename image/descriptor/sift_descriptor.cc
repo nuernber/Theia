@@ -64,13 +64,13 @@ bool SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
   // width and height are different) then we must make a new filter. Adding this
   // statement will save the function from regenerating the filter for
   // successive calls with images of the same size (e.g. a video sequence).
-  if (sift_filter_ != NULL && (sift_filter_->width != image.Cols() ||
+  if (sift_filter_ != nullptr && (sift_filter_->width != image.Cols() ||
                                sift_filter_->height != image.Rows()))
     vl_sift_delete(sift_filter_);
 
   // If the filter has not been set (or was deleted in the previous if), then we
   // need to create a new filter.
-  if (sift_filter_ == NULL)
+  if (sift_filter_ == nullptr)
     sift_filter_ = vl_sift_new(image.Cols(), image.Rows(),
                                num_octaves_,
                                num_levels_,

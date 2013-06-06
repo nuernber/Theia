@@ -162,7 +162,8 @@ class Image : public SubImage<T> {
 
   // Compute the integral image where pixel (x, y) is equal to the sum of all
   // values in the rectangle from (0, 0) to (x, y).
-  Image<T> Integrate() const;
+  template<typename D = T>
+  Image<D> Integrate() const;
 
   // Resize using a Lanczos 3 filter.
   void Resize(int new_rows, int new_cols);
@@ -333,9 +334,10 @@ void Image<T>::GaussianBlur(double sigma) {
 }
 
 template <typename T>
-Image<T> Image<T>::Integrate() const {
-  CVD::Image<T> integral_image = CVD::integral_image(image_);
-  return Image<T>(integral_image);
+template <typename D>
+Image<D> Image<T>::Integrate() const {
+  CVD::Image<D> integral_image = CVD::integral_image(image_);
+  return Image<D>(integral_image);
 }
 
 template <typename T>

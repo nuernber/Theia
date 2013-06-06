@@ -141,7 +141,7 @@ void protobuf_AddDesc_image_2fdescriptor_2fdescriptor_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n!image/descriptor/descriptor.proto\022\005the"
     "ia\032&image/keypoint_detector/keypoint.pro"
-    "to\"\311\003\n\017DescriptorProto\022\025\n\rdescriptor_id\030"
+    "to\"\324\003\n\017DescriptorProto\022\025\n\rdescriptor_id\030"
     "\001 \001(\005\022\020\n\010image_id\030\002 \001(\005\022&\n\010keypoint\030\003 \001("
     "\0132\024.theia.KeypointProto\022\031\n\021binary_descri"
     "ptor\030\004 \001(\t\022\030\n\020float_descriptor\030\005 \003(\002\022\t\n\001"
@@ -151,10 +151,10 @@ void protobuf_AddDesc_image_2fdescriptor_2fdescriptor_2eproto() {
     "ptorProto.Color\022>\n\017descriptor_type\030\r \001(\016"
     "2%.theia.DescriptorProto.DescriptorType\032"
     "(\n\005Color\022\t\n\001r\030\001 \001(\002\022\t\n\001g\030\002 \001(\002\022\t\n\001b\030\003 \001("
-    "\002\";\n\016DescriptorType\022\t\n\005OTHER\020\000\022\t\n\005PATCH\020"
-    "\001\022\010\n\004SIFT\020\002\022\t\n\005FREAK\020\003\"F\n\020DescriptorsPro"
-    "to\0222\n\022feature_descriptor\030\001 \003(\0132\026.theia.D"
-    "escriptorProto", 614);
+    "\002\"F\n\016DescriptorType\022\t\n\005OTHER\020\000\022\t\n\005PATCH\020"
+    "\001\022\010\n\004SIFT\020\002\022\t\n\005FREAK\020\003\022\t\n\005BRISK\020\004\"F\n\020Des"
+    "criptorsProto\0222\n\022feature_descriptor\030\001 \003("
+    "\0132\026.theia.DescriptorProto", 625);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "image/descriptor/descriptor.proto", &protobuf_RegisterTypes);
   DescriptorProto::default_instance_ = new DescriptorProto();
@@ -185,6 +185,7 @@ bool DescriptorProto_DescriptorType_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
       return true;
     default:
       return false;
@@ -196,6 +197,7 @@ const DescriptorProto_DescriptorType DescriptorProto::OTHER;
 const DescriptorProto_DescriptorType DescriptorProto::PATCH;
 const DescriptorProto_DescriptorType DescriptorProto::SIFT;
 const DescriptorProto_DescriptorType DescriptorProto::FREAK;
+const DescriptorProto_DescriptorType DescriptorProto::BRISK;
 const DescriptorProto_DescriptorType DescriptorProto::DescriptorType_MIN;
 const DescriptorProto_DescriptorType DescriptorProto::DescriptorType_MAX;
 const int DescriptorProto::DescriptorType_ARRAYSIZE;

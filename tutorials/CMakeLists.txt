@@ -11,3 +11,10 @@ CC_BINARY(extract_freak_descriptors
   image/descriptor/freak_descriptor
   image/keypoint_detector/keypoint
   image/keypoint_detector/brisk_detector)
+
+CC_BINARY(extract_brisk_descriptors
+  image/image
+  image/image_canvas
+  image/descriptor/brisk_descriptor
+  image/keypoint_detector/keypoint
+  image/keypoint_detector/brisk_detector)

@@ -42,6 +42,9 @@
 
 #include "image/image.h"
 #include "image/keypoint_detector/keypoint.h"
+#ifndef THEIA_NO_PROTOCOL_BUFFERS
+#include "image/descriptor/descriptor.pb.h"
+#endif
 
 // It should be noted that this implementation is heavily derived from the
 // implementation provided by the authors online at
@@ -452,17 +455,50 @@ float FreakDescriptorExtractor::MeanIntensity(
   return ret_val;
 }
 
+// TODO(cmsweeney): write these protos!
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 bool FreakDescriptorExtractor::ProtoToDescriptor(
     const DescriptorsProto& proto,
     std::vector<FreakDescriptor*>* descriptors) const {
-
+  descriptors->reserve(proto.feature_descriptor_size());
+  for (const DescriptorProto& proto_descriptor: proto.feature_descriptor()) {
+    FreakDescriptor* descriptor = new FreakDescriptor;
+    CHECK_EQ(proto_descriptor.descriptor_type(), DescriptorProto::FREAK)
+        << "Descriptor in proto is not a patch descriptor.";
+    CHECK_EQ(proto_descriptor.float_descriptor_size(), descriptor->Dimensions())
+        << "Dimension mismatch in the proto and descriptors.";
+    descriptor->set_x(proto_descriptor.x());
+    descriptor->set_y(proto_descriptor.y());
+    descriptor->set_orientation(proto_descriptor.orientation());
+    descriptor->set_scale(proto_descriptor.scale());
+    if (proto_descriptor.has_strength())
+      descriptor->set_strength(proto_descriptor.strength());
+    
+    // Get float array.
+    for (int i = 0; i < descriptor->Dimensions(); i++)
+      (*descriptor)[i] = proto_descriptor.float_descriptor(i);
+    descriptors->push_back(descriptor);
+  }
+  return true;
 }
 
 bool FreakDescriptorExtractor::DescriptorToProto(
     const std::vector<FreakDescriptor*>& descriptors,
     DescriptorsProto* proto) const {
-
+    DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
+    // Add the float array to the proto.
+    for (int i = 0; i < descriptor->Dimensions(); i++)
+      descriptor_proto->add_float_descriptor((*descriptor)[i]);
+    // Set the proto type to patch.
+    descriptor_proto->set_descriptor_type(DescriptorProto::FREAK);
+    descriptor_proto->set_x(descriptor->x());
+    descriptor_proto->set_y(descriptor->y());
+    descriptor_proto->set_orientation(descriptor->orientation());
+    descriptor_proto->set_scale(descriptor->scale());
+    if (descriptor->has_strength())
+      descriptor_proto->set_strength(descriptor->strength());
+  }
+  return true;
 }
 #endif
 
