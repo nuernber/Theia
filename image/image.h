@@ -91,7 +91,7 @@ class SubImage {
   // Get a pointer to the data. Note this only returns a pointer to the first
   // position in the sub-image, so it is still possible to access pixels outside
   // of the subimage, since SubImages are pointers to data managed elsewhere.
-  T* GetData() { return sub_image_.data(); }
+  T* Data() { return sub_image_.data(); }
 
   // Return the current SubImage as an Image i.e. copy the data so that the
   // returned Image object owns the copy of the data.
@@ -146,8 +146,8 @@ class Image : public SubImage<T> {
   const CVD::Image<T>& GetCVDImage() const { return image_; }
 
   // Get a pointer to the data.
-  T* GetData() { return image_.data(); }
-  const T* GetData() const { return image_.data(); }
+  T* Data() { return image_.data(); }
+  const T* Data() const { return image_.data(); }
 
   // Extract SubImages from the Image. Note that this does not give ownership of
   // the data to the subimage, the original Image class still owns it.
@@ -159,6 +159,12 @@ class Image : public SubImage<T> {
   // Gaussian blur.
   void GaussianBlur(double sigma, Image<T>* out);
   void GaussianBlur(double sigma);
+
+  // Sampling techniques.
+  void HalfSample(Image<T>* dest);
+  Image<T> HalfSample();
+  void TwoThirdsSample(Image<T>* dest);
+  Image<T> TwoThirdsSample();
 
   // Compute the integral image where pixel (x, y) is equal to the sum of all
   // values in the rectangle from (0, 0) to (x, y).
@@ -331,6 +337,26 @@ void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
 template <typename T>
 void Image<T>::GaussianBlur(double sigma) {
   GaussianBlur(sigma, this);
+}
+
+template <typename T>
+void Image<T>::HalfSample(Image<T>* dest) {
+  CVD::halfSample(image_, dest->image_);
+}
+
+template <typename T>
+Image<T> Image<T>::HalfSample() {
+  return Image<T>(CVD::halfSample(image_));
+}
+
+template <typename T>
+void Image<T>::TwoThirdsSample(Image<T>* dest) {
+  CVD::twoThirdsSample(image_, dest->image_);
+}
+
+template <typename T>
+Image<T> Image<T>::TwoThirdsSample() {
+  return Image<T>(CVD::twoThirdsSample(image_));
 }
 
 template <typename T>

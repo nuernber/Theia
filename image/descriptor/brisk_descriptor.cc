@@ -237,7 +237,7 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
     const int r_y = (yf-y)*1024;
     const int r_x_1 = (1024-r_x);
     const int r_y_1 = (1024-r_y);
-    const uchar* ptr = image.GetData() + x + y*imagecols;
+    const uchar* ptr = image.Data() + x + y*imagecols;
     // just interpolate:
     ret_val = (r_x_1*r_y_1*int(*ptr));
     ptr++;
@@ -285,7 +285,7 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
   const int r_y1_i = r_y1*scaling;
   if (dx+dy>2) {
     // now the calculation:
-    const uchar* ptr = image.GetData() + x_left + imagecols*y_top;
+    const uchar* ptr = image.Data() + x_left + imagecols*y_top;
     // first the corners:
     ret_val = A*int(*ptr);
     ptr+=dx+1;
@@ -296,7 +296,7 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
     ret_val+=D*int(*ptr);
 
     // next the edges:
-    const int* ptr_integral = integral.GetData() + x_left +
+    const int* ptr_integral = integral.Data() + x_left +
                               integralcols*y_top+1;
     // find a simple path through the different surface corners
     const int tmp1 = (*ptr_integral);
@@ -335,7 +335,7 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
   }
 
   // now the calculation:
-  const uchar* ptr = image.GetData() + x_left + imagecols*y_top;
+  const uchar* ptr = image.Data() + x_left + imagecols*y_top;
   // first row:
   ret_val = A*int(*ptr);
   ptr++;

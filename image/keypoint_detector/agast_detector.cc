@@ -90,14 +90,14 @@ bool AgastDetector::DetectKeypoints(const GrayImage& image,
     std::vector<struct CvPoint> ast_nms_keypoints;
 
     // Detect keypoints.
-    ast_detector_->detect(uchar_image.GetData(), ast_nms_keypoints);
+    ast_detector_->detect(uchar_image.Data(), ast_nms_keypoints);
 
-    ast_detector_->nms(uchar_image.GetData(),
+    ast_detector_->nms(uchar_image.Data(),
                        ast_nms_keypoints,
                        ast_keypoints);
   } else {
     // Detect keypoints.
-    ast_detector_->detect(uchar_image.GetData(), ast_keypoints);
+    ast_detector_->detect(uchar_image.Data(), ast_keypoints);
   }
 
   keypoints->reserve(ast_keypoints.size());
@@ -106,7 +106,7 @@ bool AgastDetector::DetectKeypoints(const GrayImage& image,
                                           ast_point.y,
                                           Keypoint::AGAST);
     new_keypoint->set_strength(ast_detector_->cornerScore(
-        uchar_image.GetData() + ast_point.x + ast_point.y*uchar_image.Cols()));
+        uchar_image.Data() + ast_point.x + ast_point.y*uchar_image.Cols()));
                                                           
     keypoints->push_back(new_keypoint);
   }

@@ -91,7 +91,7 @@ bool SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
 
   // Calculate the first octave to process.
   int vl_status = vl_sift_process_first_octave(sift_filter_,
-                                               mutable_image.GetData());
+                                               mutable_image.Data());
   // Proceed through the octaves we reach the same one as the keypoint.
   while (sift_keypoint.o != sift_filter_->o_cur)
     vl_sift_process_next_octave(sift_filter_);
@@ -148,7 +148,7 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
 
   // Calculate the first octave to process.
   int vl_status = vl_sift_process_first_octave(sift_filter_,
-                                               mutable_image.GetData());
+                                               mutable_image.Data());
 
   // Proceed through the octaves we reach the same one as the keypoint.  We
   // first resize the descriptors vector so that the keypoint indicies will be
@@ -196,7 +196,7 @@ bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
 
   // Calculate the first octave to process.
   int vl_status = vl_sift_process_first_octave(sift_filter_,
-                                               mutable_image.GetData());
+                                               mutable_image.Data());
   // Process octaves until you can't anymore.
   while (vl_status != VL_ERR_EOF) {
     // Detect the keypoints.

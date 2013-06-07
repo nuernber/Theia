@@ -74,7 +74,7 @@ bool SiftDetector::DetectKeypoints(const GrayImage& image,
 
   // Calculate the first octave to process.
   int vl_status = vl_sift_process_first_octave(sift_filter_,
-                                               mutable_image.GetData());
+                                               mutable_image.Data());
   // Process octaves until you can't anymore.
   while (vl_status != VL_ERR_EOF) {
     // Detect the keypoints.

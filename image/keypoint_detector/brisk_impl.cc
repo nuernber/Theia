@@ -41,7 +41,9 @@
 #include <agast/agast5_8.h>
 #include <glog/logging.h>
 #include <stdlib.h>
+#ifdef THEIA_USE_SSE
 #include <tmmintrin.h>
+#endif
 
 namespace theia {
 namespace {
@@ -372,7 +374,7 @@ inline bool BriskScaleSpace::isMax2D(const uint8_t layer,
                                      const int x_layer, const int y_layer) {
   const Image<unsigned char>& scores = pyramid_[layer].scores();
   const int scorescols = scores.Cols();
-  const uchar* data=scores.GetData() + y_layer*scorescols + x_layer;
+  const uchar* data=scores.Data() + y_layer*scorescols + x_layer;
   // decision tree:
   const uchar center = (*data);
   data--;
@@ -439,10 +441,10 @@ inline bool BriskScaleSpace::isMax2D(const uint8_t layer,
   if (deltasize!=0) {
     // in this case, we have to analyze the situation more carefully:
     // the values are gaussian blurred and then we really decide
-    data=scores.GetData() + y_layer*scorescols + x_layer;
+    data=scores.Data() + y_layer*scorescols + x_layer;
     int smoothedcenter=4*center+2*(s_10+s10+s0_1+s01)+s_1_1+s1_1+s_11+s11;
     for (unsigned int i=0; i<deltasize;i+=2) {
-      data = scores.GetData() + (y_layer-1+delta[i+1])*scorescols +
+      data = scores.Data() + (y_layer-1+delta[i+1])*scorescols +
              x_layer+delta[i]-1;
       int othercenter=*data;
       data++;
@@ -1208,7 +1210,7 @@ BriskLayer::BriskLayer(const BriskLayer& layer, int mode) {
 void BriskLayer::getAgastPoints(uint8_t threshold,
                                 std::vector<CvPoint>& keypoints) {
   oastDetector_->set_threshold(threshold);
-  oastDetector_->detect(img_.GetData(),keypoints);
+  oastDetector_->detect(img_.Data(),keypoints);
 
   // also write scores
   const int num=keypoints.size();
@@ -1216,17 +1218,17 @@ void BriskLayer::getAgastPoints(uint8_t threshold,
 
   for (int i=0; i<num; i++) {
     const int offs=keypoints[i].x+keypoints[i].y*imcols;
-    *(scores_.GetData()+offs)=oastDetector_->cornerScore(img_.GetData()+offs);
+    *(scores_.Data()+offs)=oastDetector_->cornerScore(img_.Data()+offs);
   }
 }
 
 inline uint8_t BriskLayer::getAgastScore(int x, int y, uint8_t threshold) {
   if (x<3||y<3) return 0;
   if (x>=img_.Cols()-3||y>=img_.Rows()-3) return 0;
-  uint8_t& score=*(scores_.GetData()+x+y*scores_.Cols());
+  uint8_t& score=*(scores_.Data()+x+y*scores_.Cols());
   if (score>2) { return score; }
   oastDetector_->set_threshold(threshold-1);
-  score = oastDetector_->cornerScore(img_.GetData()+x+y*img_.Cols());
+  score = oastDetector_->cornerScore(img_.Data()+x+y*img_.Cols());
   if (score<threshold) score = 0;
   return score;
 }
@@ -1235,7 +1237,7 @@ inline uint8_t BriskLayer::getAgastScore_5_8(int x, int y, uint8_t threshold) {
   if (x<2||y<2) return 0;
   if (x>=img_.Cols()-2||y>=img_.Rows()-2) return 0;
   agastDetector_5_8_->set_threshold(threshold-1);
-  uint8_t score = agastDetector_5_8_->cornerScore(img_.GetData()+x+y*img_.Cols());
+  uint8_t score = agastDetector_5_8_->cornerScore(img_.Data()+x+y*img_.Cols());
   if (score<threshold) score = 0;
   return score;
 }
@@ -1291,7 +1293,7 @@ inline uint8_t BriskLayer::value(const Image<unsigned char>& mat,
     const int r_y=(yf-y)*1024;
     const int r_x_1=(1024-r_x);
     const int r_y_1=(1024-r_y);
-    const uchar* ptr=image.GetData()+x+y*imagecols;
+    const uchar* ptr=image.Data()+x+y*imagecols;
     // just interpolate:
     ret_val=(r_x_1*r_y_1*int(*ptr));
     ptr++;
@@ -1337,7 +1339,7 @@ inline uint8_t BriskLayer::value(const Image<unsigned char>& mat,
   const int r_y1_i=r_y1*scaling;
 
   // now the calculation:
-  const uchar* ptr=image.GetData()+x_left+imagecols*y_top;
+  const uchar* ptr=image.Data()+x_left+imagecols*y_top;
   // first row:
   ret_val=A*int(*ptr);
   ptr++;
@@ -1377,18 +1379,21 @@ inline void BriskLayer::halfsample(const Image<unsigned char>& srcimg,
   const bool noleftover = (srcimg.Cols()%16)==0; // note: leftoverCols can be zero but this still false...
 
   // make sure the destination image is of the right size:
-  assert(srcimg.Cols()/2==dstimg.Cols());
-  assert(srcimg.Rows()/2==dstimg.Rows());
+  CHECK_EQ(srcimg.Cols()/2, dstimg.Cols());
+  CHECK_EQ(srcimg.Rows()/2, dstimg.Rows());
 
+  #ifndef THEIA_USE_SSE
+  srcimg.HalfSample(&dstimg);
+  #else
   // mask needed later:
   register __m128i mask = _mm_set_epi32 (0x00FF00FF, 0x00FF00FF, 0x00FF00FF, 0x00FF00FF);
   // to be added in order to make successive averaging correct:
   register __m128i ones = _mm_set_epi32 (0x11111111, 0x11111111, 0x11111111, 0x11111111);
 
   // data pointers:
-  __m128i* p1=(__m128i*)srcimg.GetData();
-  __m128i* p2=(__m128i*)(srcimg.GetData()+srcimg.Cols());
-  __m128i* p_dest=(__m128i*)dstimg.GetData();
+  __m128i* p1=(__m128i*)srcimg.Data();
+  __m128i* p2=(__m128i*)(srcimg.Data()+srcimg.Cols());
+  __m128i* p_dest=(__m128i*)dstimg.Data();
   unsigned char* p_dest_char;//=(unsigned char*)p_dest;
 
   // size:
@@ -1480,9 +1485,9 @@ inline void BriskLayer::halfsample(const Image<unsigned char>& srcimg,
 
     if (noleftover) {
       row++;
-      p_dest=(__m128i*)(dstimg.GetData()+row*dstimg.Cols());
-      p1=(__m128i*)(srcimg.GetData()+2*row*srcimg.Cols());
-      //p2=(__m128i*)(srcimg.GetData()+(2*row+1)*srcimg.Cols());
+      p_dest=(__m128i*)(dstimg.Data()+row*dstimg.Cols());
+      p1=(__m128i*)(srcimg.Data()+2*row*srcimg.Cols());
+      //p2=(__m128i*)(srcimg.Data()+(2*row+1)*srcimg.Cols());
       //p1+=hsize;
       p2=p1+hsize;
     } else {
@@ -1495,11 +1500,12 @@ inline void BriskLayer::halfsample(const Image<unsigned char>& srcimg,
       }
       // done with the two rows:
       row++;
-      p_dest=(__m128i*)(dstimg.GetData()+row*dstimg.Cols());
-      p1=(__m128i*)(srcimg.GetData()+2*row*srcimg.Cols());
-      p2=(__m128i*)(srcimg.GetData()+(2*row+1)*srcimg.Cols());
+      p_dest=(__m128i*)(dstimg.Data()+row*dstimg.Cols());
+      p1=(__m128i*)(srcimg.Data()+2*row*srcimg.Cols());
+      p2=(__m128i*)(srcimg.Data()+(2*row+1)*srcimg.Cols());
     }
   }
+#endif  // THEIA_USE_SSE
 }
 
 inline void BriskLayer::twothirdsample(const Image<unsigned char>& srcimg,
@@ -1507,9 +1513,14 @@ inline void BriskLayer::twothirdsample(const Image<unsigned char>& srcimg,
   const unsigned short leftoverCols = ((srcimg.Cols()/3)*3)%15;// take care with border...
 
   // make sure the destination image is of the right size:
-  assert((srcimg.Cols()/3)*2==dstimg.Cols());
-  assert((srcimg.Rows()/3)*2==dstimg.Rows());
+  CHECK_EQ((srcimg.Cols()/3)*2, dstimg.Cols());
+  CHECK_EQ((srcimg.Rows()/3)*2, dstimg.Rows());
 
+  #ifndef THEIA_USE_SSE
+  // CVD two thirds sample.
+  srcimg.TwoThirdsSample(&dstimg);
+  #else
+  
   // masks:
   register __m128i mask1 = _mm_set_epi8 (0x80,0x80,0x80,0x80,0x80,0x80,0x80,12,0x80,10,0x80,7,0x80,4,0x80,1);
   register __m128i mask2 = _mm_set_epi8 (0x80,0x80,0x80,0x80,0x80,0x80,12,0x80,10,0x80,7,0x80,4,0x80,1,0x80);
@@ -1517,10 +1528,10 @@ inline void BriskLayer::twothirdsample(const Image<unsigned char>& srcimg,
   register __m128i store_mask = _mm_set_epi8 (0,0,0,0,0,0,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80);
 
   // data pointers:
-  const unsigned char* p1=srcimg.GetData();
+  const unsigned char* p1=srcimg.Data();
   const unsigned char* p2=p1+srcimg.Cols();
   const unsigned char* p3=p2+srcimg.Cols();
-  unsigned char* p_dest1 = dstimg.GetData();
+  unsigned char* p_dest1 = dstimg.Data();
   unsigned char* p_dest2 = p_dest1+dstimg.Cols();
   const unsigned char* p_end=p1+(srcimg.Cols()*srcimg.Rows());
 
@@ -1587,11 +1598,12 @@ inline void BriskLayer::twothirdsample(const Image<unsigned char>& srcimg,
     row_dest+=2;
 
     // reset pointers
-    p1=srcimg.GetData()+row*srcimg.Cols();
+    p1=srcimg.Data()+row*srcimg.Cols();
     p2=p1+srcimg.Cols();
     p3=p2+srcimg.Cols();
-    p_dest1 = dstimg.GetData()+row_dest*dstimg.Cols();
+    p_dest1 = dstimg.Data()+row_dest*dstimg.Cols();
     p_dest2 = p_dest1+dstimg.Cols();
   }
+#endif  // THEIA_USE_SSE
 }
 }  // namespace theia

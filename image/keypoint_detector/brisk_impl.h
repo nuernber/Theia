@@ -44,8 +44,9 @@
 #include <agast/agast7_12s.h>
 #include <agast/agast5_8.h>
 #include <agast/cvWrapper.h>
+#ifdef THEIA_USE_SSE
 #include <emmintrin.h>
-
+#endif
 #include <vector>
 
 #include "image/image.h"
