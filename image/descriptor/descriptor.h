@@ -173,6 +173,7 @@ class Descriptor : public GenericDescriptor<T, N> {
   virtual inline TRef operator[](std::size_t i) {return data_[i]; }
   virtual inline TConstRef operator[](std::size_t i) const { return data_[i]; }
   virtual inline const TContainer& GetContainer() const { return data_; }
+  virtual inline TContainer& GetContainer() { return data_; }
 
   virtual inline T* Data() { return data_.data(); }
   virtual inline const T* Data() const { return data_.data(); }
@@ -197,6 +198,7 @@ class BinaryDescriptor : public GenericDescriptor<bool, N> {
     return binary_data_[i];
   }
   virtual inline const TContainer& GetContainer() const { return binary_data_; }
+  virtual inline TContainer& GetContainer() { return binary_data_; }
   
  protected:
   std::bitset<N> binary_data_;

@@ -23,6 +23,12 @@ set_compile_parameters()
 find_theia_dependencies()
 include(theia_macros)
 
+include (OptimizeForArchitecture)
+OptimizeForArchitecture()
+IF (SSE2_FOUND)
+  ADD_DEFINITIONS(-DTHEIA_USE_SSE)
+ENDIF (SSE2_FOUND)
+
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
