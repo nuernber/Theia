@@ -35,6 +35,7 @@
 #ifndef VISION_MATCHING_DISTANCE_H_
 #define VISION_MATCHING_DISTANCE_H_
 
+#include <glog/logging.h>
 #ifdef USE_SSE
 #include <xmmintrin.h>
 #endif
@@ -97,7 +98,7 @@ struct L2Vectorized {
 };
 
 #ifdef THEIA_USE_SSE
-/// Union to switch between SSE and float array
+/// Union to switch between SSE and float array.
 union sseRegisterHelper {
   __m128 m;
   float f[4];
@@ -125,8 +126,7 @@ float L2SSE(float* b1, float* b2, int size) {
   res.m = cumSum;
   return (res.f[0] + res.f[1] + res.f[2] + res.f[3]);
 }
-// Template specification to run SSE L2 squared distance
-//  on float vector
+// Template specialization to run SSE L2 squared distance on float vector.
 template<>
 struct L2Vectorized<float> {
   typedef float ElementType;

@@ -504,6 +504,4 @@ bool FreakDescriptorExtractor::DescriptorToProto(
   return true;
 }
 #endif
-
-
 }  // namespace theia

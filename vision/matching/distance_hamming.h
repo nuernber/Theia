@@ -35,6 +35,8 @@
 #ifndef VISION_MATCHING_DISTANCE_HAMMING_H_
 #define VISION_MATCHING_DISTANCE_HAMMING_H_
 
+#include <bitset>
+
 namespace theia {
 struct Hamming {
   typedef bool ElementType;
@@ -59,13 +61,24 @@ struct HammingEarlyOut {
   template <typename Iterator1, typename Iterator2>
   ResultType operator()(Iterator1 a, Iterator2 b, size_t size) const {
     // Test the distance of the first
+    std::bitset<size> ones;
+    ones.set();
+    // Do some bitshifting so that only the first num_early_bits are left as 1's.
+    std::bitset<size> first_n_test =
+        (ones >> (size - num_early_bits)) << (size - num_early_bits);
+    VLOG(0) << "first n: " << fist_n_test.to_string();
+    std::bitset<size> rest_test = (ones << num_early_bits) >> num_early_bits;
+    VLOG(0) << "rest n: " << rest_test.to_string();
+    // Calculate the hamming distance of the first num_early_bits.
+    int fist_dist = ((a&first_n_test)^(b&first_n_test)).count();
     if (max_early_dist > 0 && max_early_dist < num_early_bits &&
-        ((a >> size - num_early_bits)^(b >> size - num_early_bits)).count() >
-        max_early_dist) {
+        fist_dist > max_early_dist) {
       return size_t;
     } else {
       // Otherwise, return the normal distance.
-      return (a^b).count();
+      int rest_dist = ((a&rest_test)^(b&rest_test)).count();
+      return fist_dist + rest_dist;
+      // return (a^b).count();
     }
   }
 };

@@ -57,14 +57,16 @@ enum DescriptorType {
 // template type T for the lhs value.
 template<typename T, std::size_t N>
 struct TypeDeference {
-  typedef typename std::array<T, N> Container;
+  typedef T* Data;
+  typedef const T* ConstData;
   typedef typename std::array<T, N>::const_reference ConstRef;
   typedef typename std::array<T, N>::reference Ref;
 };
 // Specialization for bools and bitsets!
 template<std::size_t N>
 struct TypeDeference<bool, N>  {
-  typedef typename std::bitset<N> Container;
+  typedef typename std::bitset<N>& Data;
+  typedef const typename std::bitset<N>& ConstData;
   typedef bool ConstRef;
   typedef typename std::bitset<N>::reference Ref;
 };
@@ -107,7 +109,8 @@ class GenericDescriptor {
   // Accessor methods (implemented by Descriptor and BinaryDescriptor classes).
   typedef typename TypeDeference<T, N>::Ref TRef;
   typedef typename TypeDeference<T, N>::ConstRef TConstRef;
-    typedef typename TypeDeference<T, N>::Container TContainer;
+  typedef typename TypeDeference<T, N>::Data TData;
+  typedef typename TypeDeference<T, N>::ConstData TConstData;
   virtual inline TRef operator[](std::size_t i) = 0;
   virtual inline TConstRef operator[](std::size_t i) const = 0;
 
@@ -115,7 +118,8 @@ class GenericDescriptor {
   virtual inline std::size_t Dimensions() const { return N; }
 
   // Get the container (i.e. std::bitset or std::array) directly.
-  virtual inline const TContainer& GetContainer() const = 0;
+  virtual inline TConstData Data() const = 0;
+  virtual inline TData Data() = 0;
   
   // Descriptor type.
   inline DescriptorType descriptor_type() const { return descriptor_type_; }
@@ -169,14 +173,14 @@ class Descriptor : public GenericDescriptor<T, N> {
   
   typedef typename TypeDeference<T, N>::Ref TRef;
   typedef typename TypeDeference<T, N>::ConstRef TConstRef;
-  typedef typename TypeDeference<T, N>::Container TContainer;
+  typedef typename TypeDeference<T, N>::Data TData;
+  typedef typename TypeDeference<T, N>::ConstData TConstData;
   virtual inline TRef operator[](std::size_t i) {return data_[i]; }
   virtual inline TConstRef operator[](std::size_t i) const { return data_[i]; }
-  virtual inline const TContainer& GetContainer() const { return data_; }
-  virtual inline TContainer& GetContainer() { return data_; }
 
-  virtual inline T* Data() { return data_.data(); }
-  virtual inline const T* Data() const { return data_.data(); }
+  // Get a pointer to the data.
+  virtual inline TData Data() { return data_.data(); }
+  virtual inline TConstData Data() const { return data_.data(); }
 
  protected:
   std::array<T, N> data_;
@@ -192,13 +196,19 @@ class BinaryDescriptor : public GenericDescriptor<bool, N> {
 
   typedef typename TypeDeference<bool, N>::Ref TRef;
   typedef typename TypeDeference<bool, N>::ConstRef TConstRef;
-  typedef typename TypeDeference<bool, N>::Container TContainer;
+  typedef typename TypeDeference<bool, N>::Data TData;
+  typedef typename TypeDeference<bool, N>::ConstData TConstData;
   virtual inline TRef operator[](std::size_t i) { return binary_data_[i]; }
   virtual inline TConstRef operator[](std::size_t i) const {
     return binary_data_[i];
   }
-  virtual inline const TContainer& GetContainer() const { return binary_data_; }
-  virtual inline TContainer& GetContainer() { return binary_data_; }
+
+  // For binary descriptors, you cannot get a pointer to the bitset (even if you
+  // could, it seems rather dangerous) so we return the whole bitset
+  // instead. This works well because the hamming distance functions require the
+  // entire bitset.
+  virtual inline TData Data() { return binary_data_; }
+  virtual inline TConstData Data() const { return binary_data_; }
   
  protected:
   std::bitset<N> binary_data_;
