@@ -35,9 +35,10 @@
 #ifndef IMAGE_DESCRIPTOR_DESCRIPTOR_H_
 #define IMAGE_DESCRIPTOR_DESCRIPTOR_H_
 
-#include "image/keypoint_detector/keypoint.h"
 #include <array>
 #include <bitset>
+
+#include "image/keypoint_detector/keypoint.h"
 
 namespace theia {
 // NOTE: This enum must exactly match the descriptor.proto enum in order for the
@@ -64,7 +65,7 @@ struct TypeDeference {
 };
 // Specialization for bools and bitsets!
 template<std::size_t N>
-struct TypeDeference<bool, N>  {
+struct TypeDeference<bool, N> {
   typedef typename std::bitset<N>& Data;
   typedef const typename std::bitset<N>& ConstData;
   typedef bool ConstRef;
@@ -85,7 +86,6 @@ struct TypeDeference<bool, N>  {
 template<class T, std::size_t N>
 class GenericDescriptor {
  public:
-
   explicit GenericDescriptor(DescriptorType type)
       : descriptor_type_(type),
         x_(THEIA_INVALID_DESCRIPTOR_VAR),
@@ -96,8 +96,8 @@ class GenericDescriptor {
 
   GenericDescriptor() : GenericDescriptor(DescriptorType::INVALID) {}
 
-  ~GenericDescriptor() {}
-  
+  virtual ~GenericDescriptor() {}
+
   virtual inline void SetKeypoint(const Keypoint& keypoint) {
     x_ =keypoint.x();
     y_ = keypoint.y();
@@ -120,7 +120,7 @@ class GenericDescriptor {
   // Get the container (i.e. std::bitset or std::array) directly.
   virtual inline TConstData Data() const = 0;
   virtual inline TData Data() = 0;
-  
+
   // Descriptor type.
   inline DescriptorType descriptor_type() const { return descriptor_type_; }
   inline void set_descriptor_type(DescriptorType type) {
@@ -168,9 +168,9 @@ class GenericDescriptor {
 template<class T, std::size_t N>
 class Descriptor : public GenericDescriptor<T, N> {
  public:
-  Descriptor(DescriptorType type) : GenericDescriptor<T, N>(type) {}
+  explicit Descriptor(DescriptorType type) : GenericDescriptor<T, N>(type) {}
   virtual ~Descriptor() {}
-  
+
   typedef typename TypeDeference<T, N>::Ref TRef;
   typedef typename TypeDeference<T, N>::ConstRef TConstRef;
   typedef typename TypeDeference<T, N>::Data TData;
@@ -191,7 +191,8 @@ template<std::size_t N>
 class BinaryDescriptor : public GenericDescriptor<bool, N> {
  public:
   typedef typename std::bitset<N>::reference bitref;
-  BinaryDescriptor(DescriptorType type) : GenericDescriptor<bool, N>(type) {}
+  explicit BinaryDescriptor(DescriptorType type)
+      : GenericDescriptor<bool, N>(type) {}
   virtual ~BinaryDescriptor() {}
 
   typedef typename TypeDeference<bool, N>::Ref TRef;
@@ -209,7 +210,7 @@ class BinaryDescriptor : public GenericDescriptor<bool, N> {
   // entire bitset.
   virtual inline TData Data() { return binary_data_; }
   virtual inline TConstData Data() const { return binary_data_; }
-  
+
  protected:
   std::bitset<N> binary_data_;
 };
