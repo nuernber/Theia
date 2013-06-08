@@ -54,6 +54,7 @@ struct Hamming {
 
 // max_early_dist is the maximum value of the distance of the first num_bits
 // bits in order to continue testing the distance.
+/*
 template<int max_early_dist = 0, size_t num_early_bits = 128>
 struct HammingEarlyOut {
   typedef bool ElementType;
@@ -83,6 +84,6 @@ struct HammingEarlyOut {
     }
   }
 };
-
+*/
 }  // namespace theia
 #endif  // VISION_MATCHING_DISTANCE_HAMMING_H_

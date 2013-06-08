@@ -54,6 +54,8 @@ using theia::ImageCanvas;
 using theia::Keypoint;
 using theia::BriskDescriptor;
 using theia::BriskDescriptorExtractor;
+using theia::BruteForceMatcher;
+using theia::Hamming;
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
@@ -64,14 +66,13 @@ int main(int argc, char *argv[]) {
 
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
-  BriskDetector brisk_detector(60, 4);
+  BriskDetector brisk_detector(70, 4);
   std::vector<Keypoint*> left_keypoints;
   brisk_detector.DetectKeypoints(left_image, &left_keypoints);
   VLOG(0) << "detected " << left_keypoints.size()
           << " keypoints in left image.";
 
   VLOG(0) << "detecting keypoints";
-  BriskDetector brisk_detector(60, 4);
   std::vector<Keypoint*> right_keypoints;
   brisk_detector.DetectKeypoints(right_image, &right_keypoints);
   VLOG(0) << "detected " << left_keypoints.size()
@@ -105,8 +106,11 @@ int main(int argc, char *argv[]) {
   
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
-  image_canvas.AddImage(image);
-  image_canvas.DrawFeatures(keypoints, theia::RGBPixel(1.0, 0, 0), 0.1);
+  image_canvas.AddImage(left_image);
+  image_canvas.AddImage(right_image);
+  image_canvas.DrawMatchedFeatures(0, left_pruned_descriptors,
+                                   1, right_pruned_descriptors,
+                                   indices, 0.1);
   image_canvas.Write(FLAGS_img_output_dir +
                      std::string("/brisk_descriptors.png"));
 }

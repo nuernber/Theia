@@ -18,4 +18,4 @@ CC_BINARY(match_brisk_descriptors
   image/descriptor/brisk_descriptor
   image/keypoint_detector/keypoint
   image/keypoint_detector/brisk_detector
-  vision/matching/brute_force_matching)
+  vision/matching/brute_force_matcher)

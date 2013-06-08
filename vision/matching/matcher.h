@@ -43,8 +43,8 @@ namespace theia {
 template <class TemplateDescriptor, class Metric>
 class Matcher {
  public:
-  typedef Metric::ResultType TDistanceType;
-  
+  typedef typename Metric::ResultType TDistanceType;
+
   Matcher() {}
   virtual ~Matcher() {}
 
@@ -55,12 +55,19 @@ class Matcher {
   virtual bool NearestNeighbor(const TemplateDescriptor& query,
                                int* neighbor_index,
                                TDistanceType* distance) = 0;
-  
+
   // Search for the sole nearest neighbor for a multiple queries.
   virtual bool NearestNeighbor(
       const std::vector<TemplateDescriptor*>& queries,
       std::vector<int>* neighbor_indices,
-      std::vector<TDistanceType>* distances) = 0;
+      std::vector<TDistanceType>* distances) {
+    neighbor_indices->resize(queries.size());
+    distances->resize(queries.size());
+    for (int i = 0; i < queries.size(); i++) {
+      NearestNeighbor(*queries[i], &((*neighbor_indices)[i]), &((*distances)[i]));
+    }
+    return true;
+  }
 
   // Search for the k nearest neighbors of a single queries.
   virtual bool KNearestNeighbors(const TemplateDescriptor& query,
@@ -73,9 +80,9 @@ class Matcher {
       const std::vector<TemplateDescriptor*>& queries,
       int k_nn,
       std::vector<std::vector<int> >* knn_indices,
-      std::vector<std::vector<TDistanceType> >* knn_distances) = 0;
+      std::vector<std::vector<TDistanceType> >* knn_distances) {
+
+  }
 };
-
 }  // namespace theia
-
 #endif  // VISION_MATCHING_MATCHER_H_

@@ -32,12 +32,12 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef VISION_MATCHING_MATCHER_H_
-#define VISION_MATCHING_MATCHER_H_
+#ifndef VISION_MATCHING_BRUTE_FORCE_MATCHER_H_
+#define VISION_MATCHING_BRUTE_FORCE_MATCHER_H_
 
 #include <vector>
 
-#include "vision/matching/matching.h"
+#include "vision/matching/matcher.h"
 
 namespace theia {
 // Template Descriptor can be any type of descriptor, and Metric can be any of
@@ -45,103 +45,45 @@ namespace theia {
 template <class TemplateDescriptor, class Metric>
 class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
  public:
-  typedef Metric::Result TDistanceType;
+  typedef typename Metric::ResultType TDistanceType;
 
   BruteForceMatcher() {}
   ~BruteForceMatcher() {}
 
   // Build an index or other data structures needed to perform the search.
-  bool Build(const std::vector<TemplateDescriptor*>& descriptors);
-
+  bool Build(const std::vector<TemplateDescriptor*>& descriptors) {
+    descriptors_ = descriptors;
+  }
   // Search for the sole nearest neighbor for a single query.
   bool NearestNeighbor(const TemplateDescriptor& query,
                        int* neighbor_index,
-                       TDistanceType* distance);
-
-  // Search for the sole nearest neighbor for a multiple queries.
-  bool NearestNeighbor(
-      const std::vector<TemplateDescriptor*>& queries,
-      std::vector<int>* neighbor_indices,
-      std::vector<TDistanceType>* distances);
+                       TDistanceType* distance) {
+    Metric metric;
+    *neighbor_index = 0;
+    *distance = metric(query.Data(), descriptors_[0]->Data(), query.Dimensions());
+    for (int i = 1; i < descriptors_.size(); i++) {
+      TDistanceType new_dist = metric(query.Data(),
+                                      descriptors_[i]->Data(),
+                                      query.Dimensions());
+      if (new_dist < *distance) {
+        *neighbor_index = i;
+        *distance = new_dist;
+      }
+    }
+    return true;
+  }
+  using Matcher<TemplateDescriptor, Metric>::NearestNeighbor;
 
   // Search for the k nearest neighbors of a single queries.
   bool KNearestNeighbors(const TemplateDescriptor& query,
                          int k_nn,
                          std::vector<int>* knn_index,
-                         std::vector<TDistanceType>* knn_distance);
+                         std::vector<TDistanceType>* knn_distance) {
 
-  // Search for the k nearest neighbors of a multiple queries.
-  bool KNearestNeighbors(
-      const std::vector<TemplateDescriptor*>& queries,
-      int k_nn,
-      std::vector<std::vector<int> >* knn_indices,
-      std::vector<std::vector<TDistanceType> >* knn_distances);
+  }
 
  private:
-  const std::vector<TemplateDescriptor*>& descriptors_;
+  std::vector<TemplateDescriptor*> descriptors_;
 };
-
-// ------------------------- Implementation -------------------------- //
-
-// Build an index or other data structures needed to perform the search.
-template <class TemplateDescriptor, class Metric>
-bool BruteForceMatcher::Build(
-    const std::vector<TemplateDescriptor*>& descriptors) {
-  descriptors_ = descriptors;
-}
-
-// Search for the sole nearest neighbor for a single query.
-template <class TemplateDescriptor, class Metric>
-bool BruteForceMatcher::NearestNeighbor(const TemplateDescriptor& query,
-                                        int* neighbor_index,
-                                        TDistanceType* distance) {
-  Metric metric;
-  *neighbor_index = 0;
-  *distance = metric(query.Data(), descriptors_[0]->Data(), query.Dimensions());
-  for (int i = 1; i < descriptors_.size(); i++) {
-    TDistanceType new_dist = metric(query.Data(),
-                                   descriptors_[i]->Data(),
-                                   query.Dimensions());
-    if (new_dist < *distance) {
-      *neighbor_index = i;
-      *distance = new_dist;
-    }
-  }
-  return true;
-}
-
-// Search for the sole nearest neighbor for a multiple queries.
-template <class TemplateDescriptor, class Metric>
-bool BruteForceMatcher::NearestNeighbor(
-    const std::vector<TemplateDescriptor*>& queries,
-    std::vector<int>* neighbor_indices,
-    std::vector<TDistanceType>* distances) {
-  neighbor_indices->resize(queries.size());
-  distances->resize(queries.size());
-  for (int i = 0; i < queries.size(); i++) {
-    NearestNeighbor(*queries[i], &((*neighbor_indices)[i]), &((*distances)[i]));
-  }
-  return true;
-}
-
-// Search for the k nearest neighbors of a single queries.
-template <class TemplateDescriptor, class Metric>
-bool BruteForceMatcher::KNearestNeighbors(
-    const TemplateDescriptor& query,
-    int k_nn,
-    std::vector<int>* knn_index,
-    std::vector<TDistanceType>* knn_distance) {
-
-}
-
-// Search for the k nearest neighbors of a multiple queries.
-template <class TemplateDescriptor, class Metric>
-bool BruteForceMatcher::KNearestNeighbors(
-    const std::vector<TemplateDescriptor>& queries,
-    int k_nn,
-    std::vector<std::vector<int> >* knn_indices,
-    std::vector<std::vector<TDistanceType> >* knn_distances) {
-
-}
 }  // namespace theia
-#endif  // VISION_MATCHING_MATCHER_H_
+#endif  // VISION_MATCHING_BRUTE_FORCE_MATCHER_H_

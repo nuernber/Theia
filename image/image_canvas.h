@@ -35,11 +35,12 @@
 #ifndef IMAGE_IMAGE_CANVAS_H_
 #define IMAGE_IMAGE_CANVAS_H_
 
-#include "image/image_canvas.h"
-
+#include <cmath>
 #include <string>
 #include <vector>
+
 #include "image/image.h"
+#include "util/util.h"
 
 namespace theia {
 class Keypoint;
@@ -122,7 +123,9 @@ class ImageCanvas {
   void DrawMatchedFeatures(int image_index1,
                            const std::vector<Feature*>& features1,
                            int image_index2,
-                           const std::vector<Feature*>& features2);
+                           const std::vector<Feature*>& features2,
+                           const std::vector<int>& matches,
+                           double scale = 10.0);
 
   // Write the image canvas to a file.
   void Write(const std::string& output_name);
@@ -204,8 +207,25 @@ void ImageCanvas::DrawFeatures(const std::vector<Feature*>& features,
 template<class Feature>
 void ImageCanvas::DrawMatchedFeatures(
     int image_index1, const std::vector<Feature*>& features1,
-    int image_index2, const std::vector<Feature*>& features2) {
-  CHECK(false) << "DrawMatchedFeatures not implemented yet!";
+    int image_index2, const std::vector<Feature*>& features2,
+    const std::vector<int>& matches,
+    double scale) {
+  CHECK_EQ(features1.size(), matches.size());
+  CHECK_GT(pixel_offsets_.size(), std::max(image_index1, image_index2));
+  InitRandomGenerator();
+  for (int i = 0; i < matches.size(); i++) {
+    Feature& match = *features2[matches[i]];
+    RGBPixel color(RandDouble(0, 1.0),
+                   RandDouble(0, 1.0),
+                   RandDouble(0, 1.0));
+    DrawFeature(image_index1, *features1[i], color, scale);
+    DrawFeature(image_index2, match, color, scale);
+    DrawLine(pixel_offsets_[image_index1] + features1[i]->x(),
+             features1[i]->y(),
+             pixel_offsets_[image_index2] + match.x(),
+             match.y(),
+             color);
+  }
 }
 }  // namespace theia
 #endif  // IMAGE_IMAGE_CANVAS_H_
