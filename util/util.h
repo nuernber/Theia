@@ -40,25 +40,25 @@
 #include <random>
 
 namespace theia {
-std::default_random_engine generator;
+std::default_random_engine util_generator;
 
 // Initializes the random generator to be based on the current time. Does not
 // have to be called before calling RandDouble, but it works best if it is.
 void InitRandomGenerator() {
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  generator.seed(seed);
+  util_generator.seed(seed);
 }
 
 // Get a random double between lower and upper (inclusive).
 inline double RandDouble(double lower, double upper) {
   std::uniform_real_distribution<double> distribution(lower, upper);
-  return distribution(generator);
+  return distribution(util_generator);
 }
 
 // Get a random double between lower and upper (inclusive).
 inline double RandInt(int lower, int upper) {
   std::uniform_int_distribution<int> distribution(lower, upper);
-  return distribution(generator);
+  return distribution(util_generator);
 }
 }  // namespace theia
 #endif  // UTIL_UTIL_H_
