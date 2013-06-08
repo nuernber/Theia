@@ -34,7 +34,6 @@
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
-#include <time.h>
 #include <string>
 #include <vector>
 
@@ -43,6 +42,8 @@
 #include "image/descriptor/brisk_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/brisk_detector.h"
+#include "vision/matching/distance.h"
+#include "vision/matching/brute_force_matcher.h"
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
@@ -58,14 +59,22 @@ int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
-  GrayImage image(FLAGS_img_input_dir + std::string("/img3.png"));
+  GrayImage left_image(FLAGS_img_input_dir + std::string("/img1.png"));
+  GrayImage right_image(FLAGS_img_input_dir + std::string("/img2.png"));
 
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
   BriskDetector brisk_detector(60, 4);
-  std::vector<Keypoint*> keypoints;
-  brisk_detector.DetectKeypoints(image, &keypoints);
-  VLOG(0) << "detected " << keypoints.size()
+  std::vector<Keypoint*> left_keypoints;
+  brisk_detector.DetectKeypoints(left_image, &left_keypoints);
+  VLOG(0) << "detected " << left_keypoints.size()
+          << " keypoints in left image.";
+
+  VLOG(0) << "detecting keypoints";
+  BriskDetector brisk_detector(60, 4);
+  std::vector<Keypoint*> right_keypoints;
+  brisk_detector.DetectKeypoints(right_image, &right_keypoints);
+  VLOG(0) << "detected " << left_keypoints.size()
           << " keypoints in left image.";
 
   // Extract descriptors.
@@ -73,19 +82,27 @@ int main(int argc, char *argv[]) {
   BriskDescriptorExtractor brisk_extractor(false, false, 1);
   brisk_extractor.Initialize();
 
-  clock_t t;
-  t = clock();
-  std::vector<BriskDescriptor*> pruned_descriptors;
-  brisk_extractor.ComputeDescriptorsPruned(image,
-                                           keypoints,
-                                           &pruned_descriptors);
-  t = clock() - t;
-  VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
-          << " to extract BRISK descriptors";
-  VLOG(0) << "pruned descriptors size = " << pruned_descriptors.size();
+  std::vector<BriskDescriptor*> left_pruned_descriptors;
+  brisk_extractor.ComputeDescriptorsPruned(left_image,
+                                           left_keypoints,
+                                           &left_pruned_descriptors);
+  VLOG(0) << "pruned descriptors size = " << left_pruned_descriptors.size();
+
+  std::vector<BriskDescriptor*> right_pruned_descriptors;
+  brisk_extractor.ComputeDescriptorsPruned(right_image,
+                                           right_keypoints,
+                                           &right_pruned_descriptors);
+  VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
 
   // Match descriptors!
-
+  BruteForceMatcher<BriskDescriptor, Hamming> brute_force_matcher;
+  brute_force_matcher.Build(right_pruned_descriptors);
+  std::vector<int> indices;
+  std::vector<int> distances;
+  brute_force_matcher.NearestNeighbor(left_pruned_descriptors,
+                                      &indices,
+                                      &distances);
+  
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
   image_canvas.AddImage(image);

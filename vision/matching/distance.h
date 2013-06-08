@@ -46,6 +46,31 @@ namespace theia {
 // Vectorized L2 distance for SSE optimizations.
 // Hamming distance for binary vectors.
 // Hamming distance for FREAK (checks the first 128 bits, then checks the rest).
+// NOTE: Hamming distance functions are included at the bottom of this file, but
+// are in a separate file for cleanliness.
+template<typename T>
+struct Accumulator { typedef T Type; };
+
+template<>
+struct Accumulator<unsigned char>  { typedef float Type; };
+
+template<>
+struct Accumulator<unsigned short> { typedef float Type; };
+
+template<>
+struct Accumulator<unsigned int> { typedef float Type; };
+
+template<>
+struct Accumulator<char>   { typedef float Type; };
+
+template<>
+struct Accumulator<short>  { typedef float Type; };
+
+template<>
+struct Accumulator<int> { typedef float Type; };
+
+template<>
+struct Accumulator<bool> { typedef int Type; };
 
 // Squared Euclidean distance functor (copied from FLANN).
 template<class T>

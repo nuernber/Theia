@@ -46,7 +46,8 @@ struct Hamming {
   ResultType operator()(Iterator1 a, Iterator2 b, size_t size) const {
     // a^b = XOR op, then perform a popcnt on it. This should be optimized
     // rather heavily, and is architecture independent since it is part of the
-    // c++ standard.
+    // c++ standard. TODO(cmsweeney): compare this vs brisk hamming distance
+    // function to see which is faster.
     return (a^b).count();
   }
 };
