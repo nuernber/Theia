@@ -49,6 +49,10 @@ CC_LIBRARY(brisk_detector brisk_detector.cc
   agast)
 
 IF (${BUILD_TESTING})
-  GTEST(fast_detector_test image/keypoint_detector/fast_detector)
-  GTEST(harris_detector_test image/keypoint_detector/harris_detector)
+  GTEST(fast_detector_test 
+    image/keypoint_detector/fast_detector
+    util/random)
+  GTEST(harris_detector_test 
+    image/keypoint_detector/harris_detector
+    util/random)
 ENDIF (${BUILD_TESTING})

@@ -38,7 +38,7 @@
 #include "gtest/gtest.h"
 #include <math.h>
 
-#include "test/test_utils.h"
+#include "util/random.h"
 
 namespace theia {
 using Eigen::Matrix3d;
@@ -53,11 +53,11 @@ double kEpsilon = 1e-9;
 TEST(PerspectiveThreePoint, Normalized) {
   // World coordinates of the 4 control points. Let them be random points in the
   // 2x2x2 centered around the origin.
-  test::InitRandomGenerator();
+  InitRandomGenerator();
   double world_points[4][3];
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 3; j++)
-      world_points[i][j] = test::RandDouble(-2, 2);
+      world_points[i][j] = RandDouble(-2, 2);
 
   // Find the camera projections of each of these points.
   // Make the camera at (0, 0, 8) looking straight down the axis.

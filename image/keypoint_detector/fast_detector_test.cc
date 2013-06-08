@@ -47,7 +47,7 @@
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 #include "image/keypoint_detector/keypoint.pb.h"
 #endif
-#include "test/test_utils.h"
+#include "util/random.h"
 
 DEFINE_string(test_img, "image/keypoint_detector/img1.png",
               "Name of test image file.");
@@ -130,13 +130,13 @@ TEST(FastDetector, Score) {
 // Protocol buffer tests.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 TEST(FastDetector, ProtoTest) {
-  test::InitRandomGenerator();
+  InitRandomGenerator();
   std::vector<Keypoint*> fast_keypoints;
   for (int i = 0; i < 100; i++) {
-    Keypoint* fast_keypoint = new Keypoint(test::RandDouble(0, 500),
-                                           test::RandDouble(0, 500),
+    Keypoint* fast_keypoint = new Keypoint(RandDouble(0, 500),
+                                           RandDouble(0, 500),
                                            Keypoint::FAST);
-    fast_keypoint->set_strength(test::RandDouble(0, 100));
+    fast_keypoint->set_strength(RandDouble(0, 100));
     fast_keypoints.push_back(fast_keypoint);
   }
 

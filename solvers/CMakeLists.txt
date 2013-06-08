@@ -10,10 +10,13 @@ HEADER_LIBRARY(arrsac arrsac.h
 
 # Tests:
 IF (${BUILD_TESTING})
-  GTEST(arrsac_test solvers/arrsac)
+  GTEST(arrsac_test 
+    solvers/arrsac
+    util/random)
   GTEST(mlesac_test)
   GTEST(prosac_test)
-  GTEST(ransac_test)
+  GTEST(ransac_test 
+    util/random)
   # Currently unsupported!
   #GTEST(recon_test solvers/recon)
 ENDIF (${BUILD_TESTING})

@@ -11,6 +11,7 @@ CC_LIBRARY(five_point_relative_pose five_point_relative_pose.cc
 # Tests:
 IF (${BUILD_TESTING})
   GTEST(perspective_three_point_test 
+    util/random
     vision/pose/perspective_three_point)
   GTEST(five_point_relative_pose_test 
     vision/pose/five_point_relative_pose 

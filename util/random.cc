@@ -32,16 +32,16 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef UTIL_UTIL_H_
-#define UTIL_UTIL_H_
+#include "util/random.h"
 
 #include <chrono>
 #include <glog/logging.h>
 #include <random>
 
 namespace theia {
+namespace {
 std::default_random_engine util_generator;
-
+}  // namespace
 // Initializes the random generator to be based on the current time. Does not
 // have to be called before calling RandDouble, but it works best if it is.
 void InitRandomGenerator() {
@@ -50,15 +50,14 @@ void InitRandomGenerator() {
 }
 
 // Get a random double between lower and upper (inclusive).
-inline double RandDouble(double lower, double upper) {
+double RandDouble(double lower, double upper) {
   std::uniform_real_distribution<double> distribution(lower, upper);
   return distribution(util_generator);
 }
 
 // Get a random double between lower and upper (inclusive).
-inline double RandInt(int lower, int upper) {
+double RandInt(int lower, int upper) {
   std::uniform_int_distribution<int> distribution(lower, upper);
   return distribution(util_generator);
 }
 }  // namespace theia
-#endif  // UTIL_UTIL_H_

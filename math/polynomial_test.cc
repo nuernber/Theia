@@ -43,7 +43,7 @@
 #include <iostream>
 #include <vector>
 
-#include "test/test_utils.h"
+#include "util/random.h"
 
 namespace theia {
 using std::vector;
@@ -65,10 +65,10 @@ TEST(Polynomial, Addition) {
   vector<double> coeffs2(poly2_size + 1);
 
   for (int i = 0; i <= poly1_size; i++) {
-    coeffs1[i] = test::RandDouble(-1000, 1000);
+    coeffs1[i] = RandDouble(-1000, 1000);
   }
   for (int i = 0; i <= poly2_size; i++) {
-    coeffs2[i] = test::RandDouble(-1000, 1000);
+    coeffs2[i] = RandDouble(-1000, 1000);
   }
 
   Polynomial<poly1_size> poly1(coeffs1);
@@ -96,10 +96,10 @@ TEST(Polynomial, Subtraction) {
   vector<double> coeffs2(poly2_size + 1);
 
   for (int i = 0; i <= poly1_size; i++) {
-    coeffs1[i] = test::RandDouble(-1000, 1000);
+    coeffs1[i] = RandDouble(-1000, 1000);
   }
   for (int i = 0; i <= poly2_size; i++) {
-    coeffs2[i] = test::RandDouble(-1000, 1000);
+    coeffs2[i] = RandDouble(-1000, 1000);
   }
 
   Polynomial<poly1_size> poly1(coeffs1);
@@ -127,10 +127,10 @@ TEST(Polynomial, Multiplication) {
   vector<double> coeffs2(poly2_size + 1);
 
   for (int i = 0; i <= poly1_size; i++) {
-    coeffs1[i] = test::RandDouble(-10, 10);
+    coeffs1[i] = RandDouble(-10, 10);
   }
   for (int i = 0; i <= poly2_size; i++) {
-    coeffs2[i] = test::RandDouble(-10, 10);
+    coeffs2[i] = RandDouble(-10, 10);
   }
 
   Polynomial<poly1_size> poly1(coeffs1);
@@ -138,7 +138,7 @@ TEST(Polynomial, Multiplication) {
   Polynomial<poly1_size + poly2_size> product(poly1.Multiply(poly2));
 
   // ASSERT that the evaluation of the two polys multiplied together is correct.
-  double rand_x = test::RandDouble(-10, 10);
+  double rand_x = RandDouble(-10, 10);
   // If the degree of the polynomial is high, the machine precision can make
   // this a difficult value to assess. Instead, we ensure that hte difference
   // between the two evaluations is less than some precision.
@@ -156,10 +156,10 @@ TEST(Polynomial, Division) {
   vector<double> coeffs2(poly2_size + 1);
 
   for (int i = 0; i <= poly1_size; i++) {
-    coeffs1[i] = test::RandDouble(-10, 10);
+    coeffs1[i] = RandDouble(-10, 10);
   }
   for (int i = 0; i <= poly2_size; i++) {
-    coeffs2[i] = test::RandDouble(-10, 10);
+    coeffs2[i] = RandDouble(-10, 10);
   }
 
   Polynomial<poly1_size> poly1(coeffs1);
@@ -170,7 +170,7 @@ TEST(Polynomial, Division) {
   Polynomial<poly2_size - 1> remainder = divided.second;
 
   // ASSERT that the evaluation of the two polys multiplied together is correct.
-  double rand_x = test::RandDouble(-10, 10);
+  double rand_x = RandDouble(-10, 10);
   double diff = poly1.EvalAt(rand_x) -
       ((poly2.Multiply(quotient)).EvalAt(rand_x) +
        remainder.EvalAt(rand_x));
@@ -189,7 +189,7 @@ TEST(Polynomial, FindRealRoots) {
   const int poly_size = 10;
   vector<double> coeffs(poly_size);
   for (int i = 0; i < poly_size; i++) {
-    coeffs[i] = test::RandDouble(-1, 1);
+    coeffs[i] = RandDouble(-1, 1);
   }
 
   // Construct the polynomial as the mulitiplication of all the roots.

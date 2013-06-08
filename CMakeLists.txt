@@ -48,6 +48,7 @@ ADD_SUBDIRECTORY(image)
 ADD_SUBDIRECTORY(math)
 ADD_SUBDIRECTORY(solvers)
 ADD_SUBDIRECTORY(tutorials)
+ADD_SUBDIRECTORY(util)
 ADD_SUBDIRECTORY(vision)
 
 # ---------------- Install commands ----------------- #

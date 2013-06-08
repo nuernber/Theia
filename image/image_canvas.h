@@ -40,7 +40,7 @@
 #include <vector>
 
 #include "image/image.h"
-#include "util/util.h"
+#include "util/random.h"
 
 namespace theia {
 class Keypoint;

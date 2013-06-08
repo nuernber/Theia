@@ -47,7 +47,7 @@
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 #include "image/keypoint_detector/keypoint.pb.h"
 #endif
-#include "test/test_utils.h"
+#include "util/random.h"
 
 DEFINE_string(test_img, "image/keypoint_detector/img1.png",
               "Name of test image file.");
@@ -90,13 +90,13 @@ TEST(HarrisDetector, BasicTest) {
 // Protocol buffer tests.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 TEST(HarrisDetector, ProtoTest) {
-  test::InitRandomGenerator();
+  InitRandomGenerator();
   std::vector<Keypoint*> harris_keypoints;
   for (int i = 0; i < 100; i++) {
-    Keypoint* harris_keypoint = new Keypoint(test::RandDouble(0, 500),
-                                             test::RandDouble(0, 500),
+    Keypoint* harris_keypoint = new Keypoint(RandDouble(0, 500),
+                                             RandDouble(0, 500),
                                              Keypoint::HARRIS);
-    harris_keypoint->set_strength(test::RandDouble(0, 100));
+    harris_keypoint->set_strength(RandDouble(0, 100));
     harris_keypoints.push_back(harris_keypoint);
   }
 

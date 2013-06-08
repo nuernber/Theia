@@ -40,7 +40,7 @@
 #include <string>
 
 #include "image/image.h"
-#include "test/test_utils.h"
+#include "util/random.h"
 
 DEFINE_string(test_img, "image/test1.jpg", "Name of test image file.");
 
@@ -122,11 +122,11 @@ TEST(Image, RGBSubImage) {
 
   // Test that random image patches from CVD and Image are equal.
   CVD::Image<RGBPixel> cvd_img = CVD::img_load(img_filename);
-  test::InitRandomGenerator();
+  InitRandomGenerator();
   int patch_size = 10;
   for (int its = 0; its < 1000; its++) {
-    int rand_row = test::RandInt(0, rows - patch_size - 1);
-    int rand_col = test::RandInt(0, cols - patch_size - 1);
+    int rand_row = RandInt(0, rows - patch_size - 1);
+    int rand_col = RandInt(0, cols - patch_size - 1);
     CVD::SubImage<RGBPixel> cvd_sub =
         cvd_img.sub_image(CVD::ImageRef(rand_col, rand_row),
                           CVD::ImageRef(patch_size, patch_size));
@@ -224,11 +224,11 @@ TEST(Image, GraySubImage) {
 
   // Test that random image patches from CVD and Image are equal.
   CVD::Image<float> cvd_img = CVD::img_load(img_filename);
-  test::InitRandomGenerator();
+  InitRandomGenerator();
   int patch_size = 10;
   for (int its = 0; its < 1000; its++) {
-    int rand_row = test::RandInt(0, rows - patch_size - 1);
-    int rand_col = test::RandInt(0, cols - patch_size - 1);
+    int rand_row = RandInt(0, rows - patch_size - 1);
+    int rand_col = RandInt(0, cols - patch_size - 1);
     CVD::SubImage<float> cvd_sub =
         cvd_img.sub_image(CVD::ImageRef(rand_col, rand_row),
                           CVD::ImageRef(patch_size, patch_size));

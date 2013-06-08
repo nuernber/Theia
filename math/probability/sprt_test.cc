@@ -38,7 +38,7 @@
 
 #include "solvers/estimator.h"
 #include "math/probability/sequential_probability_ratio.h"
-#include "test/test_utils.h"
+#include "util/random.h"
 
 using std::vector;
 namespace theia {
@@ -99,8 +99,8 @@ TEST(SPRTTest, SequentialProbabilityRatioTestPass) {
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = test::RandDouble(-1, 1);
-    double noise_y = test::RandDouble(-1, 1);
+    double noise_x = RandDouble(-1, 1);
+    double noise_y = RandDouble(-1, 1);
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
   // Test for the correct line.
@@ -138,8 +138,8 @@ TEST(SPRTTest, SequentialProbabilityRatioTestFail) {
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = test::RandDouble(-1, 1);
-    double noise_y = test::RandDouble(-1, 1);
+    double noise_x = RandDouble(-1, 1);
+    double noise_y = RandDouble(-1, 1);
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
   // Test for the correct line.

@@ -39,7 +39,7 @@
 
 #include "solvers/arrsac.h"
 #include "solvers/estimator.h"
-#include "test/test_utils.h"
+#include "util/random.h"
 
 using std::vector;
 
@@ -102,8 +102,8 @@ TEST(ArrsacTest, InitializeHypothesisSet) {
   // Create a set of points along y=x with a small random pertubation.
   vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = test::RandDouble(-1.0, 1.0);
-    double noise_y = test::RandDouble(-1.0, 1.0);
+    double noise_x = RandDouble(-1.0, 1.0);
+    double noise_y = RandDouble(-1.0, 1.0);
     if (i < 300) {
       noise_x = 0;
       noise_y = 0;

@@ -41,6 +41,7 @@
 #include <math.h>
 #include <random>
 
+#include "util/random.h"
 #include "test/test_utils.h"
 
 namespace theia {
@@ -48,7 +49,6 @@ using Eigen::AngleAxisd;
 using Eigen::Matrix3d;
 using Eigen::Map;
 using Eigen::Vector3d;
-using test::RandDouble;
 
 namespace {
 // Tolerance for accepting numbers are equal (for use in decomposition).
