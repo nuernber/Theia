@@ -34,9 +34,9 @@
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
+#include <time.h>
 #include <string>
 #include <vector>
-#include <time.h>
 
 #include "image/image.h"
 #include "image/image_canvas.h"
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
   BruteForceMatcher<BriskDescriptor, Hamming> brute_force_matcher;
   brute_force_matcher.Build(right_pruned_descriptors);
   std::vector<int> indices;
-  std::vector<int> distances; 
+  std::vector<int> distances;
   clock_t t;
   t = clock();
   brute_force_matcher.NearestNeighbor(left_pruned_descriptors,

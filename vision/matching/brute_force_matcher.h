@@ -60,7 +60,9 @@ class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
                        TDistanceType* distance) {
     Metric metric;
     *neighbor_index = 0;
-    *distance = metric(query.Data(), descriptors_[0]->Data(), query.Dimensions());
+    *distance = metric(query.Data(),
+                       descriptors_[0]->Data(),
+                       query.Dimensions());
     for (int i = 1; i < descriptors_.size(); i++) {
       TDistanceType new_dist = metric(query.Data(),
                                       descriptors_[i]->Data(),
@@ -79,7 +81,6 @@ class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
                          int k_nn,
                          std::vector<int>* knn_index,
                          std::vector<TDistanceType>* knn_distance) {
-
   }
 
  private:
