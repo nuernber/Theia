@@ -39,6 +39,7 @@
 #include <bitset>
 
 #include "image/keypoint_detector/keypoint.h"
+#include "util/util.h"
 
 namespace theia {
 // NOTE: This enum must exactly match the descriptor.proto enum in order for the
@@ -66,8 +67,8 @@ struct TypeDeference {
 // Specialization for bools and bitsets!
 template<std::size_t N>
 struct TypeDeference<bool, N> {
-  typedef typename std::bitset<N>& Data;
-  typedef const typename std::bitset<N>& ConstData;
+  typedef typename std::bitset<N>* Data;
+  typedef const typename std::bitset<N>* ConstData;
   typedef bool ConstRef;
   typedef typename std::bitset<N>::reference Ref;
 };
@@ -190,18 +191,22 @@ class Descriptor : public GenericDescriptor<T, N> {
 template<std::size_t N>
 class BinaryDescriptor : public GenericDescriptor<bool, N> {
  public:
-  typedef typename std::bitset<N>::reference bitref;
   explicit BinaryDescriptor(DescriptorType type)
-      : GenericDescriptor<bool, N>(type) {}
-  virtual ~BinaryDescriptor() {}
+      : GenericDescriptor<bool, N>(type) {
+    data_ = new uchar[N/sizeof(char)];
+    binary_data_ = reinterpret_cast<std::bitset<N>*>(data_);
+  }
+  virtual ~BinaryDescriptor() {
+    delete data_;
+  }
 
   typedef typename TypeDeference<bool, N>::Ref TRef;
   typedef typename TypeDeference<bool, N>::ConstRef TConstRef;
   typedef typename TypeDeference<bool, N>::Data TData;
   typedef typename TypeDeference<bool, N>::ConstData TConstData;
-  virtual inline TRef operator[](std::size_t i) { return binary_data_[i]; }
+  virtual inline TRef operator[](std::size_t i) { return (*binary_data_)[i]; }
   virtual inline TConstRef operator[](std::size_t i) const {
-    return binary_data_[i];
+    return (*binary_data_)[i];
   }
 
   // For binary descriptors, you cannot get a pointer to the bitset (even if you
@@ -211,8 +216,19 @@ class BinaryDescriptor : public GenericDescriptor<bool, N> {
   virtual inline TData Data() { return binary_data_; }
   virtual inline TConstData Data() const { return binary_data_; }
 
+  virtual inline uchar* CharData() { return data_; }
+  virtual inline const uchar* CharData() const { return data_; }
+  
  protected:
-  std::bitset<N> binary_data_;
+  // data_ is the uchar array which contains the data. The location of this data
+  // is constant! We use a reinterpret cast to reference the data as a bitset
+  // for simplicity. This allows us to use the uchar array for SSE operations,
+  // and bitsets for the rest. This reinterpret case technique is used in
+  // OpenCV, so I am assuming it is relatively safe for now. TODO(cmsweeney):
+  // make sure this doesn't mess things up when we copy it!
+  uchar* data_;
+  std::bitset<N>* binary_data_;
+
 };
 }  // namespace theia
 #endif  // IMAGE_DESCRIPTOR_DESCRIPTOR_H_
