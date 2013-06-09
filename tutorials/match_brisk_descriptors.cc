@@ -36,6 +36,7 @@
 #include <gflags/gflags.h>
 #include <string>
 #include <vector>
+#include <time.h>
 
 #include "image/image.h"
 #include "image/image_canvas.h"
@@ -99,11 +100,16 @@ int main(int argc, char *argv[]) {
   BruteForceMatcher<BriskDescriptor, Hamming> brute_force_matcher;
   brute_force_matcher.Build(right_pruned_descriptors);
   std::vector<int> indices;
-  std::vector<int> distances;
+  std::vector<int> distances; 
+  clock_t t;
+  t = clock();
   brute_force_matcher.NearestNeighbor(left_pruned_descriptors,
                                       &indices,
                                       &distances);
-  
+  t = clock() - t;
+  VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
+          << " to match BRISK descriptors";
+
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
   image_canvas.AddImage(left_image);
