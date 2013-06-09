@@ -173,8 +173,8 @@ class Descriptor : public GenericDescriptor<T, N> {
   explicit Descriptor(DescriptorType type) : GenericDescriptor<T, N>(type) {}
   virtual ~Descriptor() {}
 
-  virtual inline T operator[](std::size_t i) {return data_[i]; }
-  virtual inline const T operator[](std::size_t i) const { return data_[i]; }
+  virtual inline T& operator[](std::size_t i) {return data_[i]; }
+  virtual inline const T& operator[](std::size_t i) const { return data_[i]; }
 
   // Get a pointer to the data.
   virtual inline T* Data() { return data_.data(); }
