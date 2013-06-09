@@ -42,6 +42,7 @@ extern "C" {
 #include <vector>
 
 #include "image/keypoint_detector/keypoint_detector.h"
+#include "util/util.h"
 
 namespace theia {
 template<class T> class Image;
@@ -71,6 +72,8 @@ class SiftDetector : public KeypointDetector {
   int num_octaves_;
   int num_levels_;
   int first_octave_;
+
+  DISALLOW_COPY_AND_ASSIGN(SiftDetector);
 };
 }  // namespace theia
 #endif  // IMAGE_KEYPOINT_DETECTOR_SIFT_DETECTOR_H_

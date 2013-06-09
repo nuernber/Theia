@@ -39,6 +39,7 @@
 
 #include "image/keypoint_detector/keypoint_detector.h"
 #include "image/keypoint_detector/brisk_impl.h"
+#include "util/util.h"
 
 namespace theia {
 template<class T> class Image;
@@ -64,6 +65,7 @@ class BriskDetector : public KeypointDetector {
  private:
   int threshold_;
   BriskScaleSpace brisk_scale_space_;
+  DISALLOW_COPY_AND_ASSIGN(BriskDetector);
 };
 }  // namespace theia
 

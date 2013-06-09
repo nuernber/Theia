@@ -38,6 +38,7 @@
 
 #include "image/descriptor/descriptor.h"
 #include "image/descriptor/descriptor_extractor.h"
+#include "util/util.h"
 
 namespace theia {
 class DescriptorsProto;
@@ -160,6 +161,8 @@ class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
 
   // general
   static const float basic_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(BriskDescriptorExtractor);
 };
 }  // namespace theia
 #endif  // IMAGE_DESCRIPTOR_BRISK_DESCRIPTOR_H_

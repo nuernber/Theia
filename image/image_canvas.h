@@ -41,6 +41,7 @@
 
 #include "image/image.h"
 #include "util/random.h"
+#include "util/util.h"
 
 namespace theia {
 class Keypoint;
@@ -144,6 +145,8 @@ class ImageCanvas {
   // index. This makes it easy to draw points relative to a particular image
   // when there are multiple images on the canvas.
   std::vector<int> pixel_offsets_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageCanvas);
 };
 
 // ------------------ Implementation of template funcs ------------------ //

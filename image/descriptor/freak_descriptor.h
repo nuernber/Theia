@@ -39,6 +39,7 @@
 
 #include "image/descriptor/descriptor.h"
 #include "image/descriptor/descriptor_extractor.h"
+#include "util/util.h"
 
 namespace theia {
 class DescriptorsProto;
@@ -105,6 +106,8 @@ class FreakDescriptorExtractor : public DescriptorExtractor<FreakDescriptor> {
   };
 
  private:
+  DISALLOW_COPY_AND_ASSIGN(FreakDescriptorExtractor);
+  
   float MeanIntensity(const GrayImage& image, const GrayImage& integral,
                       const float kp_x,
                       const float kp_y,

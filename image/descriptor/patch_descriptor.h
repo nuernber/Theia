@@ -44,6 +44,7 @@
 #include "image/descriptor/descriptor_extractor.h"
 #include "image/image.h"
 #include "image/keypoint_detector/keypoint.h"
+#include "util/util.h"
 
 namespace theia {
 template<class D> class PatchDescriptorExtractor;
@@ -81,6 +82,9 @@ class PatchDescriptorExtractor : public DescriptorExtractor<D> {
   bool DescriptorToProto(const std::vector< D*>& descriptors,
                          DescriptorsProto* proto) const;
 #endif  // THEIA_NO_PROTOCOL_BUFFERS
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PatchDescriptorExtractor);
 };
 
 // ----------------- IMPLEMENTATION ----------------- //

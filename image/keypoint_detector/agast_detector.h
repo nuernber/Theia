@@ -40,6 +40,7 @@
 #include <vector>
 
 #include "image/keypoint_detector/keypoint_detector.h"
+#include "util/util.h"
 
 namespace theia {
 template<class T> class Image;
@@ -80,6 +81,7 @@ class AgastDetector : public KeypointDetector {
   std::unique_ptr<agast::AstDetector> ast_detector_;
 
   bool nonmax_suppression_;
+  DISALLOW_COPY_AND_ASSIGN(AgastDetector);
 };
 }  // namespace theia
 

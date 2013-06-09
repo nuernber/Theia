@@ -43,6 +43,7 @@ extern "C" {
 
 #include "image/descriptor/descriptor.h"
 #include "image/descriptor/descriptor_extractor.h"
+#include "util/util.h"
 
 namespace theia {
 class DescriptorsProto;
@@ -100,6 +101,8 @@ class SiftDescriptorExtractor : public DescriptorExtractor<SiftDescriptor> {
   int num_octaves_;
   int num_levels_;
   int first_octave_;
+
+  DISALLOW_COPY_AND_ASSIGN(SiftDescriptorExtractor);
 };
 }  // namespace theia
 #endif  // IMAGE_DESCRIPTOR_SIFT_DESCRIPTOR_H_

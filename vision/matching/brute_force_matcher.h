@@ -38,6 +38,7 @@
 #include <vector>
 
 #include "vision/matching/matcher.h"
+#include "util/util.h"
 
 namespace theia {
 // Template Descriptor can be any type of descriptor, and Metric can be any of
@@ -74,6 +75,9 @@ class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
     }
     return true;
   }
+
+  // This allows us to use the overloaded function in the base class (passing in
+  // a vector of queries instead of just one).
   using Matcher<TemplateDescriptor, Metric>::NearestNeighbor;
 
   // Search for the k nearest neighbors of a single queries.
@@ -83,8 +87,13 @@ class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
                          std::vector<TDistanceType>* knn_distance) {
   }
 
+  // This allows us to use the overloaded function in the base class (passing in
+  // a vector of queries instead of just one).
+  using Matcher<TemplateDescriptor, Metric>::KNearestNeighbors;
+  
  private:
   std::vector<TemplateDescriptor*> descriptors_;
+  DISALLOW_COPY_AND_ASSIGN(BruteForceMatcher);
 };
 }  // namespace theia
 #endif  // VISION_MATCHING_BRUTE_FORCE_MATCHER_H_

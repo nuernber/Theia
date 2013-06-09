@@ -36,6 +36,7 @@
 #define IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
 
 #include <vector>
+#include "util/util.h"
 
 namespace theia {
 template<class T> class Image;
@@ -46,6 +47,7 @@ class Keypoint;
 // detectors only use grayimages for now.
 class KeypointDetector {
  public:
+  KeypointDetector() {}
   virtual ~KeypointDetector() {}
 
   // Use this method to initialize any internals. Only use the constructor for
@@ -59,6 +61,8 @@ class KeypointDetector {
   virtual bool DetectKeypoints(const GrayImage& image,
                                std::vector<Keypoint*>* keypoints) = 0;
 
+ protected:
+  DISALLOW_COPY_AND_ASSIGN(KeypointDetector);
 };
 }  // namespace theia
 

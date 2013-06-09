@@ -38,6 +38,7 @@
 #include <vector>
 
 #include "image/keypoint_detector/keypoint_detector.h"
+#include "util/util.h"
 
 namespace theia {
 template<class T> class Image;
@@ -61,6 +62,8 @@ class HarrisDetector : public KeypointDetector {
   double blur_;
   // Number of sigmas to use in the blur.
   double sigma_;
+
+  DISALLOW_COPY_AND_ASSIGN(HarrisDetector);
 };
 }  // namespace theia
 

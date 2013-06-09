@@ -36,6 +36,7 @@
 #define VISION_MATCHING_MATCHER_H_
 
 #include <vector>
+#include "util/util.h"
 
 namespace theia {
 // Template Descriptor can be any type of descriptor, and Metric can be any of
@@ -83,6 +84,9 @@ class Matcher {
       std::vector<std::vector<TDistanceType> >* knn_distances) {
 
   }
+
+ protected:
+  DISALLOW_COPY_AND_ASSIGN(Matcher);  
 };
 }  // namespace theia
 #endif  // VISION_MATCHING_MATCHER_H_

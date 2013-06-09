@@ -39,6 +39,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "util/util.h"
+
 namespace theia {
 class DescriptorsProto;
 template<class T, std::size_t N> class GenericDescriptor;
@@ -97,6 +99,9 @@ class DescriptorExtractor {
   virtual bool DescriptorToProto(const std::vector<D*>& descriptors,
                                  DescriptorsProto* proto) const = 0;
 #endif
+
+ protected:
+  DISALLOW_COPY_AND_ASSIGN(DescriptorExtractor);
 };
 
 // ------------------- IMPLEMENTATION ------------------- //
