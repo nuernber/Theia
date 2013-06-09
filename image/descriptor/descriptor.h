@@ -35,6 +35,7 @@
 #ifndef IMAGE_DESCRIPTOR_DESCRIPTOR_H_
 #define IMAGE_DESCRIPTOR_DESCRIPTOR_H_
 
+#include <algorithm>
 #include <array>
 #include <bitset>
 
@@ -69,7 +70,7 @@ template<std::size_t N>
 struct TypeDeference<bool, N> {
   typedef typename std::bitset<N>* Data;
   typedef const typename std::bitset<N>* ConstData;
-  typedef bool ConstRef;
+  typedef const bool ConstRef;
   typedef typename std::bitset<N>::reference Ref;
 };
 
@@ -172,16 +173,12 @@ class Descriptor : public GenericDescriptor<T, N> {
   explicit Descriptor(DescriptorType type) : GenericDescriptor<T, N>(type) {}
   virtual ~Descriptor() {}
 
-  typedef typename TypeDeference<T, N>::Ref TRef;
-  typedef typename TypeDeference<T, N>::ConstRef TConstRef;
-  typedef typename TypeDeference<T, N>::Data TData;
-  typedef typename TypeDeference<T, N>::ConstData TConstData;
-  virtual inline TRef operator[](std::size_t i) {return data_[i]; }
-  virtual inline TConstRef operator[](std::size_t i) const { return data_[i]; }
+  virtual inline T operator[](std::size_t i) {return data_[i]; }
+  virtual inline const T operator[](std::size_t i) const { return data_[i]; }
 
   // Get a pointer to the data.
-  virtual inline TData Data() { return data_.data(); }
-  virtual inline TConstData Data() const { return data_.data(); }
+  virtual inline T* Data() { return data_.data(); }
+  virtual inline const T* Data() const { return data_.data(); }
 
  protected:
   std::array<T, N> data_;
@@ -193,19 +190,42 @@ class BinaryDescriptor : public GenericDescriptor<bool, N> {
  public:
   explicit BinaryDescriptor(DescriptorType type)
       : GenericDescriptor<bool, N>(type) {
-    data_ = new uchar[N/sizeof(char)];
+    data_ = new uchar[N/sizeof(uchar)];
     binary_data_ = reinterpret_cast<std::bitset<N>*>(data_);
   }
-  virtual ~BinaryDescriptor() {
-    delete data_;
+
+  // Copy constructor needs to be explicitly defined because of the reinterpret
+  // cast.
+  BinaryDescriptor(const BinaryDescriptor<N>& copy_from) {
+    data_ = new uchar[N/sizeof(uchar)];
+    std::copy(copy_from.data_, copy_from.data_ + N/sizeof(char), data_);
+    binary_data_ = reinterpret_cast<std::bitset<N>*>(data_);
   }
 
+  // Assignment operator is explicitly defined so that the reinterpret cast
+  // holds valid.
+  BinaryDescriptor& operator=(const BinaryDescriptor<N>& copy_from) {
+    if (this != &copy_from) {
+      uchar* new_data = new uchar[N/sizeof(uchar)];
+      std::copy(copy_from.data_, copy_from.data_ + N/sizeof(char), new_data);
+      delete [] data_;
+      data_ = new_data;
+      binary_data_ = reinterpret_cast<std::bitset<N>*>(data_);
+    }
+    return *this;
+  }
+
+  virtual ~BinaryDescriptor() {
+    delete [] data_;
+    // We do not have to delete the binary_data_ member because it points to the
+    // same data as data_;
+  }
+
+  // We need a special type of std::bitset<N>::reference for the mutable data
+  // pointer to a specific bit.
   typedef typename TypeDeference<bool, N>::Ref TRef;
-  typedef typename TypeDeference<bool, N>::ConstRef TConstRef;
-  typedef typename TypeDeference<bool, N>::Data TData;
-  typedef typename TypeDeference<bool, N>::ConstData TConstData;
   virtual inline TRef operator[](std::size_t i) { return (*binary_data_)[i]; }
-  virtual inline TConstRef operator[](std::size_t i) const {
+  virtual inline const bool operator[](std::size_t i) const {
     return (*binary_data_)[i];
   }
 
@@ -213,12 +233,12 @@ class BinaryDescriptor : public GenericDescriptor<bool, N> {
   // could, it seems rather dangerous) so we return the whole bitset
   // instead. This works well because the hamming distance functions require the
   // entire bitset.
-  virtual inline TData Data() { return binary_data_; }
-  virtual inline TConstData Data() const { return binary_data_; }
+  virtual inline std::bitset<N>* Data() { return binary_data_; }
+  virtual inline const std::bitset<N>* Data() const { return binary_data_; }
 
   virtual inline uchar* CharData() { return data_; }
   virtual inline const uchar* CharData() const { return data_; }
-  
+
  protected:
   // data_ is the uchar array which contains the data. The location of this data
   // is constant! We use a reinterpret cast to reference the data as a bitset
@@ -228,7 +248,6 @@ class BinaryDescriptor : public GenericDescriptor<bool, N> {
   // make sure this doesn't mess things up when we copy it!
   uchar* data_;
   std::bitset<N>* binary_data_;
-
 };
 }  // namespace theia
 #endif  // IMAGE_DESCRIPTOR_DESCRIPTOR_H_
