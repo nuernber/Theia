@@ -1189,13 +1189,11 @@ BriskLayer::BriskLayer(const Image<unsigned char>& img, float scale, float offse
 BriskLayer::BriskLayer(const BriskLayer& layer, int mode) {
   if (mode==CommonParams::HALFSAMPLE) {
     img_ = Image<unsigned char>(layer.img().Rows()/2, layer.img().Cols()/2);
-    // TODO(cmsweeney): change this to CVD?
     halfsample(layer.img(), img_);
     scale_= layer.scale()*2;
     offset_=0.5*scale_-0.5;
   } else {
     img_ = Image<unsigned char>(2*(layer.img().Rows()/3), 2*(layer.img().Cols()/3));
-    // TODO(cmsweeney): chagne this to CVD?
     twothirdsample(layer.img(), img_);
     scale_= layer.scale()*1.5;
     offset_=0.5*scale_-0.5;

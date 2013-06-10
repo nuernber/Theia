@@ -75,7 +75,11 @@ bool SiftDetector::DetectKeypoints(const GrayImage& image,
   // Calculate the first octave to process.
   int vl_status = vl_sift_process_first_octave(sift_filter_,
                                                mutable_image.Data());
-  // Process octaves until you can't anymore.
+  // Reserve an amount that is slightly larger than what a typical detector
+  // would return.
+  keypoints->reserve(2000);
+  
+  // Process octaves until you can't anymore.  
   while (vl_status != VL_ERR_EOF) {
     // Detect the keypoints.
     vl_sift_detect(sift_filter_);
@@ -95,8 +99,6 @@ bool SiftDetector::DetectKeypoints(const GrayImage& image,
                                           Keypoint::SIFT);
         keypoint->set_scale(vl_keypoints[i].sigma);
         keypoint->set_orientation(angles[j]);
-        // TODO(cmsweeney): there is no preallocation of the vector. This could
-        // have bad performance!
         keypoints->push_back(keypoint);
       }
     }

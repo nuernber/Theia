@@ -60,7 +60,6 @@ class Matcher {
                                DistanceType threshold = 0) = 0;
 
   // Search for the sole nearest neighbor for a multiple queries.
-  // TODO(cmsweeney): Change this to featurematch data type!
   virtual bool NearestNeighbor(
       const std::vector<TDescriptor*>& queries,
       std::vector<int>* neighbor_indices,
