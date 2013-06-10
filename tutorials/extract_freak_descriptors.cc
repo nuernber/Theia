@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
-  BriskDetector brisk_detector(60, 4);
+  BriskDetector brisk_detector(70, 4);
   std::vector<Keypoint*> keypoints;
   brisk_detector.DetectKeypoints(image, &keypoints);
   VLOG(0) << "detected " << keypoints.size()
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 
   // Extract descriptors.
   VLOG(0) << "extracting descriptors.";
-  FreakDescriptorExtractor freak_extractor(false, false, 1);
+  FreakDescriptorExtractor freak_extractor(true, true, 1);
   freak_extractor.Initialize();
   std::vector<FreakDescriptor*> pruned_descriptors;
   clock_t t;

@@ -105,7 +105,8 @@ int main(int argc, char *argv[]) {
   t = clock();
   brute_force_matcher.NearestNeighbor(left_pruned_descriptors,
                                       &indices,
-                                      &distances);
+                                      &distances,
+                                      128);
   t = clock() - t;
   VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
           << " to match BRISK descriptors";

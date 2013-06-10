@@ -58,17 +58,22 @@ class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
   // Search for the sole nearest neighbor for a single query.
   bool NearestNeighbor(const TemplateDescriptor& query,
                        int* neighbor_index,
-                       TDistanceType* distance) {
+                       TDistanceType* distance,
+                       TDistanceType threshold) {
     Metric metric;
     *neighbor_index = 0;
     *distance = metric(query.Data(),
                        descriptors_[0]->Data(),
                        query.Dimensions());
+    
+    // Set a threshold if there isn't one already set.
+    if (threshold <= 0)
+      threshold = *distance;
     for (int i = 1; i < descriptors_.size(); i++) {
       TDistanceType new_dist = metric(query.Data(),
                                       descriptors_[i]->Data(),
                                       query.Dimensions());
-      if (new_dist < *distance) {
+      if (new_dist < *distance && new_dist < threshold) {
         *neighbor_index = i;
         *distance = new_dist;
       }

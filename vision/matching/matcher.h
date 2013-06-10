@@ -55,13 +55,16 @@ class Matcher {
   // Search for the sole nearest neighbor for a single query.
   virtual bool NearestNeighbor(const TemplateDescriptor& query,
                                int* neighbor_index,
-                               TDistanceType* distance) = 0;
+                               TDistanceType* distance,
+                               TDistanceType threshold = 0) = 0;
 
   // Search for the sole nearest neighbor for a multiple queries.
+  // TODO(cmsweeney): Change this to featurematch data type!
   virtual bool NearestNeighbor(
       const std::vector<TemplateDescriptor*>& queries,
       std::vector<int>* neighbor_indices,
-      std::vector<TDistanceType>* distances) {
+      std::vector<TDistanceType>* distances,
+      TDistanceType threshold = 0) {
     neighbor_indices->resize(queries.size());
     distances->resize(queries.size());
     for (int i = 0; i < queries.size(); i++) {
