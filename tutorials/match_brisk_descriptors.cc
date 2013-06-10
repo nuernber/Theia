@@ -45,18 +45,20 @@
 #include "image/keypoint_detector/brisk_detector.h"
 #include "vision/matching/distance.h"
 #include "vision/matching/brute_force_matcher.h"
+#include "vision/matching/image_matcher.h"
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
 
-using theia::BriskDetector;
-using theia::GrayImage;
-using theia::ImageCanvas;
-using theia::Keypoint;
 using theia::BriskDescriptor;
 using theia::BriskDescriptorExtractor;
+using theia::BriskDetector;
+using theia::BruteForceImageMatcher;
 using theia::BruteForceMatcher;
+using theia::GrayImage;
 using theia::Hamming;
+using theia::ImageCanvas;
+using theia::Keypoint;
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
@@ -97,27 +99,26 @@ int main(int argc, char *argv[]) {
   VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
 
   // Match descriptors!
-  BruteForceMatcher<BriskDescriptor, Hamming> brute_force_matcher;
-  brute_force_matcher.Build(right_pruned_descriptors);
-  std::vector<int> indices;
-  std::vector<int> distances;
-  clock_t t;
-  t = clock();
-  brute_force_matcher.NearestNeighbor(left_pruned_descriptors,
-                                      &indices,
-                                      &distances,
-                                      128);
+  BruteForceImageMatcher<BriskDescriptor, Hamming> brute_force_image_matcher;
+  std::vector<theia::FeatureMatch<int> > matches;
+  clock_t t = clock();
+  brute_force_image_matcher.Match(left_pruned_descriptors,
+                                  right_pruned_descriptors,
+                                  &matches,
+                                  128);
   t = clock() - t;
   VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
           << " to match BRISK descriptors";
-
+  
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
   image_canvas.AddImage(left_image);
   image_canvas.AddImage(right_image);
   image_canvas.DrawMatchedFeatures(0, left_pruned_descriptors,
                                    1, right_pruned_descriptors,
-                                   indices, 0.1);
+                                   matches,
+                                   0.1);
+  
   image_canvas.Write(FLAGS_img_output_dir +
                      std::string("/brisk_descriptors.png"));
 }

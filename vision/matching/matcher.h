@@ -41,55 +41,57 @@
 namespace theia {
 // Template Descriptor can be any type of descriptor, and Metric can be any of
 // the distance metrics defined in distance.h
-template <class TemplateDescriptor, class Metric>
+template <class TDescriptor, class Metric>
 class Matcher {
  public:
-  typedef typename Metric::ResultType TDistanceType;
-
+  typedef typename Metric::ResultType DistanceType;
+  typedef TDescriptor DescriptorType;
+  
   Matcher() {}
   virtual ~Matcher() {}
 
   // Build an index or other data structures needed to perform the search.
-  virtual bool Build(const std::vector<TemplateDescriptor*>& descriptors) = 0;
+  virtual bool Build(const std::vector<TDescriptor*>& descriptors) = 0;
 
   // Search for the sole nearest neighbor for a single query.
-  virtual bool NearestNeighbor(const TemplateDescriptor& query,
+  virtual bool NearestNeighbor(const TDescriptor& query,
                                int* neighbor_index,
-                               TDistanceType* distance,
-                               TDistanceType threshold = 0) = 0;
+                               DistanceType* distance,
+                               DistanceType threshold = 0) = 0;
 
   // Search for the sole nearest neighbor for a multiple queries.
   // TODO(cmsweeney): Change this to featurematch data type!
   virtual bool NearestNeighbor(
-      const std::vector<TemplateDescriptor*>& queries,
+      const std::vector<TDescriptor*>& queries,
       std::vector<int>* neighbor_indices,
-      std::vector<TDistanceType>* distances,
-      TDistanceType threshold = 0) {
+      std::vector<DistanceType>* distances,
+      DistanceType threshold = 0) {
     neighbor_indices->resize(queries.size());
     distances->resize(queries.size());
     for (int i = 0; i < queries.size(); i++) {
-      NearestNeighbor(*queries[i], &((*neighbor_indices)[i]), &((*distances)[i]));
+      NearestNeighbor(*queries[i], &((*neighbor_indices)[i]),
+                      &((*distances)[i]), threshold);
     }
     return true;
   }
 
   // Search for the k nearest neighbors of a single queries.
-  virtual bool KNearestNeighbors(const TemplateDescriptor& query,
+  virtual bool KNearestNeighbors(const TDescriptor& query,
                                  int k_nn,
                                  std::vector<int>* knn_index,
-                                 std::vector<TDistanceType>* knn_distance) = 0;
+                                 std::vector<DistanceType>* knn_distance) = 0;
 
   // Search for the k nearest neighbors of a multiple queries.
   virtual bool KNearestNeighbors(
-      const std::vector<TemplateDescriptor*>& queries,
+      const std::vector<TDescriptor*>& queries,
       int k_nn,
       std::vector<std::vector<int> >* knn_indices,
-      std::vector<std::vector<TDistanceType> >* knn_distances) {
+      std::vector<std::vector<DistanceType> >* knn_distances) {
 
   }
 
  protected:
-  DISALLOW_COPY_AND_ASSIGN(Matcher);  
+  DISALLOW_COPY_AND_ASSIGN(Matcher);
 };
 }  // namespace theia
 #endif  // VISION_MATCHING_MATCHER_H_

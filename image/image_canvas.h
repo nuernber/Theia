@@ -42,6 +42,7 @@
 #include "image/image.h"
 #include "util/random.h"
 #include "util/util.h"
+#include "vision/matching/image_matcher.h"
 
 namespace theia {
 class Keypoint;
@@ -120,12 +121,12 @@ class ImageCanvas {
 
   // Draw matching features in the image by drawing a line from features1[i]
   // to features2[i].
-  template<class Feature>
+  template<class Feature, class T>
   void DrawMatchedFeatures(int image_index1,
                            const std::vector<Feature*>& features1,
                            int image_index2,
                            const std::vector<Feature*>& features2,
-                           const std::vector<int>& matches,
+                           const std::vector<FeatureMatch<T> >& matches,
                            double scale = 10.0);
 
   // Write the image canvas to a file.
@@ -207,24 +208,24 @@ void ImageCanvas::DrawFeatures(const std::vector<Feature*>& features,
 }
 
 // Draw matching features in the image.
-template<class Feature>
+template<class Feature, class T>
 void ImageCanvas::DrawMatchedFeatures(
     int image_index1, const std::vector<Feature*>& features1,
     int image_index2, const std::vector<Feature*>& features2,
-    const std::vector<int>& matches,
+    const std::vector<FeatureMatch<T> >& matches,
     double scale) {
-  CHECK_EQ(features1.size(), matches.size());
   CHECK_GT(pixel_offsets_.size(), std::max(image_index1, image_index2));
   InitRandomGenerator();
   for (int i = 0; i < matches.size(); i++) {
-    Feature& match = *features2[matches[i]];
+    Feature& base = *features1[matches[i].feature1_ind];
+    Feature& match = *features2[matches[i].feature2_ind];
     RGBPixel color(RandDouble(0, 1.0),
                    RandDouble(0, 1.0),
                    RandDouble(0, 1.0));
-    DrawFeature(image_index1, *features1[i], color, scale);
+    DrawFeature(image_index1, base, color, scale);
     DrawFeature(image_index2, match, color, scale);
-    DrawLine(pixel_offsets_[image_index1] + features1[i]->x(),
-             features1[i]->y(),
+    DrawLine(pixel_offsets_[image_index1] + base.x(),
+             base.y(),
              pixel_offsets_[image_index2] + match.x(),
              match.y(),
              color);

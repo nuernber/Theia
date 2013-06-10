@@ -43,24 +43,25 @@
 namespace theia {
 // Template Descriptor can be any type of descriptor, and Metric can be any of
 // the distance metrics defined in distance.h
-template <class TemplateDescriptor, class Metric>
-class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
+template <class TDescriptor, class Metric>
+class BruteForceMatcher : public Matcher<TDescriptor, Metric> {
  public:
-  typedef typename Metric::ResultType TDistanceType;
+  typedef typename Metric::ResultType DistanceType;
+  typedef TDescriptor DescriptorType;
 
   BruteForceMatcher() {}
   ~BruteForceMatcher() {}
 
   // Build an index or other data structures needed to perform the search.
-  bool Build(const std::vector<TemplateDescriptor*>& descriptors) {
+  bool Build(const std::vector<TDescriptor*>& descriptors) {
     descriptors_ = descriptors;
   }
   
   // Search for the sole nearest neighbor for a single query.
-  bool NearestNeighbor(const TemplateDescriptor& query,
+  bool NearestNeighbor(const TDescriptor& query,
                        int* neighbor_index,
-                       TDistanceType* distance,
-                       TDistanceType threshold) {
+                       DistanceType* distance,
+                       DistanceType threshold) {
     Metric metric;
     *neighbor_index = 0;
     *distance = metric(query.Data(),
@@ -71,7 +72,7 @@ class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
     if (threshold <= 0)
       threshold = *distance;
     for (int i = 1; i < descriptors_.size(); i++) {
-      TDistanceType new_dist = metric(query.Data(),
+      DistanceType new_dist = metric(query.Data(),
                                       descriptors_[i]->Data(),
                                       query.Dimensions());
       if (new_dist < *distance && new_dist < threshold) {
@@ -84,21 +85,21 @@ class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
 
   // This allows us to use the overloaded function in the base class (passing in
   // a vector of queries instead of just one).
-  using Matcher<TemplateDescriptor, Metric>::NearestNeighbor;
+  using Matcher<TDescriptor, Metric>::NearestNeighbor;
 
   // Search for the k nearest neighbors of a single queries.
-  bool KNearestNeighbors(const TemplateDescriptor& query,
+  bool KNearestNeighbors(const TDescriptor& query,
                          int k_nn,
                          std::vector<int>* knn_index,
-                         std::vector<TDistanceType>* knn_distance) {
+                         std::vector<DistanceType>* knn_distance) {
   }
 
   // This allows us to use the overloaded function in the base class (passing in
   // a vector of queries instead of just one).
-  using Matcher<TemplateDescriptor, Metric>::KNearestNeighbors;
+  using Matcher<TDescriptor, Metric>::KNearestNeighbors;
   
  private:
-  std::vector<TemplateDescriptor*> descriptors_;
+  std::vector<TDescriptor*> descriptors_;
   DISALLOW_COPY_AND_ASSIGN(BruteForceMatcher);
 };
 }  // namespace theia
