@@ -32,9 +32,8 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef NCC_SSE_H_
-#define NCC_SSE_H_
-#include <glog/logging.h>
+#ifndef MATH_NORMALIZED_CROSS_CORRELATION_H_
+#define MATH_NORMALIZED_CROSS_CORRELATION_H_
 #ifdef THEIA_USE_SSE
 #include <xmmintrin.h>
 #endif
@@ -175,4 +174,4 @@ float NormalizedCrossCorrelation(const float* a, const float* b, int n) {
 }
 #endif  // THEIA_USE_SSE
 }  // namespace theia
-#endif  // NCC_SSE_H_
+#endif  // MATH_NORMALIZED_CROSS_CORRELATION_H_
