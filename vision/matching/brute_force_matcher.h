@@ -55,6 +55,7 @@ class BruteForceMatcher : public Matcher<TemplateDescriptor, Metric> {
   bool Build(const std::vector<TemplateDescriptor*>& descriptors) {
     descriptors_ = descriptors;
   }
+  
   // Search for the sole nearest neighbor for a single query.
   bool NearestNeighbor(const TemplateDescriptor& query,
                        int* neighbor_index,
