@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 
   // Extract descriptors.
   VLOG(0) << "extracting descriptors.";
-  BriskDescriptorExtractor brisk_extractor(false, false, 1);
+  BriskDescriptorExtractor brisk_extractor;
   brisk_extractor.Initialize();
 
   std::vector<BriskDescriptor*> left_pruned_descriptors;
@@ -102,15 +102,16 @@ int main(int argc, char *argv[]) {
   BruteForceImageMatcher<BriskDescriptor, Hamming> brute_force_image_matcher;
   std::vector<theia::FeatureMatch<int> > matches;
   clock_t t = clock();
-  brute_force_image_matcher.MatchDistanceRatio(left_pruned_descriptors,
-                                               right_pruned_descriptors,
-                                               &matches,
-                                               0.7,
-                                               90);
+  brute_force_image_matcher.MatchSymmetricAndDistanceRatio(
+      left_pruned_descriptors,
+      right_pruned_descriptors,
+      &matches,
+      0.8,
+      128);
   t = clock() - t;
   VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
           << " to match BRISK descriptors";
-  
+
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
   image_canvas.AddImage(left_image);
@@ -119,7 +120,7 @@ int main(int argc, char *argv[]) {
                                    1, right_pruned_descriptors,
                                    matches,
                                    0.1);
-  
+
   image_canvas.Write(FLAGS_img_output_dir +
                      std::string("/brisk_descriptors.png"));
 }

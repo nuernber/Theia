@@ -35,6 +35,10 @@
 #ifndef VISION_MATCHING_IMAGE_MATCHER_H_
 #define VISION_MATCHING_IMAGE_MATCHER_H_
 
+#include <unordered_map>
+#include <vector>
+
+#include "util/map_util.h"
 #include "util/util.h"
 #include "vision/matching/brute_force_matcher.h"
 
@@ -69,18 +73,18 @@ class ImageMatcher {
 
   // Return all the NN matches that pass the threshold and pass the ratio test
   // (distance of 1st NN / distance of 2nd NN < ratio).
-  virtual bool MatchDistanceRatio(const std::vector<DescriptorType*>& desc_1,
-                                  const std::vector<DescriptorType*>& desc_2,
-                                  std::vector<FeatureMatch<DistanceType> >* matches,
-                                  double ratio,
-                                  DistanceType threshold = 0);
+  virtual bool MatchDistanceRatio(
+      const std::vector<DescriptorType*>& desc_1,
+      const std::vector<DescriptorType*>& desc_2,
+      std::vector<FeatureMatch<DistanceType> >* matches,
+      double ratio,
+      DistanceType threshold = 0);
 
   // Only returns matches that are mutual nearest neighbors (i.e. if a
   // descriptor x in image 1 has a NN y in image 2, then y's NN is x).
   virtual bool MatchSymmetric(const std::vector<DescriptorType*>& desc_1,
                               const std::vector<DescriptorType*>& desc_2,
                               std::vector<FeatureMatch<DistanceType> >* matches,
-                              double lowes_ratio,
                               DistanceType threshold = 0);
 
   // Returns matches that pass the symmetric test and the distance ratio test.
@@ -88,16 +92,19 @@ class ImageMatcher {
       const std::vector<DescriptorType*>& desc_1,
       const std::vector<DescriptorType*>& desc_2,
       std::vector<FeatureMatch<DistanceType> >* matches,
-      double lowes_ratio,
+      double ratio,
       DistanceType threshold = 0);
 
- protected:
+ private:
+  void IntersectMatches(const std::vector<FeatureMatch<DistanceType> >& match1,
+                        const std::vector<FeatureMatch<DistanceType> >& match2,
+                        std::vector<FeatureMatch<DistanceType> >* output_match);
+
   DISALLOW_COPY_AND_ASSIGN(ImageMatcher);
 };
 
 template <class T, class D>
 class BruteForceImageMatcher : public ImageMatcher<BruteForceMatcher<T, D> > {
-
 };
 
 // ---------------------- Implementation ------------------------ //
@@ -159,7 +166,6 @@ bool ImageMatcher<Matcher>::MatchDistanceRatio(
     }
   }
   return true;
-  
 }
 
 template<class Matcher>
@@ -167,9 +173,16 @@ bool ImageMatcher<Matcher>::MatchSymmetric(
     const std::vector<DescriptorType*>& desc_1,
     const std::vector<DescriptorType*>& desc_2,
     std::vector<FeatureMatch<DistanceType> >* matches,
-    double lowes_ratio,
     DistanceType threshold) {
-
+  std::vector<FeatureMatch<DistanceType> > forward_matches;
+  std::vector<FeatureMatch<DistanceType> > backward_matches;
+  // Get matches from image 1 to image 2.
+  Match(desc_1, desc_2, &forward_matches, threshold);
+  // Get matches from image 2 to image 1.
+  Match(desc_2, desc_1, &backward_matches, threshold);
+  // Interesect the two sets.
+  IntersectMatches(forward_matches, backward_matches, matches);
+  return true;
 }
 
 template<class Matcher>
@@ -177,10 +190,54 @@ bool ImageMatcher<Matcher>::MatchSymmetricAndDistanceRatio(
     const std::vector<DescriptorType*>& desc_1,
     const std::vector<DescriptorType*>& desc_2,
     std::vector<FeatureMatch<DistanceType> >* matches,
-    double lowes_ratio,
+    double ratio,
     DistanceType threshold) {
+  std::vector<FeatureMatch<DistanceType> > forward_matches;
+  std::vector<FeatureMatch<DistanceType> > backward_matches;
+  // Get all matches from image 1 to 2 that pass the ratio test.
+  MatchDistanceRatio(desc_1, desc_2, &forward_matches, ratio);
+  // Get all matches from image 2 to 1 that pass the ratio test.
+  MatchDistanceRatio(desc_2, desc_1, &backward_matches, ratio);
+  // Intersect the two sets.
+  IntersectMatches(forward_matches, backward_matches, matches);
 
+  // Remove all matches that do not pass the threshold test.
+  auto match_iterator = matches->begin();
+  while (match_iterator != matches->end()) {
+    if (match_iterator->distance >= threshold) {
+      match_iterator = matches->erase(match_iterator);
+    } else {
+      ++match_iterator;
+    }
+  }
+  return true;
 }
 
+template<class Matcher>
+void ImageMatcher<Matcher>::IntersectMatches(
+    const std::vector<FeatureMatch<DistanceType> >& match1,
+    const std::vector<FeatureMatch<DistanceType> >& match2,
+    std::vector<FeatureMatch<DistanceType> >* output_match) {
+  std::unordered_map<int, int> index_map;
+  index_map.reserve(match2.size());
+  // Add all feature2 -> feature1 matches to the map.
+  for (const FeatureMatch<DistanceType>& feature_match : match2) {
+    InsertOrDie(&index_map,
+                feature_match.feature1_ind,
+                feature_match.feature2_ind);
+  }
+
+  // Search the map for feature1 -> feature2 matches that are also present in
+  // the feature2 -> feature1 matches.
+  output_match->reserve(match1.size());
+  for (const FeatureMatch<DistanceType>& feature_match : match1) {
+    int feature1_index = FindWithDefault(index_map,
+                                         feature_match.feature2_ind,
+                                         -1);
+    if (feature1_index == feature_match.feature1_ind) {
+      output_match->push_back(feature_match);
+    }
+  }
+}
 }  // namespace theia
 #endif  // VISION_MATCHING_IMAGE_MATCHER_H_

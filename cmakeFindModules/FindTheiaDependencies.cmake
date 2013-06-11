@@ -36,14 +36,16 @@ macro(set_compile_parameters)
 
   # Release compile parameters and optimizations.
   IF (CMAKE_BUILD_TYPE STREQUAL "Release")
+    # Note we suppress the deprecated declarations warning because some
+    # libraries we use depend on old standards (e.g. CVD uses auto_ptr).
     IF (CMAKE_COMPILER_IS_GNUCXX)
       # Linux
       IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -msse2 -msse3 -msse4")
+        SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -msse2 -msse3 -msse4-Wno-deprecated-declarations")
       ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
       # Mac OS X
       IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -msse4 -msse3 -msse2")
+        SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -msse4 -msse3 -msse2 -Wno-deprecated-declarations")
       ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     ENDIF (CMAKE_COMPILER_IS_GNUCXX)
   ENDIF (CMAKE_BUILD_TYPE STREQUAL "Release")

@@ -46,7 +46,7 @@ class Matcher {
  public:
   typedef typename Metric::ResultType DistanceType;
   typedef TDescriptor DescriptorType;
-  
+
   Matcher() {}
   virtual ~Matcher() {}
 

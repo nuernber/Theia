@@ -36,6 +36,7 @@
 #define VISION_MATCHING_BRUTE_FORCE_MATCHER_H_
 
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "vision/matching/matcher.h"
@@ -144,8 +145,8 @@ class BruteForceMatcher : public Matcher<TDescriptor, Metric> {
 
  private:
   struct OrderByDistance {
-    bool operator ()(const std::pair<int, DistanceType>& lhs,
-                     const std::pair<int, DistanceType>& rhs) const {
+    bool operator()(const std::pair<int, DistanceType>& lhs,
+                    const std::pair<int, DistanceType>& rhs) const {
       return lhs.second < rhs.second;
     }
   };
