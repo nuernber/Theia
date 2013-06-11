@@ -53,7 +53,8 @@ class Matcher {
   // Build an index or other data structures needed to perform the search.
   virtual bool Build(const std::vector<TDescriptor*>& descriptors) = 0;
 
-  // Search for the sole nearest neighbor for a single query.
+  // Search for the sole nearest neighbor for a single query. Returns true if
+  // the match is less than the threshold, false if not.
   virtual bool NearestNeighbor(const TDescriptor& query,
                                int* neighbor_index,
                                DistanceType* distance,
@@ -86,7 +87,17 @@ class Matcher {
       int k_nn,
       std::vector<std::vector<int> >* knn_indices,
       std::vector<std::vector<DistanceType> >* knn_distances) {
-
+    knn_indices->resize(queries.size());
+    knn_distances->resize(queries.size());
+    for (int i = 0; i < queries.size(); i++) {
+      (*knn_indices)[i].resize(k_nn);
+      (*knn_distances)[i].resize(k_nn);
+      KNearestNeighbors(*queries[i],
+                        k_nn,
+                        &(*knn_indices)[i],
+                        &(*knn_distances)[i]);
+    }
+    return true;
   }
 
  protected:

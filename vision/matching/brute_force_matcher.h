@@ -35,6 +35,7 @@
 #ifndef VISION_MATCHING_BRUTE_FORCE_MATCHER_H_
 #define VISION_MATCHING_BRUTE_FORCE_MATCHER_H_
 
+#include <queue>
 #include <vector>
 
 #include "vision/matching/matcher.h"
@@ -56,7 +57,7 @@ class BruteForceMatcher : public Matcher<TDescriptor, Metric> {
   bool Build(const std::vector<TDescriptor*>& descriptors) {
     descriptors_ = descriptors;
   }
-  
+
   // Search for the sole nearest neighbor for a single query.
   bool NearestNeighbor(const TDescriptor& query,
                        int* neighbor_index,
@@ -67,20 +68,25 @@ class BruteForceMatcher : public Matcher<TDescriptor, Metric> {
     *distance = metric(query.Data(),
                        descriptors_[0]->Data(),
                        query.Dimensions());
-    
+    bool found_nn = false;
     // Set a threshold if there isn't one already set.
     if (threshold <= 0)
       threshold = *distance;
+
+    if (*distance <= threshold)
+      found_nn = true;
+
     for (int i = 1; i < descriptors_.size(); i++) {
       DistanceType new_dist = metric(query.Data(),
-                                      descriptors_[i]->Data(),
-                                      query.Dimensions());
+                                     descriptors_[i]->Data(),
+                                     query.Dimensions());
       if (new_dist < *distance && new_dist < threshold) {
         *neighbor_index = i;
         *distance = new_dist;
+        found_nn = true;
       }
     }
-    return true;
+    return found_nn;
   }
 
   // This allows us to use the overloaded function in the base class (passing in
@@ -92,13 +98,58 @@ class BruteForceMatcher : public Matcher<TDescriptor, Metric> {
                          int k_nn,
                          std::vector<int>* knn_index,
                          std::vector<DistanceType>* knn_distance) {
+    CHECK_GT(descriptors_.size(), k_nn) << "requesting more nearest neighbors "
+                                        << "than elements in the search space!";
+    Metric metric;
+    std::priority_queue<std::pair<int, DistanceType>,
+                        std::vector<std::pair<int, DistanceType> >,
+                        OrderByDistance> min_heap;
+    // Load up the first k elements as default values.
+    for (int i = 0; i < k_nn; i++) {
+      DistanceType distance = metric(query.Data(),
+                                     descriptors_[i]->Data(),
+                                     query.Dimensions());
+      min_heap.push(std::make_pair(i, distance));
+    }
+
+    // Search the rest of the descriptors, keeping at most k_nn elements in the
+    // min heap.
+    for (int i = k_nn; i < descriptors_.size(); i++) {
+      DistanceType distance = metric(query.Data(),
+                                     descriptors_[i]->Data(),
+                                     query.Dimensions());
+      if (distance < min_heap.top().second) {
+        min_heap.pop();
+        min_heap.push(std::make_pair(i, distance));
+      }
+    }
+
+    // Resize for faster allocation.
+    knn_index->resize(k_nn);
+    knn_distance->resize(k_nn);
+    // Perform in reverse order so that the NN is first in the result.
+    for (int i = k_nn - 1; i >= 0; i--) {
+      std::pair<int, DistanceType> knn_pair = min_heap.top();
+      min_heap.pop();
+      (*knn_index)[i] = knn_pair.first;
+      (*knn_distance)[i] = knn_pair.second;
+    }
+
+    return true;
   }
 
   // This allows us to use the overloaded function in the base class (passing in
   // a vector of queries instead of just one).
   using Matcher<TDescriptor, Metric>::KNearestNeighbors;
-  
+
  private:
+  struct OrderByDistance {
+    bool operator ()(const std::pair<int, DistanceType>& lhs,
+                     const std::pair<int, DistanceType>& rhs) const {
+      return lhs.second < rhs.second;
+    }
+  };
+
   std::vector<TDescriptor*> descriptors_;
   DISALLOW_COPY_AND_ASSIGN(BruteForceMatcher);
 };

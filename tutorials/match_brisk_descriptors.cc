@@ -102,10 +102,11 @@ int main(int argc, char *argv[]) {
   BruteForceImageMatcher<BriskDescriptor, Hamming> brute_force_image_matcher;
   std::vector<theia::FeatureMatch<int> > matches;
   clock_t t = clock();
-  brute_force_image_matcher.Match(left_pruned_descriptors,
-                                  right_pruned_descriptors,
-                                  &matches,
-                                  128);
+  brute_force_image_matcher.MatchDistanceRatio(left_pruned_descriptors,
+                                               right_pruned_descriptors,
+                                               &matches,
+                                               0.7,
+                                               90);
   t = clock() - t;
   VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
           << " to match BRISK descriptors";

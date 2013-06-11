@@ -57,7 +57,7 @@ class ImageMatcher {
  public:
   typedef typename Matcher::DistanceType DistanceType;
   typedef typename Matcher::DescriptorType DescriptorType;
-  
+
   ImageMatcher() {}
   virtual ~ImageMatcher() {}
 
@@ -109,24 +109,23 @@ bool ImageMatcher<Matcher>::Match(
     DistanceType threshold) {
   Matcher matcher;
   matcher.Build(desc_2);
-  std::vector<int> indices;
-  std::vector<DistanceType> distances;
-  if (!matcher.NearestNeighbor(desc_1,
-                               &indices,
-                               &distances,
-                               threshold)) {
-    return false;
-  } else {
-    // Move the data into the FeatureMatch output variable.
-    matches->reserve(indices.size());
-    for (int i = 0; i < indices.size(); i++) {
-      if (distances[i] < threshold)
-        matches->push_back(FeatureMatch<DistanceType>(i,
-                                                      indices[i],
-                                                      distances[i]));
+
+  // Find matches and move the data into the FeatureMatch output variable.
+  matches->reserve(desc_1.size());
+  for (int i = 0; i < desc_1.size(); i++) {
+    int index;
+    DistanceType distance;
+    // If matching is successful and passes the threshold.
+    if (matcher.NearestNeighbor(*desc_1[i],
+                                &index,
+                                &distance,
+                                threshold)) {
+      matches->push_back(FeatureMatch<DistanceType>(i,
+                                                    index,
+                                                    distance));
     }
-    return true;
   }
+  return true;
 }
 
 template<class Matcher>
@@ -136,7 +135,31 @@ bool ImageMatcher<Matcher>::MatchDistanceRatio(
     std::vector<FeatureMatch<DistanceType> >* matches,
     double ratio,
     DistanceType threshold) {
+  Matcher matcher;
+  matcher.Build(desc_2);
 
+  // Find matches and move the data into the FeatureMatch output variable.
+  matches->reserve(desc_1.size());
+  for (int i = 0; i < desc_1.size(); i++) {
+    std::vector<int> index;
+    std::vector<DistanceType> distance;
+    // If matching is successful.
+    if (matcher.KNearestNeighbors(*desc_1[i],
+                                  2,
+                                  &index,
+                                  &distance)) {
+      // If the distance passes the ratio test and the distance is less then the
+      // threshold (if one is set).
+      if (distance[0]/distance[1] < ratio &&
+          (threshold <= 0 || distance[0] < threshold)) {
+        matches->push_back(FeatureMatch<DistanceType>(i,
+                                                      index[0],
+                                                      distance[0]));
+      }
+    }
+  }
+  return true;
+  
 }
 
 template<class Matcher>
@@ -151,11 +174,11 @@ bool ImageMatcher<Matcher>::MatchSymmetric(
 
 template<class Matcher>
 bool ImageMatcher<Matcher>::MatchSymmetricAndDistanceRatio(
-                      const std::vector<DescriptorType*>& desc_1,
-                      const std::vector<DescriptorType*>& desc_2,
-                      std::vector<FeatureMatch<DistanceType> >* matches,
-                      double lowes_ratio,
-                      DistanceType threshold) {
+    const std::vector<DescriptorType*>& desc_1,
+    const std::vector<DescriptorType*>& desc_2,
+    std::vector<FeatureMatch<DistanceType> >* matches,
+    double lowes_ratio,
+    DistanceType threshold) {
 
 }
 
