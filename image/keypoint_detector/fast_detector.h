@@ -70,7 +70,7 @@ class FastDetector : public KeypointDetector {
 
   // True if you want the scores of the features.
   bool score_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(FastDetector);
 };
 }  // namespace theia

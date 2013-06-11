@@ -59,7 +59,7 @@ class Matcher {
                                int* neighbor_index,
                                DistanceType* distance,
                                DistanceType threshold) = 0;
-  
+
   virtual bool NearestNeighbor(const TDescriptor& query,
                                int* neighbor_index,
                                DistanceType* distance) {

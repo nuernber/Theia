@@ -35,14 +35,13 @@
 #ifndef VISION_MATCHING_DISTANCE_HAMMING_H_
 #define VISION_MATCHING_DISTANCE_HAMMING_H_
 
-#include <bitset>
 #ifdef THEIA_USE_SSE
 #include <emmintrin.h>
 #include <tmmintrin.h>
 #endif
 
+#include <bitset>
 #include "util/util.h"
-#include <time.h>
 
 namespace theia {
 struct Hamming {

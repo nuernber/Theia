@@ -139,7 +139,9 @@ class Image : public SubImage<T> {
   void Read(std::string filename) { *this = Image(filename); }
 
   // Write image to file.
-  void Write(const std::string& filename) const { CVD::img_save(image_, filename); }
+  void Write(const std::string& filename) const {
+    CVD::img_save(image_, filename);
+  }
 
   // Get the full Image.
   CVD::Image<T>& GetCVDImage() { return image_; }
@@ -270,8 +272,7 @@ inline double Image<T>::Gaussian(double x, double mu, double sigma) {
 template <typename T>
 void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
   // NOTE: some VERY odd artifacts are occuring with CVD's gaussian
-  // convolution with high sigmas... 
-  //CVD::convolveGaussian(image_, out->image_, sigma);
+  // convolution with high sigmas...
 
   // NOTE: This is my own gaussian blur instead. When tested against CVD there
   // is no loss of speed but it avoids any odd ringing artifacts that I was
@@ -316,7 +317,7 @@ void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
   }
 
   // Apply vertical filter keeping in mind row-major memory for fast processing.
-  image_.zero(); 
+  image_.zero();
   for (int r = 0; r < this->Rows(); r++) {
     int start_r = std::max(0, r - kernel_radius);
     int end_r = std::min(this->Rows() - 1, r + kernel_radius);
@@ -326,7 +327,8 @@ void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
     }
     double inv_weight = 1.0/weight;
     for (int cur_row = start_r; cur_row <= end_r; cur_row++) {
-      double gauss_term = inv_weight*gauss_kernel[cur_row - (r - kernel_radius)];
+      double gauss_term =
+          inv_weight*gauss_kernel[cur_row - (r - kernel_radius)];
       for (int c = 0; c < this->Cols(); c++) {
         image_[r][c] += horiz_image[cur_row][c]*gauss_term;
       }

@@ -49,28 +49,44 @@ namespace theia {
 // NOTE: Hamming distance functions are included at the bottom of this file, but
 // are in a separate file for cleanliness.
 template<typename T>
-struct Accumulator { typedef T Type; };
+struct Accumulator {
+  typedef T Type;
+};
 
 template<>
-struct Accumulator<unsigned char>  { typedef float Type; };
+struct Accumulator<unsigned char> {
+  typedef float Type;
+};
 
 template<>
-struct Accumulator<unsigned short> { typedef float Type; };
+struct Accumulator<unsigned short> {
+  typedef float Type;
+};
 
 template<>
-struct Accumulator<unsigned int> { typedef float Type; };
+struct Accumulator<unsigned int> {
+  typedef float Type;
+};
 
 template<>
-struct Accumulator<char>   { typedef float Type; };
+struct Accumulator<char> {
+  typedef float Type;
+};
 
 template<>
-struct Accumulator<short>  { typedef float Type; };
+struct Accumulator<short> {
+  typedef float Type;
+};
 
 template<>
-struct Accumulator<int> { typedef float Type; };
+struct Accumulator<int> {
+  typedef float Type;
+};
 
 template<>
-struct Accumulator<bool> { typedef int Type; };
+struct Accumulator<bool> {
+  typedef int Type;
+};
 
 // Squared Euclidean distance functor (copied from FLANN).
 template<class T>

@@ -106,8 +106,6 @@ class FreakDescriptorExtractor : public DescriptorExtractor<FreakDescriptor> {
   };
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FreakDescriptorExtractor);
-  
   float MeanIntensity(const GrayImage& image, const GrayImage& integral,
                       const float kp_x,
                       const float kp_y,
@@ -163,6 +161,8 @@ class FreakDescriptorExtractor : public DescriptorExtractor<FreakDescriptor> {
     orientation_pairs_[arr].i = i;
     orientation_pairs_[arr].j = j;
   }
+
+  DISALLOW_COPY_AND_ASSIGN(FreakDescriptorExtractor);
 };
 }  // namespace theia
 #endif  // IMAGE_DESCRIPTOR_FREAK_DESCRIPTOR_H_

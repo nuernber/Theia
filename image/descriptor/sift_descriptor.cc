@@ -65,7 +65,7 @@ bool SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
   // statement will save the function from regenerating the filter for
   // successive calls with images of the same size (e.g. a video sequence).
   if (sift_filter_ != nullptr && (sift_filter_->width != image.Cols() ||
-                               sift_filter_->height != image.Rows()))
+                                  sift_filter_->height != image.Rows()))
     vl_sift_delete(sift_filter_);
 
   // If the filter has not been set (or was deleted in the previous if), then we
@@ -248,7 +248,7 @@ bool SiftDescriptorExtractor::ProtoToDescriptor(
     descriptor->set_scale(proto_descriptor.scale());
     if (proto_descriptor.has_strength())
       descriptor->set_strength(proto_descriptor.strength());
-    
+
     // Get float array.
     for (int i = 0; i < descriptor->Dimensions(); i++)
       (*descriptor)[i] = proto_descriptor.float_descriptor(i);
@@ -260,7 +260,7 @@ bool SiftDescriptorExtractor::ProtoToDescriptor(
 bool SiftDescriptorExtractor::DescriptorToProto(
     const std::vector<SiftDescriptor*>& descriptors,
     DescriptorsProto* proto) const {
-    for (const SiftDescriptor* descriptor : descriptors) {
+  for (const SiftDescriptor* descriptor : descriptors) {
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the float array to the proto.
     for (int i = 0; i < descriptor->Dimensions(); i++)

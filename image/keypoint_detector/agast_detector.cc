@@ -107,7 +107,7 @@ bool AgastDetector::DetectKeypoints(const GrayImage& image,
                                           Keypoint::AGAST);
     new_keypoint->set_strength(ast_detector_->cornerScore(
         uchar_image.Data() + ast_point.x + ast_point.y*uchar_image.Cols()));
-                                                          
+
     keypoints->push_back(new_keypoint);
   }
 }

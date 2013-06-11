@@ -78,8 +78,8 @@ bool SiftDetector::DetectKeypoints(const GrayImage& image,
   // Reserve an amount that is slightly larger than what a typical detector
   // would return.
   keypoints->reserve(2000);
-  
-  // Process octaves until you can't anymore.  
+
+  // Process octaves until you can't anymore.
   while (vl_status != VL_ERR_EOF) {
     // Detect the keypoints.
     vl_sift_detect(sift_filter_);

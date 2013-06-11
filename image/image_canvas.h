@@ -35,6 +35,7 @@
 #ifndef IMAGE_IMAGE_CANVAS_H_
 #define IMAGE_IMAGE_CANVAS_H_
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
