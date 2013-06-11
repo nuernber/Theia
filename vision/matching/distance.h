@@ -36,7 +36,7 @@
 #define VISION_MATCHING_DISTANCE_H_
 
 #include <glog/logging.h>
-#ifdef USE_SSE
+#ifdef THEIA_USE_SSE
 #include <xmmintrin.h>
 #endif
 

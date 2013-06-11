@@ -58,14 +58,20 @@ class Matcher {
   virtual bool NearestNeighbor(const TDescriptor& query,
                                int* neighbor_index,
                                DistanceType* distance,
-                               DistanceType threshold = 0) = 0;
+                               DistanceType threshold) = 0;
+  
+  virtual bool NearestNeighbor(const TDescriptor& query,
+                               int* neighbor_index,
+                               DistanceType* distance) {
+    return NearestNeighbor(query, neighbor_index, distance, 0);
+  }
 
   // Search for the sole nearest neighbor for a multiple queries.
   virtual bool NearestNeighbor(
       const std::vector<TDescriptor*>& queries,
       std::vector<int>* neighbor_indices,
       std::vector<DistanceType>* distances,
-      DistanceType threshold = 0) {
+      DistanceType threshold) {
     neighbor_indices->resize(queries.size());
     distances->resize(queries.size());
     for (int i = 0; i < queries.size(); i++) {
@@ -100,7 +106,7 @@ class Matcher {
     return true;
   }
 
- protected:
+ private:
   DISALLOW_COPY_AND_ASSIGN(Matcher);
 };
 }  // namespace theia
