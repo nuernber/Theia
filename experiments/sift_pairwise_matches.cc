@@ -34,12 +34,12 @@
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
-#include <time.h>
+#include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
 #include "image/image.h"
-#include "image/image_canvas.h"
 #include "image/descriptor/sift_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/sift_detector.h"
@@ -47,25 +47,41 @@
 #include "vision/matching/brute_force_matcher.h"
 #include "vision/matching/image_matcher.h"
 
-DEFINE_string(img_input_dir, "input", "Directory of two input images.");
-DEFINE_string(img_output_dir, "output", "Name of output image file.");
-DEFINE_int32(knn, 5, "number k nearest neighbors to find.");
+DEFINE_string(input_filename, "image_files.txt", "Path to a file containing "
+              "file path's to the input image set.");
+DEFINE_string(output_filename, "sift_matches.bin", "Output filename containing "
+              "the SIFT knn matches");
+DEFINE_int32(knn, 200, "Number (k) of nearest neighbors to find.");
 
 using theia::SiftDescriptor;
 using theia::SiftDescriptorExtractor;
 using theia::SiftDetector;
 using theia::BruteForceMatcher;
 using theia::GrayImage;
-using theia::ImageCanvas;
 using theia::Keypoint;
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
+  // Read the input file to get image file paths.
+  std::vector<std::string> image_filenames;
+  std::ifstream in_stream;
+  std::string line;
+  in_stream.open(FLAGS_input_filename);
+  while (!in_stream.eof()) {
+    in_stream >> line;
+    image_filenames.push_back(line);
+  }
+  in_stream.close();
+
   // Detect all keypoints and extract descriptors for every image.
-  for ( all images) {
-    GrayImage image(FLAGS_img_input_dir + std::string("/img1.png"));
+  std::vector<GrayImage> images;
+  std::vector<std::vector<SiftDescriptor*> > descriptors;
+  images.reserve(image_filenames.size());
+  descriptors.reserve(image_filenames.size());
+  for (const std::string& image_filename : image_filenames) {
+    GrayImage image(image_filename);
 
     // Detect keypoints.
     VLOG(0) << "detecting keypoints";
@@ -79,31 +95,61 @@ int main(int argc, char *argv[]) {
     VLOG(0) << "extracting descriptors.";
     SiftDescriptorExtractor sift_extractor;
     sift_extractor.Initialize();
-
     std::vector<SiftDescriptor*> pruned_descriptors;
     sift_extractor.ComputeDescriptorsPruned(image,
                                             keypoints,
                                             &pruned_descriptors);
     VLOG(0) << "pruned descriptors size = " << pruned_descriptors.size();
+
+    images.push_back(image);
+    descriptors.push_back(pruned_descriptors);
   }
 
-  for ( all image) {
-    for ( all images ) {
-      // Match descriptors!
-      // Match NN
-      for (int i = 0; i < pruned_descriptors.size(); i++) {
-        BruteForceMatcher<SiftDescriptor, theia::L2<float> > brute_force_matcher;
-        brute_force_matcher.Build(right_pruned_descriptors);
+  // Output format is as follows:
+  //
+  // num_camera_pairs
+  // num_features_for_camera_pair_1   (we'll call this m1)
+  // image_0_id image_1_id feature_1_id dist_1 dist_2 ... dist_k
+  // ...
+  // image_0_id image_1_id feature_m1_id dist_1 dist_2 ... dist_k
+  // num_features_for_camera_pair_2   (we'll call this m2)
+  // image_0_id image_2_id feature_1_id dist_1 dist_2 ... dist_k
+  // ...
+  //
+  // We do this for each camera pair until all num_camera_pairs have been
+  // written.
 
-        // Match kNN
-        std::vector<int> knn_index;
-        std::vector<float> knn_dist;
-        brute_force_matcher.KNearestNeighbors(*pruned_descriptors[i],
-                                              FLAGS_knn,
-                                              &knn_index,
-                                              &knn_dist);
-        // Output knn in output file with proper format.
+  // For each image pair, match descriptors.
+  std::ofstream output_file;
+  output_file.open(FLAGS_output_filename, std::ios::out | std::ios::binary);
+  //output_file.open(FLAGS_output_filename);
+  output_file << (images.size()*images.size()) << "\n";
+  for (int i = 0; i < images.size(); i++) {
+    // Build a matcher that matches to image i.
+    BruteForceMatcher<SiftDescriptor, theia::L2<float> > brute_force_matcher;
+    brute_force_matcher.Build(descriptors[i]);
+    for (int j = 0; j < images.size(); j++) {
+      VLOG(0) << "matching image " << i << " to image " << j;
+      // Find knn of features from image j to image i.
+      std::vector<std::vector<int> > knn_index;
+      std::vector<std::vector<float> > knn_dist;
+      brute_force_matcher.KNearestNeighbors(descriptors[j],
+                                            FLAGS_knn,
+                                            &knn_index,
+                                            &knn_dist);
+
+      // Output knn in output file with proper format.
+      output_file << descriptors[j].size() << "\n";
+      // For each descriptor.
+      for (int k = 0; k < knn_dist.size(); k++) {
+        output_file << i << " " << j;
+        // For each of the knn for this descriptor.
+        for (int knn_num = 0; knn_num < FLAGS_knn; knn_num++) {
+          output_file << " " << knn_dist[k][knn_num];
+        }
+        output_file << "\n";
       }
     }
   }
+  output_file.close();
 }

@@ -3,8 +3,7 @@ GTEST(ncc_test
 
 CC_BINARY(sift_pairwise_matches
   image/image
-  image/image_canvas
-  image/descriptors/sift_descriptors
+  image/descriptor/sift_descriptor
   image/keypoint_detector/keypoint
   image/keypoint_detector/sift_detector
   vision/matching/brute_force_matcher)
