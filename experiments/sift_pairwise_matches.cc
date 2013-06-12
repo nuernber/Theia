@@ -39,26 +39,21 @@
 #include <string>
 #include <vector>
 
-#include "image/image.h"
+#include "experiments/sift_matches.pb.h"
 #include "image/descriptor/sift_descriptor.h"
+#include "image/image.h"
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/sift_detector.h"
-#include "vision/matching/distance.h"
 #include "vision/matching/brute_force_matcher.h"
+#include "vision/matching/distance.h"
 #include "vision/matching/image_matcher.h"
 
 DEFINE_string(input_filename, "image_files.txt", "Path to a file containing "
               "file path's to the input image set.");
-DEFINE_string(output_filename, "sift_matches.bin", "Output filename containing "
-              "the SIFT knn matches");
+DEFINE_string(output_dir, "", "Output directory to write the sift matches.");
 DEFINE_int32(knn, 200, "Number (k) of nearest neighbors to find.");
 
-using theia::SiftDescriptor;
-using theia::SiftDescriptorExtractor;
-using theia::SiftDetector;
-using theia::BruteForceMatcher;
-using theia::GrayImage;
-using theia::Keypoint;
+using namespace theia;
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
@@ -120,16 +115,15 @@ int main(int argc, char *argv[]) {
   // written.
 
   // For each image pair, match descriptors.
-  std::ofstream output_file;
-  output_file.open(FLAGS_output_filename, std::ios::out | std::ios::binary);
   //output_file.open(FLAGS_output_filename);
-  output_file << (images.size()*images.size()) << "\n";
+  ImagePairMatchesProto image_pair_matches;
   for (int i = 0; i < images.size(); i++) {
     // Build a matcher that matches to image i.
     BruteForceMatcher<SiftDescriptor, theia::L2<float> > brute_force_matcher;
     brute_force_matcher.Build(descriptors[i]);
     for (int j = 0; j < images.size(); j++) {
       VLOG(0) << "matching image " << i << " to image " << j;
+
       // Find knn of features from image j to image i.
       std::vector<std::vector<int> > knn_index;
       std::vector<std::vector<float> > knn_dist;
@@ -137,19 +131,34 @@ int main(int argc, char *argv[]) {
                                             FLAGS_knn,
                                             &knn_index,
                                             &knn_dist);
+      // Create an image pair output.
+      ImagePairMatchProto* image_pair_match =
+          image_pair_matches.add_image_pair_match();
+      image_pair_match->set_image1_id(j);
+      image_pair_match->set_image2_id(i);
 
-      // Output knn in output file with proper format.
-      output_file << descriptors[j].size() << "\n";
       // For each descriptor.
       for (int k = 0; k < knn_dist.size(); k++) {
-        output_file << i << " " << j;
+        // Add a feature match to this image pair.
+        FeatureMatchProto* feature_match =
+            image_pair_match->add_feature_match();
+        feature_match->set_feature_id(j);
+        feature_match->set_scale(descriptors[j][k]->scale());
+
         // For each of the knn for this descriptor.
         for (int knn_num = 0; knn_num < FLAGS_knn; knn_num++) {
-          output_file << " " << knn_dist[k][knn_num];
+          // Add each knn to this feature match.
+          FeatureKnnProto* knn_match = feature_match->add_knn_match();
+          knn_match->set_feature_id(knn_index[k][knn_num]);
+          knn_match->set_distance(knn_dist[k][knn_num]);
+          knn_match->set_scale(descriptors[i][knn_index[k][knn_num]]->scale());
         }
-        output_file << "\n";
       }
     }
   }
-  output_file.close();
+
+  std::fstream out(FLAGS_output_dir + "sift_matches.pb",
+                   std::ios::out | std::ios::binary | std::ios::trunc);
+  image_pair_matches.SerializeToOstream(&out);
+  out.close();
 }
