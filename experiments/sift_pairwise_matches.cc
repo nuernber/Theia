@@ -63,62 +63,47 @@ int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
-  GrayImage left_image(FLAGS_img_input_dir + std::string("/img1.png"));
-  GrayImage right_image(FLAGS_img_input_dir + std::string("/img2.png"));
+  // Detect all keypoints and extract descriptors for every image.
+  for ( all images) {
+    GrayImage image(FLAGS_img_input_dir + std::string("/img1.png"));
 
-  // Detect keypoints.
-  VLOG(0) << "detecting keypoints";
-  SiftDetector sift_detector;
-  std::vector<Keypoint*> left_keypoints;
-  sift_detector.DetectKeypoints(left_image, &left_keypoints);
-  VLOG(0) << "detected " << left_keypoints.size()
-          << " keypoints in left image.";
+    // Detect keypoints.
+    VLOG(0) << "detecting keypoints";
+    SiftDetector sift_detector;
+    std::vector<Keypoint*> keypoints;
+    sift_detector.DetectKeypoints(image, &keypoints);
+    VLOG(0) << "detected " << keypoints.size()
+            << " keypoints in left image.";
 
-  VLOG(0) << "detecting keypoints";
-  std::vector<Keypoint*> right_keypoints;
-  sift_detector.DetectKeypoints(right_image, &right_keypoints);
-  VLOG(0) << "detected " << left_keypoints.size()
-          << " keypoints in left image.";
+    // Extract descriptors.
+    VLOG(0) << "extracting descriptors.";
+    SiftDescriptorExtractor sift_extractor;
+    sift_extractor.Initialize();
 
-  // Extract descriptors.
-  VLOG(0) << "extracting descriptors.";
-  SiftDescriptorExtractor sift_extractor;
-  sift_extractor.Initialize();
+    std::vector<SiftDescriptor*> pruned_descriptors;
+    sift_extractor.ComputeDescriptorsPruned(image,
+                                            keypoints,
+                                            &pruned_descriptors);
+    VLOG(0) << "pruned descriptors size = " << pruned_descriptors.size();
+  }
 
-  std::vector<SiftDescriptor*> left_pruned_descriptors;
-  sift_extractor.ComputeDescriptorsPruned(left_image,
-                                           left_keypoints,
-                                           &left_pruned_descriptors);
-  VLOG(0) << "pruned descriptors size = " << left_pruned_descriptors.size();
+  for ( all image) {
+    for ( all images ) {
+      // Match descriptors!
+      // Match NN
+      for (int i = 0; i < pruned_descriptors.size(); i++) {
+        BruteForceMatcher<SiftDescriptor, theia::L2<float> > brute_force_matcher;
+        brute_force_matcher.Build(right_pruned_descriptors);
 
-  std::vector<SiftDescriptor*> right_pruned_descriptors;
-  sift_extractor.ComputeDescriptorsPruned(right_image,
-                                           right_keypoints,
-                                           &right_pruned_descriptors);
-  VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
-
-  // Match descriptors!
-  // Match NN
-  for (int i = 0; i < left_pruned_descriptors.size(); i++) {
-    BruteForceMatcher<SiftDescriptor, theia::L2<float> > brute_force_matcher;
-    brute_force_matcher.Build(right_pruned_descriptors);
-    int nn_index;
-    float distance;
-    brute_force_matcher.NearestNeighbor(*left_pruned_descriptors[i],
-                                        &nn_index,
-                                        &distance);
-    VLOG(0) << "Top NN: " << nn_index << " of dist " << distance;
-    // Match kNN
-    std::vector<int> knn_index;
-    std::vector<float> knn_dist;
-    brute_force_matcher.KNearestNeighbors(*left_pruned_descriptors[i],
-                                          FLAGS_knn,
-                                          &knn_index,
-                                          &knn_dist);
-    for (int j = 0; j < FLAGS_knn; j++) {
-      VLOG(0) << "kNN[" << j << "]: " << knn_index[j] << " of dist "
-              << knn_dist[j];
+        // Match kNN
+        std::vector<int> knn_index;
+        std::vector<float> knn_dist;
+        brute_force_matcher.KNearestNeighbors(*pruned_descriptors[i],
+                                              FLAGS_knn,
+                                              &knn_index,
+                                              &knn_dist);
+        // Output knn in output file with proper format.
+      }
     }
-    VLOG(0) << "";
   }
 }
