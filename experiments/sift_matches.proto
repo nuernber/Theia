@@ -34,8 +34,6 @@
 
 syntax = "proto2";
 
-package theia;
-
 // Feature match.
 message FeatureKnnProto {
   // Id of the feature from image 2.
@@ -66,9 +64,4 @@ message ImagePairMatchProto {
 
   // Container of the matches for each feature.
   repeated FeatureMatchProto feature_match = 3;
-}
-
-message ImagePairMatchesProto {
-  // Container of image pair matches.
-  repeated ImagePairMatchProto image_pair_match = 1;
 }

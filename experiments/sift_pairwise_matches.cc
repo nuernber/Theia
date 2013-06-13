@@ -47,10 +47,12 @@
 #include "vision/matching/brute_force_matcher.h"
 #include "vision/matching/distance.h"
 #include "vision/matching/image_matcher.h"
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/io/coded_stream.h>
 
 DEFINE_string(input_filename, "image_files.txt", "Path to a file containing "
               "file path's to the input image set.");
-DEFINE_string(output_dir, "", "Output directory to write the sift matches.");
+DEFINE_string(output_filename, "sift_matches.pb", "Output path to write the sift matches.");
 DEFINE_int32(knn, 200, "Number (k) of nearest neighbors to find.");
 
 using namespace theia;
@@ -78,45 +80,25 @@ int main(int argc, char *argv[]) {
   for (const std::string& image_filename : image_filenames) {
     GrayImage image(image_filename);
 
-    // Detect keypoints.
-    VLOG(0) << "detecting keypoints";
-    SiftDetector sift_detector;
-    std::vector<Keypoint*> keypoints;
-    sift_detector.DetectKeypoints(image, &keypoints);
-    VLOG(0) << "detected " << keypoints.size()
-            << " keypoints in left image.";
-
     // Extract descriptors.
     VLOG(0) << "extracting descriptors.";
     SiftDescriptorExtractor sift_extractor;
     sift_extractor.Initialize();
     std::vector<SiftDescriptor*> pruned_descriptors;
-    sift_extractor.ComputeDescriptorsPruned(image,
-                                            keypoints,
-                                            &pruned_descriptors);
+    sift_extractor.DetectAndExtractDescriptors(image,
+                                               &pruned_descriptors);
     VLOG(0) << "pruned descriptors size = " << pruned_descriptors.size();
 
     images.push_back(image);
     descriptors.push_back(pruned_descriptors);
   }
 
-  // Output format is as follows:
-  //
-  // num_camera_pairs
-  // num_features_for_camera_pair_1   (we'll call this m1)
-  // image_0_id image_1_id feature_1_id dist_1 dist_2 ... dist_k
-  // ...
-  // image_0_id image_1_id feature_m1_id dist_1 dist_2 ... dist_k
-  // num_features_for_camera_pair_2   (we'll call this m2)
-  // image_0_id image_2_id feature_1_id dist_1 dist_2 ... dist_k
-  // ...
-  //
-  // We do this for each camera pair until all num_camera_pairs have been
-  // written.
 
+  // Prep output stream.
+  std::ofstream out(FLAGS_output_filename,
+                    std::ios::out | std::ios::binary | std::ios::trunc);
+  google::protobuf::io::OstreamOutputStream ostream_out(&out);
   // For each image pair, match descriptors.
-  //output_file.open(FLAGS_output_filename);
-  ImagePairMatchesProto image_pair_matches;
   for (int i = 0; i < images.size(); i++) {
     // Build a matcher that matches to image i.
     BruteForceMatcher<SiftDescriptor, theia::L2<float> > brute_force_matcher;
@@ -132,16 +114,15 @@ int main(int argc, char *argv[]) {
                                             &knn_index,
                                             &knn_dist);
       // Create an image pair output.
-      ImagePairMatchProto* image_pair_match =
-          image_pair_matches.add_image_pair_match();
-      image_pair_match->set_image1_id(j);
-      image_pair_match->set_image2_id(i);
+      ImagePairMatchProto image_pair_match;
+      image_pair_match.set_image1_id(j);
+      image_pair_match.set_image2_id(i);
 
       // For each descriptor.
       for (int k = 0; k < knn_dist.size(); k++) {
         // Add a feature match to this image pair.
         FeatureMatchProto* feature_match =
-            image_pair_match->add_feature_match();
+            image_pair_match.add_feature_match();
         feature_match->set_feature_id(j);
         feature_match->set_scale(descriptors[j][k]->scale());
 
@@ -154,11 +135,14 @@ int main(int argc, char *argv[]) {
           knn_match->set_scale(descriptors[i][knn_index[k][knn_num]]->scale());
         }
       }
+
+      // Output image match to coded output stream, writing the size first then
+      // the data.
+      google::protobuf::io::CodedOutputStream coded_out_stream(&ostream_out);
+      coded_out_stream.WriteVarint32(image_pair_match.ByteSize());
+      image_pair_match.SerializeToCodedStream(&coded_out_stream);
     }
   }
 
-  std::fstream out(FLAGS_output_dir + "sift_matches.pb",
-                   std::ios::out | std::ios::binary | std::ios::trunc);
-  image_pair_matches.SerializeToOstream(&out);
   out.close();
 }

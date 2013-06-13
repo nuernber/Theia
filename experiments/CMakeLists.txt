@@ -10,3 +10,6 @@ CC_BINARY(sift_pairwise_matches
   image/keypoint_detector/sift_detector
   vision/matching/brute_force_matcher
   experiments/sift_matches_proto)
+
+CC_BINARY(read_image_matches
+  experiments/sift_matches_proto)

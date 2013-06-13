@@ -26,8 +26,6 @@
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 
-namespace theia {
-
 // Internal implementation detail -- do not call these.
 void  protobuf_AddDesc_experiments_2fsift_5fmatches_2eproto();
 void protobuf_AssignDesc_experiments_2fsift_5fmatches_2eproto();
@@ -36,7 +34,6 @@ void protobuf_ShutdownFile_experiments_2fsift_5fmatches_2eproto();
 class FeatureKnnProto;
 class FeatureMatchProto;
 class ImagePairMatchProto;
-class ImagePairMatchesProto;
 
 // ===================================================================
 
@@ -115,7 +112,7 @@ class FeatureKnnProto : public ::google::protobuf::Message {
   inline float scale() const;
   inline void set_scale(float value);
 
-  // @@protoc_insertion_point(class_scope:theia.FeatureKnnProto)
+  // @@protoc_insertion_point(class_scope:FeatureKnnProto)
  private:
   inline void set_has_feature_id();
   inline void clear_has_feature_id();
@@ -210,19 +207,19 @@ class FeatureMatchProto : public ::google::protobuf::Message {
   inline float scale() const;
   inline void set_scale(float value);
 
-  // repeated .theia.FeatureKnnProto knn_match = 3;
+  // repeated .FeatureKnnProto knn_match = 3;
   inline int knn_match_size() const;
   inline void clear_knn_match();
   static const int kKnnMatchFieldNumber = 3;
-  inline const ::theia::FeatureKnnProto& knn_match(int index) const;
-  inline ::theia::FeatureKnnProto* mutable_knn_match(int index);
-  inline ::theia::FeatureKnnProto* add_knn_match();
-  inline const ::google::protobuf::RepeatedPtrField< ::theia::FeatureKnnProto >&
+  inline const ::FeatureKnnProto& knn_match(int index) const;
+  inline ::FeatureKnnProto* mutable_knn_match(int index);
+  inline ::FeatureKnnProto* add_knn_match();
+  inline const ::google::protobuf::RepeatedPtrField< ::FeatureKnnProto >&
       knn_match() const;
-  inline ::google::protobuf::RepeatedPtrField< ::theia::FeatureKnnProto >*
+  inline ::google::protobuf::RepeatedPtrField< ::FeatureKnnProto >*
       mutable_knn_match();
 
-  // @@protoc_insertion_point(class_scope:theia.FeatureMatchProto)
+  // @@protoc_insertion_point(class_scope:FeatureMatchProto)
  private:
   inline void set_has_feature_id();
   inline void clear_has_feature_id();
@@ -233,7 +230,7 @@ class FeatureMatchProto : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 feature_id_;
   float scale_;
-  ::google::protobuf::RepeatedPtrField< ::theia::FeatureKnnProto > knn_match_;
+  ::google::protobuf::RepeatedPtrField< ::FeatureKnnProto > knn_match_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -315,19 +312,19 @@ class ImagePairMatchProto : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 image2_id() const;
   inline void set_image2_id(::google::protobuf::uint32 value);
 
-  // repeated .theia.FeatureMatchProto feature_match = 3;
+  // repeated .FeatureMatchProto feature_match = 3;
   inline int feature_match_size() const;
   inline void clear_feature_match();
   static const int kFeatureMatchFieldNumber = 3;
-  inline const ::theia::FeatureMatchProto& feature_match(int index) const;
-  inline ::theia::FeatureMatchProto* mutable_feature_match(int index);
-  inline ::theia::FeatureMatchProto* add_feature_match();
-  inline const ::google::protobuf::RepeatedPtrField< ::theia::FeatureMatchProto >&
+  inline const ::FeatureMatchProto& feature_match(int index) const;
+  inline ::FeatureMatchProto* mutable_feature_match(int index);
+  inline ::FeatureMatchProto* add_feature_match();
+  inline const ::google::protobuf::RepeatedPtrField< ::FeatureMatchProto >&
       feature_match() const;
-  inline ::google::protobuf::RepeatedPtrField< ::theia::FeatureMatchProto >*
+  inline ::google::protobuf::RepeatedPtrField< ::FeatureMatchProto >*
       mutable_feature_match();
 
-  // @@protoc_insertion_point(class_scope:theia.ImagePairMatchProto)
+  // @@protoc_insertion_point(class_scope:ImagePairMatchProto)
  private:
   inline void set_has_image1_id();
   inline void clear_has_image1_id();
@@ -338,7 +335,7 @@ class ImagePairMatchProto : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 image1_id_;
   ::google::protobuf::uint32 image2_id_;
-  ::google::protobuf::RepeatedPtrField< ::theia::FeatureMatchProto > feature_match_;
+  ::google::protobuf::RepeatedPtrField< ::FeatureMatchProto > feature_match_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -349,91 +346,6 @@ class ImagePairMatchProto : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static ImagePairMatchProto* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class ImagePairMatchesProto : public ::google::protobuf::Message {
- public:
-  ImagePairMatchesProto();
-  virtual ~ImagePairMatchesProto();
-
-  ImagePairMatchesProto(const ImagePairMatchesProto& from);
-
-  inline ImagePairMatchesProto& operator=(const ImagePairMatchesProto& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const ImagePairMatchesProto& default_instance();
-
-  void Swap(ImagePairMatchesProto* other);
-
-  // implements Message ----------------------------------------------
-
-  ImagePairMatchesProto* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const ImagePairMatchesProto& from);
-  void MergeFrom(const ImagePairMatchesProto& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated .theia.ImagePairMatchProto image_pair_match = 1;
-  inline int image_pair_match_size() const;
-  inline void clear_image_pair_match();
-  static const int kImagePairMatchFieldNumber = 1;
-  inline const ::theia::ImagePairMatchProto& image_pair_match(int index) const;
-  inline ::theia::ImagePairMatchProto* mutable_image_pair_match(int index);
-  inline ::theia::ImagePairMatchProto* add_image_pair_match();
-  inline const ::google::protobuf::RepeatedPtrField< ::theia::ImagePairMatchProto >&
-      image_pair_match() const;
-  inline ::google::protobuf::RepeatedPtrField< ::theia::ImagePairMatchProto >*
-      mutable_image_pair_match();
-
-  // @@protoc_insertion_point(class_scope:theia.ImagePairMatchesProto)
- private:
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::RepeatedPtrField< ::theia::ImagePairMatchProto > image_pair_match_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_experiments_2fsift_5fmatches_2eproto();
-  friend void protobuf_AssignDesc_experiments_2fsift_5fmatches_2eproto();
-  friend void protobuf_ShutdownFile_experiments_2fsift_5fmatches_2eproto();
-
-  void InitAsDefaultInstance();
-  static ImagePairMatchesProto* default_instance_;
 };
 // ===================================================================
 
@@ -556,27 +468,27 @@ inline void FeatureMatchProto::set_scale(float value) {
   scale_ = value;
 }
 
-// repeated .theia.FeatureKnnProto knn_match = 3;
+// repeated .FeatureKnnProto knn_match = 3;
 inline int FeatureMatchProto::knn_match_size() const {
   return knn_match_.size();
 }
 inline void FeatureMatchProto::clear_knn_match() {
   knn_match_.Clear();
 }
-inline const ::theia::FeatureKnnProto& FeatureMatchProto::knn_match(int index) const {
+inline const ::FeatureKnnProto& FeatureMatchProto::knn_match(int index) const {
   return knn_match_.Get(index);
 }
-inline ::theia::FeatureKnnProto* FeatureMatchProto::mutable_knn_match(int index) {
+inline ::FeatureKnnProto* FeatureMatchProto::mutable_knn_match(int index) {
   return knn_match_.Mutable(index);
 }
-inline ::theia::FeatureKnnProto* FeatureMatchProto::add_knn_match() {
+inline ::FeatureKnnProto* FeatureMatchProto::add_knn_match() {
   return knn_match_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::theia::FeatureKnnProto >&
+inline const ::google::protobuf::RepeatedPtrField< ::FeatureKnnProto >&
 FeatureMatchProto::knn_match() const {
   return knn_match_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::theia::FeatureKnnProto >*
+inline ::google::protobuf::RepeatedPtrField< ::FeatureKnnProto >*
 FeatureMatchProto::mutable_knn_match() {
   return &knn_match_;
 }
@@ -629,64 +541,33 @@ inline void ImagePairMatchProto::set_image2_id(::google::protobuf::uint32 value)
   image2_id_ = value;
 }
 
-// repeated .theia.FeatureMatchProto feature_match = 3;
+// repeated .FeatureMatchProto feature_match = 3;
 inline int ImagePairMatchProto::feature_match_size() const {
   return feature_match_.size();
 }
 inline void ImagePairMatchProto::clear_feature_match() {
   feature_match_.Clear();
 }
-inline const ::theia::FeatureMatchProto& ImagePairMatchProto::feature_match(int index) const {
+inline const ::FeatureMatchProto& ImagePairMatchProto::feature_match(int index) const {
   return feature_match_.Get(index);
 }
-inline ::theia::FeatureMatchProto* ImagePairMatchProto::mutable_feature_match(int index) {
+inline ::FeatureMatchProto* ImagePairMatchProto::mutable_feature_match(int index) {
   return feature_match_.Mutable(index);
 }
-inline ::theia::FeatureMatchProto* ImagePairMatchProto::add_feature_match() {
+inline ::FeatureMatchProto* ImagePairMatchProto::add_feature_match() {
   return feature_match_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::theia::FeatureMatchProto >&
+inline const ::google::protobuf::RepeatedPtrField< ::FeatureMatchProto >&
 ImagePairMatchProto::feature_match() const {
   return feature_match_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::theia::FeatureMatchProto >*
+inline ::google::protobuf::RepeatedPtrField< ::FeatureMatchProto >*
 ImagePairMatchProto::mutable_feature_match() {
   return &feature_match_;
 }
 
-// -------------------------------------------------------------------
-
-// ImagePairMatchesProto
-
-// repeated .theia.ImagePairMatchProto image_pair_match = 1;
-inline int ImagePairMatchesProto::image_pair_match_size() const {
-  return image_pair_match_.size();
-}
-inline void ImagePairMatchesProto::clear_image_pair_match() {
-  image_pair_match_.Clear();
-}
-inline const ::theia::ImagePairMatchProto& ImagePairMatchesProto::image_pair_match(int index) const {
-  return image_pair_match_.Get(index);
-}
-inline ::theia::ImagePairMatchProto* ImagePairMatchesProto::mutable_image_pair_match(int index) {
-  return image_pair_match_.Mutable(index);
-}
-inline ::theia::ImagePairMatchProto* ImagePairMatchesProto::add_image_pair_match() {
-  return image_pair_match_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::theia::ImagePairMatchProto >&
-ImagePairMatchesProto::image_pair_match() const {
-  return image_pair_match_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::theia::ImagePairMatchProto >*
-ImagePairMatchesProto::mutable_image_pair_match() {
-  return &image_pair_match_;
-}
-
 
 // @@protoc_insertion_point(namespace_scope)
-
-}  // namespace theia
 
 #ifndef SWIG
 namespace google {

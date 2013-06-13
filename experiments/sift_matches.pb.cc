@@ -16,8 +16,6 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 
-namespace theia {
-
 namespace {
 
 const ::google::protobuf::Descriptor* FeatureKnnProto_descriptor_ = NULL;
@@ -29,9 +27,6 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* ImagePairMatchProto_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   ImagePairMatchProto_reflection_ = NULL;
-const ::google::protobuf::Descriptor* ImagePairMatchesProto_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  ImagePairMatchesProto_reflection_ = NULL;
 
 }  // namespace
 
@@ -93,21 +88,6 @@ void protobuf_AssignDesc_experiments_2fsift_5fmatches_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ImagePairMatchProto));
-  ImagePairMatchesProto_descriptor_ = file->message_type(3);
-  static const int ImagePairMatchesProto_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImagePairMatchesProto, image_pair_match_),
-  };
-  ImagePairMatchesProto_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      ImagePairMatchesProto_descriptor_,
-      ImagePairMatchesProto::default_instance_,
-      ImagePairMatchesProto_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImagePairMatchesProto, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImagePairMatchesProto, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(ImagePairMatchesProto));
 }
 
 namespace {
@@ -126,8 +106,6 @@ void protobuf_RegisterTypes(const ::std::string&) {
     FeatureMatchProto_descriptor_, &FeatureMatchProto::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ImagePairMatchProto_descriptor_, &ImagePairMatchProto::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    ImagePairMatchesProto_descriptor_, &ImagePairMatchesProto::default_instance());
 }
 
 }  // namespace
@@ -139,8 +117,6 @@ void protobuf_ShutdownFile_experiments_2fsift_5fmatches_2eproto() {
   delete FeatureMatchProto_reflection_;
   delete ImagePairMatchProto::default_instance_;
   delete ImagePairMatchProto_reflection_;
-  delete ImagePairMatchesProto::default_instance_;
-  delete ImagePairMatchesProto_reflection_;
 }
 
 void protobuf_AddDesc_experiments_2fsift_5fmatches_2eproto() {
@@ -150,26 +126,22 @@ void protobuf_AddDesc_experiments_2fsift_5fmatches_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\036experiments/sift_matches.proto\022\005theia\""
-    "F\n\017FeatureKnnProto\022\022\n\nfeature_id\030\002 \001(\r\022\020"
-    "\n\010distance\030\004 \001(\002\022\r\n\005scale\030\005 \001(\002\"a\n\021Featu"
-    "reMatchProto\022\022\n\nfeature_id\030\001 \001(\r\022\r\n\005scal"
-    "e\030\002 \001(\002\022)\n\tknn_match\030\003 \003(\0132\026.theia.Featu"
-    "reKnnProto\"l\n\023ImagePairMatchProto\022\021\n\tima"
-    "ge1_id\030\001 \001(\r\022\021\n\timage2_id\030\002 \001(\r\022/\n\rfeatu"
-    "re_match\030\003 \003(\0132\030.theia.FeatureMatchProto"
-    "\"M\n\025ImagePairMatchesProto\0224\n\020image_pair_"
-    "match\030\001 \003(\0132\032.theia.ImagePairMatchProto", 399);
+    "\n\036experiments/sift_matches.proto\"F\n\017Feat"
+    "ureKnnProto\022\022\n\nfeature_id\030\002 \001(\r\022\020\n\010dista"
+    "nce\030\004 \001(\002\022\r\n\005scale\030\005 \001(\002\"[\n\021FeatureMatch"
+    "Proto\022\022\n\nfeature_id\030\001 \001(\r\022\r\n\005scale\030\002 \001(\002"
+    "\022#\n\tknn_match\030\003 \003(\0132\020.FeatureKnnProto\"f\n"
+    "\023ImagePairMatchProto\022\021\n\timage1_id\030\001 \001(\r\022"
+    "\021\n\timage2_id\030\002 \001(\r\022)\n\rfeature_match\030\003 \003("
+    "\0132\022.FeatureMatchProto", 301);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "experiments/sift_matches.proto", &protobuf_RegisterTypes);
   FeatureKnnProto::default_instance_ = new FeatureKnnProto();
   FeatureMatchProto::default_instance_ = new FeatureMatchProto();
   ImagePairMatchProto::default_instance_ = new ImagePairMatchProto();
-  ImagePairMatchesProto::default_instance_ = new ImagePairMatchesProto();
   FeatureKnnProto::default_instance_->InitAsDefaultInstance();
   FeatureMatchProto::default_instance_->InitAsDefaultInstance();
   ImagePairMatchProto::default_instance_->InitAsDefaultInstance();
-  ImagePairMatchesProto::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_experiments_2fsift_5fmatches_2eproto);
 }
 
@@ -570,7 +542,7 @@ bool FeatureMatchProto::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .theia.FeatureKnnProto knn_match = 3;
+      // repeated .FeatureKnnProto knn_match = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -613,7 +585,7 @@ void FeatureMatchProto::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteFloat(2, this->scale(), output);
   }
 
-  // repeated .theia.FeatureKnnProto knn_match = 3;
+  // repeated .FeatureKnnProto knn_match = 3;
   for (int i = 0; i < this->knn_match_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, this->knn_match(i), output);
@@ -637,7 +609,7 @@ void FeatureMatchProto::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(2, this->scale(), target);
   }
 
-  // repeated .theia.FeatureKnnProto knn_match = 3;
+  // repeated .FeatureKnnProto knn_match = 3;
   for (int i = 0; i < this->knn_match_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -668,7 +640,7 @@ int FeatureMatchProto::ByteSize() const {
     }
 
   }
-  // repeated .theia.FeatureKnnProto knn_match = 3;
+  // repeated .FeatureKnnProto knn_match = 3;
   total_size += 1 * this->knn_match_size();
   for (int i = 0; i < this->knn_match_size(); i++) {
     total_size +=
@@ -856,7 +828,7 @@ bool ImagePairMatchProto::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .theia.FeatureMatchProto feature_match = 3;
+      // repeated .FeatureMatchProto feature_match = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -899,7 +871,7 @@ void ImagePairMatchProto::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->image2_id(), output);
   }
 
-  // repeated .theia.FeatureMatchProto feature_match = 3;
+  // repeated .FeatureMatchProto feature_match = 3;
   for (int i = 0; i < this->feature_match_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, this->feature_match(i), output);
@@ -923,7 +895,7 @@ void ImagePairMatchProto::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->image2_id(), target);
   }
 
-  // repeated .theia.FeatureMatchProto feature_match = 3;
+  // repeated .FeatureMatchProto feature_match = 3;
   for (int i = 0; i < this->feature_match_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -956,7 +928,7 @@ int ImagePairMatchProto::ByteSize() const {
     }
 
   }
-  // repeated .theia.FeatureMatchProto feature_match = 3;
+  // repeated .FeatureMatchProto feature_match = 3;
   total_size += 1 * this->feature_match_size();
   for (int i = 0; i < this->feature_match_size(); i++) {
     total_size +=
@@ -1038,211 +1010,6 @@ void ImagePairMatchProto::Swap(ImagePairMatchProto* other) {
 }
 
 
-// ===================================================================
-
-#ifndef _MSC_VER
-const int ImagePairMatchesProto::kImagePairMatchFieldNumber;
-#endif  // !_MSC_VER
-
-ImagePairMatchesProto::ImagePairMatchesProto()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void ImagePairMatchesProto::InitAsDefaultInstance() {
-}
-
-ImagePairMatchesProto::ImagePairMatchesProto(const ImagePairMatchesProto& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void ImagePairMatchesProto::SharedCtor() {
-  _cached_size_ = 0;
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-ImagePairMatchesProto::~ImagePairMatchesProto() {
-  SharedDtor();
-}
-
-void ImagePairMatchesProto::SharedDtor() {
-  if (this != default_instance_) {
-  }
-}
-
-void ImagePairMatchesProto::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* ImagePairMatchesProto::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return ImagePairMatchesProto_descriptor_;
-}
-
-const ImagePairMatchesProto& ImagePairMatchesProto::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_experiments_2fsift_5fmatches_2eproto();
-  return *default_instance_;
-}
-
-ImagePairMatchesProto* ImagePairMatchesProto::default_instance_ = NULL;
-
-ImagePairMatchesProto* ImagePairMatchesProto::New() const {
-  return new ImagePairMatchesProto;
-}
-
-void ImagePairMatchesProto::Clear() {
-  image_pair_match_.Clear();
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool ImagePairMatchesProto::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .theia.ImagePairMatchProto image_pair_match = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_image_pair_match:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_image_pair_match()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(10)) goto parse_image_pair_match;
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void ImagePairMatchesProto::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated .theia.ImagePairMatchProto image_pair_match = 1;
-  for (int i = 0; i < this->image_pair_match_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->image_pair_match(i), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* ImagePairMatchesProto::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // repeated .theia.ImagePairMatchProto image_pair_match = 1;
-  for (int i = 0; i < this->image_pair_match_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        1, this->image_pair_match(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int ImagePairMatchesProto::ByteSize() const {
-  int total_size = 0;
-
-  // repeated .theia.ImagePairMatchProto image_pair_match = 1;
-  total_size += 1 * this->image_pair_match_size();
-  for (int i = 0; i < this->image_pair_match_size(); i++) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->image_pair_match(i));
-  }
-
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void ImagePairMatchesProto::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const ImagePairMatchesProto* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const ImagePairMatchesProto*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void ImagePairMatchesProto::MergeFrom(const ImagePairMatchesProto& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  image_pair_match_.MergeFrom(from.image_pair_match_);
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void ImagePairMatchesProto::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void ImagePairMatchesProto::CopyFrom(const ImagePairMatchesProto& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool ImagePairMatchesProto::IsInitialized() const {
-
-  return true;
-}
-
-void ImagePairMatchesProto::Swap(ImagePairMatchesProto* other) {
-  if (other != this) {
-    image_pair_match_.Swap(&other->image_pair_match_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata ImagePairMatchesProto::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = ImagePairMatchesProto_descriptor_;
-  metadata.reflection = ImagePairMatchesProto_reflection_;
-  return metadata;
-}
-
-
 // @@protoc_insertion_point(namespace_scope)
-
-}  // namespace theia
 
 // @@protoc_insertion_point(global_scope)
