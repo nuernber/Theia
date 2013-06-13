@@ -50,7 +50,6 @@ ADD_SUBDIRECTORY(solvers)
 ADD_SUBDIRECTORY(tutorials)
 ADD_SUBDIRECTORY(util)
 ADD_SUBDIRECTORY(vision)
-ADD_SUBDIRECTORY(experiments)
 
 # ---------------- Install commands ----------------- #
 # Compile protos first if desired.
