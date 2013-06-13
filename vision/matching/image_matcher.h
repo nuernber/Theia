@@ -157,6 +157,7 @@ bool ImageMatcher<Matcher>::MatchDistanceRatio(
                                   &distance)) {
       // If the distance passes the ratio test and the distance is less then the
       // threshold (if one is set).
+      VLOG(0) << "distance = " << distance[0] << ", " << distance[1];
       if (distance[0]/distance[1] < ratio &&
           (threshold <= 0 || distance[0] < threshold)) {
         matches->push_back(FeatureMatch<DistanceType>(i,

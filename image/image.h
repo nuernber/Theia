@@ -163,10 +163,10 @@ class Image : public SubImage<T> {
   void GaussianBlur(double sigma);
 
   // Sampling techniques.
-  void HalfSample(Image<T>* dest);
-  Image<T> HalfSample();
-  void TwoThirdsSample(Image<T>* dest);
-  Image<T> TwoThirdsSample();
+  void HalfSample(Image<T>* dest) const;
+  Image<T> HalfSample() const ;
+  void TwoThirdsSample(Image<T>* dest) const;
+  Image<T> TwoThirdsSample() const ;
 
   // Compute the integral image where pixel (x, y) is equal to the sum of all
   // values in the rectangle from (0, 0) to (x, y).
@@ -342,22 +342,22 @@ void Image<T>::GaussianBlur(double sigma) {
 }
 
 template <typename T>
-void Image<T>::HalfSample(Image<T>* dest) {
+void Image<T>::HalfSample(Image<T>* dest) const {
   CVD::halfSample(image_, dest->image_);
 }
 
 template <typename T>
-Image<T> Image<T>::HalfSample() {
+Image<T> Image<T>::HalfSample() const {
   return Image<T>(CVD::halfSample(image_));
 }
 
 template <typename T>
-void Image<T>::TwoThirdsSample(Image<T>* dest) {
+void Image<T>::TwoThirdsSample(Image<T>* dest) const {
   CVD::twoThirdsSample(image_, dest->image_);
 }
 
 template <typename T>
-Image<T> Image<T>::TwoThirdsSample() {
+Image<T> Image<T>::TwoThirdsSample() const {
   return Image<T>(CVD::twoThirdsSample(image_));
 }
 

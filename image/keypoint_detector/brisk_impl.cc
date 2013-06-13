@@ -1380,9 +1380,9 @@ inline void BriskLayer::halfsample(const Image<unsigned char>& srcimg,
   CHECK_EQ(srcimg.Cols()/2, dstimg.Cols());
   CHECK_EQ(srcimg.Rows()/2, dstimg.Rows());
 
-  #ifndef THEIA_USE_SSE
+#ifndef THEIA_USE_SSE
   srcimg.HalfSample(&dstimg);
-  #else
+#else
   // mask needed later:
   register __m128i mask = _mm_set_epi32 (0x00FF00FF, 0x00FF00FF, 0x00FF00FF, 0x00FF00FF);
   // to be added in order to make successive averaging correct:
@@ -1514,11 +1514,11 @@ inline void BriskLayer::twothirdsample(const Image<unsigned char>& srcimg,
   CHECK_EQ((srcimg.Cols()/3)*2, dstimg.Cols());
   CHECK_EQ((srcimg.Rows()/3)*2, dstimg.Rows());
 
-  #ifndef THEIA_USE_SSE
+#ifndef THEIA_USE_SSE
   // CVD two thirds sample.
   srcimg.TwoThirdsSample(&dstimg);
-  #else
-  
+#else
+
   // masks:
   register __m128i mask1 = _mm_set_epi8 (0x80,0x80,0x80,0x80,0x80,0x80,0x80,12,0x80,10,0x80,7,0x80,4,0x80,1);
   register __m128i mask2 = _mm_set_epi8 (0x80,0x80,0x80,0x80,0x80,0x80,12,0x80,10,0x80,7,0x80,4,0x80,1,0x80);

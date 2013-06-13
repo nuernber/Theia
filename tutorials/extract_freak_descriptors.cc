@@ -80,6 +80,8 @@ int main(int argc, char *argv[]) {
                                            keypoints,
                                            &pruned_descriptors);
   t = clock() - t;
+  for (int i = 0; i < 10; i++)
+    VLOG(0) << "freak desc = " << pruned_descriptors[i]->Data()->to_string();
   VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
           << " to extract FREAK descriptors";
   VLOG(0) << "pruned descriptors size = " << pruned_descriptors.size();

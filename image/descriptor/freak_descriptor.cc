@@ -59,6 +59,12 @@
 // the authors, rather than train them ourselves).
 namespace theia {
 namespace {
+static const __m128i binMask = _mm_set_epi8(0x80, 0x80, 0x80,
+                                            0x80, 0x80, 0x80,
+                                            0x80, 0x80, 0x80,
+                                            0x80, 0x80, 0x80,
+                                            0x80, 0x80, 0x80,
+                                            0x80);
 static const double kSqrt2 = 1.4142135623731;
 static const double kInvSqrt2 = 1.0/kSqrt2;
 static const double kLog2 = 0.693147180559945;
@@ -280,13 +286,14 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image,
     const std::vector<Keypoint*>& keypoints,
     std::vector<FreakDescriptor*>* descriptors) {
-  GrayImage img_integral = image.Integrate();
+  Image<uchar> uchar_image = image.ConvertTo<uchar>();
+  Image<uchar> img_integral = uchar_image.Integrate();
 
   // used to save pattern scale index corresponding to each keypoints
   std::vector<int> kp_scale_idx(keypoints.size());
   const float size_cst =
       static_cast<float>(kNumScales_/(kLog2*num_octaves_));
-  float points_value[kNumPoints];
+  uchar points_value[kNumPoints];
   int theta_idx = 0;
   int direction0;
   int direction1;
@@ -351,7 +358,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
     } else {
       // get the points intensity value in the un-rotated pattern
       for (int i = kNumPoints; i--;) {
-        points_value[i] = MeanIntensity(image, img_integral,
+        points_value[i] = MeanIntensity(uchar_image, img_integral,
                                         keypoints[k]->x(), keypoints[k]->y(),
                                         kp_scale_idx[k], 0, i);
       }
@@ -378,12 +385,13 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
     }
     // extract descriptor at the computed orientation
     for (int i = kNumPoints; i--;) {
-      points_value[i] = MeanIntensity(image, img_integral,
+      points_value[i] = MeanIntensity(uchar_image, img_integral,
                                       keypoints[k]->x(), keypoints[k]->y(),
                                       kp_scale_idx[k], theta_idx, i);
     }
+
 #if THEIA_USE_SSE
-    __m128i* ptr = reinterpret_cast<__m128i*>(freak_descriptor->CharData());
+    __m128i* ptr = (__m128i*)(freak_descriptor->CharData());
     // NOTE: the comparisons order is modified in each block (but first
     // 128 comparisons remain globally the same-->does not affect the
     // 128,384 bits segmanted matching strategy)
@@ -436,8 +444,11 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       }
       (*ptr) = result128;
       ++ptr;
+      VLOG(0) << "freak at it " << n << " is currently: " <<
+          freak_descriptor->Data()->to_string();
     }
 #else
+
     // Extracting descriptor preserving the order of SSE version.
     int cnt = 0;
     for (int n = 7; n < kNumPairs; n += 128) {
@@ -454,12 +465,10 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
   return true;
 }
 
-// simply take average on a square patch, not even gaussian approx
-// TODO(cmsweeney): check and make sure we can actually use GrayImage here. The
-// reference implementation assumes an unsigned char image.
-float FreakDescriptorExtractor::MeanIntensity(
-    const GrayImage& image,
-    const GrayImage& integral,
+// Simply take average on a square patch, not even gaussian approx.
+uchar FreakDescriptorExtractor::MeanIntensity(
+    const Image<uchar>& image,
+    const Image<uchar>& integral,
     const float kp_x,
     const float kp_y,
     const unsigned int scale,
@@ -486,13 +495,13 @@ float FreakDescriptorExtractor::MeanIntensity(
     const int r_x_1 = 1024 - r_x;
     const int r_y_1 = 1024 - r_y;
     // linear interpolation:
-    float ret_val = r_x_1*r_y_1*image[y][x];
+    unsigned int ret_val = r_x_1*r_y_1*image[y][x];
     ret_val = r_x*r_y_1*image[y][x+1];
     ret_val = r_x*r_y*image[y+1][x+1];
     ret_val = r_x_1*r_y*image[y+1][x];
     // return the rounded mean
     ret_val += 2*1024*1024;
-    return ret_val/(4.0*1024*1024);
+    return ret_val/(4*1024*1024);
   }
 
   // expected case:
@@ -506,7 +515,7 @@ float FreakDescriptorExtractor::MeanIntensity(
   const int y_bottom = static_cast<int>(yf + radius + 0.5);
 
   // bottom right corner
-  float ret_val = integral[y_bottom][x_right];
+  int ret_val = integral[y_bottom][x_right];
   ret_val -= integral[y_bottom][x_left];
   ret_val += integral[y_top][x_left];
   ret_val -= integral[y_top][x_right];

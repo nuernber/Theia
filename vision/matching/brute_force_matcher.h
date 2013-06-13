@@ -129,11 +129,13 @@ class BruteForceMatcher : public Matcher<TDescriptor, Metric> {
     knn_index->resize(k_nn);
     knn_distance->resize(k_nn);
     // Perform in reverse order so that the NN is first in the result.
+    VLOG(0) << "descriptor = " << query.Data()->to_string();
     for (int i = k_nn - 1; i >= 0; i--) {
       std::pair<int, DistanceType> knn_pair = min_heap.top();
       min_heap.pop();
       (*knn_index)[i] = knn_pair.first;
       (*knn_distance)[i] = knn_pair.second;
+      VLOG(0) << "knn pair = " << knn_pair.first << ", " << knn_pair.second;
     }
 
     return true;

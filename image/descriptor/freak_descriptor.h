@@ -106,7 +106,7 @@ class FreakDescriptorExtractor : public DescriptorExtractor<FreakDescriptor> {
   };
 
  private:
-  float MeanIntensity(const GrayImage& image, const GrayImage& integral,
+  uchar MeanIntensity(const Image<uchar>& image, const Image<uchar>& integral,
                       const float kp_x,
                       const float kp_y,
                       const unsigned int scale,

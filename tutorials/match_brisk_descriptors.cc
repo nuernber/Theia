@@ -57,6 +57,7 @@ using theia::BruteForceImageMatcher;
 using theia::BruteForceMatcher;
 using theia::GrayImage;
 using theia::Hamming;
+using theia::HammingFreak;
 using theia::ImageCanvas;
 using theia::Keypoint;
 
@@ -99,7 +100,7 @@ int main(int argc, char *argv[]) {
   VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
 
   // Match descriptors!
-  BruteForceImageMatcher<BriskDescriptor, Hamming> brute_force_image_matcher;
+  BruteForceImageMatcher<BriskDescriptor, HammingFreak<70> > brute_force_image_matcher;
   std::vector<theia::FeatureMatch<int> > matches;
   clock_t t = clock();
   brute_force_image_matcher.MatchSymmetricAndDistanceRatio(

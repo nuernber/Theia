@@ -192,6 +192,7 @@ class BinaryDescriptor : public GenericDescriptor<bool, N> {
       : GenericDescriptor<bool, N>(type) {
     data_ = new uchar[N/sizeof(uchar)];
     binary_data_ = reinterpret_cast<std::bitset<N>*>(data_);
+    binary_data_->reset();
   }
 
   // Copy constructor needs to be explicitly defined because of the reinterpret
