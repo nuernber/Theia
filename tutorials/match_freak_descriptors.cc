@@ -40,7 +40,7 @@
 
 #include "image/image.h"
 #include "image/image_canvas.h"
-#include "image/descriptor/brisk_descriptor.h"
+#include "image/descriptor/freak_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
 #include "image/keypoint_detector/brisk_detector.h"
 #include "vision/matching/distance.h"
@@ -50,13 +50,14 @@
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
 
-using theia::BriskDescriptor;
-using theia::BriskDescriptorExtractor;
+using theia::FreakDescriptor;
+using theia::FreakDescriptorExtractor;
 using theia::BriskDetector;
 using theia::BruteForceImageMatcher;
 using theia::BruteForceMatcher;
 using theia::GrayImage;
 using theia::Hamming;
+using theia::HammingFreak;
 using theia::ImageCanvas;
 using theia::Keypoint;
 
@@ -83,23 +84,23 @@ int main(int argc, char *argv[]) {
 
   // Extract descriptors.
   VLOG(0) << "extracting descriptors.";
-  BriskDescriptorExtractor brisk_extractor;
-  brisk_extractor.Initialize();
+  FreakDescriptorExtractor freak_extractor;
+  freak_extractor.Initialize();
 
-  std::vector<BriskDescriptor*> left_pruned_descriptors;
-  brisk_extractor.ComputeDescriptorsPruned(left_image,
+  std::vector<FreakDescriptor*> left_pruned_descriptors;
+  freak_extractor.ComputeDescriptorsPruned(left_image,
                                            left_keypoints,
                                            &left_pruned_descriptors);
   VLOG(0) << "pruned descriptors size = " << left_pruned_descriptors.size();
 
-  std::vector<BriskDescriptor*> right_pruned_descriptors;
-  brisk_extractor.ComputeDescriptorsPruned(right_image,
+  std::vector<FreakDescriptor*> right_pruned_descriptors;
+  freak_extractor.ComputeDescriptorsPruned(right_image,
                                            right_keypoints,
                                            &right_pruned_descriptors);
   VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
 
   // Match descriptors!
-  BruteForceImageMatcher<BriskDescriptor, Hamming> brute_force_image_matcher;
+  BruteForceImageMatcher<FreakDescriptor, HammingFreak<25> > brute_force_image_matcher;
   std::vector<theia::FeatureMatch<int> > matches;
   clock_t t = clock();
   brute_force_image_matcher.MatchSymmetricAndDistanceRatio(
@@ -110,7 +111,7 @@ int main(int argc, char *argv[]) {
       128);
   t = clock() - t;
   VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
-          << " to match BRISK descriptors";
+          << " to match FREAK descriptors";
 
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
@@ -122,5 +123,5 @@ int main(int argc, char *argv[]) {
                                    0.1);
 
   image_canvas.Write(FLAGS_img_output_dir +
-                     std::string("/brisk_descriptors.png"));
+                     std::string("/freak_descriptors.png"));
 }

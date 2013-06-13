@@ -444,8 +444,6 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       }
       (*ptr) = result128;
       ++ptr;
-      VLOG(0) << "freak at it " << n << " is currently: " <<
-          freak_descriptor->Data()->to_string();
     }
 #else
 

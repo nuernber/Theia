@@ -44,7 +44,6 @@
 #include "util/util.h"
 
 namespace theia {
-namespace {
 #ifdef THEIA_USE_SSE
 #ifdef __GNUC__
 static const char __attribute__((aligned(16))) MASK[16] = {0xf, 0xf, 0xf, 0xf,
@@ -55,7 +54,7 @@ static const uint8_t __attribute__((aligned(16))) LUT_POP[16] = { 0, 1, 1, 2,
                                                                   1, 2, 2, 3,
                                                                   1, 2, 2, 3,
                                                                   2, 3, 3, 4};
-static const __m128i SHIFT = _mm_set_epi32(0,0,0,4);
+static const __m128i SHIFT = _mm_set_epi32(0, 0, 0, 4);
 #endif
 
 #ifdef _MSC_VER
@@ -67,7 +66,7 @@ __declspec(align(16)) static const uint8_t LUT_POP[16] = { 0, 1, 1, 2,
                                                            1, 2, 2, 3,
                                                            1, 2, 2, 3,
                                                            2, 3, 3, 4};
-static const __m128i SHIFT = _mm_set_epi32(0,0,0,4);
+static const __m128i SHIFT = _mm_set_epi32(0, 0, 0, 4);
 #endif
 
 /** Hamming distance using SSE instruction with intermediat threshold @param Tr
@@ -84,7 +83,7 @@ static const __m128i SHIFT = _mm_set_epi32(0,0,0,4);
 // Invariant Scalable Keypoints :
 // http://www.asl.ethz.ch/people/lestefan/personal/BRISK
 // http://en.wikipedia.org/wiki/Hamming_weight
-template<int Tr=0, int nbBlocks=4>
+template<int Tr = 0, int nbBlocks = 4>
 static int XORedPopcnt_128_384(const __m128i* string1, const __m128i* string2) {
   register __m128i xmm0;
   register __m128i xmm1;
@@ -102,14 +101,15 @@ static int XORedPopcnt_128_384(const __m128i* string1, const __m128i* string2) {
   register __m128i xmm7;
   register __m128i xmm8;
   // Returns the value loaded in a variable representing a register
-  xmm7 = _mm_load_si128((__m128i *)LUT_POP);
-  xmm6 = _mm_load_si128((__m128i *)MASK);
+  xmm7 = _mm_load_si128(reinterpret_cast<__m128i*>(LUT_POP));
+  xmm6 = _mm_load_si128(reinterpret_cast<__m128i*>(MASK));
   // Sets the 128-bit value to zero
   xmm5 = _mm_setzero_si128();
   xmm4 = xmm5;
-  // 4 times unrolled loop (512 bits) {
-  // Computes the bitwise XOR of the 128-bit value in a and the 128-bit value in b.
-  xmm0 = _mm_xor_si128( (__m128i)*string1++, (__m128i)*string2++);
+
+  // Computes the bitwise XOR of the 128-bit value in a and the 128-bit value in
+  // b.
+  xmm0 = _mm_xor_si128((__m128i)*string1++, (__m128i)*string2++);
   xmm1 = xmm0;
   // Shifts the 8 signed or unsigned 16-bit integers in a right by count bits
   // while shifting in zeros.
@@ -134,17 +134,16 @@ static int XORedPopcnt_128_384(const __m128i* string1, const __m128i* string2) {
   // Early out if applicable.
   if (Tr < 128 && Tr > 0) {
     xmm8 = _mm_sad_epu8(xmm4, xmm5);
-    //~ xmm0 = _mm_alignr_epi8( xmm0,xmm8,8 );
-    xmm0 = (__m128i) _mm_movehl_ps( (__m128) xmm0, (__m128) xmm8);
+    xmm0 = (__m128i) _mm_movehl_ps((__m128) xmm0, (__m128) xmm8);
     xmm0 = _mm_add_epi32(xmm0, xmm8);
-    if( _mm_cvtsi128_si32(xmm0) > Tr ) {
+    if ( _mm_cvtsi128_si32(xmm0) > Tr ) {
       return 999999999;
     }
   }
 
   // Computes the bitwise XOR of the 128-bit value in a and the 128-bit value in
   // b.
-  xmm0 = _mm_xor_si128( (__m128i)*string1++, (__m128i)*string2++);
+  xmm0 = _mm_xor_si128((__m128i)*string1++, (__m128i)*string2++);
   xmm1 = xmm0;
   // Shifts the 8 signed or unsigned 16-bit integers in a right by count bits
   // while shifting in zeros.
@@ -165,7 +164,7 @@ static int XORedPopcnt_128_384(const __m128i* string1, const __m128i* string2) {
 
   // Computes the bitwise XOR of the 128-bit value in a and the 128-bit value in
   // b.
-  xmm0 = _mm_xor_si128( (__m128i)*string1++, (__m128i)*string2++);
+  xmm0 = _mm_xor_si128((__m128i)*string1++, (__m128i)*string2++);
   xmm1 = xmm0;
   // Shifts the 8 signed or unsigned 16-bit integers in a right by count bits
   // while shifting in zeros.
@@ -186,7 +185,7 @@ static int XORedPopcnt_128_384(const __m128i* string1, const __m128i* string2) {
 
   // Computes the bitwise XOR of the 128-bit value in a and the 128-bit value in
   // b.
-  xmm0 = _mm_xor_si128( (__m128i)*string1++, (__m128i)*string2++);
+  xmm0 = _mm_xor_si128((__m128i)*string1++, (__m128i)*string2++);
   xmm1 = xmm0;
   // Shifts the 8 signed or unsigned 16-bit integers in a right by count bits
   // while shifting in zeros.
@@ -199,21 +198,21 @@ static int XORedPopcnt_128_384(const __m128i* string1, const __m128i* string2) {
   xmm3 = xmm7;
   // lower nibbles
   xmm2 = _mm_shuffle_epi8(xmm2, xmm0);
-  //higher nibbles
+  // higher nibbles
   xmm3 = _mm_shuffle_epi8(xmm3, xmm1);
-  //Adds the 16 signed or unsigned 8-bit integers in a to the 16 signed or
-  //unsigned 8-bit integers in b.
+  // Adds the 16 signed or unsigned 8-bit integers in a to the 16 signed or
+  // unsigned 8-bit integers in b.
   xmm4 = _mm_add_epi8(xmm4, xmm2);
   xmm4 = _mm_add_epi8(xmm4, xmm3);
 
-  if( nbBlocks > 4 ) {
-    for( int i = nbBlocks-4; i--; ) {
+  if (nbBlocks > 4) {
+    for (int i = nbBlocks-4; i--;) {
       // Computes the bitwise XOR of the 128-bit value in a and the 128-bit
       // value in b.
-      xmm0 = _mm_xor_si128( (__m128i)*string1++, (__m128i)*string2++);
+      xmm0 = _mm_xor_si128((__m128i)*string1++, (__m128i)*string2++);
       xmm1 = xmm0;
-      //Shifts the 8 signed or unsigned 16-bit integers in a right by count bits
-      //while shifting in zeros.
+      // Shifts the 8 signed or unsigned 16-bit integers in a right by count
+      // bits while shifting in zeros.
       xmm1 = _mm_srl_epi16(xmm1, SHIFT);
       // Computes the bitwise AND of the 128-bit value in a and the 128-bit
       // value in b.
@@ -239,13 +238,12 @@ static int XORedPopcnt_128_384(const __m128i* string1, const __m128i* string2) {
   // resulting 2 unsigned 16-bit integers into the upper and lower 64-bit
   // elements.
 
-  xmm0 = (__m128i) _mm_movehl_ps( (__m128) xmm0, (__m128) xmm4);
+  xmm0 = (__m128i) _mm_movehl_ps((__m128) xmm0, (__m128) xmm4);
   xmm0 = _mm_add_epi32(xmm0, xmm4);
   // Moves the least significant 32 bits of a to a 32-bit integer.
   return _mm_cvtsi128_si32(xmm0);
 }
 #endif  // THEIA_USE_SSE
-}  // namespace
 
 struct Hamming {
   typedef bool ElementType;
@@ -266,8 +264,8 @@ struct Hamming {
 // max_early_dist is the maximum value of the distance of the first 128 bits in
 // order to continue testing the distance.
 //
-// NOTE: we have found from experiments that this is actually slower than the
-// normal hamming distance function! Use the normal one instead!
+// NOTE: we have found from experiments that this the SSE version is slower than
+// using a modified bitset version.
 template<int max_early_dist = 0>
 struct HammingFreak {
   typedef bool ElementType;
@@ -275,10 +273,16 @@ struct HammingFreak {
 
   template <typename Iterator1, typename Iterator2>
   ResultType operator()(Iterator1 a, Iterator2 b, size_t size) const {
-    //#ifndef THEIA_USE_SSE
-    // Test the distance of the first 128 bytes.
-    const std::bitset<128>* a_first = reinterpret_cast<const std::bitset<128>*>(a);
-    const std::bitset<128>* b_first = reinterpret_cast<const std::bitset<128>*>(b);
+    // #ifndef THEIA_USE_SSE
+
+    // Test the distance of the first 128 bytes. This cast
+    // seems more dangerous than it is. a and b are just reinterpretted casts of
+    // uchar arrays to begin with, so we do not risk messing up with internals
+    // by casting it to a smaller bitset for our early out.
+    const std::bitset<128>* a_first =
+        reinterpret_cast<const std::bitset<128>*>(a);
+    const std::bitset<128>* b_first =
+        reinterpret_cast<const std::bitset<128>*>(b);
     if (max_early_dist > 0 && (*a_first ^ *b_first).count() > max_early_dist) {
       return size;
     } else {
