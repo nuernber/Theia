@@ -41,7 +41,7 @@ macro(set_compile_parameters)
     IF (CMAKE_COMPILER_IS_GNUCXX)
       # Linux
       IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -msse2 -msse3 -msse4-Wno-deprecated-declarations")
+        SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -msse2 -msse3 -msse4 -Wno-deprecated-declarations")
       ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
       # Mac OS X
       IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

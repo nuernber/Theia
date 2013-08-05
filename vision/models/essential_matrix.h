@@ -63,6 +63,7 @@ class EssentialMatrix {
   // point is in front of the camera). This assumes the point correspondance
   // passed in was a point used for the 5 point algorithm (i.e. an ideal
   // point). Implemented according to Appendix C of the Nister paper.
+  // TODO(cmsweeney): Remove this comment! It is outdated and inaccurate.
   void DecomposeWithIdealCorrespondence(const double image_point1[3],
                                         const double image_point2[3],
                                         double rotation[3][3],
