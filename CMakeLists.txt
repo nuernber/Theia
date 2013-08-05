@@ -42,7 +42,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/libraries
   ${flann_SOURCE_DIR}/src/cpp
   ${gtest_SOURCE_DIR}/include
   ${gtest_SOURCE_DIR}
-  ${vlfeat_SOURCE_DIR}/vl
+  ${vlfeat_SOURCE_DIR}
   ${agast_SOURCE_DIR})
 
 # Include all source directories.
