@@ -38,11 +38,18 @@
 #include <unordered_map>
 #include <vector>
 
+#include "image/descriptor/descriptor.h"
 #include "util/map_util.h"
 #include "util/util.h"
 #include "vision/matching/brute_force_matcher.h"
 
 namespace theia {
+// typedef Brute Force Image Matcher.
+template <class Metric> class ImageMatcher;
+
+template <class Metric>
+using BruteForceImageMatcher = ImageMatcher<BruteForceMatcher<Metric> >;
+
 template<class T>
 struct FeatureMatch {
   FeatureMatch(int f1_ind, int f2_ind, T dist)
@@ -60,37 +67,36 @@ template<class Matcher>
 class ImageMatcher {
  public:
   typedef typename Matcher::DistanceType DistanceType;
-  typedef typename Matcher::DescriptorType DescriptorType;
 
   ImageMatcher() {}
   virtual ~ImageMatcher() {}
 
   // Return the all NN matches that pass the threshold.
-  virtual bool Match(const std::vector<DescriptorType*>& desc_1,
-                     const std::vector<DescriptorType*>& desc_2,
+  virtual bool Match(const std::vector<Descriptor*>& desc_1,
+                     const std::vector<Descriptor*>& desc_2,
                      std::vector<FeatureMatch<DistanceType> >* matches,
                      DistanceType threshold = 0);
 
   // Return all the NN matches that pass the threshold and pass the ratio test
   // (distance of 1st NN / distance of 2nd NN < ratio).
   virtual bool MatchDistanceRatio(
-      const std::vector<DescriptorType*>& desc_1,
-      const std::vector<DescriptorType*>& desc_2,
+      const std::vector<Descriptor*>& desc_1,
+      const std::vector<Descriptor*>& desc_2,
       std::vector<FeatureMatch<DistanceType> >* matches,
       double ratio,
       DistanceType threshold = 0);
 
   // Only returns matches that are mutual nearest neighbors (i.e. if a
   // descriptor x in image 1 has a NN y in image 2, then y's NN is x).
-  virtual bool MatchSymmetric(const std::vector<DescriptorType*>& desc_1,
-                              const std::vector<DescriptorType*>& desc_2,
+  virtual bool MatchSymmetric(const std::vector<Descriptor*>& desc_1,
+                              const std::vector<Descriptor*>& desc_2,
                               std::vector<FeatureMatch<DistanceType> >* matches,
                               DistanceType threshold = 0);
 
   // Returns matches that pass the symmetric test and the distance ratio test.
   virtual bool MatchSymmetricAndDistanceRatio(
-      const std::vector<DescriptorType*>& desc_1,
-      const std::vector<DescriptorType*>& desc_2,
+      const std::vector<Descriptor*>& desc_1,
+      const std::vector<Descriptor*>& desc_2,
       std::vector<FeatureMatch<DistanceType> >* matches,
       double ratio,
       DistanceType threshold = 0);
@@ -103,15 +109,11 @@ class ImageMatcher {
   DISALLOW_COPY_AND_ASSIGN(ImageMatcher);
 };
 
-template <class T, class D>
-class BruteForceImageMatcher : public ImageMatcher<BruteForceMatcher<T, D> > {
-};
-
 // ---------------------- Implementation ------------------------ //
 template<class Matcher>
 bool ImageMatcher<Matcher>::Match(
-    const std::vector<DescriptorType*>& desc_1,
-    const std::vector<DescriptorType*>& desc_2,
+    const std::vector<Descriptor*>& desc_1,
+    const std::vector<Descriptor*>& desc_2,
     std::vector<FeatureMatch<DistanceType> >* matches,
     DistanceType threshold) {
   Matcher matcher;
@@ -137,8 +139,8 @@ bool ImageMatcher<Matcher>::Match(
 
 template<class Matcher>
 bool ImageMatcher<Matcher>::MatchDistanceRatio(
-    const std::vector<DescriptorType*>& desc_1,
-    const std::vector<DescriptorType*>& desc_2,
+    const std::vector<Descriptor*>& desc_1,
+    const std::vector<Descriptor*>& desc_2,
     std::vector<FeatureMatch<DistanceType> >* matches,
     double ratio,
     DistanceType threshold) {
@@ -170,8 +172,8 @@ bool ImageMatcher<Matcher>::MatchDistanceRatio(
 
 template<class Matcher>
 bool ImageMatcher<Matcher>::MatchSymmetric(
-    const std::vector<DescriptorType*>& desc_1,
-    const std::vector<DescriptorType*>& desc_2,
+    const std::vector<Descriptor*>& desc_1,
+    const std::vector<Descriptor*>& desc_2,
     std::vector<FeatureMatch<DistanceType> >* matches,
     DistanceType threshold) {
   std::vector<FeatureMatch<DistanceType> > forward_matches;
@@ -187,8 +189,8 @@ bool ImageMatcher<Matcher>::MatchSymmetric(
 
 template<class Matcher>
 bool ImageMatcher<Matcher>::MatchSymmetricAndDistanceRatio(
-    const std::vector<DescriptorType*>& desc_1,
-    const std::vector<DescriptorType*>& desc_2,
+    const std::vector<Descriptor*>& desc_1,
+    const std::vector<Descriptor*>& desc_2,
     std::vector<FeatureMatch<DistanceType> >* matches,
     double ratio,
     DistanceType threshold) {

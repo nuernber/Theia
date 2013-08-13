@@ -57,7 +57,7 @@ class BriskDescriptor : public BinaryDescriptor<512> {
 // Keypoints", in Proceedings of the IEEE International Conference on Computer
 // Vision (ICCV 2011). NOTE: because this code is ported, it does not adhere to
 // the same style guides as the rest of the code.
-class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
+class BriskDescriptorExtractor : public DescriptorExtractor {
  public:
   BriskDescriptorExtractor(bool rotation_invariant,
                            bool scale_invariant,
@@ -66,17 +66,16 @@ class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
   ~BriskDescriptorExtractor();
 
   // Computes a descriptor at a single keypoint.
-  bool ComputeDescriptor(const GrayImage& image,
-                         const Keypoint& keypoint,
-                         BriskDescriptor* descriptor);
+  Descriptor* ComputeDescriptor(const GrayImage& image,
+                                const Keypoint& keypoint);
 
   // Compute multiple descriptors for keypoints from a single image.
   bool ComputeDescriptors(const GrayImage& image,
                           const std::vector<Keypoint*>& keypoints,
-                          std::vector<BriskDescriptor*>* descriptors);
+                          std::vector<Descriptor*>* descriptors);
 
   bool DetectAndExtractDescriptors(const GrayImage& image,
-                                   std::vector<BriskDescriptor*>* descriptors);
+                                   std::vector<Descriptor*>* descriptors);
 
   // Methods to load/store descriptors in protocol buffers. Each derived class
   // should implement these methods (if desired) and load/store all appropriate
@@ -85,10 +84,10 @@ class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
   // these methods are paired to the descriptors.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
   bool ProtoToDescriptor(const DescriptorsProto& proto,
-                         std::vector<BriskDescriptor*>* descriptors) const;
+                         std::vector<Descriptor*>* descriptors) const;
 
   bool DescriptorToProto(
-      const std::vector<BriskDescriptor*>& descriptors,
+      const std::vector<Descriptor*>& descriptors,
       DescriptorsProto* proto) const;
 #endif
 

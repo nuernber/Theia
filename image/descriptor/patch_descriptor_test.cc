@@ -60,8 +60,8 @@ TEST(PatchDescriptor, CompWithSubImage) {
   fast_detector.DetectKeypoints(input_img, &fast_keypoints);
 
   // For each keypoint, extract the patch descriptors.
-  PatchDescriptorExtractor<PatchDescriptor<7, 7> > patch_extractor;
-  std::vector<PatchDescriptor<7, 7>*> patch_descriptors;
+  PatchDescriptorExtractor patch_extractor(7, 7);
+  std::vector<Descriptor*> patch_descriptors;
   patch_extractor.ComputeDescriptors(input_img,
                                      fast_keypoints,
                                      &patch_descriptors);
@@ -75,7 +75,7 @@ TEST(PatchDescriptor, CompWithSubImage) {
     int j = 0;
     for (int r = 0; r < 7; r++) {
       for (int c = 0; c < 7; c++) {
-        ASSERT_EQ((*patch_descriptors[i])[j++], sub_img[r][c]);
+        ASSERT_EQ(patch_descriptors[i]->FloatData()[j++], sub_img[r][c]);
       }
     }
   }
@@ -91,8 +91,8 @@ TEST(PatchDescriptor, ProtoTest) {
   fast_detector.DetectKeypoints(input_img, &fast_keypoints);
 
   // For each keypoint, extract the patch descriptors.
-  PatchDescriptorExtractor<PatchDescriptor<7, 7> > patch_extractor;
-  std::vector<PatchDescriptor<7, 7>*> patch_descriptors;
+  PatchDescriptorExtractor patch_extractor(7, 7);
+  std::vector<Descriptor*> patch_descriptors;
   patch_extractor.ComputeDescriptors(input_img,
                                      fast_keypoints,
                                      &patch_descriptors);
@@ -102,14 +102,15 @@ TEST(PatchDescriptor, ProtoTest) {
   patch_extractor.DescriptorToProto(patch_descriptors, &patch_proto);
 
   // Convert back to descriptors.
-  std::vector<PatchDescriptor<7, 7>*> proto_descriptors;
+  std::vector<Descriptor*> proto_descriptors;
   patch_extractor.ProtoToDescriptor(patch_proto, &proto_descriptors);
 
   // Assert that they are equal.
   ASSERT_EQ(patch_descriptors.size(), proto_descriptors.size());
   for (int i = 0; i < patch_descriptors.size(); i++) {
     for (int j = 0; j < 49; j++) {
-      ASSERT_EQ((*patch_descriptors[i])[j], (*proto_descriptors[i])[j]);
+      ASSERT_EQ(patch_descriptors[i]->FloatData()[j],
+                proto_descriptors[i]->FloatData()[j]);
     }
   }
 }

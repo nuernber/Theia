@@ -376,24 +376,26 @@ bool RoiPredicate(const float minX, const float minY,
 
 
 // Computes a descriptor at a single keypoint.
-bool BriskDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
-                                                 const Keypoint& keypoint,
-                                                 BriskDescriptor* descriptor) {
+Descriptor* BriskDescriptorExtractor::ComputeDescriptor(
+    const GrayImage& image,
+    const Keypoint& keypoint) {
+  Descriptor* descriptor = new BriskDescriptor;
   std::vector<Keypoint*> keypoints;
   // TODO(cmsweeney): Is there a better way to pass the address of the keypoint
   // passed in? This is sort of a lazy hack.
   Keypoint keypoint_copy = keypoint;
   keypoints.push_back(&keypoint_copy);
-  std::vector<BriskDescriptor*> descriptors;
+  std::vector<Descriptor*> descriptors;
   descriptors.push_back(descriptor);
-  return ComputeDescriptors(image, keypoints, &descriptors);
+  CHECK(ComputeDescriptors(image, keypoints, &descriptors));
+  return descriptor;
 }
 
 // computes the descriptor
 bool BriskDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image,
     const std::vector<Keypoint*>& keypoints,
-    std::vector<BriskDescriptor*>* descriptors) {
+    std::vector<Descriptor*>* descriptors) {
 
   //Remove keypoints very close to the border
   size_t ksize = keypoints.size();
@@ -542,7 +544,7 @@ BriskDescriptorExtractor::~BriskDescriptorExtractor() {
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 bool BriskDescriptorExtractor::ProtoToDescriptor(
     const DescriptorsProto& proto,
-    std::vector<BriskDescriptor*>* descriptors) const {
+    std::vector<Descriptor*>* descriptors) const {
   descriptors->reserve(proto.feature_descriptor_size());
   for (const DescriptorProto& proto_descriptor: proto.feature_descriptor()) {
     BriskDescriptor* descriptor = new BriskDescriptor;
@@ -566,9 +568,11 @@ bool BriskDescriptorExtractor::ProtoToDescriptor(
 }
 
 bool BriskDescriptorExtractor::DescriptorToProto(
-    const std::vector<BriskDescriptor*>& descriptors,
+    const std::vector<Descriptor*>& descriptors,
     DescriptorsProto* proto) const {
-  for (const BriskDescriptor* descriptor : descriptors) {
+  for (const Descriptor* generic_descriptor : descriptors) {
+    const BriskDescriptor* descriptor =
+        dynamic_cast<const BriskDescriptor*>(generic_descriptor);
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the float array to the proto.
     for (int i = 0; i < descriptor->Dimensions(); i++)

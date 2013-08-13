@@ -40,7 +40,6 @@ extern "C" {
 #include <vl/sift.h>
 }
 #include <vector>
-
 #include "image/descriptor/descriptor.h"
 #include "image/descriptor/descriptor_extractor.h"
 #include "util/util.h"
@@ -51,12 +50,12 @@ template<class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
 
-class SiftDescriptor : public Descriptor<float, 128> {
+class SiftDescriptor : public FloatDescriptor {
  public:
-  SiftDescriptor() : Descriptor(DescriptorType::SIFT) {}
+  SiftDescriptor() : FloatDescriptor(128, DescriptorType::SIFT) {}
 };
 
-class SiftDescriptorExtractor : public DescriptorExtractor<SiftDescriptor> {
+class SiftDescriptorExtractor : public DescriptorExtractor {
  public:
   // Set the feature score threshold and indicate whether nonmax suppression
   // should be used to reduce the number of features. A good value for the
@@ -70,17 +69,16 @@ class SiftDescriptorExtractor : public DescriptorExtractor<SiftDescriptor> {
   ~SiftDescriptorExtractor();
 
   // Computes a descriptor at a single keypoint.
-  bool ComputeDescriptor(const GrayImage& image,
-                         const Keypoint& keypoint,
-                         SiftDescriptor* descriptor);
+  Descriptor* ComputeDescriptor(const GrayImage& image,
+                                const Keypoint& keypoint);
 
   // Compute multiple descriptors for keypoints from a single image.
   bool ComputeDescriptors(const GrayImage& image,
                           const std::vector<Keypoint*>& keypoints,
-                          std::vector<SiftDescriptor*>* descriptors);
+                          std::vector<Descriptor*>* descriptors);
 
   bool DetectAndExtractDescriptors(const GrayImage& image,
-                                   std::vector<SiftDescriptor*>* descriptors);
+                                   std::vector<Descriptor*>* descriptors);
 
   // Methods to load/store descriptors in protocol buffers. Each derived class
   // should implement these methods (if desired) and load/store all appropriate
@@ -89,10 +87,10 @@ class SiftDescriptorExtractor : public DescriptorExtractor<SiftDescriptor> {
   // these methods are paired to the descriptors.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
   bool ProtoToDescriptor(const DescriptorsProto& proto,
-                         std::vector<SiftDescriptor*>* descriptors) const;
+                         std::vector<Descriptor*>* descriptors) const;
 
   bool DescriptorToProto(
-      const std::vector<SiftDescriptor*>& descriptors,
+      const std::vector<Descriptor*>& descriptors,
       DescriptorsProto* proto) const;
 #endif
 

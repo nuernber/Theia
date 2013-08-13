@@ -59,12 +59,14 @@
 // the authors, rather than train them ourselves).
 namespace theia {
 namespace {
+#ifdef THEIA_USE_SSE
 static const __m128i binMask = _mm_set_epi8(0x80, 0x80, 0x80,
                                             0x80, 0x80, 0x80,
                                             0x80, 0x80, 0x80,
                                             0x80, 0x80, 0x80,
                                             0x80, 0x80, 0x80,
                                             0x80);
+#endif
 static const double kSqrt2 = 1.4142135623731;
 static const double kInvSqrt2 = 1.0/kSqrt2;
 static const double kLog2 = 0.693147180559945;
@@ -268,24 +270,26 @@ bool FreakDescriptorExtractor::Initialize() {
 }
 
 // Computes a descriptor at a single keypoint.
-bool FreakDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
-                                                 const Keypoint& keypoint,
-                                                 FreakDescriptor* descriptor) {
+Descriptor* FreakDescriptorExtractor::ComputeDescriptor(
+    const GrayImage& image,
+    const Keypoint& keypoint) {
+  Descriptor* descriptor = new FreakDescriptor;
   std::vector<Keypoint*> keypoints;
   // TODO(cmsweeney): Is there a better way to pass the address of the keypoint
   // passed in? This is sort of a lazy hack.
   Keypoint keypoint_copy = keypoint;
   keypoints.push_back(&keypoint_copy);
-  std::vector<FreakDescriptor*> descriptors;
+  std::vector<Descriptor*> descriptors;
   descriptors.push_back(descriptor);
-  return ComputeDescriptors(image, keypoints, &descriptors);
+  CHECK(ComputeDescriptors(image, keypoints, &descriptors));
+  return descriptor;
 }
 
 // Compute multiple descriptors for keypoints from a single image.
 bool FreakDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image,
     const std::vector<Keypoint*>& keypoints,
-    std::vector<FreakDescriptor*>* descriptors) {
+    std::vector<Descriptor*>* descriptors) {
   Image<uchar> uchar_image = image.ConvertTo<uchar>();
   Image<uchar> img_integral = uchar_image.Integrate();
 
@@ -297,7 +301,6 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
   int theta_idx = 0;
   int direction0;
   int direction1;
-
 
   // compute the scale index corresponding to the keypoint size and remove
   // keypoints close to the border.
@@ -323,7 +326,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       }
     }
   } else {
-    // equivalent to the formule when the scale is normalized with a constant
+    // Equivalent to the formula when the scale is normalized with a constant
     // size of keypoints[k].size=3*SMALLEST_KP_SIZE.
     int scIdx = std::max(static_cast<int>(1.0986122886681*size_cst + 0.5), 0);
     if (scIdx >= kNumScales_) {
@@ -346,7 +349,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
   // Estimate orientations, extract descriptors, extract the best comparisons
   // only.
   for (size_t k = keypoints.size(); k--;) {
-    FreakDescriptor* freak_descriptor = (*descriptors)[k];
+    FreakDescriptor* freak_descriptor =
+        dynamic_cast<FreakDescriptor*>((*descriptors)[k]);
     if (freak_descriptor == nullptr) {
       continue;
     }
@@ -390,7 +394,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
                                       kp_scale_idx[k], theta_idx, i);
     }
 
-#if THEIA_USE_SSE
+#ifdef THEIA_USE_SSE
     __m128i* ptr = (__m128i*)(freak_descriptor->CharData());
     // NOTE: the comparisons order is modified in each block (but first
     // 128 comparisons remain globally the same-->does not affect the
@@ -521,11 +525,10 @@ uchar FreakDescriptorExtractor::MeanIntensity(
   return ret_val;
 }
 
-// TODO(cmsweeney): write these protos!
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 bool FreakDescriptorExtractor::ProtoToDescriptor(
     const DescriptorsProto& proto,
-    std::vector<FreakDescriptor*>* descriptors) const {
+    std::vector<Descriptor*>* descriptors) const {
   descriptors->reserve(proto.feature_descriptor_size());
   for (const DescriptorProto& proto_descriptor: proto.feature_descriptor()) {
     FreakDescriptor* descriptor = new FreakDescriptor;
@@ -541,6 +544,9 @@ bool FreakDescriptorExtractor::ProtoToDescriptor(
       descriptor->set_strength(proto_descriptor.strength());
 
     // Get float array.
+    // std::copy(proto_descriptor.float_descriptor().begin(),
+    //           proto_descriptor.float_descriptor().(),
+    //           (*descriptor)->CharData());
     for (int i = 0; i < descriptor->Dimensions(); i++)
       (*descriptor)[i] = proto_descriptor.float_descriptor(i);
     descriptors->push_back(descriptor);
@@ -549,9 +555,11 @@ bool FreakDescriptorExtractor::ProtoToDescriptor(
 }
 
 bool FreakDescriptorExtractor::DescriptorToProto(
-    const std::vector<FreakDescriptor*>& descriptors,
+    const std::vector<Descriptor*>& descriptors,
     DescriptorsProto* proto) const {
-  for (const FreakDescriptor* descriptor : descriptors) {
+  for (const Descriptor* general_descriptor : descriptors) {
+    const FreakDescriptor* descriptor =
+        dynamic_cast<const FreakDescriptor*>(general_descriptor);
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the float array to the proto.
     for (int i = 0; i < descriptor->Dimensions(); i++)

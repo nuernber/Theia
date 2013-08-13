@@ -32,54 +32,39 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef IMAGE_DESCRIPTOR_PATCH_DESCRIPTOR_H_
-#define IMAGE_DESCRIPTOR_PATCH_DESCRIPTOR_H_
-
-#include <vector>
-
-#include "image/descriptor/descriptor.h"
 #include "image/descriptor/descriptor_extractor.h"
-#include "image/image.h"
-#include "util/util.h"
+#include "image/descriptor/descriptor.pb.h"
+#include "image/descriptor/descriptor_extractor.h"
 
 namespace theia {
-class DescriptorsProto;
-class Keypoint;
+// Compute the descriptor for multiple keypoints in a given image.
+bool DescriptorExtractor::ComputeDescriptors(
+    const GrayImage& image,
+    const std::vector<Keypoint*>& keypoints,
+    std::vector<Descriptor*>* descriptors) {
+  VLOG(0) << "calling base version... bad!";
+  descriptors->reserve(keypoints.size());
+  for (const Keypoint* img_keypoint : keypoints) {
+    Descriptor* descriptor = ComputeDescriptor(image, *img_keypoint);
+    descriptors->push_back(descriptor);
+  }
+  return true;
+}
 
-// R should be the number of rows, c should be the number of columns in the
-// patch e.g. a 7x7 patch would be PatchDescriptor<7,7>.
-class PatchDescriptor : public FloatDescriptor {
- public:
-  PatchDescriptor(int rows, int cols)
-      : FloatDescriptor(rows*cols, DescriptorType::PATCH) {}
-};
-
-class PatchDescriptorExtractor : public DescriptorExtractor {
- public:
-  PatchDescriptorExtractor(int patch_rows, int patch_cols)
-      : patch_rows_(patch_rows), patch_cols_(patch_cols) {}
-  ~PatchDescriptorExtractor() {}
-
-  // Computes a descriptor at a single keypoint.
-  Descriptor* ComputeDescriptor(const GrayImage& image,
-                                const Keypoint& keypoint);
-
-  // Methods to load/store descriptors in protocol buffers.
-#ifndef THEIA_NO_PROTOCOL_BUFFERS
-  bool ProtoToDescriptor(const DescriptorsProto& proto,
-                         std::vector<Descriptor*>* descriptors) const;
-
-  bool DescriptorToProto(const std::vector<Descriptor*>& descriptors,
-                         DescriptorsProto* proto) const;
-#endif  // THEIA_NO_PROTOCOL_BUFFERS
-
- private:
-  int patch_rows_;
-  int patch_cols_;
-  
-  DISALLOW_COPY_AND_ASSIGN(PatchDescriptorExtractor);
-};
-
+bool DescriptorExtractor::ComputeDescriptorsPruned(
+    const GrayImage& image,
+    const std::vector<Keypoint*>& keypoints,
+    std::vector<Descriptor*>* descriptors) {
+  if (ComputeDescriptors(image, keypoints, descriptors)) {
+    VLOG(0) << "calling pruned version!";
+    // Erase all elements of descriptors that were set to nullptr.
+    descriptors->erase(
+        std::remove_if(descriptors->begin(), descriptors->end(),
+                       [](Descriptor* x) { return x == nullptr; }),
+        descriptors->end());
+    return true;
+  } else {
+    return false;
+  }
+}
 }  // namespace theia
-
-#endif  // IMAGE_DESCRIPTOR_PATCH_DESCRIPTOR_H_

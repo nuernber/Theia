@@ -46,14 +46,14 @@
 #include "image/keypoint_detector/brisk_detector.h"
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
-DEFINE_string(img_output_dir, "output", "Name of output image file.");
+DEFINE_string(img_output_dir, ".", "Name of output image dir.");
 
 using theia::BriskDetector;
+using theia::Descriptor;
+using theia::FreakDescriptorExtractor;
 using theia::GrayImage;
 using theia::ImageCanvas;
 using theia::Keypoint;
-using theia::FreakDescriptor;
-using theia::FreakDescriptorExtractor;
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
@@ -73,15 +73,13 @@ int main(int argc, char *argv[]) {
   VLOG(0) << "extracting descriptors.";
   FreakDescriptorExtractor freak_extractor(true, true, 1);
   freak_extractor.Initialize();
-  std::vector<FreakDescriptor*> pruned_descriptors;
+  std::vector<Descriptor*> pruned_descriptors;
   clock_t t;
   t = clock();
   freak_extractor.ComputeDescriptorsPruned(image,
                                            keypoints,
                                            &pruned_descriptors);
   t = clock() - t;
-  for (int i = 0; i < 10; i++)
-    VLOG(0) << "freak desc = " << pruned_descriptors[i]->Data()->to_string();
   VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
           << " to extract FREAK descriptors";
   VLOG(0) << "pruned descriptors size = " << pruned_descriptors.size();

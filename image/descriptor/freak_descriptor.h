@@ -54,7 +54,7 @@ class FreakDescriptor : public BinaryDescriptor<512> {
   FreakDescriptor() : BinaryDescriptor(DescriptorType::FREAK) {}
 };
 
-class FreakDescriptorExtractor : public DescriptorExtractor<FreakDescriptor> {
+class FreakDescriptorExtractor : public DescriptorExtractor {
  public:
   // Params:
   //  orientation_normalized: Enable orientation normalization.
@@ -75,16 +75,15 @@ class FreakDescriptorExtractor : public DescriptorExtractor<FreakDescriptor> {
   bool Initialize();
 
   // Computes a descriptor at a single keypoint.
-  bool ComputeDescriptor(const GrayImage& image,
-                         const Keypoint& keypoint,
-                         FreakDescriptor* descriptor);
+  Descriptor* ComputeDescriptor(const GrayImage& image,
+                                const Keypoint& keypoint);
 
   // Compute multiple descriptors for keypoints from a single image. Note this
   // may return null for some of the descriptors if they cannot be computed!
   // Typically this only happens when it is too close to the border.
   bool ComputeDescriptors(const GrayImage& image,
                           const std::vector<Keypoint*>& keypoints,
-                          std::vector<FreakDescriptor*>* descriptors);
+                          std::vector<Descriptor*>* descriptors);
   // Methods to load/store descriptors in protocol buffers. Each derived class
   // should implement these methods (if desired) and load/store all appropriate
   // fields in the protocol buffer. This is kind of a sucky paradigm since these
@@ -92,10 +91,10 @@ class FreakDescriptorExtractor : public DescriptorExtractor<FreakDescriptor> {
   // these methods are paired to the descriptors.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
   bool ProtoToDescriptor(const DescriptorsProto& proto,
-                         std::vector<FreakDescriptor*>* descriptors) const;
+                         std::vector<Descriptor*>* descriptors) const;
 
   bool DescriptorToProto(
-      const std::vector<FreakDescriptor*>& descriptors,
+      const std::vector<Descriptor*>& descriptors,
       DescriptorsProto* proto) const;
 #endif
 

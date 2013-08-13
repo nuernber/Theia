@@ -54,9 +54,9 @@ SiftDescriptorExtractor::~SiftDescriptorExtractor() {
     vl_sift_delete(sift_filter_);
 }
 
-bool SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
-                                                const Keypoint& keypoint,
-                                                SiftDescriptor* descriptor) {
+Descriptor* SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
+                                                       const Keypoint& keypoint) {
+  Descriptor* descriptor = new SiftDescriptor;
   CHECK(keypoint.has_scale() && keypoint.has_orientation())
       << "Keypoint must have scale and orientation to compute a SIFT "
       << "descriptor.";
@@ -97,22 +97,22 @@ bool SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
     vl_sift_process_next_octave(sift_filter_);
 
   if (vl_status == VL_ERR_EOF)
-    return false;
+    LOG(FATAL) << "could not extract sift descriptors";
 
   // Calculate the sift feature. Note that we are passing in a direct pointer to
   // the descriptor's underlying data.
   descriptor->SetKeypoint(keypoint);
   vl_sift_calc_keypoint_descriptor(sift_filter_,
-                                   descriptor->Data(),
+                                   descriptor->FloatData(),
                                    &sift_keypoint,
                                    keypoint.orientation());
-  return true;
+  return descriptor;
 }
 
 bool SiftDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image,
     const std::vector<Keypoint*>& keypoints,
-    std::vector<SiftDescriptor*>* descriptors) {
+    std::vector<Descriptor*>* descriptors) {
   // If the filter has been set, but is not usable for the input image (i.e. the
   // width and height are different) then we must make a new filter. Adding this
   // statement will save the function from regenerating the filter for
@@ -162,7 +162,7 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
       (*descriptors)[i] = new SiftDescriptor;
       (*descriptors)[i]->SetKeypoint(*keypoints[i]);
       vl_sift_calc_keypoint_descriptor(sift_filter_,
-                                       (*descriptors)[i]->Data(),
+                                       (*descriptors)[i]->FloatData(),
                                        &sift_keypoints[i],
                                        keypoints[i]->orientation());
     }
@@ -172,7 +172,7 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
 }
 
 bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
-    const GrayImage& image, std::vector<SiftDescriptor*>* descriptors) {
+    const GrayImage& image, std::vector<Descriptor*>* descriptors) {
   // If the filter has been set, but is not usable for the input image (i.e. the
   // width and height are different) then we must make a new filter. Adding this
   // statement will save the function from regenerating the filter for
@@ -215,7 +215,7 @@ bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
       for (int j = 0; j < num_angles; j++) {
         SiftDescriptor* sift_descriptor = new SiftDescriptor;
         vl_sift_calc_keypoint_descriptor(sift_filter_,
-                                         sift_descriptor->Data(),
+                                         sift_descriptor->FloatData(),
                                          &vl_keypoints[i],
                                          angles[j]);
         sift_descriptor->set_x(vl_keypoints[i].x);
@@ -234,7 +234,7 @@ bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 bool SiftDescriptorExtractor::ProtoToDescriptor(
     const DescriptorsProto& proto,
-    std::vector<SiftDescriptor*>* descriptors) const {
+    std::vector<Descriptor*>* descriptors) const {
   descriptors->reserve(proto.feature_descriptor_size());
   for (const DescriptorProto& proto_descriptor: proto.feature_descriptor()) {
     SiftDescriptor* descriptor = new SiftDescriptor;
@@ -258,9 +258,11 @@ bool SiftDescriptorExtractor::ProtoToDescriptor(
 }
 
 bool SiftDescriptorExtractor::DescriptorToProto(
-    const std::vector<SiftDescriptor*>& descriptors,
+    const std::vector<Descriptor*>& descriptors,
     DescriptorsProto* proto) const {
-  for (const SiftDescriptor* descriptor : descriptors) {
+  for (const Descriptor* generic_descriptor : descriptors) {
+    const SiftDescriptor* descriptor =
+        dynamic_cast<const SiftDescriptor*>(generic_descriptor);
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the float array to the proto.
     for (int i = 0; i < descriptor->Dimensions(); i++)
