@@ -146,16 +146,14 @@ union sseRegisterHelper {
 };
 
 // Euclidian distance (SSE method) (squared result)
-float L2SSE(float* b1, float* b2, int size) {
+float L2SSE(const float* b1, const float* b2, int size) {
   CHECK_EQ(size%4, 0) << "Size must be a multiple of 4 for SSE optimization!";
-  float* b1Pt = reinterpret_cast<float*>(b1);
-  float* b2Pt = reinterpret_cast<float*>(b2);
   __m128 srcA, srcB, temp, cumSum;
   float zeros[4] = {0.f, 0.f, 0.f, 0.f};
   cumSum = _mm_load_ps(zeros);
   for (int i = 0; i < size; i += 4) {
-    srcA = _mm_load_ps(b1Pt + i);
-    srcB = _mm_load_ps(b2Pt + i);
+    srcA = _mm_load_ps(b1 + i);
+    srcB = _mm_load_ps(b2 + i);
     // Substract
     temp = _mm_sub_ps(srcA, srcB);
     // Multiply

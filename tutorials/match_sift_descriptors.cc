@@ -40,9 +40,9 @@
 
 #include "image/image.h"
 #include "image/image_canvas.h"
-#include "image/descriptor/brisk_descriptor.h"
+#include "image/descriptor/sift_descriptor.h"
 #include "image/keypoint_detector/keypoint.h"
-#include "image/keypoint_detector/brisk_detector.h"
+#include "image/keypoint_detector/sift_detector.h"
 #include "vision/matching/distance.h"
 #include "vision/matching/brute_force_matcher.h"
 #include "vision/matching/image_matcher.h"
@@ -50,15 +50,15 @@
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
 
-using theia::BriskDescriptor;
-using theia::BriskDescriptorExtractor;
-using theia::BriskDetector;
+using theia::SiftDescriptor;
+using theia::SiftDescriptorExtractor;
+using theia::SiftDetector;
 using theia::BruteForceImageMatcher;
 using theia::BruteForceMatcher;
 using theia::GrayImage;
-using theia::Hamming;
 using theia::ImageCanvas;
 using theia::Keypoint;
+using theia::L2Vectorized;
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
@@ -69,38 +69,38 @@ int main(int argc, char *argv[]) {
 
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
-  BriskDetector brisk_detector(70, 4);
+  SiftDetector sift_detector;
   std::vector<Keypoint*> left_keypoints;
-  brisk_detector.DetectKeypoints(left_image, &left_keypoints);
+  sift_detector.DetectKeypoints(left_image, &left_keypoints);
   VLOG(0) << "detected " << left_keypoints.size()
           << " keypoints in left image.";
 
   VLOG(0) << "detecting keypoints";
   std::vector<Keypoint*> right_keypoints;
-  brisk_detector.DetectKeypoints(right_image, &right_keypoints);
+  sift_detector.DetectKeypoints(right_image, &right_keypoints);
   VLOG(0) << "detected " << left_keypoints.size()
           << " keypoints in left image.";
 
   // Extract descriptors.
   VLOG(0) << "extracting descriptors.";
-  BriskDescriptorExtractor brisk_extractor;
-  brisk_extractor.Initialize();
+  SiftDescriptorExtractor sift_extractor;
+  sift_extractor.Initialize();
 
-  std::vector<BriskDescriptor*> left_pruned_descriptors;
-  brisk_extractor.ComputeDescriptorsPruned(left_image,
-                                           left_keypoints,
-                                           &left_pruned_descriptors);
+  std::vector<SiftDescriptor*> left_pruned_descriptors;
+  sift_extractor.ComputeDescriptorsPruned(left_image,
+                                          left_keypoints,
+                                          &left_pruned_descriptors);
   VLOG(0) << "pruned descriptors size = " << left_pruned_descriptors.size();
 
-  std::vector<BriskDescriptor*> right_pruned_descriptors;
-  brisk_extractor.ComputeDescriptorsPruned(right_image,
-                                           right_keypoints,
-                                           &right_pruned_descriptors);
+  std::vector<SiftDescriptor*> right_pruned_descriptors;
+  sift_extractor.ComputeDescriptorsPruned(right_image,
+                                          right_keypoints,
+                                          &right_pruned_descriptors);
   VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
 
   // Match descriptors!
-  BruteForceImageMatcher<BriskDescriptor, Hamming> brute_force_image_matcher;
-  std::vector<theia::FeatureMatch<int> > matches;
+  BruteForceImageMatcher<SiftDescriptor, L2Vectorized<float> > brute_force_image_matcher;
+  std::vector<theia::FeatureMatch<float> > matches;
   clock_t t = clock();
   brute_force_image_matcher.MatchSymmetricAndDistanceRatio(
       left_pruned_descriptors,
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
       128);
   t = clock() - t;
   VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
-          << " to match BRISK descriptors";
+          << " to match SIFT descriptors";
 
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
@@ -122,5 +122,5 @@ int main(int argc, char *argv[]) {
                                    0.1);
 
   image_canvas.Write(FLAGS_img_output_dir +
-                     std::string("/brisk_descriptors.png"));
+                     std::string("/sift_descriptors.png"));
 }
