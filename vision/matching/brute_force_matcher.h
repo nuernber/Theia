@@ -107,24 +107,29 @@ class BruteForceMatcher : public Matcher<TDescriptor, Metric> {
                         OrderByDistance> min_heap;
     // Load up the first k elements as default values.
     for (int i = 0; i < k_nn; i++) {
+      CHECK_EQ(query.Dimensions(), descriptors_[i]->Dimensions());
+      LOG(INFO) << "knn for descriptor" << i;
+      CHECK_NOTNULL(descriptors_[i]->Data());
+      CHECK_NOTNULL(query.Data());
       DistanceType distance = metric(query.Data(),
                                      descriptors_[i]->Data(),
                                      query.Dimensions());
       min_heap.push(std::make_pair(i, distance));
     }
-
+    LOG(INFO) << "step 1";
     // Search the rest of the descriptors, keeping at most k_nn elements in the
     // min heap.
     for (int i = k_nn; i < descriptors_.size(); i++) {
       DistanceType distance = metric(query.Data(),
                                      descriptors_[i]->Data(),
                                      query.Dimensions());
+      CHECK_EQ(query.Dimensions(), descriptors_[i]->Dimensions());
       if (distance < min_heap.top().second) {
         min_heap.pop();
         min_heap.push(std::make_pair(i, distance));
       }
     }
-
+    LOG(INFO) << "step 2";
     // Resize for faster allocation.
     knn_index->resize(k_nn);
     knn_distance->resize(k_nn);
@@ -135,7 +140,7 @@ class BruteForceMatcher : public Matcher<TDescriptor, Metric> {
       (*knn_index)[i] = knn_pair.first;
       (*knn_distance)[i] = knn_pair.second;
     }
-
+    LOG(INFO) << "step 3";
     return true;
   }
 

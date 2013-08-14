@@ -148,6 +148,7 @@ bool ImageMatcher<Matcher>::MatchDistanceRatio(
   // Find matches and move the data into the FeatureMatch output variable.
   matches->reserve(desc_1.size());
   for (int i = 0; i < desc_1.size(); i++) {
+    LOG(INFO) << "Matching descriptor " << i;
     std::vector<int> index;
     std::vector<DistanceType> distance;
     // If matching is successful.
@@ -157,8 +158,10 @@ bool ImageMatcher<Matcher>::MatchDistanceRatio(
                                   &distance)) {
       // If the distance passes the ratio test and the distance is less then the
       // threshold (if one is set).
+      LOG(INFO) << "inside if";
       if (distance[0]/distance[1] < ratio &&
           (threshold <= 0 || distance[0] < threshold)) {
+        LOG(INFO) << "inside second if";
         matches->push_back(FeatureMatch<DistanceType>(i,
                                                       index[0],
                                                       distance[0]));
