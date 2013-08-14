@@ -38,8 +38,8 @@
 #include "gtest/gtest.h"
 
 #include "image/image.h"
-#include "image/keypoint_detector/fast_detector.h"
-#include "image/descriptor/patch_descriptor.h"
+#include "image/keypoint_detector/brisk_detector.h"
+#include "image/descriptor/freak_descriptor.h"
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 #include "image/descriptor/descriptor.pb.h"
 #endif
@@ -52,66 +52,56 @@ std::string img_filename = THEIA_TEST_DATA_DIR + std::string("/") +
                            FLAGS_test_img;
 }  // namespace
 
-TEST(PatchDescriptor, CompWithSubImage) {
+TEST(FreakDescriptor, Sanity) {
   GrayImage input_img(img_filename);
 
   // Get keypoints.
-  FastDetector fast_detector(20, true, false);
-  std::vector<Keypoint*> fast_keypoints;
-  fast_detector.DetectKeypoints(input_img, &fast_keypoints);
+  BriskDetector fast_detector(80);
+  std::vector<Keypoint*> brisk_keypoints;
+  fast_detector.DetectKeypoints(input_img, &brisk_keypoints);
 
-  // For each keypoint, extract the patch descriptors.
-  PatchDescriptorExtractor patch_extractor(7, 7);
-  std::vector<Descriptor*> patch_descriptors;
-  patch_extractor.ComputeDescriptors(input_img,
-                                     fast_keypoints,
-                                     &patch_descriptors);
-
-  // Compare to SubImage.
-  for (int i = 0; i < patch_descriptors.size(); i++) {
-    GraySubImage sub_img = input_img.GetSubImage((*fast_keypoints[i]).y() - 3,
-                                                 (*fast_keypoints[i]).x() - 3,
-                                                 7,
-                                                 7);
-    int j = 0;
-    for (int r = 0; r < 7; r++) {
-      for (int c = 0; c < 7; c++) {
-        ASSERT_EQ(patch_descriptors[i]->FloatData()[j++], sub_img[r][c]);
-      }
-    }
-  }
+  // For each keypoint, extract the freak descriptors.
+  FreakDescriptorExtractor freak_extractor;
+  std::vector<Descriptor*> freak_descriptors;
+  CHECK_NOTNULL(freak_extractor.ComputeDescriptor(input_img,
+                                                  *brisk_keypoints[0]));
+  EXPECT_TRUE(freak_extractor.ComputeDescriptorsPruned(input_img,
+                                                       brisk_keypoints,
+                                                       &freak_descriptors));
 }
 
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-TEST(PatchDescriptor, ProtoTest) {
+TEST(FreakDescriptor, ProtoTest) {
   GrayImage input_img(img_filename);
 
   // Get keypoints.
-  FastDetector fast_detector(20, true, false);
-  std::vector<Keypoint*> fast_keypoints;
-  fast_detector.DetectKeypoints(input_img, &fast_keypoints);
+  BriskDetector fast_detector(80);
+  std::vector<Keypoint*> brisk_keypoints;
+  fast_detector.DetectKeypoints(input_img, &brisk_keypoints);
 
-  // For each keypoint, extract the patch descriptors.
-  PatchDescriptorExtractor patch_extractor(7, 7);
-  std::vector<Descriptor*> patch_descriptors;
-  patch_extractor.ComputeDescriptors(input_img,
-                                     fast_keypoints,
-                                     &patch_descriptors);
+  // For each keypoint, extract the freak descriptors.
+  FreakDescriptorExtractor freak_extractor;
+  std::vector<Descriptor*> freak_descriptors;
+  EXPECT_TRUE(freak_extractor.ComputeDescriptorsPruned(input_img,
+                                                       brisk_keypoints,
+                                                       &freak_descriptors));
 
   // Convert the descriptors to a proto.
-  DescriptorsProto patch_proto;
-  patch_extractor.DescriptorToProto(patch_descriptors, &patch_proto);
+  DescriptorsProto freak_proto;
+  EXPECT_TRUE(freak_extractor.DescriptorToProto(freak_descriptors,
+                                                &freak_proto));
 
   // Convert back to descriptors.
   std::vector<Descriptor*> proto_descriptors;
-  patch_extractor.ProtoToDescriptor(patch_proto, &proto_descriptors);
+  EXPECT_TRUE(freak_extractor.ProtoToDescriptor(freak_proto,
+                                                &proto_descriptors));
 
   // Assert that they are equal.
-  ASSERT_EQ(patch_descriptors.size(), proto_descriptors.size());
-  for (int i = 0; i < patch_descriptors.size(); i++) {
-    for (int j = 0; j < 49; j++) {
-      ASSERT_EQ(patch_descriptors[i]->FloatData()[j],
-                proto_descriptors[i]->FloatData()[j]);
+  ASSERT_EQ(freak_descriptors.size(), proto_descriptors.size());
+  for (int i = 0; i < freak_descriptors.size(); i++) {
+    for (int j = 0; j < freak_descriptors[i]->Dimensions(); j++) {
+      ASSERT_EQ(freak_descriptors[i]->CharData()[j],
+                proto_descriptors[i]->CharData()[j]);
     }
   }
 }

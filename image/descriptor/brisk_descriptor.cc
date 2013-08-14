@@ -550,7 +550,8 @@ bool BriskDescriptorExtractor::ProtoToDescriptor(
     BriskDescriptor* descriptor = new BriskDescriptor;
     CHECK_EQ(proto_descriptor.descriptor_type(), DescriptorProto::BRISK)
         << "Descriptor in proto is not a patch descriptor.";
-    CHECK_EQ(proto_descriptor.float_descriptor_size(), descriptor->Dimensions())
+    CHECK_EQ(proto_descriptor.binary_descriptor().size(),
+             descriptor->Dimensions())
         << "Dimension mismatch in the proto and descriptors.";
     descriptor->set_x(proto_descriptor.x());
     descriptor->set_y(proto_descriptor.y());
@@ -559,9 +560,9 @@ bool BriskDescriptorExtractor::ProtoToDescriptor(
     if (proto_descriptor.has_strength())
       descriptor->set_strength(proto_descriptor.strength());
 
-    // Get float array.
-    for (int i = 0; i < descriptor->Dimensions(); i++)
-      (*descriptor)[i] = proto_descriptor.float_descriptor(i);
+    // Get binary array.
+    *(descriptor->BinaryData())=
+        std::bitset<512>(proto_descriptor.binary_descriptor());
     descriptors->push_back(descriptor);
   }
   return true;
@@ -574,9 +575,10 @@ bool BriskDescriptorExtractor::DescriptorToProto(
     const BriskDescriptor* descriptor =
         dynamic_cast<const BriskDescriptor*>(generic_descriptor);
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
-    // Add the float array to the proto.
-    for (int i = 0; i < descriptor->Dimensions(); i++)
-      descriptor_proto->add_float_descriptor((*descriptor)[i]);
+    // Add the binary array to the proto.
+    descriptor_proto->set_binary_descriptor(
+        descriptor->BinaryData()->to_string());
+
     // Set the proto type to patch.
     descriptor_proto->set_descriptor_type(DescriptorProto::BRISK);
     descriptor_proto->set_x(descriptor->x());

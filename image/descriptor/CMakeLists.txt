@@ -50,4 +50,28 @@ IF (${BUILD_TESTING})
     image/descriptor/patch_descriptor
     image/image
     image/keypoint_detector/fast_detector)
+
+  # Test for SIFT descriptor.
+  GTEST(sift_descriptor_test
+    image/descriptor/descriptor_extractor
+    image/descriptor/descriptor_proto
+    image/descriptor/sift_descriptor
+    image/image
+    image/keypoint_detector/sift_detector)
+
+  # Test for BRISK descriptor.
+  GTEST(brisk_descriptor_test
+    image/descriptor/descriptor_extractor
+    image/descriptor/descriptor_proto
+    image/descriptor/brisk_descriptor
+    image/image
+    image/keypoint_detector/brisk_detector)
+
+  # Test for FREAK descriptor.
+  GTEST(freak_descriptor_test
+    image/descriptor/descriptor_extractor
+    image/descriptor/descriptor_proto
+    image/descriptor/freak_descriptor
+    image/image
+    image/keypoint_detector/brisk_detector)
 ENDIF (${BUILD_TESTING})

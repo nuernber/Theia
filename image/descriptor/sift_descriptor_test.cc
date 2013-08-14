@@ -38,8 +38,8 @@
 #include "gtest/gtest.h"
 
 #include "image/image.h"
-#include "image/keypoint_detector/fast_detector.h"
-#include "image/descriptor/patch_descriptor.h"
+#include "image/keypoint_detector/sift_detector.h"
+#include "image/descriptor/sift_descriptor.h"
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 #include "image/descriptor/descriptor.pb.h"
 #endif
@@ -52,65 +52,52 @@ std::string img_filename = THEIA_TEST_DATA_DIR + std::string("/") +
                            FLAGS_test_img;
 }  // namespace
 
-TEST(PatchDescriptor, CompWithSubImage) {
+TEST(SiftDescriptor, Sanity) {
   GrayImage input_img(img_filename);
 
   // Get keypoints.
-  FastDetector fast_detector(20, true, false);
-  std::vector<Keypoint*> fast_keypoints;
-  fast_detector.DetectKeypoints(input_img, &fast_keypoints);
+  SiftDetector fast_detector;
+  std::vector<Keypoint*> sift_keypoints;
+  fast_detector.DetectKeypoints(input_img, &sift_keypoints);
 
-  // For each keypoint, extract the patch descriptors.
-  PatchDescriptorExtractor patch_extractor(7, 7);
-  std::vector<Descriptor*> patch_descriptors;
-  patch_extractor.ComputeDescriptors(input_img,
-                                     fast_keypoints,
-                                     &patch_descriptors);
-
-  // Compare to SubImage.
-  for (int i = 0; i < patch_descriptors.size(); i++) {
-    GraySubImage sub_img = input_img.GetSubImage((*fast_keypoints[i]).y() - 3,
-                                                 (*fast_keypoints[i]).x() - 3,
-                                                 7,
-                                                 7);
-    int j = 0;
-    for (int r = 0; r < 7; r++) {
-      for (int c = 0; c < 7; c++) {
-        ASSERT_EQ(patch_descriptors[i]->FloatData()[j++], sub_img[r][c]);
-      }
-    }
-  }
+  // For each keypoint, extract the sift descriptors.
+  SiftDescriptorExtractor sift_extractor;
+  std::vector<Descriptor*> sift_descriptors;
+  CHECK_NOTNULL(sift_extractor.ComputeDescriptor(input_img, *sift_keypoints[0]));
+  CHECK(sift_extractor.ComputeDescriptorsPruned(input_img,
+                                                sift_keypoints,
+                                                &sift_descriptors));
 }
 
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-TEST(PatchDescriptor, ProtoTest) {
+TEST(SiftDescriptor, ProtoTest) {
   GrayImage input_img(img_filename);
 
   // Get keypoints.
-  FastDetector fast_detector(20, true, false);
-  std::vector<Keypoint*> fast_keypoints;
-  fast_detector.DetectKeypoints(input_img, &fast_keypoints);
+  SiftDetector fast_detector;
+  std::vector<Keypoint*> sift_keypoints;
+  fast_detector.DetectKeypoints(input_img, &sift_keypoints);
 
-  // For each keypoint, extract the patch descriptors.
-  PatchDescriptorExtractor patch_extractor(7, 7);
-  std::vector<Descriptor*> patch_descriptors;
-  patch_extractor.ComputeDescriptors(input_img,
-                                     fast_keypoints,
-                                     &patch_descriptors);
+  // For each keypoint, extract the sift descriptors.
+  SiftDescriptorExtractor sift_extractor;
+  std::vector<Descriptor*> sift_descriptors;
+  sift_extractor.ComputeDescriptorsPruned(input_img,
+                                          sift_keypoints,
+                                          &sift_descriptors);
 
   // Convert the descriptors to a proto.
-  DescriptorsProto patch_proto;
-  patch_extractor.DescriptorToProto(patch_descriptors, &patch_proto);
+  DescriptorsProto sift_proto;
+  sift_extractor.DescriptorToProto(sift_descriptors, &sift_proto);
 
   // Convert back to descriptors.
   std::vector<Descriptor*> proto_descriptors;
-  patch_extractor.ProtoToDescriptor(patch_proto, &proto_descriptors);
+  sift_extractor.ProtoToDescriptor(sift_proto, &proto_descriptors);
 
   // Assert that they are equal.
-  ASSERT_EQ(patch_descriptors.size(), proto_descriptors.size());
-  for (int i = 0; i < patch_descriptors.size(); i++) {
-    for (int j = 0; j < 49; j++) {
-      ASSERT_EQ(patch_descriptors[i]->FloatData()[j],
+  ASSERT_EQ(sift_descriptors.size(), proto_descriptors.size());
+  for (int i = 0; i < sift_descriptors.size(); i++) {
+    for (int j = 0; j < sift_descriptors[i]->Dimensions(); j++) {
+      ASSERT_EQ(sift_descriptors[i]->FloatData()[j],
                 proto_descriptors[i]->FloatData()[j]);
     }
   }
