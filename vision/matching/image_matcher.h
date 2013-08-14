@@ -44,11 +44,6 @@
 #include "vision/matching/brute_force_matcher.h"
 
 namespace theia {
-// typedef Brute Force Image Matcher.
-template <class Metric> class ImageMatcher;
-
-template <class Metric>
-using BruteForceImageMatcher = ImageMatcher<BruteForceMatcher<Metric> >;
 
 template<class T>
 struct FeatureMatch {
@@ -107,6 +102,10 @@ class ImageMatcher {
                         std::vector<FeatureMatch<DistanceType> >* output_match);
 
   DISALLOW_COPY_AND_ASSIGN(ImageMatcher);
+};
+
+template <class T>
+class BruteForceImageMatcher : public ImageMatcher<BruteForceMatcher<T> > {
 };
 
 // ---------------------- Implementation ------------------------ //
