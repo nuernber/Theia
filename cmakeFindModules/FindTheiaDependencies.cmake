@@ -31,7 +31,7 @@ macro(set_compile_parameters)
       message(FATAL_ERROR "C++11 needed. Therefore a gcc compiler with a version higher than 4.3 is needed.")
     endif()
   else(CMAKE_COMPILER_IS_GNUCXX)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
   endif(CMAKE_COMPILER_IS_GNUCXX)
 
   # Release compile parameters and optimizations.

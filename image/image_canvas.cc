@@ -51,7 +51,7 @@ namespace theia {
 // are now side-by-side on the canvas. This is useful for feature matching.
 int ImageCanvas::AddImage(const GrayImage& image) {
   RGBImage rgb_img(image.ConvertTo<RGBPixel>());
-  AddImage(rgb_img);
+  return AddImage(rgb_img);
 }
 
 int ImageCanvas::AddImage(const RGBImage& image) {
@@ -63,6 +63,7 @@ int ImageCanvas::AddImage(const RGBImage& image) {
     CVD::Image<RGBPixel> image_copy = image_.copy_from_me();
     CVD::joinImages(image_copy, image.GetCVDImage(), image_);
   }
+  return pixel_offsets_.size() - 1;
 }
 
 // Draw a circle in the image at image_index.
