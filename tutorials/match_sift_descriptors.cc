@@ -69,34 +69,18 @@ int main(int argc, char *argv[]) {
 
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
-  SiftDetector sift_detector;
-  std::vector<Keypoint*> left_keypoints;
-  sift_detector.DetectKeypoints(left_image, &left_keypoints);
-  VLOG(0) << "detected " << left_keypoints.size()
-          << " keypoints in left image.";
+  SiftDescriptorExtractor sift_detector;
+  sift_detector.Initialize();
+  std::vector<SiftDescriptor*> left_pruned_descriptors;
+  sift_detector.DetectAndExtractDescriptors(left_image, &left_pruned_descriptors);
+  VLOG(0) << "detected " << left_pruned_descriptors.size()
+          << " descriptors in left image.";
 
   VLOG(0) << "detecting keypoints";
-  std::vector<Keypoint*> right_keypoints;
-  sift_detector.DetectKeypoints(right_image, &right_keypoints);
-  VLOG(0) << "detected " << left_keypoints.size()
-          << " keypoints in left image.";
-
-  // Extract descriptors.
-  VLOG(0) << "extracting descriptors.";
-  SiftDescriptorExtractor sift_extractor;
-  sift_extractor.Initialize();
-
-  std::vector<SiftDescriptor*> left_pruned_descriptors;
-  sift_extractor.ComputeDescriptorsPruned(left_image,
-                                          left_keypoints,
-                                          &left_pruned_descriptors);
-  VLOG(0) << "pruned descriptors size = " << left_pruned_descriptors.size();
-
   std::vector<SiftDescriptor*> right_pruned_descriptors;
-  sift_extractor.ComputeDescriptorsPruned(right_image,
-                                          right_keypoints,
-                                          &right_pruned_descriptors);
-  VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
+  sift_detector.DetectAndExtractDescriptors(right_image, &right_pruned_descriptors);
+  VLOG(0) << "detected " << right_pruned_descriptors.size()
+          << " descriptors in right image.";
 
   // Match descriptors!
   BruteForceImageMatcher<SiftDescriptor, L2Vectorized<float> > brute_force_image_matcher;
