@@ -76,8 +76,8 @@ int main(int argc, char *argv[]) {
   VLOG(0) << "detecting keypoints";
   std::vector<Descriptor*> right_descriptors;
   sift_detector.DetectAndExtractDescriptors(right_image, &right_descriptors);
-  VLOG(0) << "detected " << left_descriptors.size()
-          << " descriptors in left image.";
+  VLOG(0) << "detected " << right_descriptors.size()
+          << " descriptors in right image.";
 
   // Match descriptors!
   BruteForceImageMatcher<L2> brute_force_image_matcher;
