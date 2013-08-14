@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
   VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
 
   // Match descriptors!
-  BruteForceImageMatcher<Hamming> brute_force_image_matcher;
+  BruteForceImageMatcher<Hamming<512> > brute_force_image_matcher;
   std::vector<theia::FeatureMatch<int> > matches;
   clock_t t = clock();
   brute_force_image_matcher.MatchSymmetricAndDistanceRatio(

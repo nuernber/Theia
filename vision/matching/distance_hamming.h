@@ -40,6 +40,7 @@
 
 namespace theia {
 
+template <std::size_t N>
 struct Hamming {
   typedef int ResultType;
 
@@ -48,17 +49,21 @@ struct Hamming {
     // rather heavily, and is architecture independent since it is part of the
     // c++ standard. NOTE: cmsweeney tested bitset count vs SSE from BRISK and
     // observed bitset count was roughly ~ 50% faster.
-    //CHECK_EQ(a.Dimensions(), b.Dimensions());
-    //CHECK_EQ(a.descriptor_type(), b.descriptor_type());
-    //auto* binary_a = dynamic_cast<const BinaryDescriptor<512>& >(a).BinaryData();
-    //auto* binary_b = dynamic_cast<const BinaryDescriptor<512>& >(b).BinaryData();
     int dist = 0;
-    for (int i = 0; i < a.Dimensions(); i += 64) {
-      const std::bitset<64>* binary_a = reinterpret_cast<const std::bitset<64>*>(a.CharData() + i);
-      const std::bitset<64>* binary_b = reinterpret_cast<const std::bitset<64>*>(b.CharData() + i);
+    const int kStep = 128;
+    const uchar* a_data = a.CharData();
+    const uchar* b_data = b.CharData();
+    for (int i = 0; i < a.Dimensions(); i += kStep) {
+      const std::bitset<kStep>* binary_a = reinterpret_cast<const std::bitset<kStep>*>(a_data + i);
+      const std::bitset<kStep>* binary_b = reinterpret_cast<const std::bitset<kStep>*>(b_data + i);
       dist += (*binary_a ^ *binary_b).count();
     }
     return dist;
+
+    // const std::bitset<N>* binary_a = reinterpret_cast<const std::bitset<N>*>(a.CharData());
+    // const std::bitset<N>* binary_b = reinterpret_cast<const std::bitset<N>*>(b.CharData());
+
+    // return (*binary_a ^ *binary_b).count();
   }
 };
 

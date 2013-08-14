@@ -182,7 +182,7 @@ class FloatDescriptor : public Descriptor {
 template<std::size_t N>
 class BinaryDescriptor : public Descriptor {
  public:
-  BinaryDescriptor(DescriptorType type) : Descriptor(N, type) {
+  BinaryDescriptor(DescriptorType type) : Descriptor(N, type), {
     data_ = new uchar[N/sizeof(uchar)];
   }
 
