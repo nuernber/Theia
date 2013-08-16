@@ -55,4 +55,17 @@ IF (${BUILD_TESTING})
   GTEST(harris_detector_test 
     image/keypoint_detector/harris_detector
     util/random)
+
+  GTEST(sift_detector_test 
+    image/keypoint_detector/sift_detector
+    util/random)
+
+  GTEST(agast_detector_test 
+    image/keypoint_detector/agast_detector
+    util/random)
+
+  GTEST(brisk_detector_test 
+    image/keypoint_detector/brisk_detector
+    util/random)
+  
 ENDIF (${BUILD_TESTING})

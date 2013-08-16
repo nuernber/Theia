@@ -55,7 +55,7 @@ class BriskDetector : public KeypointDetector {
  public:
   BriskDetector(int thresh, int octaves) : threshold_(thresh),
                                            brisk_scale_space_(octaves) {}
-  explicit BriskDetector(int thresh) : BriskDetector(thresh, 3) {}
+  explicit BriskDetector() : BriskDetector(30, 3) {}
 
   ~BriskDetector() {}
 

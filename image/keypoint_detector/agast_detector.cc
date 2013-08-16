@@ -110,5 +110,6 @@ bool AgastDetector::DetectKeypoints(const GrayImage& image,
 
     keypoints->push_back(new_keypoint);
   }
+  return true;
 }
 }  // namespace theia
