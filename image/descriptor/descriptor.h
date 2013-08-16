@@ -214,7 +214,7 @@ class BinaryDescriptor : public Descriptor {
   // fast hamming distance computations using std::bitset since the size is
   // known. This method must be deferred to the subclasses because it is
   // templated on the size of descriptors.
-  virtual int HammingDistance(const BinaryDescriptor& descriptor) = 0;
+  virtual int HammingDistance(const BinaryDescriptor& descriptor) const = 0;
 
  protected:
   // data_ is the uchar array which contains the data. The location of this data

@@ -51,7 +51,7 @@ class BriskDescriptor : public BinaryDescriptor {
   BriskDescriptor()
       : BinaryDescriptor(const_dimensions_, DescriptorType::BRISK) {}
 
-  int HammingDistance(const BinaryDescriptor& descriptor) {
+  int HammingDistance(const BinaryDescriptor& descriptor) const {
     const std::bitset<const_dimensions_>* first_bitset =
         reinterpret_cast<const std::bitset<const_dimensions_>*>(
             this->CharData());

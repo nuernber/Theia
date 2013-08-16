@@ -55,8 +55,8 @@ double RandDouble(double lower, double upper) {
   return distribution(util_generator);
 }
 
-// Get a random double between lower and upper (inclusive).
-double RandInt(int lower, int upper) {
+// Get a random int between lower and upper (inclusive).
+int RandInt(int lower, int upper) {
   std::uniform_int_distribution<int> distribution(lower, upper);
   return distribution(util_generator);
 }

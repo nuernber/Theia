@@ -35,6 +35,8 @@
 #ifndef VISION_MATCHING_DISTANCE_H_
 #define VISION_MATCHING_DISTANCE_H_
 
+#include "image/descriptor/descriptor.h"
+
 #include <glog/logging.h>
 #ifdef THEIA_USE_SSE
 #include <xmmintrin.h>

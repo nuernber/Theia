@@ -40,30 +40,13 @@
 
 namespace theia {
 
-template <std::size_t N>
 struct Hamming {
   typedef int ResultType;
 
   ResultType operator()(const Descriptor& a, const Descriptor& b) const {
-    // a^b = XOR op, then perform a popcnt on it. This should be optimized
-    // rather heavily, and is architecture independent since it is part of the
-    // c++ standard. NOTE: cmsweeney tested bitset count vs SSE from BRISK and
-    // observed bitset count was roughly ~ 50% faster.
-    int dist = 0;
-    const int kStep = 128;
-    const uchar* a_data = a.CharData();
-    const uchar* b_data = b.CharData();
-    for (int i = 0; i < a.Dimensions(); i += kStep) {
-      const std::bitset<kStep>* binary_a = reinterpret_cast<const std::bitset<kStep>*>(a_data + i);
-      const std::bitset<kStep>* binary_b = reinterpret_cast<const std::bitset<kStep>*>(b_data + i);
-      dist += (*binary_a ^ *binary_b).count();
-    }
-    return dist;
-
-    // const std::bitset<N>* binary_a = reinterpret_cast<const std::bitset<N>*>(a.CharData());
-    // const std::bitset<N>* binary_b = reinterpret_cast<const std::bitset<N>*>(b.CharData());
-
-    // return (*binary_a ^ *binary_b).count();
+    const BinaryDescriptor& binary_a = dynamic_cast<const BinaryDescriptor&>(a);
+    const BinaryDescriptor& binary_b = dynamic_cast<const BinaryDescriptor&>(b);
+    return binary_a.HammingDistance(binary_b);
   }
 };
 
