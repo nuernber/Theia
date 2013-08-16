@@ -56,9 +56,9 @@ TEST(BriskDescriptor, Sanity) {
   GrayImage input_img(img_filename);
 
   // Get keypoints.
-  BriskDetector fast_detector(80);
+  BriskDetector brisk_detector;
   std::vector<Keypoint*> brisk_keypoints;
-  fast_detector.DetectKeypoints(input_img, &brisk_keypoints);
+  brisk_detector.DetectKeypoints(input_img, &brisk_keypoints);
 
   // For each keypoint, extract the brisk descriptors.
   BriskDescriptorExtractor brisk_extractor;
@@ -75,9 +75,9 @@ TEST(BriskDescriptor, ProtoTest) {
   GrayImage input_img(img_filename);
 
   // Get keypoints.
-  BriskDetector fast_detector(80);
+  BriskDetector brisk_detector;
   std::vector<Keypoint*> brisk_keypoints;
-  fast_detector.DetectKeypoints(input_img, &brisk_keypoints);
+  brisk_detector.DetectKeypoints(input_img, &brisk_keypoints);
 
   // For each keypoint, extract the brisk descriptors.
   BriskDescriptorExtractor brisk_extractor;
@@ -99,10 +99,11 @@ TEST(BriskDescriptor, ProtoTest) {
   // Assert that they are equal.
   ASSERT_EQ(brisk_descriptors.size(), proto_descriptors.size());
   for (int i = 0; i < brisk_descriptors.size(); i++) {
-    for (int j = 0; j < brisk_descriptors[i]->Dimensions(); j++) {
-      ASSERT_EQ(brisk_descriptors[i]->CharData()[j],
-                proto_descriptors[i]->CharData()[j]);
-    }
+    BriskDescriptor* brisk_descriptor =
+        dynamic_cast<BriskDescriptor*>(brisk_descriptors[i]);
+    ASSERT_EQ(brisk_descriptor->HammingDistance(
+        *(dynamic_cast<BriskDescriptor*>(proto_descriptors[i]))),
+              0);
   }
 }
 #endif  // THEIA_NO_PROTOCOL_BUFFERS

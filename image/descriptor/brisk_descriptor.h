@@ -46,9 +46,22 @@ template<class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
 
-class BriskDescriptor : public BinaryDescriptor<512> {
+class BriskDescriptor : public BinaryDescriptor {
  public:
-  BriskDescriptor() : BinaryDescriptor(DescriptorType::BRISK) {}
+  BriskDescriptor() : BinaryDescriptor(const_dimensions_, DescriptorType::BRISK) {}
+  int HammingDistance(const BinaryDescriptor& descriptor) {
+    const std::bitset<const_dimensions_>* first_bitset =
+        reinterpret_cast<const std::bitset<const_dimensions_>*>(this->CharData());
+    const std::bitset<const_dimensions_>* second_bitset =
+        reinterpret_cast<const std::bitset<const_dimensions_>*>(
+            descriptor.CharData());
+    return (*first_bitset ^ *second_bitset).count();
+  }
+ private:
+  friend class BriskDescriptorExtractor;
+  // This is technically equal to dimensions_, however, dimensions_ cannot be a
+  // constexpr.
+  static constexpr int const_dimensions_ = 512;
 };
 
 

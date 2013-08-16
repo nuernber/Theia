@@ -84,9 +84,6 @@ class Descriptor {
     orientation_ = keypoint.orientation();
   }
 
-  virtual Descriptor* AsDerivedClass() = 0;
-  virtual const Descriptor* AsDerivedClass() const = 0;
-
   // Dimensionality of the descriptor.
   inline const std::size_t Dimensions() const { return dimensions_; }
 
@@ -120,23 +117,24 @@ class Descriptor {
 
   // Optional variable strength of descriptor.
   inline bool has_strength() const {
-    return strength_ != kTheiaInvalidDescriptorVar; }
+    return strength_ != kTheiaInvalidDescriptorVar;
+  }
   inline double strength() const { return strength_; }
   inline void set_strength(double strength) { strength_ = strength; }
 
   // Optional variable scale of descriptor.
-  inline bool has_scale() const {
-    return scale_ != kTheiaInvalidDescriptorVar;
-  }
+  inline bool has_scale() const { return scale_ != kTheiaInvalidDescriptorVar; }
   inline double scale() const { return scale_; }
   inline void set_scale(double scale) { scale_ = scale; }
 
   // Optional variable orientation of descriptor.
   inline bool has_orientation() const {
-    return orientation_ != kTheiaInvalidDescriptorVar; }
+    return orientation_ != kTheiaInvalidDescriptorVar;
+  }
   inline double orientation() const { return orientation_; }
   inline void set_orientation(double orientation) {
-    orientation_ = orientation; }
+    orientation_ = orientation;
+  }
 
  protected:
   const int dimensions_;
@@ -155,10 +153,7 @@ class FloatDescriptor : public Descriptor {
       : Descriptor(dimensions, type) {
     data_ = new float[dimensions];
   }
-  virtual ~FloatDescriptor() { delete [] data_;}
-
-  virtual FloatDescriptor* AsDerivedClass() { LOG(INFO) << "floating descriptor"; return this; }
-  virtual const FloatDescriptor* AsDerivedClass() const { return this; }
+  virtual ~FloatDescriptor() { delete[] data_; }
 
   // Accessor operators for convenience
   virtual inline float& operator[](std::size_t i) {
@@ -179,61 +174,47 @@ class FloatDescriptor : public Descriptor {
 };
 
 // Class for binary descriptors.
-template<std::size_t N>
 class BinaryDescriptor : public Descriptor {
  public:
-  BinaryDescriptor(DescriptorType type) : Descriptor(N, type) {
-    data_ = new uchar[N/sizeof(uchar)];
+  BinaryDescriptor(int dimensions, DescriptorType type)
+      : Descriptor(dimensions, type) {
+    data_ = new uchar[dimensions / sizeof(uchar)];
   }
 
   // Copy constructor needs to be explicitly defined because of the reinterpret
   // cast.
-  BinaryDescriptor(const BinaryDescriptor<N>& copy_from) {
-    data_ = new uchar[N/sizeof(uchar)];
-    std::copy(copy_from.data_, copy_from.data_ + N/sizeof(char), data_);
+  BinaryDescriptor(const BinaryDescriptor& copy_from)
+      : BinaryDescriptor(copy_from.Dimensions(), copy_from.descriptor_type()) {
+    data_ = new uchar[dimensions_ / sizeof(uchar)];
+    std::copy(copy_from.data_, copy_from.data_ + dimensions_ / sizeof(char),
+              data_);
   }
 
   // Assignment operator is explicitly defined so that the reinterpret cast
   // holds valid.
-  BinaryDescriptor& operator=(const BinaryDescriptor<N>& copy_from) {
+  BinaryDescriptor& operator=(const BinaryDescriptor& copy_from) {
     if (this != &copy_from) {
-      uchar* new_data = new uchar[N/sizeof(uchar)];
-      std::copy(copy_from.data_, copy_from.data_ + N/sizeof(char), new_data);
-      delete [] data_;
+      CHECK_EQ(dimensions_, copy_from.Dimensions());
+      uchar* new_data = new uchar[dimensions_ / sizeof(uchar)];
+      std::copy(copy_from.data_, copy_from.data_ + dimensions_ / sizeof(char),
+                new_data);
+      delete[] data_;
       data_ = new_data;
     }
     return *this;
   }
 
-  virtual ~BinaryDescriptor() {
-    delete [] data_;
-  }
-
-  virtual BinaryDescriptor<N>* AsDerivedClass() { LOG(INFO) << "binary descriptor"; return this; }
-  virtual const BinaryDescriptor<N>* AsDerivedClass() const { LOG(INFO) << "binary descriptor"; return this; }
-
-  // We need a special type of std::bitset<N>::reference for the mutable data
-  // pointer to a specific bit.
-  virtual inline typename std::bitset<N>::reference operator[](std::size_t i) {
-    return (*this->BinaryData())[i];
-  }
-  virtual inline const bool operator[](std::size_t i) const {
-    return (*this->BinaryData())[i];
-  }
-
-  // For binary descriptors, you cannot get a pointer to the bitset (even if you
-  // could, it seems rather dangerous) so we return the whole bitset
-  // instead. This works well because the hamming distance functions require the
-  // entire bitset.
-  inline std::bitset<N>* BinaryData() {
-    return reinterpret_cast<std::bitset<N>*>(data_);
-  }
-  inline const std::bitset<N>* BinaryData() const {
-    return reinterpret_cast<const std::bitset<N>*>(data_);
-  }
+  virtual ~BinaryDescriptor() { delete[] data_; }
 
   virtual inline uchar* CharData() { return data_; }
   virtual inline const uchar* CharData() const { return data_; }
+
+  // Helper function to be implemented by each derived class. We have fixed-size
+  // binary descriptors for each derived class, so the subclasses can implement
+  // fast hamming distance computations using std::bitset since the size is
+  // known. This method must be deferred to the subclasses because it is
+  // templated on the size of descriptors.
+  virtual int HammingDistance(const BinaryDescriptor& descriptor) = 0;
 
  protected:
   // data_ is the uchar array which contains the data. The location of this data
@@ -245,5 +226,5 @@ class BinaryDescriptor : public Descriptor {
   uchar* data_;
 };
 
-}  // namespace theia
+}       // namespace theia
 #endif  // IMAGE_DESCRIPTOR_DESCRIPTOR_H_

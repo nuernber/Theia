@@ -56,9 +56,9 @@ TEST(FreakDescriptor, Sanity) {
   GrayImage input_img(img_filename);
 
   // Get keypoints.
-  BriskDetector fast_detector(80);
+  BriskDetector brisk_detector;
   std::vector<Keypoint*> brisk_keypoints;
-  fast_detector.DetectKeypoints(input_img, &brisk_keypoints);
+  brisk_detector.DetectKeypoints(input_img, &brisk_keypoints);
 
   // For each keypoint, extract the freak descriptors.
   FreakDescriptorExtractor freak_extractor;
@@ -75,9 +75,9 @@ TEST(FreakDescriptor, ProtoTest) {
   GrayImage input_img(img_filename);
 
   // Get keypoints.
-  BriskDetector fast_detector(80);
+  BriskDetector brisk_detector;
   std::vector<Keypoint*> brisk_keypoints;
-  fast_detector.DetectKeypoints(input_img, &brisk_keypoints);
+  brisk_detector.DetectKeypoints(input_img, &brisk_keypoints);
 
   // For each keypoint, extract the freak descriptors.
   FreakDescriptorExtractor freak_extractor;
