@@ -42,28 +42,31 @@
 
 namespace theia {
 class DescriptorsProto;
-template<class T> class Image;
+template <class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
 
 class BriskDescriptor : public BinaryDescriptor {
  public:
-  BriskDescriptor() : BinaryDescriptor(const_dimensions_, DescriptorType::BRISK) {}
+  BriskDescriptor()
+      : BinaryDescriptor(const_dimensions_, DescriptorType::BRISK) {}
+
   int HammingDistance(const BinaryDescriptor& descriptor) {
     const std::bitset<const_dimensions_>* first_bitset =
-        reinterpret_cast<const std::bitset<const_dimensions_>*>(this->CharData());
+        reinterpret_cast<const std::bitset<const_dimensions_>*>(
+            this->CharData());
     const std::bitset<const_dimensions_>* second_bitset =
         reinterpret_cast<const std::bitset<const_dimensions_>*>(
             descriptor.CharData());
     return (*first_bitset ^ *second_bitset).count();
   }
+
  private:
   friend class BriskDescriptorExtractor;
   // This is technically equal to dimensions_, however, dimensions_ cannot be a
   // constexpr.
   static constexpr int const_dimensions_ = 512;
 };
-
 
 // BRISK Descriptor ported from reference code of Stefan Leutenegger, Margarita
 // Chli and Roland Siegwart, "BRISK: Binary Robust Invariant Scalable
@@ -72,8 +75,7 @@ class BriskDescriptor : public BinaryDescriptor {
 // the same style guides as the rest of the code.
 class BriskDescriptorExtractor : public DescriptorExtractor {
  public:
-  BriskDescriptorExtractor(bool rotation_invariant,
-                           bool scale_invariant,
+  BriskDescriptorExtractor(bool rotation_invariant, bool scale_invariant,
                            float pattern_scale);
   BriskDescriptorExtractor() : BriskDescriptorExtractor(true, true, 1.0) {}
   ~BriskDescriptorExtractor();
@@ -99,9 +101,8 @@ class BriskDescriptorExtractor : public DescriptorExtractor {
   bool ProtoToDescriptor(const DescriptorsProto& proto,
                          std::vector<Descriptor*>* descriptors) const;
 
-  bool DescriptorToProto(
-      const std::vector<Descriptor*>& descriptors,
-      DescriptorsProto* proto) const;
+  bool DescriptorToProto(const std::vector<Descriptor*>& descriptors,
+                         DescriptorsProto* proto) const;
 #endif
 
  private:
@@ -109,15 +110,13 @@ class BriskDescriptorExtractor : public DescriptorExtractor {
   // circle of radius r (pixels), with n points;
   // short pairings with dMax, long pairings with dMin
   void generateKernel(std::vector<float>& radiusList,
-                      std::vector<int>& numberList,
-                      float dMax = 5.85f,
+                      std::vector<int>& numberList, float dMax = 5.85f,
                       float dMin = 8.2f,
-                      std::vector<int> indexChange=std::vector<int>());
+                      std::vector<int> indexChange = std::vector<int>());
 
   inline int smoothedIntensity(const Image<unsigned char>& image,
-                               const Image<int>& integral,
-                               const float key_x, const float key_y,
-                               const unsigned int scale,
+                               const Image<int>& integral, const float key_x,
+                               const float key_y, const unsigned int scale,
                                const unsigned int rot,
                                const unsigned int point) const;
 
@@ -127,19 +126,19 @@ class BriskDescriptorExtractor : public DescriptorExtractor {
   // Pattern Properties.
   // some helper structures for the Brisk pattern representation
   struct BriskPatternPoint {
-    float x;         // x coordinate relative to center
-    float y;         // x coordinate relative to center
-    float sigma;     // Gaussian smoothing sigma
+    float x;      // x coordinate relative to center
+    float y;      // x coordinate relative to center
+    float sigma;  // Gaussian smoothing sigma
   };
   struct BriskShortPair {
     unsigned int i;  // index of the first pattern point
     unsigned int j;  // index of other pattern point
   };
   struct BriskLongPair {
-    unsigned int i;  // index of the first pattern point
-    unsigned int j;  // index of other pattern point
-    int weighted_dx; // 1024.0/dx
-    int weighted_dy; // 1024.0/dy
+    unsigned int i;   // index of the first pattern point
+    unsigned int j;   // index of other pattern point
+    int weighted_dx;  // 1024.0/dx
+    int weighted_dy;  // 1024.0/dy
   };
 
   BriskPatternPoint* pattern_points_;
@@ -176,5 +175,5 @@ class BriskDescriptorExtractor : public DescriptorExtractor {
 
   DISALLOW_COPY_AND_ASSIGN(BriskDescriptorExtractor);
 };
-}  // namespace theia
+}       // namespace theia
 #endif  // IMAGE_DESCRIPTOR_BRISK_DESCRIPTOR_H_

@@ -450,15 +450,17 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       ++ptr;
     }
 #else
-
+    std::bitset<FreakDescriptor::const_dimensions_>* freak_bitset =
+        reinterpret_cast<std::bitset<FreakDescriptor::const_dimensions_>*>(
+            freak_descriptor->CharData());
     // Extracting descriptor preserving the order of SSE version.
     int cnt = 0;
     for (int n = 7; n < kNumPairs; n += 128) {
       for (int m = 8; m--;) {
         int nm = n - m;
         for (int kk = nm + 15*8; kk >= nm; kk -= 8, ++cnt) {
-          (*freak_descriptor)[kk] = points_value[description_pairs_[cnt].i] >=
-                                    points_value[description_pairs_[cnt].j];
+          (*freak_bitset)[kk] = points_value[description_pairs_[cnt].i] >=
+                                points_value[description_pairs_[cnt].j];
         }
       }
     }
@@ -545,8 +547,12 @@ bool FreakDescriptorExtractor::ProtoToDescriptor(
       descriptor->set_strength(proto_descriptor.strength());
 
     // Get binary array.
-    *(descriptor->BinaryData())=
-        std::bitset<512>(proto_descriptor.binary_descriptor());
+    std::bitset<FreakDescriptor::const_dimensions_>* freak_bitset =
+        reinterpret_cast<std::bitset<FreakDescriptor::const_dimensions_>*>(
+            descriptor->CharData());
+    *freak_bitset = std::bitset<FreakDescriptor::const_dimensions_>(
+        proto_descriptor.binary_descriptor());
+
     descriptors->push_back(descriptor);
   }
   return true;
@@ -560,8 +566,11 @@ bool FreakDescriptorExtractor::DescriptorToProto(
         dynamic_cast<const FreakDescriptor*>(general_descriptor);
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the binary array to the proto.
-    descriptor_proto->set_binary_descriptor(
-        descriptor->BinaryData()->to_string());
+    const std::bitset<FreakDescriptor::const_dimensions_>* freak_bitset =
+        reinterpret_cast<
+      const std::bitset<FreakDescriptor::const_dimensions_>*>(
+          descriptor->CharData());
+    descriptor_proto->set_binary_descriptor(freak_bitset->to_string());
 
     // Set the proto type to patch.
     descriptor_proto->set_descriptor_type(DescriptorProto::FREAK);

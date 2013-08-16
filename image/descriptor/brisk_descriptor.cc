@@ -577,7 +577,6 @@ bool BriskDescriptorExtractor::DescriptorToProto(
         reinterpret_cast<
       const std::bitset<BriskDescriptor::const_dimensions_>*>(
           descriptor->CharData());
-
     descriptor_proto->set_binary_descriptor(brisk_bitset->to_string());
 
     // Set the proto type to patch.

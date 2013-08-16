@@ -43,15 +43,30 @@
 
 namespace theia {
 class DescriptorsProto;
-template<class T> class Image;
+template <class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
 
 // The FREAK descriptor as described in "FREAK: Fast Retina Keypoint" by Alahi
 // et. al (CVPR 2012).
-class FreakDescriptor : public BinaryDescriptor<512> {
+class FreakDescriptor : public BinaryDescriptor {
  public:
-  FreakDescriptor() : BinaryDescriptor(DescriptorType::FREAK) {}
+  FreakDescriptor()
+      : BinaryDescriptor(const_dimensions_, DescriptorType::FREAK) {}
+
+  int HammingDistance(const BinaryDescriptor& descriptor) {
+    const std::bitset<const_dimensions_>* first_bitset =
+        reinterpret_cast<const std::bitset<const_dimensions_>*>(
+            this->CharData());
+    const std::bitset<const_dimensions_>* second_bitset =
+        reinterpret_cast<const std::bitset<const_dimensions_>*>(
+            descriptor.CharData());
+    return (*first_bitset ^ *second_bitset).count();
+  }
+
+ private:
+  friend class FreakDescriptorExtractor;
+  static constexpr int const_dimensions_ = 512;
 };
 
 class FreakDescriptorExtractor : public DescriptorExtractor {
@@ -60,8 +75,7 @@ class FreakDescriptorExtractor : public DescriptorExtractor {
   //  orientation_normalized: Enable orientation normalization.
   //  scale_normalized: Enable scale normalization.
   //  num_octaves: Number of octaves covered by the keypoints.
-  FreakDescriptorExtractor(bool orientation_normalized,
-                           bool scale_normalized,
+  FreakDescriptorExtractor(bool orientation_normalized, bool scale_normalized,
                            int num_octaves)
       : orientation_normalized_(orientation_normalized),
         scale_normalized_(scale_normalized),
@@ -93,9 +107,8 @@ class FreakDescriptorExtractor : public DescriptorExtractor {
   bool ProtoToDescriptor(const DescriptorsProto& proto,
                          std::vector<Descriptor*>* descriptors) const;
 
-  bool DescriptorToProto(
-      const std::vector<Descriptor*>& descriptors,
-      DescriptorsProto* proto) const;
+  bool DescriptorToProto(const std::vector<Descriptor*>& descriptors,
+                         DescriptorsProto* proto) const;
 #endif
 
   enum {
@@ -106,10 +119,8 @@ class FreakDescriptorExtractor : public DescriptorExtractor {
 
  private:
   uchar MeanIntensity(const Image<uchar>& image, const Image<uchar>& integral,
-                      const float kp_x,
-                      const float kp_y,
-                      const unsigned int scale,
-                      const unsigned int rot,
+                      const float kp_x, const float kp_y,
+                      const unsigned int scale, const unsigned int rot,
                       const unsigned int point) const;
 
   bool orientation_normalized_;
@@ -146,7 +157,6 @@ class FreakDescriptorExtractor : public DescriptorExtractor {
     int weight_dy;
   };
 
-
   // look-up table for the pattern points (position+sigma of all points at all
   // scales and orientation)
   std::vector<PatternPoint> pattern_lookup_;
@@ -163,5 +173,5 @@ class FreakDescriptorExtractor : public DescriptorExtractor {
 
   DISALLOW_COPY_AND_ASSIGN(FreakDescriptorExtractor);
 };
-}  // namespace theia
+}       // namespace theia
 #endif  // IMAGE_DESCRIPTOR_FREAK_DESCRIPTOR_H_
