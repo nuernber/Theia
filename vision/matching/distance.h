@@ -35,6 +35,8 @@
 #ifndef VISION_MATCHING_DISTANCE_H_
 #define VISION_MATCHING_DISTANCE_H_
 
+#include "image/descriptor/descriptor.h"
+
 #include <glog/logging.h>
 #ifdef THEIA_USE_SSE
 #include <xmmintrin.h>
@@ -48,76 +50,23 @@ namespace theia {
 // Hamming distance for FREAK (checks the first 128 bits, then checks the rest).
 // NOTE: Hamming distance functions are included at the bottom of this file, but
 // are in a separate file for cleanliness.
-template<typename T>
-struct Accumulator {
-  typedef T Type;
-};
 
-template<>
-struct Accumulator<unsigned char> {
-  typedef float Type;
-};
-
-template<>
-struct Accumulator<unsigned short> {
-  typedef float Type;
-};
-
-template<>
-struct Accumulator<unsigned int> {
-  typedef float Type;
-};
-
-template<>
-struct Accumulator<char> {
-  typedef float Type;
-};
-
-template<>
-struct Accumulator<short> {
-  typedef float Type;
-};
-
-template<>
-struct Accumulator<int> {
-  typedef float Type;
-};
-
-template<>
-struct Accumulator<bool> {
-  typedef int Type;
-};
-
-// Squared Euclidean distance functor (copied from FLANN).
-template<class T>
+#ifndef THEIA_USE_SSE
+// Squared Euclidean distance functor (vectorized version to help the compiler
+// translate it into SIMD operations).
 struct L2 {
-  typedef T ElementType;
-  typedef typename Accumulator<T>::Type ResultType;
+  typedef float ResultType;
 
-  template <typename Iterator1, typename Iterator2>
-  ResultType operator()(Iterator1 a, Iterator2 b, size_t size) const {
-    ResultType result = ResultType();
-    ResultType diff;
-    for (size_t i = 0; i < size; ++i) {
-      diff = *a++ - *b++;
-      result += diff*diff;
-    }
-    return result;
-  }
-};
-
-// Squared Euclidean distance functor (vectorized version).
-template<class T>
-struct L2Vectorized {
-  typedef T ElementType;
-  typedef typename Accumulator<T>::Type ResultType;
-
-  template <typename Iterator1, typename Iterator2>
-  ResultType operator()(Iterator1 a, Iterator2 b, size_t size) const {
+  ResultType operator()(const Descriptor& descriptor_a,
+                        const Descriptor& descriptor_b) const {
+    CHECK_EQ(descriptor_a.Dimensions(), descriptor_b.Dimensions());
+    CHECK_EQ(descriptor_a.descriptor_type(), descriptor_b.descriptor_type());
     ResultType result = ResultType();
     ResultType diff0, diff1, diff2, diff3;
-    Iterator1 last = a + size;
-    Iterator1 lastgroup = last - 3;
+    const float* a = descriptor_a.FloatData();
+    const float* b = descriptor_b.FloatData();
+    const float* last = a + descriptor_a.Dimensions();
+    const float* lastgroup = last - 3;
 
     // Process 4 items with each loop for efficiency.
     while (a < lastgroup) {
@@ -138,7 +87,7 @@ struct L2Vectorized {
   }
 };
 
-#ifdef THEIA_USE_SSE
+#else
 /// Union to switch between SSE and float array.
 union sseRegisterHelper {
   __m128 m;
@@ -165,15 +114,15 @@ float L2SSE(const float* b1, const float* b2, int size) {
   res.m = cumSum;
   return (res.f[0] + res.f[1] + res.f[2] + res.f[3]);
 }
-// Template specialization to run SSE L2 squared distance on float vector.
-template<>
-struct L2Vectorized<float> {
-  typedef float ElementType;
-  typedef Accumulator<float>::Type ResultType;
+// Version to run SSE L2 squared distance on float vector.
+struct L2 {
+  typedef float ResultType;
 
-  template <typename Iterator1, typename Iterator2>
-  ResultType operator()(Iterator1 a, Iterator2 b, size_t size) const {
-    return L2SSE(a, b, size);
+  ResultType operator()(const Descriptor& a,
+                        const Descriptor& b) const {
+    CHECK_EQ(a.Dimensions(), b.Dimensions());
+    CHECK_EQ(a.descriptor_type(), b.descriptor_type());
+    return L2SSE(a.FloatData(), b.FloatData(), a.Dimensions());
   }
 };
 #endif  // THEIA_USE_SSE

@@ -42,41 +42,45 @@
 
 namespace theia {
 class DescriptorsProto;
-template<class T> class Image;
+template <class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
 
-class BriskDescriptor : public BinaryDescriptor<512> {
+class BriskDescriptor : public BinaryDescriptor {
  public:
-  BriskDescriptor() : BinaryDescriptor(DescriptorType::BRISK) {}
-};
+  BriskDescriptor()
+      : BinaryDescriptor(const_dimensions_, DescriptorType::BRISK) {}
 
+ private:
+  friend class BriskDescriptorExtractor;
+  // This is technically equal to dimensions_, however, dimensions_ cannot be a
+  // constexpr.
+  static constexpr int const_dimensions_ = 512;
+};
 
 // BRISK Descriptor ported from reference code of Stefan Leutenegger, Margarita
 // Chli and Roland Siegwart, "BRISK: Binary Robust Invariant Scalable
 // Keypoints", in Proceedings of the IEEE International Conference on Computer
 // Vision (ICCV 2011). NOTE: because this code is ported, it does not adhere to
 // the same style guides as the rest of the code.
-class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
+class BriskDescriptorExtractor : public DescriptorExtractor {
  public:
-  BriskDescriptorExtractor(bool rotation_invariant,
-                           bool scale_invariant,
+  BriskDescriptorExtractor(bool rotation_invariant, bool scale_invariant,
                            float pattern_scale);
   BriskDescriptorExtractor() : BriskDescriptorExtractor(true, true, 1.0) {}
   ~BriskDescriptorExtractor();
 
   // Computes a descriptor at a single keypoint.
-  bool ComputeDescriptor(const GrayImage& image,
-                         const Keypoint& keypoint,
-                         BriskDescriptor* descriptor);
+  Descriptor* ComputeDescriptor(const GrayImage& image,
+                                const Keypoint& keypoint);
 
   // Compute multiple descriptors for keypoints from a single image.
   bool ComputeDescriptors(const GrayImage& image,
                           const std::vector<Keypoint*>& keypoints,
-                          std::vector<BriskDescriptor*>* descriptors);
+                          std::vector<Descriptor*>* descriptors);
 
   bool DetectAndExtractDescriptors(const GrayImage& image,
-                                   std::vector<BriskDescriptor*>* descriptors);
+                                   std::vector<Descriptor*>* descriptors);
 
   // Methods to load/store descriptors in protocol buffers. Each derived class
   // should implement these methods (if desired) and load/store all appropriate
@@ -85,11 +89,10 @@ class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
   // these methods are paired to the descriptors.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
   bool ProtoToDescriptor(const DescriptorsProto& proto,
-                         std::vector<BriskDescriptor*>* descriptors) const;
+                         std::vector<Descriptor*>* descriptors) const;
 
-  bool DescriptorToProto(
-      const std::vector<BriskDescriptor*>& descriptors,
-      DescriptorsProto* proto) const;
+  bool DescriptorToProto(const std::vector<Descriptor*>& descriptors,
+                         DescriptorsProto* proto) const;
 #endif
 
  private:
@@ -97,15 +100,13 @@ class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
   // circle of radius r (pixels), with n points;
   // short pairings with dMax, long pairings with dMin
   void generateKernel(std::vector<float>& radiusList,
-                      std::vector<int>& numberList,
-                      float dMax = 5.85f,
+                      std::vector<int>& numberList, float dMax = 5.85f,
                       float dMin = 8.2f,
-                      std::vector<int> indexChange=std::vector<int>());
+                      std::vector<int> indexChange = std::vector<int>());
 
   inline int smoothedIntensity(const Image<unsigned char>& image,
-                               const Image<int>& integral,
-                               const float key_x, const float key_y,
-                               const unsigned int scale,
+                               const Image<int>& integral, const float key_x,
+                               const float key_y, const unsigned int scale,
                                const unsigned int rot,
                                const unsigned int point) const;
 
@@ -115,19 +116,19 @@ class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
   // Pattern Properties.
   // some helper structures for the Brisk pattern representation
   struct BriskPatternPoint {
-    float x;         // x coordinate relative to center
-    float y;         // x coordinate relative to center
-    float sigma;     // Gaussian smoothing sigma
+    float x;      // x coordinate relative to center
+    float y;      // x coordinate relative to center
+    float sigma;  // Gaussian smoothing sigma
   };
   struct BriskShortPair {
     unsigned int i;  // index of the first pattern point
     unsigned int j;  // index of other pattern point
   };
   struct BriskLongPair {
-    unsigned int i;  // index of the first pattern point
-    unsigned int j;  // index of other pattern point
-    int weighted_dx; // 1024.0/dx
-    int weighted_dy; // 1024.0/dy
+    unsigned int i;   // index of the first pattern point
+    unsigned int j;   // index of other pattern point
+    int weighted_dx;  // 1024.0/dx
+    int weighted_dy;  // 1024.0/dy
   };
 
   BriskPatternPoint* pattern_points_;
@@ -164,5 +165,5 @@ class BriskDescriptorExtractor : public DescriptorExtractor<BriskDescriptor> {
 
   DISALLOW_COPY_AND_ASSIGN(BriskDescriptorExtractor);
 };
-}  // namespace theia
+}       // namespace theia
 #endif  // IMAGE_DESCRIPTOR_BRISK_DESCRIPTOR_H_

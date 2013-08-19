@@ -47,7 +47,7 @@ message DescriptorProto {
   optional KeypointProto keypoint = 3;
   
   // Binary descriptors can be loaded/stored as strings when using std::bitset.
-  optional string binary_descriptor = 4;
+  optional bytes binary_descriptor = 4;
   // Float array for descriptors.
   repeated float float_descriptor = 5;
 

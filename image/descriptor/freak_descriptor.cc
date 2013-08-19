@@ -59,14 +59,13 @@
 // the authors, rather than train them ourselves).
 namespace theia {
 namespace {
-static const __m128i binMask = _mm_set_epi8(0x80, 0x80, 0x80,
-                                            0x80, 0x80, 0x80,
-                                            0x80, 0x80, 0x80,
-                                            0x80, 0x80, 0x80,
-                                            0x80, 0x80, 0x80,
-                                            0x80);
+#ifdef THEIA_USE_SSE
+static const __m128i binMask =
+    _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
+                 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
+#endif
 static const double kSqrt2 = 1.4142135623731;
-static const double kInvSqrt2 = 1.0/kSqrt2;
+static const double kInvSqrt2 = 1.0 / kSqrt2;
 static const double kLog2 = 0.693147180559945;
 static const int kNumOrientation = 256;
 static const int kNumPoints = 43;
@@ -74,76 +73,73 @@ static const int kSmallestKeypointSize = 7;
 // duplicate of Freak member var...
 static const int kNumPairs = 512;
 static const int freak_def_pairs[kNumPairs] = {
-  404, 431, 818, 511, 181, 52, 311, 874, 774, 543, 719, 230, 417, 205, 11,
-  560, 149, 265, 39, 306, 165, 857, 250, 8, 61, 15, 55, 717, 44, 412,
-  592, 134, 761, 695, 660, 782, 625, 487, 549, 516, 271, 665, 762, 392, 178,
-  796, 773, 31, 672, 845, 548, 794, 677, 654, 241, 831, 225, 238, 849, 83,
-  691, 484, 826, 707, 122, 517, 583, 731, 328, 339, 571, 475, 394, 472, 580,
-  381, 137, 93, 380, 327, 619, 729, 808, 218, 213, 459, 141, 806, 341, 95,
-  382, 568, 124, 750, 193, 749, 706, 843, 79, 199, 317, 329, 768, 198, 100,
-  466, 613, 78, 562, 783, 689, 136, 838, 94, 142, 164, 679, 219, 419, 366,
-  418, 423, 77, 89, 523, 259, 683, 312, 555, 20, 470, 684, 123, 458, 453, 833,
-  72, 113, 253, 108, 313, 25, 153, 648, 411, 607, 618, 128, 305, 232, 301, 84,
-  56, 264, 371, 46, 407, 360, 38, 99, 176, 710, 114, 578, 66, 372, 653,
-  129, 359, 424, 159, 821, 10, 323, 393, 5, 340, 891, 9, 790, 47, 0, 175, 346,
-  236, 26, 172, 147, 574, 561, 32, 294, 429, 724, 755, 398, 787, 288, 299,
-  769, 565, 767, 722, 757, 224, 465, 723, 498, 467, 235, 127, 802, 446, 233,
-  544, 482, 800, 318, 16, 532, 801, 441, 554, 173, 60, 530, 713, 469, 30,
-  212, 630, 899, 170, 266, 799, 88, 49, 512, 399, 23, 500, 107, 524, 90,
-  194, 143, 135, 192, 206, 345, 148, 71, 119, 101, 563, 870, 158, 254, 214,
-  276, 464, 332, 725, 188, 385, 24, 476, 40, 231, 620, 171, 258, 67, 109,
-  844, 244, 187, 388, 701, 690, 50, 7, 850, 479, 48, 522, 22, 154, 12, 659,
-  736, 655, 577, 737, 830, 811, 174, 21, 237, 335, 353, 234, 53, 270, 62,
-  182, 45, 177, 245, 812, 673, 355, 556, 612, 166, 204, 54, 248, 365, 226,
-  242, 452, 700, 685, 573, 14, 842, 481, 468, 781, 564, 416, 179, 405, 35,
-  819, 608, 624, 367, 98, 643, 448, 2, 460, 676, 440, 240, 130, 146, 184,
-  185, 430, 65, 807, 377, 82, 121, 708, 239, 310, 138, 596, 730, 575, 477,
-  851, 797, 247, 27, 85, 586, 307, 779, 326, 494, 856, 324, 827, 96, 748,
-  13, 397, 125, 688, 702, 92, 293, 716, 277, 140, 112, 4, 80, 855, 839, 1,
-  413, 347, 584, 493, 289, 696, 19, 751, 379, 76, 73, 115, 6, 590, 183, 734,
-  197, 483, 217, 344, 330, 400, 186, 243, 587, 220, 780, 200, 793, 246, 824,
-  41, 735, 579, 81, 703, 322, 760, 720, 139, 480, 490, 91, 814, 813, 163,
-  152, 488, 763, 263, 425, 410, 576, 120, 319, 668, 150, 160, 302, 491, 515,
-  260, 145, 428, 97, 251, 395, 272, 252, 18, 106, 358, 854, 485, 144, 550,
-  131, 133, 378, 68, 102, 104, 58, 361, 275, 209, 697, 582, 338, 742, 589,
-  325, 408, 229, 28, 304, 191, 189, 110, 126, 486, 211, 547, 533, 70, 215,
-  670, 249, 36, 581, 389, 605, 331, 518, 442, 822};
+  404, 431, 818, 511, 181, 52, 311, 874, 774, 543, 719, 230, 417, 205, 11, 560,
+  149, 265, 39, 306, 165, 857, 250, 8, 61, 15, 55, 717, 44, 412, 592, 134, 761,
+  695, 660, 782, 625, 487, 549, 516, 271, 665, 762, 392, 178, 796, 773, 31, 672,
+  845, 548, 794, 677, 654, 241, 831, 225, 238, 849, 83, 691, 484, 826, 707, 122,
+  517, 583, 731, 328, 339, 571, 475, 394, 472, 580, 381, 137, 93, 380, 327, 619,
+  729, 808, 218, 213, 459, 141, 806, 341, 95, 382, 568, 124, 750, 193, 749, 706,
+  843, 79, 199, 317, 329, 768, 198, 100, 466, 613, 78, 562, 783, 689, 136, 838,
+  94, 142, 164, 679, 219, 419, 366, 418, 423, 77, 89, 523, 259, 683, 312, 555,
+  20, 470, 684, 123, 458, 453, 833, 72, 113, 253, 108, 313, 25, 153, 648, 411,
+  607, 618, 128, 305, 232, 301, 84, 56, 264, 371, 46, 407, 360, 38, 99, 176,
+  710, 114, 578, 66, 372, 653, 129, 359, 424, 159, 821, 10, 323, 393, 5, 340,
+  891, 9, 790, 47, 0, 175, 346, 236, 26, 172, 147, 574, 561, 32, 294, 429, 724,
+  755, 398, 787, 288, 299, 769, 565, 767, 722, 757, 224, 465, 723, 498, 467,
+  235, 127, 802, 446, 233, 544, 482, 800, 318, 16, 532, 801, 441, 554, 173, 60,
+  530, 713, 469, 30, 212, 630, 899, 170, 266, 799, 88, 49, 512, 399, 23, 500,
+  107, 524, 90, 194, 143, 135, 192, 206, 345, 148, 71, 119, 101, 563, 870, 158,
+  254, 214, 276, 464, 332, 725, 188, 385, 24, 476, 40, 231, 620, 171, 258, 67,
+  109, 844, 244, 187, 388, 701, 690, 50, 7, 850, 479, 48, 522, 22, 154, 12, 659,
+  736, 655, 577, 737, 830, 811, 174, 21, 237, 335, 353, 234, 53, 270, 62, 182,
+  45, 177, 245, 812, 673, 355, 556, 612, 166, 204, 54, 248, 365, 226, 242, 452,
+  700, 685, 573, 14, 842, 481, 468, 781, 564, 416, 179, 405, 35, 819, 608, 624,
+  367, 98, 643, 448, 2, 460, 676, 440, 240, 130, 146, 184, 185, 430, 65, 807,
+  377, 82, 121, 708, 239, 310, 138, 596, 730, 575, 477, 851, 797, 247, 27, 85,
+  586, 307, 779, 326, 494, 856, 324, 827, 96, 748, 13, 397, 125, 688, 702, 92,
+  293, 716, 277, 140, 112, 4, 80, 855, 839, 1, 413, 347, 584, 493, 289, 696, 19,
+  751, 379, 76, 73, 115, 6, 590, 183, 734, 197, 483, 217, 344, 330, 400, 186,
+  243, 587, 220, 780, 200, 793, 246, 824, 41, 735, 579, 81, 703, 322, 760, 720,
+  139, 480, 490, 91, 814, 813, 163, 152, 488, 763, 263, 425, 410, 576, 120, 319,
+  668, 150, 160, 302, 491, 515, 260, 145, 428, 97, 251, 395, 272, 252, 18, 106,
+  358, 854, 485, 144, 550, 131, 133, 378, 68, 102, 104, 58, 361, 275, 209, 697,
+  582, 338, 742, 589, 325, 408, 229, 28, 304, 191, 189, 110, 126, 486, 211, 547,
+  533, 70, 215, 670, 249, 36, 581, 389, 605, 331, 518, 442, 822
+};
 
 }  // namespace
 
 // Initializes the sampling patterns and local variables.
 bool FreakDescriptorExtractor::Initialize() {
   // If it has already been initialized return.
-  if (!pattern_lookup_.empty())
-    return true;
+  if (!pattern_lookup_.empty()) return true;
 
-  pattern_lookup_.resize(kNumScales_*kNumOrientation*kNumPoints);
+  pattern_lookup_.resize(kNumScales_ * kNumOrientation * kNumPoints);
   // 2 ^  ((num_octaves_-1) /nbScales)
   double scaleStep =
-      std::pow(2.0, static_cast<double>(num_octaves_)/kNumScales_);
+      std::pow(2.0, static_cast<double>(num_octaves_) / kNumScales_);
   double scalingFactor, alpha, beta, theta = 0;
 
   // pattern definition, radius normalized to 1.0 (outer point
   // position+sigma=1.0) number of points on each concentric circle (from outer
   // to inner)
-  const int n[8] = {6, 6, 6, 6, 6, 6, 6, 1};
+  const int n[8] = { 6, 6, 6, 6, 6, 6, 6, 1 };
   // bigger radius
-  const double bigR(2.0/3.0);
+  const double bigR(2.0 / 3.0);
   // smaller radius
-  const double smallR(2.0/24.0);
+  const double smallR(2.0 / 24.0);
   // define spaces between concentric circles (from center to outer:
   // 1,2,3,4,5,6)
-  const double unitSpace((bigR-smallR)/21.0);
+  const double unitSpace((bigR - smallR) / 21.0);
   // radii of the concentric cirles (from outer to inner)
-  const double radius[8] = {bigR, bigR-6*unitSpace, bigR-11*unitSpace,
-                            bigR-15*unitSpace, bigR-18*unitSpace,
-                            bigR-20*unitSpace, smallR, 0.0};
+  const double radius[8] = { bigR, bigR - 6 * unitSpace, bigR - 11 * unitSpace,
+                             bigR - 15 * unitSpace, bigR - 18 * unitSpace,
+                             bigR - 20 * unitSpace, smallR, 0.0 };
   // sigma of pattern points (each group of 6 points on a concentric cirle has
   // the same sigma)
-  const double sigma[8] = {radius[0]/2.0, radius[1]/2.0, radius[2]/2.0,
-                           radius[3]/2.0, radius[4]/2.0, radius[5]/2.0,
-                           radius[6]/2.0, radius[6]/2.0
-  };
+  const double sigma[8] = { radius[0] / 2.0, radius[1] / 2.0, radius[2] / 2.0,
+                            radius[3] / 2.0, radius[4] / 2.0, radius[5] / 2.0,
+                            radius[6] / 2.0, radius[6] / 2.0 };
   // fill the lookup table
   for (int scaleIdx = 0; scaleIdx < kNumScales_; ++scaleIdx) {
     // proper initialization
@@ -151,36 +147,35 @@ bool FreakDescriptorExtractor::Initialize() {
     // scale of the pattern, scaleStep ^ scaleIdx
     scalingFactor = std::pow(scaleStep, scaleIdx);
 
-    for (int orientationIdx = 0;
-         orientationIdx < kNumOrientation;
+    for (int orientationIdx = 0; orientationIdx < kNumOrientation;
          ++orientationIdx) {
       // orientation of the pattern
-      theta = static_cast<double>(orientationIdx)*2*M_PI/
+      theta = static_cast<double>(orientationIdx) * 2 * M_PI /
               static_cast<double>(kNumOrientation);
       int pointIdx = 0;
 
       PatternPoint* pattern_lookup_Ptr = &pattern_lookup_[0];
       for (size_t i = 0; i < 8; ++i) {
-        for (int k = 0 ; k < n[i]; ++k) {
+        for (int k = 0; k < n[i]; ++k) {
           // orientation offset so that groups of points on each circles are
           // staggered
-          beta = M_PI/n[i]*(i%2);
-          alpha = k*2.0*M_PI/static_cast<double>(n[i]) + beta + theta;
+          beta = M_PI / n[i] * (i % 2);
+          alpha = k * 2.0 * M_PI / static_cast<double>(n[i]) + beta + theta;
 
           // add the point to the look-up table
           PatternPoint& point =
-              pattern_lookup_Ptr[scaleIdx*kNumOrientation*kNumPoints +
-                                 orientationIdx*kNumPoints+pointIdx];
-          point.x = static_cast<float>(radius[i]*cos(alpha)*scalingFactor*
+              pattern_lookup_Ptr[scaleIdx * kNumOrientation * kNumPoints +
+                                 orientationIdx * kNumPoints + pointIdx];
+          point.x = static_cast<float>(radius[i] * cos(alpha) * scalingFactor *
                                        pattern_scale_);
-          point.y = static_cast<float>(radius[i]*sin(alpha)*scalingFactor*
+          point.y = static_cast<float>(radius[i] * sin(alpha) * scalingFactor *
                                        pattern_scale_);
           point.sigma =
-              static_cast<float>(sigma[i]*scalingFactor* pattern_scale_);
+              static_cast<float>(sigma[i] * scalingFactor * pattern_scale_);
 
           // adapt the sizeList if necessary
-          const int sizeMax = static_cast<int>(
-              ceil((radius[i] + sigma[i])* scalingFactor*pattern_scale_)) + 1;
+          const int sizeMax = static_cast<int>(ceil(
+              (radius[i] + sigma[i]) * scalingFactor * pattern_scale_)) + 1;
           if (pattern_sizes_[scaleIdx] < sizeMax)
             pattern_sizes_[scaleIdx] = sizeMax;
 
@@ -246,19 +241,19 @@ bool FreakDescriptorExtractor::Initialize() {
                      pattern_lookup_[orientation_pairs_[m].j].x;
     const float dy = pattern_lookup_[orientation_pairs_[m].i].y -
                      pattern_lookup_[orientation_pairs_[m].j].y;
-    const float norm_sq = (dx*dx + dy*dy);
+    const float norm_sq = (dx * dx + dy * dy);
     orientation_pairs_[m].weight_dx =
-        static_cast<int>((dx/(norm_sq))*4096.0 + 0.5);
+        static_cast<int>((dx / (norm_sq)) * 4096.0 + 0.5);
     orientation_pairs_[m].weight_dy =
-        static_cast<int>((dy/(norm_sq))*4096.0 + 0.5);
+        static_cast<int>((dy / (norm_sq)) * 4096.0 + 0.5);
   }
 
   // build the list of description pairs
   std::vector<DescriptionPair> allPairs;
-  for (unsigned int i = 1; i < (unsigned int)kNumPoints; ++i) {
+  for (unsigned int i = 1; i < (unsigned int) kNumPoints; ++i) {
     // (generate all the pairs)
-    for (unsigned int j = 0; (unsigned int)j < i; ++j) {
-      DescriptionPair pair = {(uchar)i, (uchar)j};
+    for (unsigned int j = 0; (unsigned int) j < i; ++j) {
+      DescriptionPair pair = {(uchar) i, (uchar) j };
       allPairs.push_back(pair);
     }
   }
@@ -268,36 +263,35 @@ bool FreakDescriptorExtractor::Initialize() {
 }
 
 // Computes a descriptor at a single keypoint.
-bool FreakDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
-                                                 const Keypoint& keypoint,
-                                                 FreakDescriptor* descriptor) {
+Descriptor* FreakDescriptorExtractor::ComputeDescriptor(
+    const GrayImage& image, const Keypoint& keypoint) {
+  Descriptor* descriptor = new FreakDescriptor;
   std::vector<Keypoint*> keypoints;
   // TODO(cmsweeney): Is there a better way to pass the address of the keypoint
   // passed in? This is sort of a lazy hack.
   Keypoint keypoint_copy = keypoint;
   keypoints.push_back(&keypoint_copy);
-  std::vector<FreakDescriptor*> descriptors;
+  std::vector<Descriptor*> descriptors;
   descriptors.push_back(descriptor);
-  return ComputeDescriptors(image, keypoints, &descriptors);
+  CHECK(ComputeDescriptors(image, keypoints, &descriptors));
+  return descriptor;
 }
 
 // Compute multiple descriptors for keypoints from a single image.
 bool FreakDescriptorExtractor::ComputeDescriptors(
-    const GrayImage& image,
-    const std::vector<Keypoint*>& keypoints,
-    std::vector<FreakDescriptor*>* descriptors) {
+    const GrayImage& image, const std::vector<Keypoint*>& keypoints,
+    std::vector<Descriptor*>* descriptors) {
   Image<uchar> uchar_image = image.ConvertTo<uchar>();
   Image<uchar> img_integral = uchar_image.Integrate();
 
   // used to save pattern scale index corresponding to each keypoints
   std::vector<int> kp_scale_idx(keypoints.size());
   const float size_cst =
-      static_cast<float>(kNumScales_/(kLog2*num_octaves_));
+      static_cast<float>(kNumScales_ / (kLog2 * num_octaves_));
   uchar points_value[kNumPoints];
   int theta_idx = 0;
   int direction0;
   int direction1;
-
 
   // compute the scale index corresponding to the keypoint size and remove
   // keypoints close to the border.
@@ -305,10 +299,11 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
   if (scale_normalized_) {
     for (size_t k = keypoints.size(); k--;) {
       // Is k non-zero? If so, decrement it and continue.
-      kp_scale_idx[k] = std::max(static_cast<int>(std::log(
-          keypoints[k]->scale()/kSmallestKeypointSize)*size_cst + 0.5), 0);
-      if (kp_scale_idx[k] >= kNumScales_)
-        kp_scale_idx[k] = kNumScales_ - 1;
+      kp_scale_idx[k] = std::max(
+          static_cast<int>(std::log(keypoints[k]->scale() /
+                                    kSmallestKeypointSize) * size_cst + 0.5),
+          0);
+      if (kp_scale_idx[k] >= kNumScales_) kp_scale_idx[k] = kNumScales_ - 1;
 
       // Check if the description at this specific position and scale fits
       // inside the image.
@@ -323,9 +318,9 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       }
     }
   } else {
-    // equivalent to the formule when the scale is normalized with a constant
+    // Equivalent to the formula when the scale is normalized with a constant
     // size of keypoints[k].size=3*SMALLEST_KP_SIZE.
-    int scIdx = std::max(static_cast<int>(1.0986122886681*size_cst + 0.5), 0);
+    int scIdx = std::max(static_cast<int>(1.0986122886681 * size_cst + 0.5), 0);
     if (scIdx >= kNumScales_) {
       scIdx = kNumScales_ - 1;
     }
@@ -346,7 +341,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
   // Estimate orientations, extract descriptors, extract the best comparisons
   // only.
   for (size_t k = keypoints.size(); k--;) {
-    FreakDescriptor* freak_descriptor = (*descriptors)[k];
+    FreakDescriptor* freak_descriptor =
+        dynamic_cast<FreakDescriptor*>((*descriptors)[k]);
     if (freak_descriptor == nullptr) {
       continue;
     }
@@ -358,9 +354,9 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
     } else {
       // get the points intensity value in the un-rotated pattern
       for (int i = kNumPoints; i--;) {
-        points_value[i] = MeanIntensity(uchar_image, img_integral,
-                                        keypoints[k]->x(), keypoints[k]->y(),
-                                        kp_scale_idx[k], 0, i);
+        points_value[i] =
+            MeanIntensity(uchar_image, img_integral, keypoints[k]->x(),
+                          keypoints[k]->y(), kp_scale_idx[k], 0, i);
       }
       direction0 = 0;
       direction1 = 0;
@@ -368,72 +364,71 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
         // iterate through the orientation pairs
         const int delta = points_value[orientation_pairs_[m].i] -
                           points_value[orientation_pairs_[m].j];
-        direction0 += delta*(orientation_pairs_[m].weight_dx)/2048;
-        direction1 += delta*(orientation_pairs_[m].weight_dy)/2048;
+        direction0 += delta * (orientation_pairs_[m].weight_dx) / 2048;
+        direction1 += delta * (orientation_pairs_[m].weight_dy) / 2048;
       }
       // estimate orientation
       freak_descriptor->set_orientation(static_cast<float>(
           atan2(static_cast<float>(direction1),
-                static_cast<float>(direction0)*(180.0/M_PI))));
-      theta_idx = static_cast<int>(
-          kNumOrientation*freak_descriptor->orientation()*(1/360.0) + 0.5);
-      if (theta_idx < 0)
-        theta_idx += kNumOrientation;
+                static_cast<float>(direction0) * (180.0 / M_PI))));
+      theta_idx =
+          static_cast<int>(kNumOrientation * freak_descriptor->orientation() *
+                               (1 / 360.0) + 0.5);
+      if (theta_idx < 0) theta_idx += kNumOrientation;
 
-      if (theta_idx >= kNumOrientation)
-        theta_idx -= kNumOrientation;
+      if (theta_idx >= kNumOrientation) theta_idx -= kNumOrientation;
     }
     // extract descriptor at the computed orientation
     for (int i = kNumPoints; i--;) {
-      points_value[i] = MeanIntensity(uchar_image, img_integral,
-                                      keypoints[k]->x(), keypoints[k]->y(),
-                                      kp_scale_idx[k], theta_idx, i);
+      points_value[i] =
+          MeanIntensity(uchar_image, img_integral, keypoints[k]->x(),
+                        keypoints[k]->y(), kp_scale_idx[k], theta_idx, i);
     }
 
-#if THEIA_USE_SSE
+#ifdef THEIA_USE_SSE
     __m128i* ptr = (__m128i*)(freak_descriptor->CharData());
     // NOTE: the comparisons order is modified in each block (but first
     // 128 comparisons remain globally the same-->does not affect the
     // 128,384 bits segmanted matching strategy)
     int cnt = 0;
-    for (int n = kNumPairs/128; n-- ; ) {
+    for (int n = kNumPairs / 128; n--;) {
       __m128i result128 = _mm_setzero_si128();
-      for (int m = 128/16; m--; cnt += 16) {
-        __m128i operand1 = _mm_set_epi8(
-            points_value[description_pairs_[cnt + 0].i],
-            points_value[description_pairs_[cnt + 1].i],
-            points_value[description_pairs_[cnt + 2].i],
-            points_value[description_pairs_[cnt + 3].i],
-            points_value[description_pairs_[cnt + 4].i],
-            points_value[description_pairs_[cnt + 5].i],
-            points_value[description_pairs_[cnt + 6].i],
-            points_value[description_pairs_[cnt + 7].i],
-            points_value[description_pairs_[cnt + 8].i],
-            points_value[description_pairs_[cnt + 9].i],
-            points_value[description_pairs_[cnt + 10].i],
-            points_value[description_pairs_[cnt + 11].i],
-            points_value[description_pairs_[cnt + 12].i],
-            points_value[description_pairs_[cnt + 13].i],
-            points_value[description_pairs_[cnt + 14].i],
-            points_value[description_pairs_[cnt + 15].i]);
+      for (int m = 128 / 16; m--; cnt += 16) {
+        __m128i operand1 =
+            _mm_set_epi8(points_value[description_pairs_[cnt + 0].i],
+                         points_value[description_pairs_[cnt + 1].i],
+                         points_value[description_pairs_[cnt + 2].i],
+                         points_value[description_pairs_[cnt + 3].i],
+                         points_value[description_pairs_[cnt + 4].i],
+                         points_value[description_pairs_[cnt + 5].i],
+                         points_value[description_pairs_[cnt + 6].i],
+                         points_value[description_pairs_[cnt + 7].i],
+                         points_value[description_pairs_[cnt + 8].i],
+                         points_value[description_pairs_[cnt + 9].i],
+                         points_value[description_pairs_[cnt + 10].i],
+                         points_value[description_pairs_[cnt + 11].i],
+                         points_value[description_pairs_[cnt + 12].i],
+                         points_value[description_pairs_[cnt + 13].i],
+                         points_value[description_pairs_[cnt + 14].i],
+                         points_value[description_pairs_[cnt + 15].i]);
 
-        __m128i operand2 = _mm_set_epi8(
-            points_value[description_pairs_[cnt + 0].j],
-            points_value[description_pairs_[cnt + 1].j],
-            points_value[description_pairs_[cnt + 2].j],
-            points_value[description_pairs_[cnt + 3].j],
-            points_value[description_pairs_[cnt + 4].j],
-            points_value[description_pairs_[cnt + 5].j],
-            points_value[description_pairs_[cnt + 6].j],
-            points_value[description_pairs_[cnt + 7].j],
-            points_value[description_pairs_[cnt + 8].j],
-            points_value[description_pairs_[cnt + 9].j],
-            points_value[description_pairs_[cnt + 10].j],
-            points_value[description_pairs_[cnt + 11].j],
-            points_value[description_pairs_[cnt + 12].j],
-            points_value[description_pairs_[cnt + 13].j],
-            points_value[description_pairs_[cnt + 14].j],
-            points_value[description_pairs_[cnt + 15].j]);
+        __m128i operand2 =
+            _mm_set_epi8(points_value[description_pairs_[cnt + 0].j],
+                         points_value[description_pairs_[cnt + 1].j],
+                         points_value[description_pairs_[cnt + 2].j],
+                         points_value[description_pairs_[cnt + 3].j],
+                         points_value[description_pairs_[cnt + 4].j],
+                         points_value[description_pairs_[cnt + 5].j],
+                         points_value[description_pairs_[cnt + 6].j],
+                         points_value[description_pairs_[cnt + 7].j],
+                         points_value[description_pairs_[cnt + 8].j],
+                         points_value[description_pairs_[cnt + 9].j],
+                         points_value[description_pairs_[cnt + 10].j],
+                         points_value[description_pairs_[cnt + 11].j],
+                         points_value[description_pairs_[cnt + 12].j],
+                         points_value[description_pairs_[cnt + 13].j],
+                         points_value[description_pairs_[cnt + 14].j],
+                         points_value[description_pairs_[cnt + 15].j]);
         // Emulated "not less than" for 8-bit UNSIGNED integers.
         __m128i workReg = _mm_min_epu8(operand1, operand2);
         // Emulated "not less than" for 8-bit UNSIGNED integers.
@@ -446,15 +441,17 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       ++ptr;
     }
 #else
-
+    std::bitset<FreakDescriptor::const_dimensions_>* freak_bitset =
+        reinterpret_cast<std::bitset<FreakDescriptor::const_dimensions_>*>(
+            freak_descriptor->CharData());
     // Extracting descriptor preserving the order of SSE version.
     int cnt = 0;
     for (int n = 7; n < kNumPairs; n += 128) {
       for (int m = 8; m--;) {
         int nm = n - m;
-        for (int kk = nm + 15*8; kk >= nm; kk -= 8, ++cnt) {
-          (*freak_descriptor)[kk] = points_value[description_pairs_[cnt].i] >=
-                                    points_value[description_pairs_[cnt].j];
+        for (int kk = nm + 15 * 8; kk >= nm; kk -= 8, ++cnt) {
+          (*freak_bitset)[kk] = points_value[description_pairs_[cnt].i] >=
+                                points_value[description_pairs_[cnt].j];
         }
       }
     }
@@ -465,17 +462,12 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
 
 // Simply take average on a square patch, not even gaussian approx.
 uchar FreakDescriptorExtractor::MeanIntensity(
-    const Image<uchar>& image,
-    const Image<uchar>& integral,
-    const float kp_x,
-    const float kp_y,
-    const unsigned int scale,
-    const unsigned int rot,
+    const Image<uchar>& image, const Image<uchar>& integral, const float kp_x,
+    const float kp_y, const unsigned int scale, const unsigned int rot,
     const unsigned int point) const {
   // get point position in image
-  const PatternPoint& freak_point =
-      pattern_lookup_[scale*kNumOrientation*kNumPoints +
-                      rot*kNumPoints + point];
+  const PatternPoint& freak_point = pattern_lookup_[
+      scale * kNumOrientation * kNumPoints + rot * kNumPoints + point];
   const float xf = freak_point.x + kp_x;
   const float yf = freak_point.y + kp_y;
   const int x = static_cast<int>(xf);
@@ -488,18 +480,18 @@ uchar FreakDescriptorExtractor::MeanIntensity(
   // calculate output:
   if (radius < 0.5) {
     // interpolation multipliers:
-    const int r_x = static_cast<int>((xf - x)*1024);
-    const int r_y = static_cast<int>((yf - y)*1024);
+    const int r_x = static_cast<int>((xf - x) * 1024);
+    const int r_y = static_cast<int>((yf - y) * 1024);
     const int r_x_1 = 1024 - r_x;
     const int r_y_1 = 1024 - r_y;
     // linear interpolation:
-    unsigned int ret_val = r_x_1*r_y_1*image[y][x];
-    ret_val = r_x*r_y_1*image[y][x+1];
-    ret_val = r_x*r_y*image[y+1][x+1];
-    ret_val = r_x_1*r_y*image[y+1][x];
+    unsigned int ret_val = r_x_1 * r_y_1 * image[y][x];
+    ret_val = r_x * r_y_1 * image[y][x + 1];
+    ret_val = r_x * r_y * image[y + 1][x + 1];
+    ret_val = r_x_1 * r_y * image[y + 1][x];
     // return the rounded mean
-    ret_val += 2*1024*1024;
-    return ret_val/(4*1024*1024);
+    ret_val += 2 * 1024 * 1024;
+    return ret_val / (4 * 1024 * 1024);
   }
 
   // expected case:
@@ -517,21 +509,21 @@ uchar FreakDescriptorExtractor::MeanIntensity(
   ret_val -= integral[y_bottom][x_left];
   ret_val += integral[y_top][x_left];
   ret_val -= integral[y_top][x_right];
-  ret_val = ret_val/((x_right - x_left)*(y_bottom - y_top));
+  ret_val = ret_val / ((x_right - x_left) * (y_bottom - y_top));
   return ret_val;
 }
 
-// TODO(cmsweeney): write these protos!
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 bool FreakDescriptorExtractor::ProtoToDescriptor(
     const DescriptorsProto& proto,
-    std::vector<FreakDescriptor*>* descriptors) const {
+    std::vector<Descriptor*>* descriptors) const {
   descriptors->reserve(proto.feature_descriptor_size());
-  for (const DescriptorProto& proto_descriptor: proto.feature_descriptor()) {
+  for (const DescriptorProto& proto_descriptor : proto.feature_descriptor()) {
     FreakDescriptor* descriptor = new FreakDescriptor;
     CHECK_EQ(proto_descriptor.descriptor_type(), DescriptorProto::FREAK)
         << "Descriptor in proto is not a patch descriptor.";
-    CHECK_EQ(proto_descriptor.float_descriptor_size(), descriptor->Dimensions())
+    CHECK_EQ(proto_descriptor.binary_descriptor().size(),
+             descriptor->Dimensions())
         << "Dimension mismatch in the proto and descriptors.";
     descriptor->set_x(proto_descriptor.x());
     descriptor->set_y(proto_descriptor.y());
@@ -540,22 +532,32 @@ bool FreakDescriptorExtractor::ProtoToDescriptor(
     if (proto_descriptor.has_strength())
       descriptor->set_strength(proto_descriptor.strength());
 
-    // Get float array.
-    for (int i = 0; i < descriptor->Dimensions(); i++)
-      (*descriptor)[i] = proto_descriptor.float_descriptor(i);
+    // Get binary array.
+    std::bitset<FreakDescriptor::const_dimensions_>* freak_bitset =
+        reinterpret_cast<std::bitset<FreakDescriptor::const_dimensions_>*>(
+            descriptor->CharData());
+    *freak_bitset = std::bitset<FreakDescriptor::const_dimensions_>(
+        proto_descriptor.binary_descriptor());
+
     descriptors->push_back(descriptor);
   }
   return true;
 }
 
 bool FreakDescriptorExtractor::DescriptorToProto(
-    const std::vector<FreakDescriptor*>& descriptors,
+    const std::vector<Descriptor*>& descriptors,
     DescriptorsProto* proto) const {
-  for (const FreakDescriptor* descriptor : descriptors) {
+  for (const Descriptor* general_descriptor : descriptors) {
+    const FreakDescriptor* descriptor =
+        dynamic_cast<const FreakDescriptor*>(general_descriptor);
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
-    // Add the float array to the proto.
-    for (int i = 0; i < descriptor->Dimensions(); i++)
-      descriptor_proto->add_float_descriptor((*descriptor)[i]);
+    // Add the binary array to the proto.
+    const std::bitset<FreakDescriptor::const_dimensions_>* freak_bitset =
+        reinterpret_cast<
+            const std::bitset<FreakDescriptor::const_dimensions_>*>(
+            descriptor->CharData());
+    descriptor_proto->set_binary_descriptor(freak_bitset->to_string());
+
     // Set the proto type to patch.
     descriptor_proto->set_descriptor_type(DescriptorProto::FREAK);
     descriptor_proto->set_x(descriptor->x());

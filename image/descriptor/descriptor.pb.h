@@ -271,14 +271,14 @@ class DescriptorProto : public ::google::protobuf::Message {
   inline ::theia::KeypointProto* release_keypoint();
   inline void set_allocated_keypoint(::theia::KeypointProto* keypoint);
 
-  // optional string binary_descriptor = 4;
+  // optional bytes binary_descriptor = 4;
   inline bool has_binary_descriptor() const;
   inline void clear_binary_descriptor();
   static const int kBinaryDescriptorFieldNumber = 4;
   inline const ::std::string& binary_descriptor() const;
   inline void set_binary_descriptor(const ::std::string& value);
   inline void set_binary_descriptor(const char* value);
-  inline void set_binary_descriptor(const char* value, size_t size);
+  inline void set_binary_descriptor(const void* value, size_t size);
   inline ::std::string* mutable_binary_descriptor();
   inline ::std::string* release_binary_descriptor();
   inline void set_allocated_binary_descriptor(::std::string* binary_descriptor);
@@ -650,7 +650,7 @@ inline void DescriptorProto::set_allocated_keypoint(::theia::KeypointProto* keyp
   }
 }
 
-// optional string binary_descriptor = 4;
+// optional bytes binary_descriptor = 4;
 inline bool DescriptorProto::has_binary_descriptor() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -683,7 +683,7 @@ inline void DescriptorProto::set_binary_descriptor(const char* value) {
   }
   binary_descriptor_->assign(value);
 }
-inline void DescriptorProto::set_binary_descriptor(const char* value, size_t size) {
+inline void DescriptorProto::set_binary_descriptor(const void* value, size_t size) {
   set_has_binary_descriptor();
   if (binary_descriptor_ == &::google::protobuf::internal::kEmptyString) {
     binary_descriptor_ = new ::std::string;

@@ -35,64 +35,133 @@
 #ifndef VISION_MATCHING_DISTANCE_HAMMING_H_
 #define VISION_MATCHING_DISTANCE_HAMMING_H_
 
-#include <bitset>
+#ifdef THEIA_USE_SSE
+#include <emmintrin.h>
+#include <nmmintrin.h>
+#include <tmmintrin.h>
+#endif
+#include <functional>
+#include <numeric>
+
 #include "util/util.h"
 
 namespace theia {
+
+#ifndef THEIA_USE_SSE
+
+#ifdef __GNUC__
+static const char __attribute__((aligned(16)))
+    MASK_4bit[16] = { 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf,
+                      0xf, 0xf, 0xf, 0xf, 0xf };
+static const uint8_t __attribute__((aligned(16)))
+    POPCOUNT_4bit[16] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
+static const __m128i shiftval = _mm_set_epi32(0, 0, 0, 4);
+#endif
+#ifdef _MSC_VER
+__declspec(align(16)) static const char MASK_4bit[16] = {
+  0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf
+};
+__declspec(align(16)) static const uint8_t POPCOUNT_4bit[16] = {
+  0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
+};
+static const __m128i shiftval = _mm_set_epi32(0, 0, 0, 4);
+#endif
+
+// - SSSE3 - better alorithm, minimized psadbw usage - adapted from
+// http://wm.ite.pl/articles/sse-popcount.html
+inline uint32_t HammingSSE(const char* a, const char*b,
+                           const int size) {
+  uint32_t result = 0;
+
+  const __m128i* signature1 = reinterpret_cast<const __m128i*>(a);
+  const __m128i* signature2 = reinterpret_cast<const __m128i*>(b);
+  const int number_of_128_bit_words = size / 128;
+
+  register __m128i xmm0;
+  register __m128i xmm1;
+  register __m128i xmm2;
+  register __m128i xmm3;
+  register __m128i xmm4;
+  register __m128i xmm5;
+  register __m128i xmm6;
+  register __m128i xmm7;
+
+  xmm7 = _mm_load_si128(reinterpret_cast<const __m128i*>(POPCOUNT_4bit));
+  xmm6 = _mm_load_si128(reinterpret_cast<const __m128i*>(MASK_4bit));
+
+  // accumulator
+  xmm5 = _mm_setzero_si128();
+
+  const size_t end = static_cast<size_t>(signature1 + number_of_128_bit_words);
+
+  xmm4 = xmm5;
+
+  // Loop over 128 bit words.
+  do {
+    xmm0 = _mm_xor_si128((__m128i) * signature1++, (__m128i) * signature2++);
+
+    xmm1 = xmm0;
+
+    xmm1 = _mm_srl_epi16(xmm1, shiftval);
+    xmm0 = _mm_and_si128(xmm0, xmm6);
+    xmm1 = _mm_and_si128(xmm1, xmm6);
+    xmm2 = xmm7;
+    xmm3 = xmm7;
+    xmm2 = _mm_shuffle_epi8(xmm2, xmm0);
+    xmm3 = _mm_shuffle_epi8(xmm3, xmm1);
+    xmm4 = _mm_add_epi8(xmm4, xmm2);
+    xmm4 = _mm_add_epi8(xmm4, xmm3);
+  } while ((size_t) signature1 < end);
+
+  xmm4 = _mm_sad_epu8(xmm4, xmm5);
+  xmm5 = _mm_add_epi32(xmm5, xmm4);
+
+  // Add together 32-bits counters stored in global accumulator
+  xmm0 = _mm_cvtps_epi32(
+      _mm_movehl_ps(_mm_cvtepi32_ps(xmm0), _mm_cvtepi32_ps(xmm5)));
+
+  xmm0 = _mm_add_epi32(xmm0, xmm5);
+  result = _mm_cvtsi128_si32(xmm0);
+  return result;
+}
+
 struct Hamming {
-  typedef bool ElementType;
   typedef int ResultType;
 
-  template <typename Iterator1, typename Iterator2>
-  ResultType operator()(const Iterator1 a, const Iterator2 b,
-                        const size_t size) const {
-    // a^b = XOR op, then perform a popcnt on it. This should be optimized
-    // rather heavily, and is architecture independent since it is part of the
-    // c++ standard. NOTE: cmsweeney tested bitset count vs SSE from BRISK and
-    // observed bitset count was roughly ~ 50% faster.
-    int dist1 = (*a ^ *b).count();
-    return dist1;
+  ResultType operator()(const Descriptor& a, const Descriptor& b) const {
+    return HammingSSE(a.CharData(), b.CharData(), a.Dimensions());
   }
 };
 
-// max_early_dist is the maximum value of the distance of the first 128 bits in
-// order to continue testing the distance.
-//
-// NOTE: we have found from experiments that this the SSE version is slower than
-// using a modified bitset version.
-template<int max_early_dist = 0>
-struct HammingFreak {
-  typedef bool ElementType;
+#else
+
+struct Hamming {
   typedef int ResultType;
 
-  template <typename Iterator1, typename Iterator2>
-  ResultType operator()(Iterator1 a, Iterator2 b, size_t size) const {
-    // #ifndef THEIA_USE_SSE
+  ResultType operator()(const Descriptor& a, const Descriptor& b) const {
+    static constexpr uchar pop_count_table[] = {
+      0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 1, 2, 2, 3, 2, 3, 3, 4, 2,
+      3, 3, 4, 3, 4, 4, 5, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3,
+      3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3,
+      4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 2, 3, 3, 4,
+      3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5,
+      6, 6, 7, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4,
+      4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5,
+      6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 2, 3, 3, 4, 3, 4, 4, 5,
+      3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 3,
+      4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 4, 5, 5, 6, 5, 6, 6, 7, 5, 6,
+      6, 7, 6, 7, 7, 8
+    };
 
-    // Test the distance of the first 128 bytes. This cast
-    // seems more dangerous than it is. a and b are just reinterpretted casts of
-    // uchar arrays to begin with, so we do not risk messing up with internals
-    // by casting it to a smaller bitset for our early out.
-    const std::bitset<128>* a_first =
-        reinterpret_cast<const std::bitset<128>*>(a);
-    const std::bitset<128>* b_first =
-        reinterpret_cast<const std::bitset<128>*>(b);
-    if (max_early_dist > 0 && (*a_first ^ *b_first).count() > max_early_dist) {
-      return size;
-    } else {
-      // Otherwise, return the normal distance.
-      return (*a ^ *b).count();
+    int result = 0;
+    const uchar* char_a = a.CharData();
+    const uchar* char_b = b.CharData();
+    for (size_t i = 0; i < a.Dimensions() / (8 * sizeof(uchar)); i++) {
+      result += pop_count_table[char_a[i] ^ char_b[i]];
     }
-    /*
-      #else
-      const uchar* a_char = reinterpret_cast<const uchar*>(a);
-      const uchar* b_char = reinterpret_cast<const uchar*>(b);
-      return XORedPopcnt_128_384<max_early_dist>((const __m128i*)a_char,
-      (const __m128i*)b_char);
-      #endif  // THEIA_USE_SSE
-    */
+    return result;
   }
 };
-
-}  // namespace theia
+#endif
+}       // namespace theia
 #endif  // VISION_MATCHING_DISTANCE_HAMMING_H_

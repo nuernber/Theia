@@ -32,19 +32,39 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "image/keypoint_detector/brisk_detector.h"
-
-#include <vector>
-
-#include "image/image.h"
-#include "image/keypoint_detector/keypoint.h"
+#include "image/descriptor/descriptor_extractor.h"
+#include "image/descriptor/descriptor.pb.h"
+#include "image/descriptor/descriptor_extractor.h"
 
 namespace theia {
-bool BriskDetector::DetectKeypoints(const GrayImage& image,
-                                    std::vector<Keypoint*>* keypoints) {
-  Image<unsigned char> uchar_image = image.ConvertTo<unsigned char>();
-  brisk_scale_space_.constructPyramid(uchar_image);
-  brisk_scale_space_.getKeypoints(threshold_, keypoints);
+// Compute the descriptor for multiple keypoints in a given image.
+bool DescriptorExtractor::ComputeDescriptors(
+    const GrayImage& image,
+    const std::vector<Keypoint*>& keypoints,
+    std::vector<Descriptor*>* descriptors) {
+  VLOG(0) << "calling base version... bad!";
+  descriptors->reserve(keypoints.size());
+  for (const Keypoint* img_keypoint : keypoints) {
+    Descriptor* descriptor = ComputeDescriptor(image, *img_keypoint);
+    descriptors->push_back(descriptor);
+  }
   return true;
+}
+
+bool DescriptorExtractor::ComputeDescriptorsPruned(
+    const GrayImage& image,
+    const std::vector<Keypoint*>& keypoints,
+    std::vector<Descriptor*>* descriptors) {
+  if (ComputeDescriptors(image, keypoints, descriptors)) {
+    VLOG(0) << "calling pruned version!";
+    // Erase all elements of descriptors that were set to nullptr.
+    descriptors->erase(
+        std::remove_if(descriptors->begin(), descriptors->end(),
+                       [](Descriptor* x) { return x == nullptr; }),
+        descriptors->end());
+    return true;
+  } else {
+    return false;
+  }
 }
 }  // namespace theia

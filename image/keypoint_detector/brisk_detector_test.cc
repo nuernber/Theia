@@ -34,17 +34,65 @@
 
 #include "image/keypoint_detector/brisk_detector.h"
 
-#include <vector>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
 
+#include <string>
+
+#include "gtest/gtest.h"
 #include "image/image.h"
 #include "image/keypoint_detector/keypoint.h"
+#ifndef THEIA_NO_PROTOCOL_BUFFERS
+#include "image/keypoint_detector/keypoint.pb.h"
+#endif
+#include "util/random.h"
+
+DEFINE_string(test_img, "image/keypoint_detector/img1.png",
+              "Name of test image file.");
 
 namespace theia {
-bool BriskDetector::DetectKeypoints(const GrayImage& image,
-                                    std::vector<Keypoint*>* keypoints) {
-  Image<unsigned char> uchar_image = image.ConvertTo<unsigned char>();
-  brisk_scale_space_.constructPyramid(uchar_image);
-  brisk_scale_space_.getKeypoints(threshold_, keypoints);
-  return true;
+std::string img_filename = THEIA_TEST_DATA_DIR + std::string("/") +
+                           FLAGS_test_img;
+
+TEST(BriskDetector, Sanity) {
+  GrayImage input_img(img_filename);
+
+  // Get the keypoints our way.
+  BriskDetector brisk_detector;
+  ASSERT_TRUE(brisk_detector.Initialize());
+  std::vector<Keypoint*> brisk_keypoints;
+  ASSERT_TRUE(brisk_detector.DetectKeypoints(input_img, &brisk_keypoints));
 }
+
+// Protocol buffer tests.
+#ifndef THEIA_NO_PROTOCOL_BUFFERS
+TEST(BriskDetector, ProtoTest) {
+  InitRandomGenerator();
+  std::vector<Keypoint*> brisk_keypoints;
+  for (int i = 0; i < 100; i++) {
+    Keypoint* brisk_keypoint = new Keypoint(RandDouble(0, 500),
+                                            RandDouble(0, 500),
+                                            Keypoint::BRISK);
+    brisk_keypoint->set_strength(RandDouble(0, 100));
+    brisk_keypoints.push_back(brisk_keypoint);
+  }
+
+  KeypointsProto brisk_proto;
+  KeypointToProto(brisk_keypoints, &brisk_proto);
+
+  std::vector<Keypoint*> proto_keypoints;
+  ProtoToKeypoint(brisk_proto, &proto_keypoints);
+
+  ASSERT_EQ(brisk_keypoints.size(), 100);
+  ASSERT_EQ(brisk_keypoints.size(), proto_keypoints.size());
+  for (int i = 0; i < brisk_keypoints.size(); i++) {
+    ASSERT_EQ(brisk_keypoints[i]->keypoint_type(),
+              proto_keypoints[i]->keypoint_type());
+    ASSERT_EQ(brisk_keypoints[i]->x(), proto_keypoints[i]->x());
+    ASSERT_EQ(brisk_keypoints[i]->y(), proto_keypoints[i]->y());
+    ASSERT_EQ(brisk_keypoints[i]->strength(), proto_keypoints[i]->strength());
+  }
+}
+#endif  // THEIA_NO_PROTOCOL_BUFFERS
+
 }  // namespace theia

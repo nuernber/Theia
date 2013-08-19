@@ -144,7 +144,7 @@ void protobuf_AddDesc_image_2fdescriptor_2fdescriptor_2eproto() {
     "to\"\324\003\n\017DescriptorProto\022\025\n\rdescriptor_id\030"
     "\001 \001(\005\022\020\n\010image_id\030\002 \001(\005\022&\n\010keypoint\030\003 \001("
     "\0132\024.theia.KeypointProto\022\031\n\021binary_descri"
-    "ptor\030\004 \001(\t\022\030\n\020float_descriptor\030\005 \003(\002\022\t\n\001"
+    "ptor\030\004 \001(\014\022\030\n\020float_descriptor\030\005 \003(\002\022\t\n\001"
     "x\030\006 \001(\005\022\t\n\001y\030\007 \001(\005\022\020\n\010strength\030\010 \001(\001\022\023\n\013"
     "orientation\030\t \001(\001\022\r\n\005scale\030\n \001(\001\022\020\n\010trac"
     "k_id\030\013 \001(\005\022+\n\005color\030\014 \001(\0132\034.theia.Descri"
@@ -649,16 +649,13 @@ bool DescriptorProto::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string binary_descriptor = 4;
+      // optional bytes binary_descriptor = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_binary_descriptor:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_binary_descriptor()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->binary_descriptor().data(), this->binary_descriptor().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -853,12 +850,9 @@ void DescriptorProto::SerializeWithCachedSizes(
       3, this->keypoint(), output);
   }
 
-  // optional string binary_descriptor = 4;
+  // optional bytes binary_descriptor = 4;
   if (has_binary_descriptor()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->binary_descriptor().data(), this->binary_descriptor().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
+    ::google::protobuf::internal::WireFormatLite::WriteBytes(
       4, this->binary_descriptor(), output);
   }
 
@@ -935,13 +929,10 @@ void DescriptorProto::SerializeWithCachedSizes(
         3, this->keypoint(), target);
   }
 
-  // optional string binary_descriptor = 4;
+  // optional bytes binary_descriptor = 4;
   if (has_binary_descriptor()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->binary_descriptor().data(), this->binary_descriptor().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         4, this->binary_descriptor(), target);
   }
 
@@ -1026,10 +1017,10 @@ int DescriptorProto::ByteSize() const {
           this->keypoint());
     }
 
-    // optional string binary_descriptor = 4;
+    // optional bytes binary_descriptor = 4;
     if (has_binary_descriptor()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->binary_descriptor());
     }
 

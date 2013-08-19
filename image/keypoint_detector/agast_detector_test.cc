@@ -32,54 +32,67 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef IMAGE_DESCRIPTOR_PATCH_DESCRIPTOR_H_
-#define IMAGE_DESCRIPTOR_PATCH_DESCRIPTOR_H_
+#include "image/keypoint_detector/agast_detector.h"
 
-#include <vector>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
 
-#include "image/descriptor/descriptor.h"
-#include "image/descriptor/descriptor_extractor.h"
+#include <string>
+
+#include "gtest/gtest.h"
 #include "image/image.h"
-#include "util/util.h"
+#include "image/keypoint_detector/keypoint.h"
+#ifndef THEIA_NO_PROTOCOL_BUFFERS
+#include "image/keypoint_detector/keypoint.pb.h"
+#endif
+#include "util/random.h"
+
+DEFINE_string(test_img, "image/keypoint_detector/img1.png",
+              "Name of test image file.");
 
 namespace theia {
-class DescriptorsProto;
-class Keypoint;
+std::string img_filename = THEIA_TEST_DATA_DIR + std::string("/") +
+                           FLAGS_test_img;
 
-// R should be the number of rows, c should be the number of columns in the
-// patch e.g. a 7x7 patch would be PatchDescriptor<7,7>.
-class PatchDescriptor : public FloatDescriptor {
- public:
-  PatchDescriptor(int rows, int cols)
-      : FloatDescriptor(rows*cols, DescriptorType::PATCH) {}
-};
+TEST(AgastDetector, Sanity) {
+  GrayImage input_img(img_filename);
 
-class PatchDescriptorExtractor : public DescriptorExtractor {
- public:
-  PatchDescriptorExtractor(int patch_rows, int patch_cols)
-      : patch_rows_(patch_rows), patch_cols_(patch_cols) {}
-  ~PatchDescriptorExtractor() {}
+  // Get the keypoints our way.
+  AgastDetector agast_detector;
+  ASSERT_TRUE(agast_detector.Initialize());
+  std::vector<Keypoint*> agast_keypoints;
+  ASSERT_TRUE(agast_detector.DetectKeypoints(input_img, &agast_keypoints));
+}
 
-  // Computes a descriptor at a single keypoint.
-  Descriptor* ComputeDescriptor(const GrayImage& image,
-                                const Keypoint& keypoint);
-
-  // Methods to load/store descriptors in protocol buffers.
+// Protocol buffer tests.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-  bool ProtoToDescriptor(const DescriptorsProto& proto,
-                         std::vector<Descriptor*>* descriptors) const;
+TEST(AgastDetector, ProtoTest) {
+  InitRandomGenerator();
+  std::vector<Keypoint*> agast_keypoints;
+  for (int i = 0; i < 100; i++) {
+    Keypoint* agast_keypoint = new Keypoint(RandDouble(0, 500),
+                                            RandDouble(0, 500),
+                                            Keypoint::AGAST);
+    agast_keypoint->set_strength(RandDouble(0, 100));
+    agast_keypoints.push_back(agast_keypoint);
+  }
 
-  bool DescriptorToProto(const std::vector<Descriptor*>& descriptors,
-                         DescriptorsProto* proto) const;
+  KeypointsProto agast_proto;
+  KeypointToProto(agast_keypoints, &agast_proto);
+
+  std::vector<Keypoint*> proto_keypoints;
+  ProtoToKeypoint(agast_proto, &proto_keypoints);
+
+  ASSERT_EQ(agast_keypoints.size(), 100);
+  ASSERT_EQ(agast_keypoints.size(), proto_keypoints.size());
+  for (int i = 0; i < agast_keypoints.size(); i++) {
+    ASSERT_EQ(agast_keypoints[i]->keypoint_type(),
+              proto_keypoints[i]->keypoint_type());
+    ASSERT_EQ(agast_keypoints[i]->x(), proto_keypoints[i]->x());
+    ASSERT_EQ(agast_keypoints[i]->y(), proto_keypoints[i]->y());
+    ASSERT_EQ(agast_keypoints[i]->strength(), proto_keypoints[i]->strength());
+  }
+}
 #endif  // THEIA_NO_PROTOCOL_BUFFERS
 
- private:
-  int patch_rows_;
-  int patch_cols_;
-  
-  DISALLOW_COPY_AND_ASSIGN(PatchDescriptorExtractor);
-};
-
 }  // namespace theia
-
-#endif  // IMAGE_DESCRIPTOR_PATCH_DESCRIPTOR_H_

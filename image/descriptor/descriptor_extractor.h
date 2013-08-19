@@ -42,8 +42,8 @@
 #include "util/util.h"
 
 namespace theia {
+class Descriptor;
 class DescriptorsProto;
-template<class T, std::size_t N> class GenericDescriptor;
 template<class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
@@ -51,7 +51,6 @@ class Keypoint;
 // Templating this class is a little bit ugly, but it guarantees coupling
 // between your extractors and descriptors. This is a high priority from a
 // design perspective.
-template<class D>
 class DescriptorExtractor {
  public:
   DescriptorExtractor() {}
@@ -64,20 +63,19 @@ class DescriptorExtractor {
   virtual bool Initialize() { return true; }
 
   // Computes a descriptor at a single keypoint.
-  virtual bool ComputeDescriptor(const GrayImage& image,
-                                 const Keypoint& keypoint,
-                                 D* descriptor) = 0;
+  virtual Descriptor* ComputeDescriptor(const GrayImage& image,
+                                        const Keypoint& keypoint) = 0;
 
   // Compute the descriptors for multiple keypoints in a given image. This
-  // method will allocate the D* pointers, but the caller owns the data and must
-  // delete it. Returns false upon failure. The index of each descriptor will
-  // match the index to its corresponding keypoint. Thus, the output vector may
-  // contain null values for some of the descriptors (if a descriptor cannot be
-  // computed at that keypoint). This can happen for various reasons, including
-  // being too close to the border.
+  // method will allocate the Descriptor* pointers, but the caller owns the data
+  // and must delete it. Returns false upon failure. The index of each
+  // descriptor will match the index to its corresponding keypoint. Thus, the
+  // output vector may contain null values for some of the descriptors (if a
+  // descriptor cannot be computed at that keypoint). This can happen for
+  // various reasons, including being too close to the border.
   virtual bool ComputeDescriptors(const GrayImage& image,
                                   const std::vector<Keypoint*>& keypoints,
-                                  std::vector<D*>* descriptors);
+                                  std::vector<Descriptor*>* descriptors);
 
   // Computes all descriptors possible and returns a vector of descriptors will
   // null descriptors removed. NOTE: this means that the indices of the
@@ -85,7 +83,7 @@ class DescriptorExtractor {
   // match, use ComptuDescriptors instead.
   virtual bool ComputeDescriptorsPruned(const GrayImage& image,
                                         const std::vector<Keypoint*>& keypoints,
-                                        std::vector<D*>* descriptors);
+                                        std::vector<Descriptor*>* descriptors);
 
   // Methods to load/store descriptors in protocol buffers. Each derived class
   // should implement these methods (if desired) and load/store all appropriate
@@ -93,10 +91,11 @@ class DescriptorExtractor {
   // methods act more like static methods, but it is the best way to make sure
   // these methods are paired to the descriptors.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
-  virtual bool ProtoToDescriptor(const DescriptorsProto& proto,
-                                 std::vector<D*>* descriptors) const = 0;
+  virtual bool ProtoToDescriptor(
+      const DescriptorsProto& proto,
+      std::vector<Descriptor*>* descriptors) const = 0;
 
-  virtual bool DescriptorToProto(const std::vector<D*>& descriptors,
+  virtual bool DescriptorToProto(const std::vector<Descriptor*>& descriptors,
                                  DescriptorsProto* proto) const = 0;
 #endif
 
@@ -104,39 +103,6 @@ class DescriptorExtractor {
   DISALLOW_COPY_AND_ASSIGN(DescriptorExtractor);
 };
 
-// ------------------- IMPLEMENTATION ------------------- //
-// Compute the descriptor for multiple keypoints in a given image.
-template<class D>
-bool DescriptorExtractor<D>::ComputeDescriptors(
-    const GrayImage& image,
-    const std::vector<Keypoint*>& keypoints,
-    std::vector<D*>* descriptors) {
-  VLOG(0) << "calling base version... bad!";
-  descriptors->reserve(keypoints.size());
-  for (const Keypoint* img_keypoint : keypoints) {
-    D* descriptor = new D;
-    ComputeDescriptor(image, *img_keypoint, descriptor);
-    descriptors->push_back(descriptor);
-  }
-  return true;
-}
-
-template<class D>
-bool DescriptorExtractor<D>::ComputeDescriptorsPruned(
-    const GrayImage& image,
-    const std::vector<Keypoint*>& keypoints,
-    std::vector<D*>* descriptors) {
-  if (ComputeDescriptors(image, keypoints, descriptors)) {
-    VLOG(0) << "calling pruned version!";
-    // Erase all elements of descriptors that were set to nullptr.
-    descriptors->erase(std::remove_if(descriptors->begin(), descriptors->end(),
-                                      [](D* x) { return x == nullptr; }),
-                       descriptors->end());
-    return true;
-  } else {
-    return false;
-  }
-}
 }  // namespace theia
 
 #endif  // IMAGE_DESCRIPTOR_DESCRIPTOR_EXTRACTOR_H_

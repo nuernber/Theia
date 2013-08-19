@@ -48,6 +48,6 @@ void InitRandomGenerator();
 double RandDouble(double lower, double upper);
 
 // Get a random double between lower and upper (inclusive).
-double RandInt(int lower, int upper);
+int RandInt(int lower, int upper);
 }  // namespace theia
 #endif  // UTIL_RANDOM_H_

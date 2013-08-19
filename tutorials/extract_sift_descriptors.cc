@@ -45,12 +45,12 @@
 
 DEFINE_string(input_image, "image.png",
               "Image to extract SIFT keypoints and descriptors from.");
-DEFINE_string(output_dir, "output.png", "Name of output image file.");
+DEFINE_string(output_dir, ".", "Name of output image file.");
 
 using theia::GrayImage;
 using theia::ImageCanvas;
 using theia::Keypoint;
-using theia::SiftDescriptor;
+using theia::Descriptor;
 using theia::SiftDescriptorExtractor;
 using theia::SiftDetector;
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
   // Extract descriptors.
   VLOG(0) << "extracting descriptors.";
   SiftDescriptorExtractor sift_extractor;
-  std::vector<SiftDescriptor*> sift_descriptors;
+  std::vector<Descriptor*> sift_descriptors;
   sift_extractor.ComputeDescriptors(image, sift_keypoints, &sift_descriptors);
   VLOG(0) << "extracted " << sift_descriptors.size() << " descriptors.";
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 
   // Detect and Extract in one shot!
   VLOG(0) << "detect and extract together.";
-  std::vector<SiftDescriptor*> sift_features;
+  std::vector<Descriptor*> sift_features;
   SiftDescriptorExtractor feature_extractor;
   feature_extractor.DetectAndExtractDescriptors(image, &sift_features);
 

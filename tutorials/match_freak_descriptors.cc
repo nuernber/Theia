@@ -50,14 +50,13 @@
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
 
-using theia::FreakDescriptor;
+using theia::Descriptor;
 using theia::FreakDescriptorExtractor;
 using theia::BriskDetector;
 using theia::BruteForceImageMatcher;
 using theia::BruteForceMatcher;
 using theia::GrayImage;
 using theia::Hamming;
-using theia::HammingFreak;
 using theia::ImageCanvas;
 using theia::Keypoint;
 
@@ -87,20 +86,20 @@ int main(int argc, char *argv[]) {
   FreakDescriptorExtractor freak_extractor;
   freak_extractor.Initialize();
 
-  std::vector<FreakDescriptor*> left_pruned_descriptors;
+  std::vector<Descriptor*> left_pruned_descriptors;
   freak_extractor.ComputeDescriptorsPruned(left_image,
                                            left_keypoints,
                                            &left_pruned_descriptors);
   VLOG(0) << "pruned descriptors size = " << left_pruned_descriptors.size();
 
-  std::vector<FreakDescriptor*> right_pruned_descriptors;
+  std::vector<Descriptor*> right_pruned_descriptors;
   freak_extractor.ComputeDescriptorsPruned(right_image,
                                            right_keypoints,
                                            &right_pruned_descriptors);
   VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
 
   // Match descriptors!
-  BruteForceImageMatcher<FreakDescriptor, HammingFreak<25> > brute_force_image_matcher;
+  BruteForceImageMatcher<Hamming> brute_force_image_matcher;
   std::vector<theia::FeatureMatch<int> > matches;
   clock_t t = clock();
   brute_force_image_matcher.MatchSymmetricAndDistanceRatio(

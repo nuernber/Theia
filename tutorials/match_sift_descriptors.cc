@@ -50,15 +50,13 @@
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
 
-using theia::SiftDescriptor;
-using theia::SiftDescriptorExtractor;
-using theia::SiftDetector;
 using theia::BruteForceImageMatcher;
-using theia::BruteForceMatcher;
+using theia::Descriptor;
 using theia::GrayImage;
 using theia::ImageCanvas;
 using theia::Keypoint;
-using theia::L2Vectorized;
+using theia::L2;
+using theia::SiftDescriptorExtractor;
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
@@ -70,25 +68,24 @@ int main(int argc, char *argv[]) {
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
   SiftDescriptorExtractor sift_detector;
-  sift_detector.Initialize();
-  std::vector<SiftDescriptor*> left_pruned_descriptors;
-  sift_detector.DetectAndExtractDescriptors(left_image, &left_pruned_descriptors);
-  VLOG(0) << "detected " << left_pruned_descriptors.size()
+  std::vector<Descriptor*> left_descriptors;
+  sift_detector.DetectAndExtractDescriptors(left_image, &left_descriptors);
+  VLOG(0) << "detected " << left_descriptors.size()
           << " descriptors in left image.";
 
   VLOG(0) << "detecting keypoints";
-  std::vector<SiftDescriptor*> right_pruned_descriptors;
-  sift_detector.DetectAndExtractDescriptors(right_image, &right_pruned_descriptors);
-  VLOG(0) << "detected " << right_pruned_descriptors.size()
+  std::vector<Descriptor*> right_descriptors;
+  sift_detector.DetectAndExtractDescriptors(right_image, &right_descriptors);
+  VLOG(0) << "detected " << right_descriptors.size()
           << " descriptors in right image.";
 
   // Match descriptors!
-  BruteForceImageMatcher<SiftDescriptor, L2Vectorized<float> > brute_force_image_matcher;
+  BruteForceImageMatcher<L2> brute_force_image_matcher;
   std::vector<theia::FeatureMatch<float> > matches;
   clock_t t = clock();
   brute_force_image_matcher.MatchSymmetricAndDistanceRatio(
-      left_pruned_descriptors,
-      right_pruned_descriptors,
+      left_descriptors,
+      right_descriptors,
       &matches,
       0.8,
       128);
@@ -100,8 +97,8 @@ int main(int argc, char *argv[]) {
   ImageCanvas image_canvas;
   image_canvas.AddImage(left_image);
   image_canvas.AddImage(right_image);
-  image_canvas.DrawMatchedFeatures(0, left_pruned_descriptors,
-                                   1, right_pruned_descriptors,
+  image_canvas.DrawMatchedFeatures(0, left_descriptors,
+                                   1, right_descriptors,
                                    matches,
                                    0.1);
 
