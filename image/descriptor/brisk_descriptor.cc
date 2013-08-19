@@ -36,6 +36,7 @@
 
 #include <glog/logging.h>
 #include <algorithm>
+#include <bitset>
 
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 #include "image/descriptor/descriptor.pb.h"

@@ -244,7 +244,7 @@ bool SiftDescriptorExtractor::DescriptorToProto(
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the float array to the proto.
     for (int i = 0; i < descriptor->Dimensions(); i++)
-      descriptor_proto->add_float_descriptor((*descriptor)[i]);
+      descriptor_proto->add_float_descriptor(descriptor->FloatData()[i]);
     // Set the proto type to patch.
     descriptor_proto->set_descriptor_type(DescriptorProto::SIFT);
     descriptor_proto->set_x(descriptor->x());

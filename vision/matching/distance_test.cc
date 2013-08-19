@@ -34,6 +34,7 @@
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <bitset>
 #include <string>
 #include "gtest/gtest.h"
 

@@ -106,17 +106,17 @@ bool PatchDescriptorExtractor::DescriptorToProto(
   for (const Descriptor* patch_descriptor : descriptors) {
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the float array to the proto.
-    for (int i = 0; i < descriptor->Dimensions(); i++)
-      descriptor_proto->add_float_descriptor((*patch_descriptor)[i]);
+    for (int i = 0; i < patch_descriptor->Dimensions(); i++)
+      descriptor_proto->add_float_descriptor(patch_descriptor->FloatData()[i]);
     // Set the proto type to patch.
     descriptor_proto->set_descriptor_type(DescriptorProto::PATCH);
     descriptor_proto->set_x(patch_descriptor->x());
     descriptor_proto->set_y(patch_descriptor->y());
-    if (descriptor->has_strength())
+    if (patch_descriptor->has_strength())
       descriptor_proto->set_strength(patch_descriptor->strength());
-    if (descriptor->has_orientation())
+    if (patch_descriptor->has_orientation())
       descriptor_proto->set_orientation(patch_descriptor->orientation());
-    if (descriptor->has_scale())
+    if (patch_descriptor->has_scale())
       descriptor_proto->set_scale(patch_descriptor->scale());
   }
   return true;
