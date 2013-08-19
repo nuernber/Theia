@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -44,8 +44,7 @@
 #include "solvers/sampler.h"
 
 namespace theia {
-template<class Datum, class Model>
-class SampleConsensusEstimator {
+template <class Datum, class Model> class SampleConsensusEstimator {
  public:
   // sampler: The class that instantiates the sampling strategy for this
   //   particular type of sampling consensus.
@@ -56,8 +55,7 @@ class SampleConsensusEstimator {
   SampleConsensusEstimator(Sampler<Datum>* sampler,
                            QualityMeasurement* quality_measurement,
                            int max_iters = 10000)
-      : max_iters_(max_iters),
-        num_iters_(-1) {
+      : max_iters_(max_iters), num_iters_(-1) {
     sampler_.reset(sampler);
     quality_measurement_.reset(quality_measurement);
   }
@@ -85,15 +83,12 @@ class SampleConsensusEstimator {
   int GetNumInliers() {
     int num_inliers = 0;
     for (bool inlier : inliers_) {
-      if (inlier)
-        num_inliers++;
+      if (inlier) num_inliers++;
     }
     return num_inliers;
   }
 
-  int GetNumIterations() {
-    return num_iters_;
-  }
+  int GetNumIterations() { return num_iters_; }
 
  protected:
   // Our sampling strategy.
@@ -112,10 +107,9 @@ class SampleConsensusEstimator {
   int num_iters_;
 };
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 bool SampleConsensusEstimator<Datum, Model>::Estimate(
-    const std::vector<Datum>& data,
-    const Estimator<Datum, Model>& estimator,
+    const std::vector<Datum>& data, const Estimator<Datum, Model>& estimator,
     Model* best_model) {
   CHECK_GT(data.size(), 0)
       << "Cannot perform estimation with 0 data measurements!";
@@ -124,22 +118,20 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
   for (int iters = 0; iters < max_iters_; iters++) {
     // Sample subset. Proceed if successfully sampled.
     std::vector<Datum> data_subset;
-    if (!sampler_->Sample(data, &data_subset))
-      continue;
+    if (!sampler_->Sample(data, &data_subset)) continue;
 
     // Estimate model from subset. Skip to next iteration if the model fails to
     // estimate.
     Model temp_model;
-    if (!estimator.EstimateModel(data_subset, &temp_model))
-      continue;
+    if (!estimator.EstimateModel(data_subset, &temp_model)) continue;
 
     // Calculate residuals from estimated model.
     std::vector<double> residuals = estimator.Residuals(data, temp_model);
 
     // Determine quality of the generated model.
     std::vector<bool> temp_inlier_set(data.size());
-    double sample_quality = quality_measurement_->Calculate(residuals,
-                                                            &temp_inlier_set);
+    double sample_quality =
+        quality_measurement_->Calculate(residuals, &temp_inlier_set);
 
     // Update best model if error is the best we have seen.
     if (quality_measurement_->Compare(sample_quality, best_quality) ||
@@ -153,8 +145,7 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
         // Grab inliers to refine the model.
         std::vector<Datum> temp_consensus_set;
         for (int i = 0; i < temp_inlier_set.size(); i++) {
-          if (temp_inlier_set[i])
-            temp_consensus_set.push_back(data[i]);
+          if (temp_inlier_set[i]) temp_consensus_set.push_back(data[i]);
         }
         // Refine the model based on all current inliers.
         estimator.RefineModel(temp_consensus_set, best_model);

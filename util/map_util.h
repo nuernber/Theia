@@ -68,7 +68,6 @@
 //
 // Originally by Anton Carver
 
-
 #ifndef UTIL_MAP_UTIL_H_
 #define UTIL_MAP_UTIL_H_
 
@@ -92,9 +91,9 @@ namespace theia {
 // This version assumes the key is printable, and includes it in the fatal log
 // message.
 template <class Collection>
-const typename Collection::value_type::second_type&
-FindOrDie(const Collection& collection,
-          const typename Collection::value_type::first_type& key) {
+const typename Collection::value_type::second_type& FindOrDie(
+    const Collection& collection,
+    const typename Collection::value_type::first_type& key) {
   typename Collection::const_iterator it = collection.find(key);
   CHECK(it != collection.end()) << "Map key not found: " << key;
   return it->second;
@@ -104,10 +103,10 @@ FindOrDie(const Collection& collection,
 // If the key is present in the map then the value associated with that
 // key is returned, otherwise the value passed as a default is returned.
 template <class Collection>
-const typename Collection::value_type::second_type&
-FindWithDefault(const Collection& collection,
-                const typename Collection::value_type::first_type& key,
-                const typename Collection::value_type::second_type& value) {
+const typename Collection::value_type::second_type& FindWithDefault(
+    const Collection& collection,
+    const typename Collection::value_type::first_type& key,
+    const typename Collection::value_type::second_type& value) {
   typename Collection::const_iterator it = collection.find(key);
   if (it == collection.end()) {
     return value;
@@ -121,11 +120,11 @@ FindWithDefault(const Collection& collection,
 // took place, false indicates the key was already present.
 template <class Collection>
 bool InsertIfNotPresent(
-    Collection * const collection,
+    Collection* const collection,
     const typename Collection::value_type::first_type& key,
     const typename Collection::value_type::second_type& value) {
   std::pair<typename Collection::iterator, bool> ret =
-    collection->insert(typename Collection::value_type(key, value));
+      collection->insert(typename Collection::value_type(key, value));
   return ret.second;
 }
 
@@ -133,9 +132,9 @@ bool InsertIfNotPresent(
 // Same as above but the returned pointer is not const and can be used to change
 // the stored value.
 template <class Collection>
-typename Collection::value_type::second_type*
-FindOrNull(Collection& collection,  // NOLINT
-           const typename Collection::value_type::first_type& key) {
+typename Collection::value_type::second_type* FindOrNull(
+    Collection& collection,  // NOLINT
+    const typename Collection::value_type::first_type& key) {
   typename Collection::iterator it = collection.find(key);
   if (it == collection.end()) {
     return 0;
@@ -153,13 +152,13 @@ bool ContainsKey(const Collection& collection, const Key& key) {
 
 // Inserts a new key/value into a map or hash_map.
 // Dies if the key is already present.
-template<class Collection>
+template <class Collection>
 void InsertOrDie(Collection* const collection,
                  const typename Collection::value_type::first_type& key,
                  const typename Collection::value_type::second_type& data) {
   typedef typename Collection::value_type value_type;
   CHECK(collection->insert(value_type(key, data)).second)
-    << "duplicate key: " << key;
+      << "duplicate key: " << key;
 }
 
 }  // namespace ceres

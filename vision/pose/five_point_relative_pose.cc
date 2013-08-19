@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -49,21 +49,20 @@ using Eigen::RowVector4d;
 
 namespace {
 // Multiplies two polynomials over the same variable.
-template<int n1, int n2>
+template <int n1, int n2>
 Matrix<double, 1, n1 + n2 - 1> MultiplyPoly(const Matrix<double, 1, n1>& a,
                                             const Matrix<double, 1, n2>& b) {
-  Matrix<double, 1, n1 + n2 - 1> poly =
-      Matrix<double, 1, n1 + n2 -1>::Zero();
+  Matrix<double, 1, n1 + n2 - 1> poly = Matrix<double, 1, n1 + n2 - 1>::Zero();
   for (int i = 0; i < a.cols(); i++)
     for (int j = 0; j < b.cols(); j++)
-      poly[i + j] += a[i]*b[j];
+      poly[i + j] += a[i] * b[j];
 
   return poly;
 }
 
 // Evaluates a given polynomial at the value x.
-template<int n> double EvaluatePoly(const Matrix<double, 1, n>& poly,
-                                    double x) {
+template <int n>
+double EvaluatePoly(const Matrix<double, 1, n>& poly, double x) {
   double val = 0;
   for (int i = poly.cols() - 1; i > 0; i--) {
     val += poly[i];
@@ -79,16 +78,16 @@ template<int n> double EvaluatePoly(const Matrix<double, 1, n>& poly,
 Matrix<double, 1, 10> MultiplyDegOnePoly(const RowVector4d& a,
                                          const RowVector4d& b) {
   Matrix<double, 1, 10> output;
-  output(0) = a(0)*b(0);
-  output(1) = a(1)*b(1);
-  output(2) = a(2)*b(2);
-  output(3) = a(0)*b(1) + a(1)*b(0);
-  output(4) = a(0)*b(2) + a(2)*b(0);
-  output(5) = a(1)*b(2) + a(2)*b(1);
-  output(6) = a(0)*b(3) + a(3)*b(0);
-  output(7) = a(1)*b(3) + a(3)*b(1);
-  output(8) = a(2)*b(3) + a(3)*b(2);
-  output(9) = a(3)*b(3);
+  output(0) = a(0) * b(0);
+  output(1) = a(1) * b(1);
+  output(2) = a(2) * b(2);
+  output(3) = a(0) * b(1) + a(1) * b(0);
+  output(4) = a(0) * b(2) + a(2) * b(0);
+  output(5) = a(1) * b(2) + a(2) * b(1);
+  output(6) = a(0) * b(3) + a(3) * b(0);
+  output(7) = a(1) * b(3) + a(3) * b(1);
+  output(8) = a(2) * b(3) + a(3) * b(2);
+  output(9) = a(3) * b(3);
   return output;
 }
 
@@ -98,38 +97,38 @@ Matrix<double, 1, 10> MultiplyDegOnePoly(const RowVector4d& a,
 Matrix<double, 1, 20> MultiplyDegTwoDegOnePoly(const Matrix<double, 1, 10>& a,
                                                const RowVector4d& b) {
   Matrix<double, 1, 20> output;
-  output(0) = a(0)*b(0);
-  output(1) = a(1)*b(1);
-  output(2) = a(0)*b(1) + a(3)*b(0);
-  output(3) = a(1)*b(0) + a(3)*b(1);
-  output(4) = a(0)*b(2) + a(4)*b(0);
-  output(5) = a(0)*b(3) + a(6)*b(0);
-  output(6) = a(1)*b(2) + a(5)*b(1);
-  output(7) = a(1)*b(3) + a(7)*b(1);
-  output(8) = a(3)*b(2) + a(4)*b(1) + a(5)*b(0);
-  output(9) = a(3)*b(3) + a(6)*b(1) + a(7)*b(0);
-  output(10) = a(2)*b(0) + a(4)*b(2);
-  output(11) = a(4)*b(3) + a(8)*b(0) + a(6)*b(2);
-  output(12) = a(6)*b(3) + a(9)*b(0);
-  output(13) = a(2)*b(1) + a(5)*b(2);
-  output(14) = a(5)*b(3) + a(8)*b(1) + a(7)*b(2);
-  output(15) = a(7)*b(3) + a(9)*b(1);
-  output(16) = a(2)*b(2);
-  output(17) = a(2)*b(3) + a(8)*b(2);
-  output(18) = a(8)*b(3) + a(9)*b(2);
-  output(19) = a(9)*b(3);
+  output(0) = a(0) * b(0);
+  output(1) = a(1) * b(1);
+  output(2) = a(0) * b(1) + a(3) * b(0);
+  output(3) = a(1) * b(0) + a(3) * b(1);
+  output(4) = a(0) * b(2) + a(4) * b(0);
+  output(5) = a(0) * b(3) + a(6) * b(0);
+  output(6) = a(1) * b(2) + a(5) * b(1);
+  output(7) = a(1) * b(3) + a(7) * b(1);
+  output(8) = a(3) * b(2) + a(4) * b(1) + a(5) * b(0);
+  output(9) = a(3) * b(3) + a(6) * b(1) + a(7) * b(0);
+  output(10) = a(2) * b(0) + a(4) * b(2);
+  output(11) = a(4) * b(3) + a(8) * b(0) + a(6) * b(2);
+  output(12) = a(6) * b(3) + a(9) * b(0);
+  output(13) = a(2) * b(1) + a(5) * b(2);
+  output(14) = a(5) * b(3) + a(8) * b(1) + a(7) * b(2);
+  output(15) = a(7) * b(3) + a(9) * b(1);
+  output(16) = a(2) * b(2);
+  output(17) = a(2) * b(3) + a(8) * b(2);
+  output(18) = a(8) * b(3) + a(9) * b(2);
+  output(19) = a(9) * b(3);
   return output;
 }
 
 // Shorthand for multiplying the Essential matrix with its transpose according
 // to Eq. 20 in Nister paper.
 Matrix<double, 1, 10> EETranspose(
-    const Eigen::Matrix<double, 9, 4>& null_matrix,
-    int i,
-    int j) {
-  return  MultiplyDegOnePoly(null_matrix.row(3*i), null_matrix.row(3*j)) +
-      MultiplyDegOnePoly(null_matrix.row(3*i + 1), null_matrix.row(3*j + 1)) +
-      MultiplyDegOnePoly(null_matrix.row(3*i + 2), null_matrix.row(3*j + 2));
+    const Eigen::Matrix<double, 9, 4>& null_matrix, int i, int j) {
+  return MultiplyDegOnePoly(null_matrix.row(3 * i), null_matrix.row(3 * j)) +
+         MultiplyDegOnePoly(null_matrix.row(3 * i + 1),
+                            null_matrix.row(3 * j + 1)) +
+         MultiplyDegOnePoly(null_matrix.row(3 * i + 2),
+                            null_matrix.row(3 * j + 2));
 }
 
 // Builds the 10x20 constraint matrix according to Section 3.2.2 of Nister
@@ -298,7 +297,7 @@ std::vector<EssentialMatrix> FivePointRelativePose(
 
   // Eq. 27. Form determinant of B as a 10th degree polynomial.
   Matrix<double, 1, 11> n = MultiplyPoly(p1, b31) + MultiplyPoly(p2, b32) +
-      MultiplyPoly(p3, b33);
+                            MultiplyPoly(p3, b33);
 
   // Step 5. Extract real roots of the 10th degree polynomial.
   std::vector<EssentialMatrix> essential_matrices;
@@ -307,8 +306,9 @@ std::vector<EssentialMatrix> FivePointRelativePose(
   for (double z : roots) {
     double x = EvaluatePoly(p1, z)/EvaluatePoly(p3, z);
     double y = EvaluatePoly(p2, z)/EvaluatePoly(p3, z);
-    Matrix<double, 9, 1> temp_sum = x*null_space.col(0) +
-        y*null_space.col(1) + z*null_space.col(2) + null_space.col(3);
+    Matrix<double, 9, 1> temp_sum =
+        x * null_space.col(0) + y * null_space.col(1) + z * null_space.col(2) +
+        null_space.col(3);
     // Need to do it like this because temp_sum is a row vector and recasting
     // it as a 3x3 will load it column-major.
     Eigen::Matrix3d candidate_essential_mat;
@@ -316,7 +316,7 @@ std::vector<EssentialMatrix> FivePointRelativePose(
         temp_sum.segment(3, 3).transpose(),
         temp_sum.tail(3).transpose();
 
-    // TODO: allow for 3x3 arrays output instead of essential mats.
+    // TODO(csweeney): allow for 3x3 arrays output instead of essential mats.
     essential_matrices.push_back(EssentialMatrix(candidate_essential_mat));
   }
   return essential_matrices;

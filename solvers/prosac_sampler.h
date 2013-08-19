@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -35,11 +35,11 @@
 #ifndef SOLVERS_PROSAC_SAMPLER_H_
 #define SOLVERS_PROSAC_SAMPLER_H_
 
-#include <algorithm>
 #include <chrono>
 #include <glog/logging.h>
 #include <random>
 #include <stdlib.h>
+#include <algorithm>
 #include <vector>
 
 #include "solvers/sampler.h"
@@ -47,8 +47,7 @@
 namespace theia {
 // Prosac sampler used for PROSAC implemented according to "Matching with PROSAC
 // - Progressive Sampling Consensus" by Chum and Matas.
-template<class Datum>
-class ProsacSampler : public Sampler<Datum> {
+template <class Datum> class ProsacSampler : public Sampler<Datum> {
  public:
   // num_samples: the number of samples needed. Typically this corresponds to
   //   the minumum number of samples needed to estimate a model.
@@ -57,15 +56,13 @@ class ProsacSampler : public Sampler<Datum> {
       : num_samples_(num_samples),
         ransac_convergence_iterations_(ransac_convergence_iterations),
         kth_sample_number_(1),
-        generator(std::chrono::system_clock::now().time_since_epoch().count())
-  {}
-  
+        generator(std::chrono::system_clock::now().time_since_epoch().count()) {
+  }
+
   ~ProsacSampler() {}
 
   // Set the sample such that you are sampling the kth prosac sample (Eq. 6).
-  void SetSampleNumber(int k) {
-    kth_sample_number_ = k;
-  }
+  void SetSampleNumber(int k) { kth_sample_number_ = k; }
 
   // Samples the input variable data and fills the vector subset with the prosac
   // samples.
@@ -77,14 +74,14 @@ class ProsacSampler : public Sampler<Datum> {
     int n = num_samples_;
     // From Equations leading up to Eq 3 in Chum et al.
     for (int i = 0; i < num_samples_; i++) {
-      t_n *= static_cast<double>(n - i)/(data.size() - i);
+      t_n *= static_cast<double>(n - i) / (data.size() - i);
     }
-    
+
     double t_n_prime = 1.0;
     // Choose min n such that T_n_prime >= t (Eq. 5).
     for (int t = 1; t <= kth_sample_number_; t++) {
       if (t > t_n_prime && n < data.size()) {
-        double t_n_plus1 = (t_n*(n + 1.0))/(n + 1.0 - num_samples_);
+        double t_n_plus1 = (t_n * (n + 1.0)) / (n + 1.0 - num_samples_);
         t_n_prime += ceil(t_n_plus1 - t_n);
         t_n = t_n_plus1;
         n++;
@@ -98,10 +95,10 @@ class ProsacSampler : public Sampler<Datum> {
       for (int i = 0; i < num_samples_; i++) {
         // Generate a random number that has not already been used.
         int rand_number;
-        while (std::find(random_numbers.begin(),
-                         random_numbers.end(),
-                         (rand_number = distribution(generator)))
-               != random_numbers.end());
+        while (std::find(random_numbers.begin(), random_numbers.end(),
+                         (rand_number = distribution(generator))) !=
+               random_numbers.end());
+
         random_numbers.push_back(rand_number);
 
         // Push the *unique* random index back.
@@ -114,10 +111,9 @@ class ProsacSampler : public Sampler<Datum> {
       for (int i = 0; i < num_samples_ - 1; i++) {
         // Generate a random number that has not already been used.
         int rand_number;
-        while (std::find(random_numbers.begin(),
-                         random_numbers.end(),
-                         (rand_number = distribution(generator)))
-               != random_numbers.end());
+        while (std::find(random_numbers.begin(), random_numbers.end(),
+                         (rand_number = distribution(generator))) !=
+               random_numbers.end());
         random_numbers.push_back(rand_number);
 
         // Push the *unique* random index back.
@@ -145,5 +141,5 @@ class ProsacSampler : public Sampler<Datum> {
   // Random number generator seed
   std::default_random_engine generator;
 };
-}  // namespace theia
+}       // namespace theia
 #endif  // SOLVERS_PROSAC_SAMPLER_H_

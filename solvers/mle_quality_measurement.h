@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -77,18 +77,17 @@ class MLEQualityMeasurement : public QualityMeasurement {
       const double& r = residuals[i];
       const double& v = confidence_[i];
 
-      double pr_inlier = inlier_dist_.eval(r)*v;
-      double pr_outlier = outlier_dist_.eval(r)*(1.0 - v);
+      double pr_inlier = inlier_dist_.eval(r) * v;
+      double pr_outlier = outlier_dist_.eval(r) * (1.0 - v);
 
       double arglog = pr_inlier + pr_outlier;
       // If the arglog = 0 then this is a horrible model. Return the max value
       // possible and stop computation.
-      if (arglog == 0.0)
-        return kInfinity;
+      if (arglog == 0.0) return kInfinity;
 
       // If our confidence of this measurement is sufficiently high, add it to
       // the inlier list.
-      double confidence = pr_inlier/arglog;
+      double confidence = pr_inlier / arglog;
       if (confidence > confidence_threshold_) {
         inliers->at(i) = true;
 
@@ -122,5 +121,5 @@ class MLEQualityMeasurement : public QualityMeasurement {
   // Confidences of each data point.
   const std::vector<double>& confidence_;
 };
-}  // namespace theia
+}       // namespace theia
 #endif  // SOLVERS_MLE_QUALITY_MEASUREMENT_H_

@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -48,7 +48,7 @@ namespace theia {
 // Estimate a model using PROSAC. The Estimate method is inherited, but for
 // PROSAC requires the data to be in sorted order by quality (with highest
 // quality at index 0).
-template<class Datum, class Model>
+template <class Datum, class Model>
 class Prosac : public SampleConsensusEstimator<Datum, Model> {
  public:
   // min_sample_size: the minimum number of samples needed to estimate a model
@@ -57,29 +57,21 @@ class Prosac : public SampleConsensusEstimator<Datum, Model> {
   // min_num_inliers: Minimum number of inliers needed to terminate.
   // max_iters: Maximum number of iterations to run PROSAC. To set the number
   //   of iterations based on the outlier probability, use SetMaxIters.
-  Prosac(int min_sample_size,
-         double error_threshold,
-         int min_num_inliers,
+  Prosac(int min_sample_size, double error_threshold, int min_num_inliers,
          int max_iters)
       : SampleConsensusEstimator<Datum, Model>(
-          new ProsacSampler<Datum>(min_sample_size),
-          new InlierSupport(error_threshold,
-                            min_num_inliers),
-          max_iters) {}
+            new ProsacSampler<Datum>(min_sample_size),
+            new InlierSupport(error_threshold, min_num_inliers), max_iters) {}
 
   // See MaxItersFromOutlierProb for parameters.
-  Prosac(int min_sample_size,
-         double error_threshold,
-         int min_num_inliers,
-         double outlier_probability,
-         double no_fail_probability = 0.99)
+  Prosac(int min_sample_size, double error_threshold, int min_num_inliers,
+         double outlier_probability, double no_fail_probability = 0.99)
       : SampleConsensusEstimator<Datum, Model>(
-          new ProsacSampler<Datum>(min_sample_size),
-          new InlierSupport(error_threshold,
-                            min_num_inliers),
-          max_iters_(MaxItersFromOutlierProb(min_sample_size,
-                                             outlier_probability,
-                                             no_fail_probability))) {}
+            new ProsacSampler<Datum>(min_sample_size),
+            new InlierSupport(error_threshold, min_num_inliers),
+            max_iters_(MaxItersFromOutlierProb(min_sample_size,
+                                               outlier_probability,
+                                               no_fail_probability))) {}
   ~Prosac() {}
 
  private:
@@ -88,8 +80,7 @@ class Prosac : public SampleConsensusEstimator<Datum, Model> {
   //   outlier_probability: prob that a given data point is an outlier
   //   no_fail_probability: prob that at least one sample has no outliers
   //     (typically set to .99)
-  int MaxItersFromOutlierProb(int min_sample_size,
-                              double outlier_probability,
+  int MaxItersFromOutlierProb(int min_sample_size, double outlier_probability,
                               double no_fail_probability = 0.99) {
     return ceil(log(1 - no_fail_probability) /
                 log(1.0 - pow(1.0 - outlier_probability, min_sample_size)));

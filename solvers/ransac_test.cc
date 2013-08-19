@@ -20,21 +20,22 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "gtest/gtest.h"
 #include <math.h>
 #include <vector>
+
+#include "gtest/gtest.h"
 
 #include "solvers/estimator.h"
 #include "solvers/ransac.h"
@@ -63,16 +64,16 @@ class LineEstimator : public Estimator<Point, Line> {
   ~LineEstimator() {}
 
   bool EstimateModel(const std::vector<Point>& data, Line* model) const {
-    model->m = (data[1].y - data[0].y)/(data[1].x - data[0].x);
-    model->b = data[1].y - model->m*data[1].x;
+    model->m = (data[1].y - data[0].y) / (data[1].x - data[0].x);
+    model->b = data[1].y - model->m * data[1].x;
     return true;
   }
 
   double Error(const Point& point, const Line& line) const {
-    double a = -1.0*line.m;
+    double a = -1.0 * line.m;
     double b = 1.0;
-    double c = -1.0*line.b;
-    return fabs(a*point.x + b*point.y + c)/sqrt(a*a + b*b);
+    double c = -1.0 * line.b;
+    return fabs(a * point.x + b * point.y + c) / sqrt(a * a + b * b);
   }
 };
 }  // namespace

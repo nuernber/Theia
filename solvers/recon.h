@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -58,7 +58,7 @@ namespace theia {
 // the distributions of residuals should demonstrate a clear compatibility
 // separating the inlier distribution and the outlier distribution, so the
 // inlier ratio can be automatically determined in this way.
-template<class Datum, class Model>
+template <class Datum, class Model>
 class Recon : public SampleConsensusEstimator<Datum, Model> {
  public:
   // min_sample_size: the minimum number of samples needed to estimate a model
@@ -66,9 +66,7 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
   //   an order of magnitude and still be useful.
   // min_consistent_models: Number of consistent models needed before a solution
   //   is determined (typically this is set to 3).
-  Recon(int min_sample_size,
-        int min_consistent_models,
-        double sig_max)
+  Recon(int min_sample_size, int min_consistent_models, double sig_max)
       : min_sample_size_(min_sample_size),
         min_consistent_models_(min_consistent_models),
         sigma_max(sig_max),
@@ -87,8 +85,7 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
   //   best_model: The output parameter that will be filled with the best model
   //     estimated from RANSAC
   bool Estimate(const std::vector<Datum>& data,
-                const Estimator<Datum, Model>& estimator,
-                Model* best_model);
+                const Estimator<Datum, Model>& estimator, Model* best_model);
 
   // % of common inliers = alpha*alpha
   double alpha;
@@ -122,8 +119,8 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
     }
     static bool SortByNormResidual(const ResidualDataPoint& first,
                                    const ResidualDataPoint& second) {
-      return first.GetResidual()*first.GetResidual() <
-        second.GetResidual()*second.GetResidual();
+      return first.GetResidual() * first.GetResidual() <
+             second.GetResidual() * second.GetResidual();
     }
 
    private:
@@ -135,8 +132,7 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
   // Finds alpha consistent models for hte data set. Outputs the alpha
   // consistent models and the indices of their overlap.
   void FindAlphaConsistentModels(
-      const std::vector<Datum>& data,
-      const Estimator<Datum, Model>& estimator,
+      const std::vector<Datum>& data, const Estimator<Datum, Model>& estimator,
       std::vector<ModelResiduals>* alpha_consistent_models,
       std::vector<int>* inliers);
 
@@ -162,10 +158,8 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
   // inliers in the first n data points (sorted by residual). n and the common
   // indices in the first n points are output, and the result of test is
   // returned.
-  bool AlphaConsistent(const ModelResiduals& m1,
-                       const ModelResiduals& m2,
-                       int* n,
-                       std::vector<int>* common_ind) const;
+  bool AlphaConsistent(const ModelResiduals& m1, const ModelResiduals& m2,
+                       int* n, std::vector<int>* common_ind) const;
 
   // Wrapper for the KS test within the probability moduele. Determines whether
   // the two distributions r1 and r2 come from the same underlying
@@ -180,23 +174,21 @@ class Recon : public SampleConsensusEstimator<Datum, Model> {
 
   // Utility function to intersct set_1 with set_1 and store the values in
   // set_1.
-  void IntersectInPlace(std::vector<int>* set_1,
-                        const std::vector<int>& set_2);
+  void IntersectInPlace(std::vector<int>* set_1, const std::vector<int>& set_2);
 };
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 bool Recon<Datum, Model>::AlphaConsistent(const ModelResiduals& m1,
-                                          const ModelResiduals& m2,
-                                          int* n,
+                                          const ModelResiduals& m2, int* n,
                                           std::vector<int>* common_ind) const {
   CHECK_EQ(m1.size(), m2.size()) << "data must be of same size!";
-  double alpha_sq = alpha*alpha;
+  double alpha_sq = alpha * alpha;
   std::vector<bool> overlap(m1.size(), false);
   int num_overlap = 0;
   // Loop over the data, setting values in the overlap to true when a data
   // point is visited. If we reach a data point that has already been visited,
   // then this point is part of the overlap.
-  for (int i = 0; i < 0.9*m1.size(); i++) {
+  for (int i = 0; i < 0.9 * m1.size(); i++) {
     // If the indices are equal, or if they have previously been visited then
     // we have a common member.
     // Check if m1's next point has been visited.
@@ -219,8 +211,8 @@ bool Recon<Datum, Model>::AlphaConsistent(const ModelResiduals& m1,
     overlap[m1[i].GetIndex()] = true;
     overlap[m2[i].GetIndex()] = true;
 
-    if (num_overlap/static_cast<double>(i + 1.0) >=
-        alpha_sq && i > m1.size()/10) {
+    if (num_overlap / static_cast<double>(i + 1.0) >= alpha_sq &&
+        i > m1.size() / 10) {
       *n = i + 1;
       return true;
     }
@@ -228,10 +220,9 @@ bool Recon<Datum, Model>::AlphaConsistent(const ModelResiduals& m1,
   return false;
 }
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 bool Recon<Datum, Model>::KolmogorovSmirnoffWrapper(
-    const ModelResiduals& r1,
-    const ModelResiduals& r2,
+    const ModelResiduals& r1, const ModelResiduals& r2,
     const std::vector<int>& common_indices) const {
   std::vector<double> residuals1;
   residuals1.reserve(common_indices.size());
@@ -247,12 +238,12 @@ bool Recon<Datum, Model>::KolmogorovSmirnoffWrapper(
   return KolmogorovSmirnoffTest(residuals1, residuals2);
 }
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 void Recon<Datum, Model>::IntersectInPlace(std::vector<int>* set_1,
                                            const std::vector<int>& set_2) {
   std::vector<int>::iterator it1 = set_1->begin();
   std::vector<int>::const_iterator it2 = set_2.begin();
-  while ( (it1 != set_1->end()) && (it2 != set_2.end()) ) {
+  while ((it1 != set_1->end()) && (it2 != set_2.end())) {
     if (*it1 < *it2) {
       it1 = set_1->erase(it1);
     } else if (*it2 < *it1) {
@@ -267,10 +258,9 @@ void Recon<Datum, Model>::IntersectInPlace(std::vector<int>* set_1,
   set_1->erase(it1, set_1->end());
 }
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 void Recon<Datum, Model>::FindAlphaConsistentModels(
-    const std::vector<Datum>& data,
-    const Estimator<Datum, Model>& estimator,
+    const std::vector<Datum>& data, const Estimator<Datum, Model>& estimator,
     std::vector<ModelResiduals>* alpha_consistent_models,
     std::vector<int>* inliers) {
   RandomSampler<Datum> random_sampler(min_sample_size_);
@@ -283,28 +273,24 @@ void Recon<Datum, Model>::FindAlphaConsistentModels(
   while (alpha_consistent_models->size() < min_consistent_models_) {
     // Estimate a model from a random sample.
     std::vector<Datum> data_subset;
-    if (!random_sampler.Sample(data, &data_subset))
-      continue;
+    if (!random_sampler.Sample(data, &data_subset)) continue;
     Model temp_model;
-    if (!estimator.EstimateModel(data_subset, &temp_model))
-      continue;
+    if (!estimator.EstimateModel(data_subset, &temp_model)) continue;
 
     // Early exit if the model is not valid.
-    if (!estimator.ValidModel(temp_model))
-      continue;
+    if (!estimator.ValidModel(temp_model)) continue;
     all_models.push_back(temp_model);
 
     // Get residuals
-    std::vector<double> current_residuals = estimator.Residuals(data,
-                                                                temp_model);
+    std::vector<double> current_residuals =
+        estimator.Residuals(data, temp_model);
 
     // Sort data by residuals.
     ModelResiduals current_model;
     current_model.reserve(current_residuals.size());
     for (int i = 0; i < current_residuals.size(); i++)
       current_model.push_back(ResidualDataPoint(i, current_residuals[i]));
-    std::sort(current_model.begin(),
-              current_model.end(),
+    std::sort(current_model.begin(), current_model.end(),
               ResidualDataPoint::SortByNormResidual);
     valid_models.push_back(current_model);
 
@@ -322,32 +308,29 @@ void Recon<Datum, Model>::FindAlphaConsistentModels(
       int n;
       std::vector<int> common_indices;
       // Test for alpha consistency
-      if (AlphaConsistent(current_model,
-                          valid_models[i],
-                          &n,
+      if (AlphaConsistent(current_model, valid_models[i], &n,
                           &common_indices)) {
-        VLOG(0) << "\tmodel " << all_models[i].m << ", "
-                << all_models[i].b << " is valid at " << n;
+        VLOG(0) << "\tmodel " << all_models[i].m << ", " << all_models[i].b
+                << " is valid at " << n;
 
-        double sigma_hat = 1.4286*(1.0 + 5.0/(n - min_sample_size_))*
-            fabs(current_model[n/2].GetResidual());
+        double sigma_hat = 1.4286 * (1.0 + 5.0 / (n - min_sample_size_)) *
+                           fabs(current_model[n / 2].GetResidual());
         // Enusre the that size of overlap sets are relatively close.
         // TODO(cmsweeney): get KS test working! Ensure sigmas are relatively
         // close to our expectations and the size of the overlap sets found so
         // far is relatively close.
         //        if (sigma_hat < sigma_max) {
-        if (KolmogorovSmirnoffWrapper(current_model,
-                                      valid_models[i],
+        if (KolmogorovSmirnoffWrapper(current_model, valid_models[i],
                                       common_indices)) {
           overlap_count.push_back(common_indices.size());
-          int min_overlap = *std::min_element(overlap_count.begin(),
-                                              overlap_count.end());
-          int max_overlap = *std::max_element(overlap_count.begin(),
-                                              overlap_count.end());
+          int min_overlap =
+              *std::min_element(overlap_count.begin(), overlap_count.end());
+          int max_overlap =
+              *std::max_element(overlap_count.begin(), overlap_count.end());
           // If the sizes of the overlaps are not consistent then this is not a
           // good match!
           double size_difference =
-              static_cast<double>((max_overlap - min_overlap))/min_overlap;
+              static_cast<double>((max_overlap - min_overlap)) / min_overlap;
           if (size_difference > 0.05) {
             overlap_count.pop_back();
           } else {
@@ -373,12 +356,10 @@ void Recon<Datum, Model>::FindAlphaConsistentModels(
   }
 }
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 void Recon<Datum, Model>::ComputeMeanInliers(
-    const std::vector<Datum>& data,
-    const std::vector<int>& inliers,
-    std::vector<ModelResiduals>* models,
-    std::vector<Datum>* mean_inliers) {
+    const std::vector<Datum>& data, const std::vector<int>& inliers,
+    std::vector<ModelResiduals>* models, std::vector<Datum>* mean_inliers) {
   // Create a temp holder for the mean of the data points.
   ModelResiduals mean;
   mean.reserve(inliers.size());
@@ -390,8 +371,7 @@ void Recon<Datum, Model>::ComputeMeanInliers(
   for (ModelResiduals& model : *models) {
     std::sort(model.begin(), model.end(), ResidualDataPoint::SortByIndex);
     for (int i = 0; i < inliers.size(); i++) {
-      mean[i].SetResidual(mean[i].GetResidual() +
-                          model[i].GetResidual());
+      mean[i].SetResidual(mean[i].GetResidual() + model[i].GetResidual());
     }
   }
   // Sort the mean residuals.
@@ -405,12 +385,10 @@ void Recon<Datum, Model>::ComputeMeanInliers(
   }
 }
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 void Recon<Datum, Model>::GenerateProsacModels(
-    const std::vector<Datum>& data,
-    const Estimator<Datum, Model>& estimator,
-    int num_models,
-    std::vector<ModelResiduals>* models) {
+    const std::vector<Datum>& data, const Estimator<Datum, Model>& estimator,
+    int num_models, std::vector<ModelResiduals>* models) {
   ProsacSampler<Datum> prosac_sampler(min_sample_size_);
   for (int i = 0; i < num_models; i++) {
     std::vector<Datum> prosac_subset;
@@ -427,8 +405,8 @@ void Recon<Datum, Model>::GenerateProsacModels(
 
     VLOG(0) << "proac model = " << prosac_model.m << ", " << prosac_model.b;
     // Get residuals
-    std::vector<double> current_residuals = estimator.Residuals(data,
-                                                                prosac_model);
+    std::vector<double> current_residuals =
+        estimator.Residuals(data, prosac_model);
     // Create current residual model.
     ModelResiduals current_model;
     current_model.reserve(current_residuals.size());
@@ -438,10 +416,9 @@ void Recon<Datum, Model>::GenerateProsacModels(
   }
 }
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 void Recon<Datum, Model>::FindBestInlierSet(
-    const std::vector<Datum>& data,
-    const std::vector<ModelResiduals>& models,
+    const std::vector<Datum>& data, const std::vector<ModelResiduals>& models,
     std::vector<Datum>* best_data) {
   // Find the minimum n in which all models are alpha consistent.
   int n;
@@ -455,11 +432,10 @@ void Recon<Datum, Model>::FindBestInlierSet(
     int common_elements = 0;
     for (int i = 0; i < common.size(); i++) {
       // VLOG(0) << "common_elements[" << i << "] = " << common[i];
-      if (common[i] >= models.size())
-        common_elements++;
+      if (common[i] >= models.size()) common_elements++;
     }
     // VLOG(0) << "num common elements = " << common_elements;
-    if (static_cast<double>(common_elements)/(n + 1.0) >= alpha*alpha)
+    if (static_cast<double>(common_elements) / (n + 1.0) >= alpha * alpha)
       break;
   }
   // n is currently set to the value which broke alpha consistency so we should
@@ -496,42 +472,31 @@ void Recon<Datum, Model>::FindBestInlierSet(
   }
 }
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
                                    const Estimator<Datum, Model>& estimator,
                                    Model* best_model) {
   std::vector<ModelResiduals> alpha_consistent_models;
   std::vector<int> inliers;
-  FindAlphaConsistentModels(data,
-                            estimator,
-                            &alpha_consistent_models,
+  FindAlphaConsistentModels(data, estimator, &alpha_consistent_models,
                             &inliers);
   VLOG(0) << "found alpha consistent models";
   std::vector<Datum> mean_inliers;
-  ComputeMeanInliers(data,
-                     inliers,
-                     &alpha_consistent_models,
-                     &mean_inliers);
+  ComputeMeanInliers(data, inliers, &alpha_consistent_models, &mean_inliers);
 
   VLOG(0) << "computed mean of models";
   VLOG(0) << "inliers of size " << inliers.size();
   std::vector<ModelResiduals> prosac_models;
-  GenerateProsacModels(mean_inliers,
-                       estimator,
-                       20,
-                       &prosac_models);
+  GenerateProsacModels(mean_inliers, estimator, 20, &prosac_models);
   VLOG(0) << "generated prosac models";
 
   // Sort all models by their residuals.
   for (int i = 0; i < prosac_models.size(); i++)
-    std::sort(prosac_models[i].begin(),
-              prosac_models[i].end(),
+    std::sort(prosac_models[i].begin(), prosac_models[i].end(),
               ResidualDataPoint::SortByNormResidual);
 
   std::vector<Datum> best_inlier_set;
-  FindBestInlierSet(data,
-                    prosac_models,
-                    &best_inlier_set);
+  FindBestInlierSet(data, prosac_models, &best_inlier_set);
 
   // Effectively establish a random sampling of the inliers since they are
   // returned in index-sorted order.
@@ -540,5 +505,5 @@ bool Recon<Datum, Model>::Estimate(const std::vector<Datum>& data,
   VLOG(0) << "best model = " << best_model->m << ", " << best_model->b;
   return true;
 }
-}  // namespace theia
+}       // namespace theia
 #endif  // SOLVERS_RECON_H_

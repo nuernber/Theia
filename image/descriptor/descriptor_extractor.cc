@@ -34,7 +34,6 @@
 
 #include "image/descriptor/descriptor_extractor.h"
 #include "image/descriptor/descriptor.pb.h"
-#include "image/descriptor/descriptor_extractor.h"
 
 namespace theia {
 // Compute the descriptor for multiple keypoints in a given image.

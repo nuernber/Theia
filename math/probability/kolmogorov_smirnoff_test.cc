@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -35,12 +35,13 @@
 #include "math/probability/kolmogorov_smirnoff.h"
 
 #include <chrono>
-#include "gtest/gtest.h"
 #include <math.h>
 #include <random>
 
 #include <algorithm>
 #include <vector>
+
+#include "gtest/gtest.h"
 
 namespace theia {
 TEST(KolmogorovSmirnoff, SameDistributionGaussian) {
@@ -52,10 +53,10 @@ TEST(KolmogorovSmirnoff, SameDistributionGaussian) {
   std::vector<double> data2;
   for (int i = 0; i < num_pts; i++) {
     double gauss_pt = gauss_distribution(generator);
-    data1.push_back(gauss_pt*gauss_pt);
+    data1.push_back(gauss_pt * gauss_pt);
 
     double gauss_pt2 = gauss_distribution(generator);
-    data2.push_back(gauss_pt2*gauss_pt2);
+    data2.push_back(gauss_pt2 * gauss_pt2);
   }
   std::sort(data1.begin(), data1.end());
   std::sort(data2.begin(), data2.end());
@@ -64,7 +65,7 @@ TEST(KolmogorovSmirnoff, SameDistributionGaussian) {
   EXPECT_TRUE(KolmogorovSmirnoffTest(data1, data2));
 
   // test for several values of n, all of which should be true.
-  for (int n = num_pts/10; n < num_pts; n += num_pts/10)
+  for (int n = num_pts / 10; n < num_pts; n += num_pts / 10)
     EXPECT_TRUE(KolmogorovSmirnoffTest(data1, data2, n));
 }
 
@@ -77,10 +78,10 @@ TEST(KolmogorovSmirnoff, SameDistributionUniform) {
   std::vector<double> data2;
   for (int i = 0; i < num_pts; i++) {
     double uniform_pt = uniform_distribution(generator);
-    data1.push_back(uniform_pt*uniform_pt);
+    data1.push_back(uniform_pt * uniform_pt);
 
     double uniform_pt2 = uniform_distribution(generator);
-    data2.push_back(uniform_pt2*uniform_pt2);
+    data2.push_back(uniform_pt2 * uniform_pt2);
   }
   std::sort(data1.begin(), data1.end());
   std::sort(data2.begin(), data2.end());
@@ -89,7 +90,7 @@ TEST(KolmogorovSmirnoff, SameDistributionUniform) {
   EXPECT_TRUE(KolmogorovSmirnoffTest(data1, data2));
 
   // test for several values of n, all of which should be true.
-  for (int n = num_pts/10; n < num_pts; n += num_pts/10)
+  for (int n = num_pts / 10; n < num_pts; n += num_pts / 10)
     EXPECT_TRUE(KolmogorovSmirnoffTest(data1, data2, n));
 }
 
@@ -103,10 +104,10 @@ TEST(KolmogorovSmirnoff, DifferentDistribution) {
   std::vector<double> data2;
   for (int i = 0; i < num_pts; i++) {
     double gauss_pt = gauss_distribution(generator);
-    data1.push_back(gauss_pt*gauss_pt);
+    data1.push_back(gauss_pt * gauss_pt);
 
     double uniform_pt = uniform_distribution(generator);
-    data2.push_back(uniform_pt*uniform_pt);
+    data2.push_back(uniform_pt * uniform_pt);
   }
   std::sort(data1.begin(), data1.end());
   std::sort(data2.begin(), data2.end());
@@ -115,7 +116,7 @@ TEST(KolmogorovSmirnoff, DifferentDistribution) {
   EXPECT_FALSE(KolmogorovSmirnoffTest(data1, data2));
 
   // test for several values of n, all of which should be false!
-  for (int n = num_pts/10; n < num_pts; n += num_pts/10)
+  for (int n = num_pts / 10; n < num_pts; n += num_pts / 10)
     EXPECT_FALSE(KolmogorovSmirnoffTest(data1, data2, n));
 }
 

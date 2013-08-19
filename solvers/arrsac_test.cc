@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -33,9 +33,10 @@
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
 #include <chrono>
-#include "gtest/gtest.h"
 #include <math.h>
 #include <vector>
+
+#include "gtest/gtest.h"
 
 #include "solvers/arrsac.h"
 #include "solvers/estimator.h"
@@ -48,16 +49,12 @@ namespace {
 
 // Create a testable instance of ARRSAC (i.e. move protected methods to public
 // so that we can easily test it).
-template<class Datum, class Model>
+template <class Datum, class Model>
 class TestableArrsac : public Arrsac<Datum, Model> {
  public:
-  TestableArrsac(int min_sample_size,
-                 double error_thresh,
-                 int max_candidate_hyps = 500,
-                 int block_size = 100)
-      : Arrsac<Datum, Model>(min_sample_size,
-                             error_thresh,
-                             max_candidate_hyps,
+  TestableArrsac(int min_sample_size, double error_thresh,
+                 int max_candidate_hyps = 500, int block_size = 100)
+      : Arrsac<Datum, Model>(min_sample_size, error_thresh, max_candidate_hyps,
                              block_size) {}
   using Arrsac<Datum, Model>::GenerateInitialHypothesisSet;
 };
@@ -83,17 +80,17 @@ class LineEstimator : public Estimator<Point, Line> {
   ~LineEstimator() {}
 
   bool EstimateModel(const vector<Point>& data, Line* model) const {
-    model->m = (data[1].y - data[0].y)/(data[1].x - data[0].x);
-    model->b = data[1].y - model->m*data[1].x;
+    model->m = (data[1].y - data[0].y) / (data[1].x - data[0].x);
+    model->b = data[1].y - model->m * data[1].x;
     return true;
   }
 
   double Error(const Point& point, const Line& line) const {
-    double a = -1.0*line.m;
+    double a = -1.0 * line.m;
     double b = 1.0;
-    double c = -1.0*line.b;
+    double c = -1.0 * line.b;
 
-    return fabs(a*point.x + b*point.y + c)/sqrt(a*a + b*b);
+    return fabs(a * point.x + b * point.y + c) / sqrt(a * a + b * b);
   }
 };
 }  // namespace
@@ -122,10 +119,8 @@ TEST(ArrsacTest, InitializeHypothesisSet) {
 
   vector<Line> initial_hypothesis;
   TestableArrsac<Point, Line> arrsac_line(2, 1.0);
-  int num_iterations =
-      arrsac_line.GenerateInitialHypothesisSet(input_points,
-                                               estimator,
-                                               &initial_hypothesis);
+  int num_iterations = arrsac_line.GenerateInitialHypothesisSet(
+      input_points, estimator, &initial_hypothesis);
   ASSERT_GT(num_iterations, 0);
 }
 
@@ -151,9 +146,7 @@ TEST(ArrsacTest, Estimate) {
 
   Line fitted_line;
   TestableArrsac<Point, Line> arrsac_line(2, 1.0);
-  bool success = arrsac_line.Estimate(input_points,
-                                      estimator,
-                                      &fitted_line);
+  bool success = arrsac_line.Estimate(input_points, estimator, &fitted_line);
   ASSERT_NEAR(fitted_line.m, 1.0, 0.1);
 }
 
@@ -184,9 +177,7 @@ TEST(ArrsacTest, EstimateWithQuality) {
 
   Line fitted_line;
   TestableArrsac<Point, Line> arrsac_line(2, 1.0);
-  bool success = arrsac_line.Estimate(input_points,
-                                      estimator,
-                                      &fitted_line);
+  bool success = arrsac_line.Estimate(input_points, estimator, &fitted_line);
   ASSERT_NEAR(fitted_line.m, 1.0, 0.02);
 }
 

@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -51,8 +51,7 @@ namespace theia {
 // NOTE: RANSAC, ARRSAC, and other solvers work best if Datum and Model are
 // lightweight classes or structs.
 
-template <class Datum, class Model>
-class Estimator {
+template <class Datum, class Model> class Estimator {
  public:
   Estimator() {}
   virtual ~Estimator() {}
@@ -71,12 +70,12 @@ class Estimator {
                                        Model* model) const {
     return EstimateModel(data, model);
   }
-  
+
   // Refine the model based on an updated subset of data, and a pre-computed
   // model. Can be optionally implemented.
   virtual bool RefineModel(const std::vector<Datum>& data, Model* model) const {
     return true;
-  };
+  }
 
   // Given a model and a data point, calculate the error. Users should implement
   // this function appropriately for the task being solved.
@@ -90,7 +89,7 @@ class Estimator {
       residuals[i] = Error(data[i], model);
     return residuals;
   }
-  
+
   // Returns the set inliers of the data set based on the error threshold
   // provided.
   std::vector<bool> GetInliers(const std::vector<Datum>& data,
@@ -104,21 +103,17 @@ class Estimator {
 
   // Returns the number inliers of the data set based on the error threshold
   // provided.
-  int GetNumInliers(const std::vector<Datum>& data,
-                    const Model& model,
+  int GetNumInliers(const std::vector<Datum>& data, const Model& model,
                     double error_threshold) const {
     int num_inliers = 0;
     for (const Datum& data_point : data)
-      if (Error(data, model) < error_threshold)
-        num_inliers++;
+      if (Error(data, model) < error_threshold) num_inliers++;
     return num_inliers;
   }
 
   // Enable a quick check to see if the model is valid. This can be a geometric
   // check or some other verification of the model structure.
-  virtual bool ValidModel(const Model& model) const {
-    return true;
-  }
+  virtual bool ValidModel(const Model& model) const { return true; }
 };
 
 }  // namespace theia

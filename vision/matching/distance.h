@@ -35,12 +35,12 @@
 #ifndef VISION_MATCHING_DISTANCE_H_
 #define VISION_MATCHING_DISTANCE_H_
 
-#include "image/descriptor/descriptor.h"
-
 #include <glog/logging.h>
 #ifdef THEIA_USE_SSE
 #include <xmmintrin.h>
 #endif
+
+#include "image/descriptor/descriptor.h"
 
 namespace theia {
 // This file includes all of the distance metrics that are used:
@@ -74,14 +74,14 @@ struct L2 {
       diff1 = a[1] - b[1];
       diff2 = a[2] - b[2];
       diff3 = a[3] - b[3];
-      result += diff0*diff0 + diff1*diff1 + diff2*diff2 + diff3*diff3;
+      result += diff0 * diff0 + diff1 * diff1 + diff2 * diff2 + diff3 * diff3;
       a += 4;
       b += 4;
     }
     // Process last 0-3 dimensions.  Not needed for standard vector lengths.
     while (a < last) {
       diff0 = *a++ - *b++;
-      result += diff0*diff0;
+      result += diff0 * diff0;
     }
     return result;
   }
@@ -96,9 +96,9 @@ union sseRegisterHelper {
 
 // Euclidian distance (SSE method) (squared result)
 float L2SSE(const float* b1, const float* b2, int size) {
-  CHECK_EQ(size%4, 0) << "Size must be a multiple of 4 for SSE optimization!";
+  CHECK_EQ(size % 4, 0) << "Size must be a multiple of 4 for SSE optimization!";
   __m128 srcA, srcB, temp, cumSum;
-  float zeros[4] = {0.f, 0.f, 0.f, 0.f};
+  float zeros[4] = { 0.f, 0.f, 0.f, 0.f };
   cumSum = _mm_load_ps(zeros);
   for (int i = 0; i < size; i += 4) {
     srcA = _mm_load_ps(b1 + i);
@@ -106,7 +106,7 @@ float L2SSE(const float* b1, const float* b2, int size) {
     // Substract
     temp = _mm_sub_ps(srcA, srcB);
     // Multiply
-    temp =  _mm_mul_ps(temp, temp);
+    temp = _mm_mul_ps(temp, temp);
     // sum
     cumSum = _mm_add_ps(cumSum, temp);
   }
@@ -118,15 +118,14 @@ float L2SSE(const float* b1, const float* b2, int size) {
 struct L2 {
   typedef float ResultType;
 
-  ResultType operator()(const Descriptor& a,
-                        const Descriptor& b) const {
+  ResultType operator()(const Descriptor& a, const Descriptor& b) const {
     CHECK_EQ(a.Dimensions(), b.Dimensions());
     CHECK_EQ(a.descriptor_type(), b.descriptor_type());
     return L2SSE(a.FloatData(), b.FloatData(), a.Dimensions());
   }
 };
 #endif  // THEIA_USE_SSE
-}  // namespace theia
+}       // namespace theia
 
 // Include the hamming distance functions in a separate file for cleanliness.
 #include "vision/matching/distance_hamming.h"

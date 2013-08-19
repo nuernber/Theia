@@ -35,10 +35,9 @@
 #ifndef IMAGE_DESCRIPTOR_DESCRIPTOR_H_
 #define IMAGE_DESCRIPTOR_DESCRIPTOR_H_
 
-#include <algorithm>
-#include <array>
-#include <bitset>
 #include <glog/logging.h>
+#include <array>
+#include <algorithm>
 
 #include "image/keypoint_detector/keypoint.h"
 #include "util/util.h"
@@ -186,7 +185,7 @@ class BinaryDescriptor : public Descriptor {
   BinaryDescriptor(const BinaryDescriptor& copy_from)
       : BinaryDescriptor(copy_from.Dimensions(), copy_from.descriptor_type()) {
     data_ = new uchar[dimensions_ / sizeof(uchar)];
-    std::copy(copy_from.data_, copy_from.data_ + dimensions_ / sizeof(char),
+    std::copy(copy_from.data_, copy_from.data_ + dimensions_ / sizeof(uchar),
               data_);
   }
 
@@ -196,7 +195,7 @@ class BinaryDescriptor : public Descriptor {
     if (this != &copy_from) {
       CHECK_EQ(dimensions_, copy_from.Dimensions());
       uchar* new_data = new uchar[dimensions_ / sizeof(uchar)];
-      std::copy(copy_from.data_, copy_from.data_ + dimensions_ / sizeof(char),
+      std::copy(copy_from.data_, copy_from.data_ + dimensions_ / sizeof(uchar),
                 new_data);
       delete[] data_;
       data_ = new_data;

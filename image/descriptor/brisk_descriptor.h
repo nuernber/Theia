@@ -99,8 +99,8 @@ class BriskDescriptorExtractor : public DescriptorExtractor {
   // Call this to generate the kernel:
   // circle of radius r (pixels), with n points;
   // short pairings with dMax, long pairings with dMin
-  void generateKernel(std::vector<float>& radiusList,
-                      std::vector<int>& numberList, float dMax = 5.85f,
+  void generateKernel(std::vector<float>* radiusList,
+                      std::vector<int>* numberList, float dMax = 5.85f,
                       float dMin = 8.2f,
                       std::vector<int> indexChange = std::vector<int>());
 

@@ -35,6 +35,7 @@
 #include "image/descriptor/brisk_descriptor.h"
 
 #include <glog/logging.h>
+#include <algorithm>
 
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 #include "image/descriptor/descriptor.pb.h"
@@ -47,16 +48,16 @@ typedef unsigned char uchar;
 // this is needed to avoid aliasing issues with the __m128i data type:
 #ifdef __GNUC__
 typedef unsigned char __attribute__((__may_alias__)) UCHAR_ALIAS;
-typedef unsigned short __attribute__((__may_alias__)) UINT16_ALIAS;
+typedef int16_t __attribute__((__may_alias__)) UINT16_ALIAS;
 typedef unsigned int __attribute__((__may_alias__)) UINT32_ALIAS;
-typedef unsigned long int __attribute__((__may_alias__)) UINT64_ALIAS;
+typedef int64_t __attribute__((__may_alias__)) UINT64_ALIAS;
 typedef int __attribute__((__may_alias__)) INT32_ALIAS;
 typedef uint8_t __attribute__((__may_alias__)) U_INT8T_ALIAS;
 #endif
 #ifdef _MSC_VER
 // Todo: find the equivalent to may_alias
-#define UCHAR_ALIAS unsigned char  //__declspec(noalias)
-#define UINT32_ALIAS unsigned int  //__declspec(noalias)
+#define UCHAR_ALIAS unsigned char  // __declspec(noalias)
+#define UINT32_ALIAS unsigned int  // __declspec(noalias)
 #define __inline__ __forceinline
 #endif
 }  // namespace
@@ -94,23 +95,23 @@ BriskDescriptorExtractor::BriskDescriptorExtractor(bool rotation_invariant,
 
   rotation_invariance_ = rotation_invariant;
   scale_invariance_ = scale_invariant;
-  generateKernel(rList, nList, 5.85 * pattern_scale, 8.2 * pattern_scale);
+  generateKernel(&rList, &nList, 5.85 * pattern_scale, 8.2 * pattern_scale);
 }
 
-void BriskDescriptorExtractor::generateKernel(std::vector<float>& radiusList,
-                                              std::vector<int>& numberList,
+void BriskDescriptorExtractor::generateKernel(std::vector<float>* radiusList,
+                                              std::vector<int>* numberList,
                                               float dMax, float dMin,
                                               std::vector<int> indexChange) {
   dMax_ = dMax;
   dMin_ = dMin;
 
   // get the total number of points
-  const int rings = radiusList.size();
-  CHECK_NE(radiusList.size(), 0);
-  CHECK_EQ(radiusList.size(), numberList.size());
+  const int rings = radiusList->size();
+  CHECK_NE(radiusList->size(), 0);
+  CHECK_EQ(radiusList->size(), numberList->size());
   points_ = 0;  // remember the total number of points
   for (int ring = 0; ring < rings; ring++) {
-    points_ += numberList[ring];
+    points_ += (*numberList)[ring];
   }
   // set up the patterns
   pattern_points_ = new BriskPatternPoint[points_ * scales_ * n_rot_];
@@ -126,34 +127,39 @@ void BriskDescriptorExtractor::generateKernel(std::vector<float>& radiusList,
   const float sigma_scale = 1.3;
 
   for (unsigned int scale = 0; scale < scales_; ++scale) {
-    scale_list_[scale] = pow((double) 2.0, (double)(scale * lb_scale_step));
+    scale_list_[scale] = pow(static_cast<double>(2.0),
+                             static_cast<double>(scale * lb_scale_step));
     size_list_[scale] = 0;
 
     // generate the pattern points look-up
     double alpha, theta;
     for (size_t rot = 0; rot < n_rot_; ++rot) {
       // this is the rotation of the feature
-      theta = double(rot) * 2 * M_PI / double(n_rot_);
+      theta =
+          static_cast<double>(rot) * 2.0 * M_PI / static_cast<double>(n_rot_);
       for (int ring = 0; ring < rings; ++ring) {
-        for (int num = 0; num < numberList[ring]; ++num) {
+        for (int num = 0; num < (*numberList)[ring]; ++num) {
           // the actual coordinates on the circle
-          alpha = (double(num)) * 2 * M_PI / double(numberList[ring]);
+          alpha = (static_cast<double>(num)) * 2 * M_PI /
+                  static_cast<double>((*numberList)[ring]);
           // feature rotation plus angle of the point
           patternIterator->x =
-              scale_list_[scale] * radiusList[ring] * cos(alpha + theta);
+              scale_list_[scale] * (*radiusList)[ring] * cos(alpha + theta);
           patternIterator->y =
-              scale_list_[scale] * radiusList[ring] * sin(alpha + theta);
+              scale_list_[scale] * (*radiusList)[ring] * sin(alpha + theta);
           // and the gaussian kernel sigma
           if (ring == 0) {
             patternIterator->sigma = sigma_scale * scale_list_[scale] * 0.5;
           } else {
             patternIterator->sigma =
-                sigma_scale * scale_list_[scale] * (double(radiusList[ring])) *
-                sin(M_PI / numberList[ring]);
+                sigma_scale * scale_list_[scale] *
+                (static_cast<double>((*radiusList)[ring])) *
+                sin(M_PI / (*numberList)[ring]);
           }
           // adapt the sizeList if necessary
-          const unsigned int size = ceil(scale_list_[scale] * radiusList[ring] +
-                                         patternIterator->sigma) + 1;
+          const unsigned int size =
+              ceil(scale_list_[scale] * (*radiusList)[ring] +
+                   patternIterator->sigma) + 1;
           if (size_list_[scale] < size) {
             size_list_[scale] = size;
           }
@@ -183,16 +189,18 @@ void BriskDescriptorExtractor::generateKernel(std::vector<float>& radiusList,
   const float dMin_sq = dMin_ * dMin_;
   const float dMax_sq = dMax_ * dMax_;
   for (unsigned int i = 1; i < points_; i++) {
-    for (unsigned int j = 0; j < i; j++) {  //(find all the pairs)
-      // point pair distance:
+    for (unsigned int j = 0; j < i; j++) {  // (find all the pairs)
+                                            // point pair distance:
       const float dx = pattern_points_[j].x - pattern_points_[i].x;
       const float dy = pattern_points_[j].y - pattern_points_[i].y;
       const float norm_sq = (dx * dx + dy * dy);
       if (norm_sq > dMin_sq) {
         // save to long pairs
         BriskLongPair& longPair = long_pairs_[no_long_pairs_];
-        longPair.weighted_dx = int((dx / (norm_sq)) * 2048.0 + 0.5);
-        longPair.weighted_dy = int((dy / (norm_sq)) * 2048.0 + 0.5);
+        longPair.weighted_dx =
+            static_cast<int>((dx / (norm_sq)) * 2048.0 + 0.5);
+        longPair.weighted_dy =
+            static_cast<int>((dy / (norm_sq)) * 2048.0 + 0.5);
         longPair.i = i;
         longPair.j = j;
         ++no_long_pairs_;
@@ -209,7 +217,8 @@ void BriskDescriptorExtractor::generateKernel(std::vector<float>& radiusList,
   }
 
   // number of bits:
-  strings_ = (int) ceil((float(no_short_pairs_)) / 128.0) * 4 * 4;
+  strings_ =
+      static_cast<int>(ceil(static_cast<float>(no_short_pairs_) / 128.0)) * 16;
 }
 
 // simple alternative:
@@ -222,8 +231,8 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
       pattern_points_[scale * n_rot_ * points_ + rot * points_ + point];
   const float xf = briskPoint.x + key_x;
   const float yf = briskPoint.y + key_y;
-  const int x = int(xf);
-  const int y = int(yf);
+  const int x = static_cast<int>(xf);
+  const int y = static_cast<int>(yf);
   const int& imagecols = image.Cols();
 
   // get the sigma:
@@ -233,27 +242,27 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
   // calculate output:
   int ret_val;
   if (sigma_half < 0.5) {
-    //interpolation multipliers:
+    // interpolation multipliers:
     const int r_x = (xf - x) * 1024;
     const int r_y = (yf - y) * 1024;
     const int r_x_1 = (1024 - r_x);
     const int r_y_1 = (1024 - r_y);
     const uchar* ptr = image.Data() + x + y * imagecols;
     // just interpolate:
-    ret_val = (r_x_1 * r_y_1 * int(*ptr));
+    ret_val = (r_x_1 * r_y_1 * static_cast<int>(*ptr));
     ptr++;
-    ret_val += (r_x * r_y_1 * int(*ptr));
+    ret_val += (r_x * r_y_1 * static_cast<int>(*ptr));
     ptr += imagecols;
-    ret_val += (r_x * r_y * int(*ptr));
+    ret_val += (r_x * r_y * static_cast<int>(*ptr));
     ptr--;
-    ret_val += (r_x_1 * r_y * int(*ptr));
+    ret_val += (r_x_1 * r_y * static_cast<int>(*ptr));
     return (ret_val + 512) / 1024;
   }
 
   // this is the standard case (simple, not speed optimized yet):
   // scaling:
   const int scaling = 4194304.0 / area;
-  const int scaling2 = float(scaling) * area / 1024.0;
+  const int scaling2 = static_cast<float>(scaling) * area / 1024.0;
 
   // the integral image is larger:
   const int integralcols = imagecols + 1;
@@ -264,16 +273,16 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
   const float y_1 = yf - sigma_half;
   const float y1 = yf + sigma_half;
 
-  const int x_left = int(x_1 + 0.5);
-  const int y_top = int(y_1 + 0.5);
-  const int x_right = int(x1 + 0.5);
-  const int y_bottom = int(y1 + 0.5);
+  const int x_left = static_cast<int>(x_1 + 0.5);
+  const int y_top = static_cast<int>(y_1 + 0.5);
+  const int x_right = static_cast<int>(x1 + 0.5);
+  const int y_bottom = static_cast<int>(y1 + 0.5);
 
   // overlap area - multiplication factors:
-  const float r_x_1 = float(x_left) - x_1 + 0.5;
-  const float r_y_1 = float(y_top) - y_1 + 0.5;
-  const float r_x1 = x1 - float(x_right) + 0.5;
-  const float r_y1 = y1 - float(y_bottom) + 0.5;
+  const float r_x_1 = static_cast<float>(x_left) - x_1 + 0.5;
+  const float r_y_1 = static_cast<float>(y_top) - y_1 + 0.5;
+  const float r_x1 = x1 - static_cast<float>(x_right) + 0.5;
+  const float r_y1 = y1 - static_cast<float>(y_bottom) + 0.5;
   const int dx = x_right - x_left - 1;
   const int dy = y_bottom - y_top - 1;
   const int A = (r_x_1 * r_y_1) * scaling;
@@ -288,13 +297,13 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
     // now the calculation:
     const uchar* ptr = image.Data() + x_left + imagecols * y_top;
     // first the corners:
-    ret_val = A * int(*ptr);
+    ret_val = A * static_cast<int>(*ptr);
     ptr += dx + 1;
-    ret_val += B * int(*ptr);
+    ret_val += B * static_cast<int>(*ptr);
     ptr += dy * imagecols + 1;
-    ret_val += C * int(*ptr);
+    ret_val += C * static_cast<int>(*ptr);
     ptr -= dx + 1;
-    ret_val += D * int(*ptr);
+    ret_val += D * static_cast<int>(*ptr);
 
     // next the edges:
     const int* ptr_integral =
@@ -332,39 +341,39 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
     const int bottom = (tmp7 - tmp6 + tmp9 - tmp8) * r_y1_i;
 
     return (ret_val + upper + middle + left + right + bottom + scaling2 / 2) /
-        scaling2;
+           scaling2;
   }
 
   // now the calculation:
   const uchar* ptr = image.Data() + x_left + imagecols * y_top;
   // first row:
-  ret_val = A * int(*ptr);
+  ret_val = A * static_cast<int>(*ptr);
   ptr++;
   const uchar* end1 = ptr + dx;
   for (; ptr < end1; ptr++) {
-    ret_val += r_y_1_i * int(*ptr);
+    ret_val += r_y_1_i * static_cast<int>(*ptr);
   }
-  ret_val += B * int(*ptr);
+  ret_val += B * static_cast<int>(*ptr);
   // middle ones:
   ptr += imagecols - dx - 1;
   const uchar* end_j = ptr + dy * imagecols;
   for (; ptr < end_j; ptr += imagecols - dx - 1) {
-    ret_val += r_x_1_i * int(*ptr);
+    ret_val += r_x_1_i * static_cast<int>(*ptr);
     ptr++;
     const uchar* end2 = ptr + dx;
     for (; ptr < end2; ptr++) {
-      ret_val += int(*ptr) * scaling;
+      ret_val += static_cast<int>(*ptr) * scaling;
     }
-    ret_val += r_x1_i * int(*ptr);
+    ret_val += r_x1_i * static_cast<int>(*ptr);
   }
   // last row:
-  ret_val += D * int(*ptr);
+  ret_val += D * static_cast<int>(*ptr);
   ptr++;
   const uchar* end3 = ptr + dx;
   for (; ptr < end3; ptr++) {
-    ret_val += r_y1_i * int(*ptr);
+    ret_val += r_y1_i * static_cast<int>(*ptr);
   }
-  ret_val += C * int(*ptr);
+  ret_val += C * static_cast<int>(*ptr);
 
   return (ret_val + scaling2 / 2) / scaling2;
 }
@@ -372,7 +381,7 @@ inline int BriskDescriptorExtractor::smoothedIntensity(
 bool RoiPredicate(const float minX, const float minY, const float maxX,
                   const float maxY, const Keypoint& keyPt) {
   return (keyPt.x() < minX) || (keyPt.x() >= maxX) || (keyPt.y() < minY) ||
-      (keyPt.y() >= maxY);
+         (keyPt.y() >= maxY);
 }
 
 // Computes a descriptor at a single keypoint.
@@ -395,7 +404,7 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image, const std::vector<Keypoint*>& keypoints,
     std::vector<Descriptor*>* descriptors) {
 
-  //Remove keypoints very close to the border
+  // Remove keypoints very close to the border
   size_t ksize = keypoints.size();
   std::vector<int> kscales;  // remember the scale per keypoint
   std::vector<bool> valid_keypoint(ksize, true);
@@ -406,16 +415,17 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
   unsigned int basicscale = 0;
   if (!scale_invariance_)
     basicscale = std::max(
-        (int)(scales_ / lb_scalerange *
-              (log(1.45 * basic_size_ / (basicSize06)) / log2) + 0.5),
+        static_cast<int>(scales_ / lb_scalerange *
+                             (log(1.45 * basic_size_ / (basicSize06)) / log2) +
+                         0.5),
         0);
   for (size_t k = 0; k < ksize; k++) {
     unsigned int scale;
     if (scale_invariance_) {
-      scale = std::max(
-          (int)(scales_ / lb_scalerange * (log(12.0 * keypoints[k]->scale() /
-                                               (basicSize06)) / log2) + 0.5),
-          0);
+      scale = std::max(static_cast<int>(scales_ / lb_scalerange *
+                                            (log(12.0 * keypoints[k]->scale() /
+                                                 (basicSize06)) / log2) + 0.5),
+                       0);
       // saturate
       if (scale >= scales_) scale = scales_ - 1;
       kscales[k] = scale;
@@ -491,19 +501,19 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
         direction0 += tmp0;
         direction1 += tmp1;
       }
-      brisk_descriptor->set_orientation(
-          atan2((float) direction1, (float) direction0));
+      brisk_descriptor->set_orientation(atan2(static_cast<float>(direction1),
+                                              static_cast<float>(direction0)));
       double kp_angle = brisk_descriptor->orientation() / M_PI * 180.0;
-      theta = int((n_rot_ * kp_angle) / (360.0) + 0.5);
+      theta = static_cast<int>((n_rot_ * kp_angle) / (360.0) + 0.5);
       if (theta < 0) theta += n_rot_;
-      if (theta >= int(n_rot_)) theta -= n_rot_;
+      if (theta >= static_cast<int>(n_rot_)) theta -= n_rot_;
     }
 
     // now also extract the stuff for the actual direction:
     // let us compute the smoothed values
     shifter = 0;
 
-    //unsigned int mean=0;
+    // unsigned int mean=0;
     pvalues = _values;
     // get the gray values in the rotated pattern
     for (unsigned int i = 0; i < points_; i++) {
@@ -568,15 +578,13 @@ bool BriskDescriptorExtractor::ProtoToDescriptor(
 bool BriskDescriptorExtractor::DescriptorToProto(
     const std::vector<Descriptor*>& descriptors,
     DescriptorsProto* proto) const {
-  for (const Descriptor* generic_descriptor : descriptors) {
-    const BriskDescriptor* descriptor =
-        dynamic_cast<const BriskDescriptor*>(generic_descriptor);
+  for (const Descriptor* descriptor : descriptors) {
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the binary array to the proto.
     const std::bitset<BriskDescriptor::const_dimensions_>* brisk_bitset =
         reinterpret_cast<
-      const std::bitset<BriskDescriptor::const_dimensions_>*>(
-          descriptor->CharData());
+            const std::bitset<BriskDescriptor::const_dimensions_>*>(
+            descriptor->CharData());
     descriptor_proto->set_binary_descriptor(brisk_bitset->to_string());
 
     // Set the proto type to patch.

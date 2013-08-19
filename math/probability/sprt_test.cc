@@ -20,22 +20,22 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "gtest/gtest.h"
 #include <math.h>
 #include <vector>
 
+#include "gtest/gtest.h"
 #include "solvers/estimator.h"
 #include "math/probability/sequential_probability_ratio.h"
 #include "util/random.h"
@@ -65,17 +65,17 @@ class LineEstimator : public Estimator<Point, Line> {
   ~LineEstimator() {}
 
   bool EstimateModel(const vector<Point>& data, Line* model) const {
-    model->m = (data[1].y - data[0].y)/(data[1].x - data[0].x);
-    model->b = data[1].y - model->m*data[1].x;
+    model->m = (data[1].y - data[0].y) / (data[1].x - data[0].x);
+    model->b = data[1].y - model->m * data[1].x;
     return true;
   }
 
   double Error(const Point& point, const Line& line) const {
-    double a = -1.0*line.m;
+    double a = -1.0 * line.m;
     double b = 1.0;
-    double c = -1.0*line.b;
+    double c = -1.0 * line.b;
 
-    return fabs(a*point.x + b*point.y + c)/(sqrt(pow(a*a + b*b, 2)));
+    return fabs(a * point.x + b * point.y + c) / (sqrt(pow(a * a + b * b, 2)));
   }
 };
 
@@ -88,10 +88,7 @@ TEST(SPRTTest, CalculateSPRTDecisionThreshold) {
   VLOG(0) << "Decision threshold: " << decision_threshold;
 
   // Test with change of values for timing.
-  decision_threshold = CalculateSPRTDecisionThreshold(sigma,
-                                                      epsilon,
-                                                      200,
-                                                      3);
+  decision_threshold = CalculateSPRTDecisionThreshold(sigma, epsilon, 200, 3);
   VLOG(0) << "Decision threshold: " << decision_threshold;
 }
 
@@ -116,21 +113,17 @@ TEST(SPRTTest, SequentialProbabilityRatioTestPass) {
   // Calculate the decision threshold.
   double decision_threshold = CalculateSPRTDecisionThreshold(sigma, epsilon);
 
-  std::vector<double> residuals = estimator.Residuals(input_points,
-                                                      fitting_line);
+  std::vector<double> residuals =
+      estimator.Residuals(input_points, fitting_line);
 
   // Output parameters of SPRT.
   int num_tested_points;
   double observed_inlier_ratio;
 
   // Execute SPRT with a line we expect to fit the data.
-  bool sprt_success = SequentialProbabilityRatioTest(residuals,
-                                                     error_thresh,
-                                                     sigma,
-                                                     epsilon,
-                                                     decision_threshold,
-                                                     &num_tested_points,
-                                                     &observed_inlier_ratio);
+  bool sprt_success = SequentialProbabilityRatioTest(
+      residuals, error_thresh, sigma, epsilon, decision_threshold,
+      &num_tested_points, &observed_inlier_ratio);
   EXPECT_TRUE(sprt_success);
 }
 
@@ -161,40 +154,26 @@ TEST(SPRTTest, SequentialProbabilityRatioTestFail) {
 
   // Execute SPRT with a few lines that do not fit the data.
   Line not_fitting_line(-1.0, 50);
-  std::vector<double> residuals = estimator.Residuals(input_points,
-                                                      not_fitting_line);
+  std::vector<double> residuals =
+      estimator.Residuals(input_points, not_fitting_line);
 
-  bool sprt_success = SequentialProbabilityRatioTest(residuals,
-                                                     error_thresh,
-                                                     sigma,
-                                                     epsilon,
-                                                     decision_threshold,
-                                                     &num_tested_points,
-                                                     &observed_inlier_ratio);
+  bool sprt_success = SequentialProbabilityRatioTest(
+      residuals, error_thresh, sigma, epsilon, decision_threshold,
+      &num_tested_points, &observed_inlier_ratio);
   EXPECT_FALSE(sprt_success);
 
   not_fitting_line = Line(1.0, 10);
-  residuals = estimator.Residuals(input_points,
-                                  not_fitting_line);
-  sprt_success = SequentialProbabilityRatioTest(residuals,
-                                                error_thresh,
-                                                sigma,
-                                                epsilon,
-                                                decision_threshold,
-                                                &num_tested_points,
-                                                &observed_inlier_ratio);
+  residuals = estimator.Residuals(input_points, not_fitting_line);
+  sprt_success = SequentialProbabilityRatioTest(
+      residuals, error_thresh, sigma, epsilon, decision_threshold,
+      &num_tested_points, &observed_inlier_ratio);
   EXPECT_FALSE(sprt_success);
 
   not_fitting_line = Line(2.0, 0);
-  residuals = estimator.Residuals(input_points,
-                                  not_fitting_line);
-  sprt_success = SequentialProbabilityRatioTest(residuals,
-                                                error_thresh,
-                                                sigma,
-                                                epsilon,
-                                                decision_threshold,
-                                                &num_tested_points,
-                                                &observed_inlier_ratio);
+  residuals = estimator.Residuals(input_points, not_fitting_line);
+  sprt_success = SequentialProbabilityRatioTest(
+      residuals, error_thresh, sigma, epsilon, decision_threshold,
+      &num_tested_points, &observed_inlier_ratio);
   EXPECT_FALSE(sprt_success);
 }
 }  // namespace theia

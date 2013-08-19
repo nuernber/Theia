@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -52,8 +52,7 @@
 // method to run ARRSAC on your data.
 namespace theia {
 // Helper struct for scoring the hypotheses in ARRSAC.
-template<class Datum>
-struct ScoredData {
+template <class Datum> struct ScoredData {
   Datum data;
   double score;
   ScoredData() {}
@@ -61,12 +60,12 @@ struct ScoredData {
 };
 
 // Comparator method so that we can call c++ algorithm sort.
-template<class Datum>
+template <class Datum>
 bool CompareScoredData(ScoredData<Datum> i, ScoredData<Datum> j) {
   return i.score < j.score;
 }
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 class Arrsac : public SampleConsensusEstimator<Datum, Model> {
  public:
   // Params:
@@ -78,9 +77,7 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
   //     hypothesis set
   //   block_size: Number of data points a hypothesis is evaluated against
   //     before preemptive ordering is used.
-  Arrsac(int min_sample_size,
-         double error_thresh,
-         int max_candidate_hyps = 500,
+  Arrsac(int min_sample_size, double error_thresh, int max_candidate_hyps = 500,
          int block_size = 100)
       : min_sample_size_(min_sample_size),
         error_thresh_(error_thresh),
@@ -96,8 +93,7 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
   // estimation of these parameters -- sigma and epsilon are adjusted and
   // re-estimated as the ARRSAC algorithm progresses.
   // inlier_confidence: confidence that there exists one set with no outliers.
-  void SetOptionalParameters(double sigma,
-                             double epsilon,
+  void SetOptionalParameters(double sigma, double epsilon,
                              double inlier_confidence) {
     sigma_ = sigma;
     epsilon_ = epsilon;
@@ -112,8 +108,7 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
   //     model on success.
   // Return: true on successful estimation, false otherwise.
   bool Estimate(const std::vector<Datum>& data,
-                const Estimator<Datum, Model>& estimator,
-                Model* best_model);
+                const Estimator<Datum, Model>& estimator, Model* best_model);
 
   // This is sort of a hack. We make this method protected so that we can test
   // it easily. See arrsac_test.cc for more.
@@ -152,14 +147,13 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
 
 // -------------------------- Implementation -------------------------- //
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
     const std::vector<Datum>& data_input,
     const Estimator<Datum, Model>& estimator,
     std::vector<Model>* accepted_hypotheses) {
   //   set parameters for SPRT test, calculate initial value of A
-  double decision_threshold =
-      CalculateSPRTDecisionThreshold(sigma_, epsilon_);
+  double decision_threshold = CalculateSPRTDecisionThreshold(sigma_, epsilon_);
   int k = 1;
   int m_prime = max_candidate_hyps_;
   // Inner RANSAC variables.
@@ -205,15 +199,10 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
     int num_tested_points;
     double observed_inlier_ratio;
     // Evaluate hypothesis h(k) with SPRT.
-    std::vector<double> residuals = estimator.Residuals(data_input,
-                                                        hypothesis);
-    bool sprt_test = SequentialProbabilityRatioTest(residuals,
-                                                    error_thresh_,
-                                                    sigma_,
-                                                    epsilon_,
-                                                    decision_threshold,
-                                                    &num_tested_points,
-                                                    &observed_inlier_ratio);
+    std::vector<double> residuals = estimator.Residuals(data_input, hypothesis);
+    bool sprt_test = SequentialProbabilityRatioTest(
+        residuals, error_thresh_, sigma_, epsilon_, decision_threshold,
+        &num_tested_points, &observed_inlier_ratio);
 
     // If the model was rejected by the SPRT test.
     if (!sprt_test) {
@@ -224,13 +213,13 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
       //    number of inliers observed / number of points observed in SPRT
       rejected_accum_inlier_ratio += observed_inlier_ratio;
       num_rejected_hypotheses++;
-      sigma_ = rejected_accum_inlier_ratio/
-          static_cast<double>(num_rejected_hypotheses);
-    } else if (floor(observed_inlier_ratio*num_tested_points) >
+      sigma_ = rejected_accum_inlier_ratio /
+               static_cast<double>(num_rejected_hypotheses);
+    } else if (floor(observed_inlier_ratio * num_tested_points) >
                max_num_inliers) {
       // Else if hypothesis h(k) is accepted and has the largest support so far.
       accepted_hypotheses->push_back(hypothesis);
-      max_num_inliers = floor(observed_inlier_ratio*num_tested_points);
+      max_num_inliers = floor(observed_inlier_ratio * num_tested_points);
 
       // Set parameters to force inner ransac to execute.
       inner_ransac = true;
@@ -245,13 +234,13 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
 
       // Re-estimate params of SPRT.
       // Estimate epsilon as inlier ratio for largest size of support.
-      epsilon_ = static_cast<double>(max_num_inliers)/
-          static_cast<double>(data_input.size());
+      epsilon_ = static_cast<double>(max_num_inliers) /
+                 static_cast<double>(data_input.size());
       // estimate inlier ratio e' and M_prime (eq 1) Cap M_prime at max of M
       // TODO(cmsweeney): verify that num_tested_points is the correct value
       // here and not data_input.size().
       int m_prime =
-          ceil(log(1 - inlier_confidence_)/
+          ceil(log(1 - inlier_confidence_) /
                log(1 - pow(observed_inlier_ratio, num_tested_points)));
       m_prime = std::max(max_candidate_hyps_, m_prime);
     }
@@ -260,15 +249,13 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
   return k;
 }
 
-template<class Datum, class Model>
+template <class Datum, class Model>
 bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
                                     const Estimator<Datum, Model>& estimator,
                                     Model* best_model) {
   // Generate Initial Hypothesis Test
   std::vector<Model> initial_hypotheses;
-  int k = GenerateInitialHypothesisSet(data,
-                                       estimator,
-                                       &initial_hypotheses);
+  int k = GenerateInitialHypothesisSet(data, estimator, &initial_hypotheses);
 
   // Score initial set.
   std::vector<ScoredData<Model> > hypotheses(initial_hypotheses.size());
@@ -284,10 +271,11 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
   RandomSampler<Datum> random_sampler(min_sample_size_);
 
   // Preemptive Evaluation
-  for (int i = block_size_+1; i < data.size(); i++) {
+  for (int i = block_size_ + 1; i < data.size(); i++) {
     // Select n, the number of hypotheses to consider.
-    int f_i = floor(max_candidate_hyps_ * pow(2, -1.0*floor(i/block_size_)));
-    int n = std::min(f_i, static_cast<int>(hypotheses.size()/2));
+    int f_i =
+        floor(max_candidate_hyps_ * pow(2, -1.0 * floor(i / block_size_)));
+    int n = std::min(f_i, static_cast<int>(hypotheses.size() / 2));
 
     // Rorder and select hypothesis h(1)...h(n). Should be really fast because
     // data point can only increase by 1 or not change.
@@ -310,17 +298,17 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
       // recently sorted and the values can only have increased by 1.
       double max_inliers = 0;
       for (int j = 0; j < hypotheses.size() - 1; j++) {
-        if (hypotheses[j].score > hypotheses[j+1].score) {
+        if (hypotheses[j].score > hypotheses[j + 1].score) {
           max_inliers = hypotheses[j].score;
           break;
         }
       }
 
       // Estimate best inlier ratio.
-      double inlier_ratio_estimate = max_inliers/static_cast<double>(i);
+      double inlier_ratio_estimate = max_inliers / static_cast<double>(i);
       // Calculate number of hypotheses needed (eq. 1).
       int temp_max_candidate_hyps =
-          static_cast<int>(ceil(log(1 - inlier_confidence_)/
+          static_cast<int>(ceil(log(1 - inlier_confidence_) /
                                 log(1 - pow(inlier_ratio_estimate, i))));
       // M' = max(M,M').
       temp_max_candidate_hyps =
@@ -357,5 +345,5 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
   return true;
 }
 
-}  // namespace theia
+}       // namespace theia
 #endif  // SOLVERS_ARRSAC_H_

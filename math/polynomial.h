@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -48,8 +48,7 @@
 namespace theia {
 // Class for storing and manipulating polynomials for a univariate
 // polynomial.
-template<int degree>
-class Polynomial {
+template <int degree> class Polynomial {
  public:
   // coeffs is an array containing the coefficients of the polynomial, with
   // coeffs[i] corresponding to the i-th degree coefficient.
@@ -86,8 +85,7 @@ class Polynomial {
   }
 
   // Add two polynomials together.
-  template<int degree2>
-  Polynomial Add(const Polynomial<degree2>& poly) const {
+  template <int degree2> Polynomial Add(const Polynomial<degree2>& poly) const {
     CHECK_EQ(degree, degree2) << "Cannot add polynomials of different sizes";
     Polynomial<degree> sum;
     sum.coeffs_ = coeffs_ + poly.coeffs_;
@@ -95,7 +93,7 @@ class Polynomial {
   }
 
   // Subtract two polynomials.
-  template<int degree2>
+  template <int degree2>
   Polynomial Subtract(const Polynomial<degree2>& poly) const {
     CHECK_EQ(degree, degree2) << "Cannot subtract polynomials of different "
                               << "sizes";
@@ -105,48 +103,47 @@ class Polynomial {
   }
 
   // Multiply two polynomials.
-  template<int degree2>
+  template <int degree2>
   Polynomial<degree + degree2> Multiply(const Polynomial<degree2>& poly) const {
     Polynomial<degree + degree2> product;
     for (int i = 0; i <= degree; i++)
       for (int j = 0; j <= degree2; j++)
-        product.coeffs_[i + j] += coeffs_[i]*poly.coeffs_[j];
+        product.coeffs_[i + j] += coeffs_[i] * poly.coeffs_[j];
     return product;
   }
 
   // Divide two polynomials, returning the quotient and remainder.
   // TODO(cmsweeney): Make this more efficient with Eigen.
-  template<int degree2>
+  template <int degree2>
   std::pair<Polynomial<degree - degree2>, Polynomial<degree2 - 1> > Divide(
       const Polynomial<degree2>& poly) const {
     Polynomial<degree - degree2> quotient;
     Eigen::Matrix<double, degree + 1, 1> remainder(coeffs_);
 
     for (int i = quotient.GetDegree(); i >= 0; i--) {
-      double scale = remainder[i + poly.coeffs_.size() - 1]/
-          poly.coeffs_[poly.coeffs_.size() - 1];
+      double scale = remainder[i + poly.coeffs_.size() - 1] /
+                     poly.coeffs_[poly.coeffs_.size() - 1];
       quotient.coeffs_[i] = scale;
       for (int j = 0; j < poly.coeffs_.size(); j++)
-        remainder[i + j] -= scale*poly.coeffs_[j];
+        remainder[i + j] -= scale * poly.coeffs_[j];
     }
     return std::make_pair(
-        quotient,
-        Polynomial<degree2 - 1>(remainder.head(degree2).data()));
+        quotient, Polynomial<degree2 - 1>(remainder.head(degree2).data()));
   }
 
   // Operator overload for polynomial arithmatic.
-  template<int degree2>
-  Polynomial<degree> operator+(const Polynomial<degree2> &poly) {
+  template <int degree2>
+      Polynomial<degree> operator+(const Polynomial<degree2>& poly) {
     return this->Add(poly);
   }
 
-  template<int degree2>
-  Polynomial<degree> operator-(const Polynomial<degree> &poly) {
+  template <int degree2>
+      Polynomial<degree> operator-(const Polynomial<degree>& poly) {
     return this->Subtract(poly);
   }
 
-  template<int degree2>
-  Polynomial<degree + degree2> operator*(const Polynomial<degree2> &poly) {
+  template <int degree2>
+  Polynomial<degree + degree2> operator*(const Polynomial<degree2>& poly) {
     return this->Multiply(poly);
   }
 
@@ -202,8 +199,7 @@ class Polynomial {
   // Coefficients of the polynomial.
   Eigen::Matrix<double, degree + 1, 1> coeffs_;
 
-  template<int friend_degree>
-  friend class Polynomial;
+  template <int friend_degree> friend class Polynomial;
 
   // Borrowed from Ceres Solver, implementing balancing function as described by
   // B. N. Parlett and C. Reinsch, "Balancing a Matrix for Calculation of
@@ -212,8 +208,7 @@ class Polynomial {
   // 10.1007/BF02165404
   void BalanceCompanionMatrix(
       Eigen::Matrix<double, degree, degree>* companion) const {
-    Eigen::Matrix<double, degree, degree>& companion_matrix =
-        *companion;
+    Eigen::Matrix<double, degree, degree>& companion_matrix = *companion;
     Eigen::Matrix<double, degree, degree> companion_matrix_offdiagonal =
         companion_matrix;
     companion_matrix_offdiagonal.diagonal().setZero();
@@ -245,7 +240,8 @@ class Polynomial {
         if (exponent != 0) {
           const double scaled_col_norm = std::ldexp(col_norm, exponent);
           const double scaled_row_norm = std::ldexp(row_norm, -exponent);
-          if (scaled_col_norm + scaled_row_norm < gamma*(col_norm + row_norm)) {
+          if (scaled_col_norm + scaled_row_norm <
+              gamma * (col_norm + row_norm)) {
             // Accept the new scaling. (Multiplication by powers of 2 should not
             // introduce rounding errors (ignoring non-normalized numbers and
             // over- or underflow))
@@ -262,5 +258,5 @@ class Polynomial {
   }
 };
 
-}  // namespace theia
+}       // namespace theia
 #endif  // MATH_POLYNOMIAL_H_

@@ -50,12 +50,11 @@ extern "C" {
 
 namespace theia {
 SiftDescriptorExtractor::~SiftDescriptorExtractor() {
-  if (sift_filter_ != nullptr)
-    vl_sift_delete(sift_filter_);
+  if (sift_filter_ != nullptr) vl_sift_delete(sift_filter_);
 }
 
-Descriptor* SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
-                                                       const Keypoint& keypoint) {
+Descriptor* SiftDescriptorExtractor::ComputeDescriptor(
+    const GrayImage& image, const Keypoint& keypoint) {
   Descriptor* descriptor = new SiftDescriptor;
   CHECK(keypoint.has_scale() && keypoint.has_orientation())
       << "Keypoint must have scale and orientation to compute a SIFT "
@@ -71,18 +70,13 @@ Descriptor* SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
   // If the filter has not been set (or was deleted in the previous if), then we
   // need to create a new filter.
   if (sift_filter_ == nullptr)
-    sift_filter_ = vl_sift_new(image.Cols(), image.Rows(),
-                               num_octaves_,
-                               num_levels_,
-                               first_octave_);
+    sift_filter_ = vl_sift_new(image.Cols(), image.Rows(), num_octaves_,
+                               num_levels_, first_octave_);
 
   // Create the vl sift keypoint from the one passed in.
   VlSiftKeypoint sift_keypoint;
-  vl_sift_keypoint_init(sift_filter_,
-                        &sift_keypoint,
-                        keypoint.x(),
-                        keypoint.y(),
-                        keypoint.scale());
+  vl_sift_keypoint_init(sift_filter_, &sift_keypoint, keypoint.x(),
+                        keypoint.y(), keypoint.scale());
 
   // The VLFeat functions take in a non-const image pointer so that it can
   // calculate gaussian pyramids. Obviously, we do not want to break our const
@@ -90,8 +84,8 @@ Descriptor* SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
   GrayImage mutable_image = image.Clone();
 
   // Calculate the first octave to process.
-  int vl_status = vl_sift_process_first_octave(sift_filter_,
-                                               mutable_image.Data());
+  int vl_status =
+      vl_sift_process_first_octave(sift_filter_, mutable_image.Data());
   // Proceed through the octaves we reach the same one as the keypoint.
   while (sift_keypoint.o != sift_filter_->o_cur)
     vl_sift_process_next_octave(sift_filter_);
@@ -102,16 +96,13 @@ Descriptor* SiftDescriptorExtractor::ComputeDescriptor(const GrayImage& image,
   // Calculate the sift feature. Note that we are passing in a direct pointer to
   // the descriptor's underlying data.
   descriptor->SetKeypoint(keypoint);
-  vl_sift_calc_keypoint_descriptor(sift_filter_,
-                                   descriptor->FloatData(),
-                                   &sift_keypoint,
-                                   keypoint.orientation());
+  vl_sift_calc_keypoint_descriptor(sift_filter_, descriptor->FloatData(),
+                                   &sift_keypoint, keypoint.orientation());
   return descriptor;
 }
 
 bool SiftDescriptorExtractor::ComputeDescriptors(
-    const GrayImage& image,
-    const std::vector<Keypoint*>& keypoints,
+    const GrayImage& image, const std::vector<Keypoint*>& keypoints,
     std::vector<Descriptor*>* descriptors) {
   // If the filter has been set, but is not usable for the input image (i.e. the
   // width and height are different) then we must make a new filter. Adding this
@@ -124,10 +115,8 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
   // If the filter has not been set (or was deleted in the previous if), then we
   // need to create a new filter.
   if (sift_filter_ == nullptr)
-    sift_filter_ = vl_sift_new(image.Cols(), image.Rows(),
-                               num_octaves_,
-                               num_levels_,
-                               first_octave_);
+    sift_filter_ = vl_sift_new(image.Cols(), image.Rows(), num_octaves_,
+                               num_levels_, first_octave_);
 
   // Create the vl sift keypoint from the one passed in.
   std::vector<VlSiftKeypoint> sift_keypoints(keypoints.size());
@@ -135,11 +124,8 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
     CHECK(keypoints[i]->has_scale() && keypoints[i]->has_orientation())
         << "Keypoint must have scale and orientation to compute a SIFT "
         << "descriptor.";
-    vl_sift_keypoint_init(sift_filter_,
-                          &sift_keypoints[i],
-                          keypoints[i]->x(),
-                          keypoints[i]->y(),
-                          keypoints[i]->scale());
+    vl_sift_keypoint_init(sift_filter_, &sift_keypoints[i], keypoints[i]->x(),
+                          keypoints[i]->y(), keypoints[i]->scale());
   }
   // The VLFeat functions take in a non-const image pointer so that it can
   // calculate gaussian pyramids. Obviously, we do not want to break our const
@@ -147,8 +133,8 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
   GrayImage mutable_image = image.Clone();
 
   // Calculate the first octave to process.
-  int vl_status = vl_sift_process_first_octave(sift_filter_,
-                                               mutable_image.Data());
+  int vl_status =
+      vl_sift_process_first_octave(sift_filter_, mutable_image.Data());
 
   // Proceed through the octaves we reach the same one as the keypoint.  We
   // first resize the descriptors vector so that the keypoint indicies will be
@@ -157,14 +143,12 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
   while (vl_status != VL_ERR_EOF) {
     // Go through each keypoint to see if it came from this octave.
     for (int i = 0; i < sift_keypoints.size(); i++) {
-      if (sift_keypoints[i].o != sift_filter_->o_cur)
-        continue;
+      if (sift_keypoints[i].o != sift_filter_->o_cur) continue;
       (*descriptors)[i] = new SiftDescriptor;
       (*descriptors)[i]->SetKeypoint(*keypoints[i]);
-      vl_sift_calc_keypoint_descriptor(sift_filter_,
-                                       (*descriptors)[i]->FloatData(),
-                                       &sift_keypoints[i],
-                                       keypoints[i]->orientation());
+      vl_sift_calc_keypoint_descriptor(
+          sift_filter_, (*descriptors)[i]->FloatData(), &sift_keypoints[i],
+          keypoints[i]->orientation());
     }
     vl_status = vl_sift_process_next_octave(sift_filter_);
   }
@@ -184,10 +168,8 @@ bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
   // If the filter has not been set (or was deleted in the previous if), then we
   // need to create a new filter.
   if (sift_filter_ == nullptr)
-    sift_filter_ = vl_sift_new(image.Cols(), image.Rows(),
-                               num_octaves_,
-                               num_levels_,
-                               first_octave_);
+    sift_filter_ = vl_sift_new(image.Cols(), image.Rows(), num_octaves_,
+                               num_levels_, first_octave_);
 
   // The VLFeat functions take in a non-const image pointer so that it can
   // calculate gaussian pyramids. Obviously, we do not want to break our const
@@ -195,8 +177,8 @@ bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
   GrayImage mutable_image = image.Clone();
 
   // Calculate the first octave to process.
-  int vl_status = vl_sift_process_first_octave(sift_filter_,
-                                               mutable_image.Data());
+  int vl_status =
+      vl_sift_process_first_octave(sift_filter_, mutable_image.Data());
   // Process octaves until you can't anymore.
   while (vl_status != VL_ERR_EOF) {
     // Detect the keypoints.
@@ -209,15 +191,13 @@ bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
     for (int i = 0; i < num_keypoints; i++) {
       // Calculate (up to 4) orientations of the keypoint.
       double angles[4];
-      int num_angles = vl_sift_calc_keypoint_orientations(sift_filter_,
-                                                          angles,
+      int num_angles = vl_sift_calc_keypoint_orientations(sift_filter_, angles,
                                                           &vl_keypoints[i]);
       for (int j = 0; j < num_angles; j++) {
         SiftDescriptor* sift_descriptor = new SiftDescriptor;
-        vl_sift_calc_keypoint_descriptor(sift_filter_,
-                                         sift_descriptor->FloatData(),
-                                         &vl_keypoints[i],
-                                         angles[j]);
+        vl_sift_calc_keypoint_descriptor(
+            sift_filter_, sift_descriptor->FloatData(), &vl_keypoints[i],
+            angles[j]);
         sift_descriptor->set_x(vl_keypoints[i].x);
         sift_descriptor->set_y(vl_keypoints[i].y);
         sift_descriptor->set_scale(vl_keypoints[i].sigma);
@@ -236,7 +216,7 @@ bool SiftDescriptorExtractor::ProtoToDescriptor(
     const DescriptorsProto& proto,
     std::vector<Descriptor*>* descriptors) const {
   descriptors->reserve(proto.feature_descriptor_size());
-  for (const DescriptorProto& proto_descriptor: proto.feature_descriptor()) {
+  for (const DescriptorProto& proto_descriptor : proto.feature_descriptor()) {
     SiftDescriptor* descriptor = new SiftDescriptor;
     CHECK_EQ(proto_descriptor.descriptor_type(), DescriptorProto::SIFT)
         << "Descriptor in proto is not a patch descriptor.";
@@ -260,9 +240,7 @@ bool SiftDescriptorExtractor::ProtoToDescriptor(
 bool SiftDescriptorExtractor::DescriptorToProto(
     const std::vector<Descriptor*>& descriptors,
     DescriptorsProto* proto) const {
-  for (const Descriptor* generic_descriptor : descriptors) {
-    const SiftDescriptor* descriptor =
-        dynamic_cast<const SiftDescriptor*>(generic_descriptor);
+  for (const Descriptor* descriptor : descriptors) {
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the float array to the proto.
     for (int i = 0; i < descriptor->Dimensions(); i++)
@@ -279,4 +257,4 @@ bool SiftDescriptorExtractor::DescriptorToProto(
   return true;
 }
 #endif  // THEIA_NO_PROTOCOL_BUFFERS
-}  // namespace theia
+}       // namespace theia

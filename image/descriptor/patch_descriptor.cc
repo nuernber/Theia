@@ -103,9 +103,7 @@ bool PatchDescriptorExtractor::ProtoToDescriptor(
 bool PatchDescriptorExtractor::DescriptorToProto(
     const std::vector<Descriptor*>& descriptors,
     DescriptorsProto* proto) const {
-  for (const Descriptor* descriptor : descriptors) {
-    const PatchDescriptor* patch_descriptor =
-        dynamic_cast<const PatchDescriptor*>(descriptor);
+  for (const Descriptor* patch_descriptor : descriptors) {
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the float array to the proto.
     for (int i = 0; i < descriptor->Dimensions(); i++)

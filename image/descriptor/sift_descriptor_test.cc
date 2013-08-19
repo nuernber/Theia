@@ -63,7 +63,8 @@ TEST(SiftDescriptor, Sanity) {
   // For each keypoint, extract the sift descriptors.
   SiftDescriptorExtractor sift_extractor;
   std::vector<Descriptor*> sift_descriptors;
-  CHECK_NOTNULL(sift_extractor.ComputeDescriptor(input_img, *sift_keypoints[0]));
+  CHECK_NOTNULL(
+      sift_extractor.ComputeDescriptor(input_img, *sift_keypoints[0]));
   CHECK(sift_extractor.ComputeDescriptorsPruned(input_img,
                                                 sift_keypoints,
                                                 &sift_descriptors));

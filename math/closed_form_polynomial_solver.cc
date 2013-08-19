@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -48,18 +48,20 @@ int SolveDepressedCubic(double p, double q, complex<double>* roots) {
   using std::pow;
   using std::sqrt;
   if (p == 0.0) {
-    roots[0] = pow(-1.0*q, 1.0/3.0);
+    roots[0] = pow(-1.0 * q, 1.0 / 3.0);
     return 1;
   }
 
-  complex<double> cubic_root_of_unity(-0.5, 0.5*sqrt(3.0));
-  complex<double> temp = q*q/4.0 + p*p*p/27.0;
+  complex<double> cubic_root_of_unity(-0.5, 0.5 * sqrt(3.0));
+  complex<double> temp = q * q / 4.0 + p * p * p / 27.0;
   complex<double> sqrt_t = sqrt(temp);
-  complex<double> u = pow(-0.5*q + sqrt_t, 1.0/3.0);
-  complex<double> v = pow(-0.5*q - sqrt_t, 1.0/3.0);
+  complex<double> u = pow(-0.5 * q + sqrt_t, 1.0 / 3.0);
+  complex<double> v = pow(-0.5 * q - sqrt_t, 1.0 / 3.0);
   roots[0] = u + v;
-  roots[1] = u*cubic_root_of_unity + v*cubic_root_of_unity*cubic_root_of_unity;
-  roots[2] = u*cubic_root_of_unity*cubic_root_of_unity + v*cubic_root_of_unity;
+  roots[1] =
+      u * cubic_root_of_unity + v * cubic_root_of_unity * cubic_root_of_unity;
+  roots[2] =
+      u * cubic_root_of_unity * cubic_root_of_unity + v * cubic_root_of_unity;
   return 3;
 }
 }  // namespace
@@ -81,14 +83,14 @@ int SolveQuadratic(double a, double b, double c, complex<double>* roots) {
   using std::sqrt;
   // If the equation is actually linear.
   if (a == 0.0) {
-    roots[0] = -1.0*c/b;
+    roots[0] = -1.0 * c / b;
     return 1;
   }
 
-  complex<double> tmp_complex_num(b*b - 4.0*a*c, 0.0);
+  complex<double> tmp_complex_num(b * b - 4.0 * a * c, 0.0);
   complex<double> complex_sqrt(sqrt(tmp_complex_num));
-  roots[0] = (-1.0*b + complex_sqrt)/(2.0*a);
-  roots[1] = (-1.0*b - complex_sqrt)/(2.0*a);
+  roots[0] = (-1.0 * b + complex_sqrt) / (2.0 * a);
+  roots[1] = (-1.0 * b - complex_sqrt) / (2.0 * a);
   return 2;
 }
 // Provides solutions to the equation a*x^3 + b*x^2 + c*x + d = 0 using Cardan's
@@ -105,17 +107,17 @@ int SolveCubicReals(double a, double b, double c, double d, double* roots) {
 }
 
 int SolveCubic(double a, double b, double c, double d, complex<double>* roots) {
-  if (a == 0.0)
-    return SolveQuadratic(b, c, d, roots);
+  if (a == 0.0) return SolveQuadratic(b, c, d, roots);
 
   // Solve by first reducing the problem to a depressed cubic.
-  double p = (3.0*a*c - b*b)/(3.0*a*a);
-  double q = (2.0*b*b*b - 9.0*a*b*c + 27.0*a*a*d)/(27.0*a*a*a);
+  double p = (3.0 * a * c - b * b) / (3.0 * a * a);
+  double q = (2.0 * b * b * b - 9.0 * a * b * c + 27.0 * a * a * d) /
+             (27.0 * a * a * a);
   int num_solutions = SolveDepressedCubic(p, q, roots);
   // Transform solution back to normal params.
-  roots[0] -= b/(3.0*a);
-  roots[1] -= b/(3.0*a);
-  roots[2] -= b/(3.0*a);
+  roots[0] -= b / (3.0 * a);
+  roots[1] -= b / (3.0 * a);
+  roots[2] -= b / (3.0 * a);
   return num_solutions;
 }
 
@@ -139,38 +141,43 @@ int SolveQuartic(double a, double b, double c, double d, double e,
   using std::pow;
   using std::sqrt;
 
-  double a_pw2 = a*a;
-  double b_pw2 = b*b;
-  double a_pw3 = a_pw2*a;
-  double b_pw3 = b_pw2*b;
-  double a_pw4 = a_pw3*a;
-  double b_pw4 = b_pw3*b;
+  double a_pw2 = a * a;
+  double b_pw2 = b * b;
+  double a_pw3 = a_pw2 * a;
+  double b_pw3 = b_pw2 * b;
+  double a_pw4 = a_pw3 * a;
+  double b_pw4 = b_pw3 * b;
 
-  double alpha = -3*b_pw2/(8*a_pw2)+c/a;
-  double beta = b_pw3/(8*a_pw3)-b*c/(2*a_pw2)+d/a;
-  double gamma = -3*b_pw4/(256*a_pw4)+b_pw2*c/(16*a_pw3)-b*d/(4*a_pw2)+e/a;
+  double alpha = -3 * b_pw2 / (8 * a_pw2) + c / a;
+  double beta = b_pw3 / (8 * a_pw3) - b * c / (2 * a_pw2) + d / a;
+  double gamma = -3 * b_pw4 / (256 * a_pw4) + b_pw2 * c / (16 * a_pw3) -
+                 b * d / (4 * a_pw2) + e / a;
 
-  double alpha_pw2 = alpha*alpha;
-  double alpha_pw3 = alpha_pw2*alpha;
+  double alpha_pw2 = alpha * alpha;
+  double alpha_pw3 = alpha_pw2 * alpha;
 
-  complex<double> P(-alpha_pw2/12 - gamma, 0);
-  complex<double> Q(-alpha_pw3/108 + alpha*gamma/3 - pow(beta, 2)/8, 0);
-  complex<double> R = -Q/2.0 + sqrt(pow(Q, 2)/4.0+pow(P, 3.0)/27.0);
+  complex<double> P(-alpha_pw2 / 12 - gamma, 0);
+  complex<double> Q(-alpha_pw3 / 108 + alpha * gamma / 3 - pow(beta, 2) / 8, 0);
+  complex<double> R = -Q / 2.0 + sqrt(pow(Q, 2) / 4.0 + pow(P, 3.0) / 27.0);
 
-  complex<double> U = pow(R, (1.0/3.0));
+  complex<double> U = pow(R, (1.0 / 3.0));
   complex<double> y;
 
   if (U.real() == 0)
-    y = -5.0*alpha/6.0 - pow(Q, (1.0/3.0));
+    y = -5.0 * alpha / 6.0 - pow(Q, (1.0 / 3.0));
   else
-    y = -5.0*alpha/6.0 - P/(3.0*U) + U;
+    y = -5.0 * alpha / 6.0 - P / (3.0 * U) + U;
 
-  complex<double> w = sqrt(alpha + 2.0*y);
+  complex<double> w = sqrt(alpha + 2.0 * y);
 
-  roots[0] = -b/(4.0*a) + 0.5*(w + sqrt(-(3.0*alpha + 2.0*y + 2.0*beta/w)));
-  roots[1] = -b/(4.0*a) + 0.5*(w - sqrt(-(3.0*alpha + 2.0*y + 2.0*beta/w)));
-  roots[2] = -b/(4.0*a) + 0.5*(-w + sqrt(-(3.0*alpha + 2.0*y - 2.0*beta/w)));
-  roots[3] = -b/(4.0*a) + 0.5*(-w - sqrt(-(3.0*alpha + 2.0*y - 2.0*beta/w)));
+  roots[0] = -b / (4.0 * a) +
+             0.5 * (w + sqrt(-(3.0 * alpha + 2.0 * y + 2.0 * beta / w)));
+  roots[1] = -b / (4.0 * a) +
+             0.5 * (w - sqrt(-(3.0 * alpha + 2.0 * y + 2.0 * beta / w)));
+  roots[2] = -b / (4.0 * a) +
+             0.5 * (-w + sqrt(-(3.0 * alpha + 2.0 * y - 2.0 * beta / w)));
+  roots[3] = -b / (4.0 * a) +
+             0.5 * (-w - sqrt(-(3.0 * alpha + 2.0 * y - 2.0 * beta / w)));
 
   return 4;
 }

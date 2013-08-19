@@ -42,6 +42,7 @@
 #include <glog/logging.h>
 
 #include <algorithm>
+#include <bitset>
 #include <cmath>
 #include <vector>
 
@@ -341,8 +342,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
   // Estimate orientations, extract descriptors, extract the best comparisons
   // only.
   for (size_t k = keypoints.size(); k--;) {
-    FreakDescriptor* freak_descriptor =
-        dynamic_cast<FreakDescriptor*>((*descriptors)[k]);
+    Descriptor* freak_descriptor = (*descriptors)[k];
     if (freak_descriptor == nullptr) {
       continue;
     }
@@ -386,7 +386,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
     }
 
 #ifdef THEIA_USE_SSE
-    __m128i* ptr = (__m128i*)(freak_descriptor->CharData());
+    __m128i* ptr = reinterpret_cast<__m128i*>(freak_descriptor->CharData());
     // NOTE: the comparisons order is modified in each block (but first
     // 128 comparisons remain globally the same-->does not affect the
     // 128,384 bits segmanted matching strategy)
@@ -434,7 +434,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
         // Emulated "not less than" for 8-bit UNSIGNED integers.
         workReg = _mm_cmpeq_epi8(workReg, operand2);
         // Merge the last 16 bits with the 128bits std::vector until full.
-        workReg = _mm_and_si128(_mm_set1_epi16(short(0x8080 >> m)), workReg);
+        workReg = _mm_and_si128(
+            _mm_set1_epi16(static_cast<int16_t>(0x8080 >> m)), workReg);
         result128 = _mm_or_si128(result128, workReg);
       }
       (*ptr) = result128;
@@ -547,9 +548,7 @@ bool FreakDescriptorExtractor::ProtoToDescriptor(
 bool FreakDescriptorExtractor::DescriptorToProto(
     const std::vector<Descriptor*>& descriptors,
     DescriptorsProto* proto) const {
-  for (const Descriptor* general_descriptor : descriptors) {
-    const FreakDescriptor* descriptor =
-        dynamic_cast<const FreakDescriptor*>(general_descriptor);
+  for (const Descriptor* descriptor : descriptors) {
     DescriptorProto* descriptor_proto = proto->add_feature_descriptor();
     // Add the binary array to the proto.
     const std::bitset<FreakDescriptor::const_dimensions_>* freak_bitset =

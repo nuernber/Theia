@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -55,19 +55,16 @@ class Distribution {
 class NormalDistribution : public Distribution {
  public:
   NormalDistribution(const double& mean, const double& sigma)
-      : mean_(mean),
-        sigma_(sigma) {
+      : mean_(mean), sigma_(sigma) {
     CHECK_GT(sigma, 0)
         << "Sigma must be greater than zero in a normal distribution";
-    alpha_ = 1.0/(sigma*sqrt(2.0*M_PI));
-    beta_ = -1.0/(2.0*sigma*sigma);
+    alpha_ = 1.0 / (sigma * sqrt(2.0 * M_PI));
+    beta_ = -1.0 / (2.0 * sigma * sigma);
   }
 
   ~NormalDistribution() {}
 
-  double eval(double x) const {
-    return alpha_*exp(beta_*x*x);
-  }
+  double eval(double x) const { return alpha_ * exp(beta_ * x * x); }
 
  private:
   // Mean of data.
@@ -90,7 +87,7 @@ class UniformDistribution : public Distribution {
                           << "uniform distributions.";
     CHECK_NE(right, left) << "Left bound is equal to right bound! Uniform "
                           << "distribution must have a nonzero range.";
-    inverse_span_ = (left == right) ? 1.0 : 1.0/(right - left);
+    inverse_span_ = (left == right) ? 1.0 : 1.0 / (right - left);
   }
 
   // Destructor

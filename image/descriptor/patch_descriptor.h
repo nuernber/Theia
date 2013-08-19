@@ -51,7 +51,7 @@ class Keypoint;
 class PatchDescriptor : public FloatDescriptor {
  public:
   PatchDescriptor(int rows, int cols)
-      : FloatDescriptor(rows*cols, DescriptorType::PATCH) {}
+      : FloatDescriptor(rows * cols, DescriptorType::PATCH) {}
 };
 
 class PatchDescriptorExtractor : public DescriptorExtractor {
@@ -64,7 +64,7 @@ class PatchDescriptorExtractor : public DescriptorExtractor {
   Descriptor* ComputeDescriptor(const GrayImage& image,
                                 const Keypoint& keypoint);
 
-  // Methods to load/store descriptors in protocol buffers.
+// Methods to load/store descriptors in protocol buffers.
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
   bool ProtoToDescriptor(const DescriptorsProto& proto,
                          std::vector<Descriptor*>* descriptors) const;
@@ -76,7 +76,7 @@ class PatchDescriptorExtractor : public DescriptorExtractor {
  private:
   int patch_rows_;
   int patch_cols_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(PatchDescriptorExtractor);
 };
 

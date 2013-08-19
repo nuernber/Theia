@@ -67,8 +67,7 @@ typedef Image<RGBPixel> RGBImage;
 typedef SubImage<float> GraySubImage;
 typedef Image<float> GrayImage;
 
-template <typename T>
-class SubImage {
+template <typename T> class SubImage {
  public:
   explicit SubImage(CVD::SubImage<T> sub) : sub_image_(sub) {}
   ~SubImage() {}
@@ -78,8 +77,8 @@ class SubImage {
   int Cols() const { return sub_image_.size().x; }
 
   // Accessors.
-  T* operator[] (int row) { return sub_image_[row]; }
-  const T* operator[] (int row) const { return sub_image_[row]; }
+  T* operator[](int row) { return sub_image_[row]; }
+  const T* operator[](int row) const { return sub_image_[row]; }
 
   // Fill with a scalar.
   void Fill(const T& val) { sub_image_.fill(val); }
@@ -107,8 +106,7 @@ class SubImage {
   CVD::SubImage<T> sub_image_;
 };
 
-template <typename T>
-class Image : public SubImage<T> {
+template <typename T> class Image : public SubImage<T> {
  public:
   Image() {}
   ~Image() {}
@@ -126,8 +124,7 @@ class Image : public SubImage<T> {
   // Convert to other image types.
   // NOTE: the way to call this would be theia_image.ConvertTo<RGBPixel>()
   // because you need explicit template arguments for the conversion.
-  template<typename C>
-  Image<C> ConvertTo() const;
+  template <typename C> Image<C> ConvertTo() const;
 
   // Clones via deep copy.
   Image<T> Clone() const { return Image(image_.copy_from_me()); }
@@ -155,8 +152,8 @@ class Image : public SubImage<T> {
   // the data to the subimage, the original Image class still owns it.
   // row, col specify the top-left corner of the sub image to extract.
   SubImage<T> GetSubImage(int row, int col, int num_rows, int num_cols);
-  const SubImage<T> GetSubImage(int row, int col,
-                                int num_rows, int num_cols) const;
+  const SubImage<T> GetSubImage(int row, int col, int num_rows,
+                                int num_cols) const;
 
   // Gaussian blur.
   void GaussianBlur(double sigma, Image<T>* out);
@@ -164,14 +161,13 @@ class Image : public SubImage<T> {
 
   // Sampling techniques.
   void HalfSample(Image<T>* dest) const;
-  Image<T> HalfSample() const ;
+  Image<T> HalfSample() const;
   void TwoThirdsSample(Image<T>* dest) const;
-  Image<T> TwoThirdsSample() const ;
+  Image<T> TwoThirdsSample() const;
 
   // Compute the integral image where pixel (x, y) is equal to the sum of all
   // values in the rectangle from (0, 0) to (x, y).
-  template<typename D = T>
-  Image<D> Integrate() const;
+  template <typename D = T> Image<D> Integrate() const;
 
   // Resize using a Lanczos 3 filter.
   void Resize(int new_rows, int new_cols);
@@ -200,39 +196,33 @@ class Image : public SubImage<T> {
 
 // ----------------- Implementation ----------------- //
 // Copy from a CVD image. Only copies the pointer when deep_copy is false.
-template <typename T>
-Image<T>::Image(CVD::Image<T> copy_img, bool deep_copy) {
+template <typename T> Image<T>::Image(CVD::Image<T> copy_img, bool deep_copy) {
   image_ = copy_img;
-  if (deep_copy)
-    image_.make_unique();
+  if (deep_copy) image_.make_unique();
   sub_image_ = image_;
 }
 
 // Read from file.
-template <typename T>
-Image<T>::Image(std::string filename) {
+template <typename T> Image<T>::Image(std::string filename) {
   image_ = CVD::img_load(filename);
   image_.make_unique();
   sub_image_ = image_;
 }
 
 // Empty Image of size rows, cols.
-template <typename T>
-Image<T>::Image(int rows, int cols) {
+template <typename T> Image<T>::Image(int rows, int cols) {
   image_.resize(CVD::ImageRef(cols, rows));
   image_.zero();
   sub_image_ = image_;
 }
 
-template <typename T>
-Image<T>::Image(int rows, int cols, T val) {
+template <typename T> Image<T>::Image(int rows, int cols, T val) {
   image_.resize(CVD::ImageRef(cols, rows));
   image_.fill(val);
   sub_image_ = image_;
 }
 
-template <typename T>
-Image<T> Image<T>::Zeros(int rows, int cols) {
+template <typename T> Image<T> Image<T>::Zeros(int rows, int cols) {
   return Image<T>(rows, cols);
 }
 
@@ -244,44 +234,42 @@ Image<C> Image<T>::ConvertTo() const {
 }
 
 // Deep copies the input to this.
-template <typename T>
-void Image<T>::DeepCopy(Image<T> copy_img) {
+template <typename T> void Image<T>::DeepCopy(Image<T> copy_img) {
   image_.copy_from(copy_img.image_);
   sub_image_ = image_;
 }
 
 template <typename T>
-SubImage<T> Image<T>::GetSubImage(int row, int col,
-                                  int num_rows, int num_cols) {
+SubImage<T> Image<T>::GetSubImage(int row, int col, int num_rows,
+                                  int num_cols) {
   return SubImage<T>(image_.sub_image(CVD::ImageRef(col, row),
                                       CVD::ImageRef(num_cols, num_rows)));
 }
 
 template <typename T>
-const SubImage<T> Image<T>::GetSubImage(int row, int col,
-                                        int num_rows, int num_cols) const {
+const SubImage<T> Image<T>::GetSubImage(int row, int col, int num_rows,
+                                        int num_cols) const {
   return SubImage<T>(image_.sub_image(CVD::ImageRef(col, row),
                                       CVD::ImageRef(num_cols, num_rows)));
 }
 
 template <typename T>
 inline double Image<T>::Gaussian(double x, double mu, double sigma) {
-  return std::exp(-(x - mu)*(x - mu)/(2.0*sigma*sigma));
+  return std::exp(-(x - mu) * (x - mu) / (2.0 * sigma * sigma));
 }
 
-template <typename T>
-void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
+template <typename T> void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
   // NOTE: some VERY odd artifacts are occuring with CVD's gaussian
   // convolution with high sigmas...
 
   // NOTE: This is my own gaussian blur instead. When tested against CVD there
   // is no loss of speed but it avoids any odd ringing artifacts that I was
   // noticing before.
-  int kernel_size = static_cast<int>((sigma - 0.8)/0.3 + 1.0)*2 + 1;
-  int kernel_radius = kernel_size/2.0;
+  int kernel_size = static_cast<int>((sigma - 0.8) / 0.3 + 1.0) * 2 + 1;
+  int kernel_radius = kernel_size / 2.0;
   std::vector<double> gauss_kernel(kernel_size);
   for (int i = 0; i < gauss_kernel.size(); i++) {
-    gauss_kernel[i] = Gaussian(i, (kernel_size - 1.0)/2.0, sigma);
+    gauss_kernel[i] = Gaussian(i, (kernel_size - 1.0) / 2.0, sigma);
   }
 
   // Precompute horizontal filter to leverage row-major memory ordering when
@@ -296,7 +284,7 @@ void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
       gauss_terms.push_back(gauss_kernel[i - (c - kernel_radius)]);
       weight += gauss_kernel[i - (c - kernel_radius)];
     }
-    double inv_weight = 1.0/weight;
+    double inv_weight = 1.0 / weight;
     for (; last_index < gauss_terms.size(); last_index++) {
       gauss_terms[last_index] *= inv_weight;
     }
@@ -311,7 +299,7 @@ void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
       int start_c = std::max(0, c - kernel_radius);
       int end_c = std::min(this->Cols() - 1, c + kernel_radius);
       for (int cur_col = start_c; cur_col <= end_c; cur_col++) {
-        horiz_image[r][c] += image_[r][cur_col]*gauss_terms[gauss_ind++];
+        horiz_image[r][c] += image_[r][cur_col] * gauss_terms[gauss_ind++];
       }
     }
   }
@@ -325,39 +313,34 @@ void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
     for (int cur_row = start_r; cur_row <= end_r; cur_row++) {
       weight += gauss_kernel[cur_row - (r - kernel_radius)];
     }
-    double inv_weight = 1.0/weight;
+    double inv_weight = 1.0 / weight;
     for (int cur_row = start_r; cur_row <= end_r; cur_row++) {
       double gauss_term =
-          inv_weight*gauss_kernel[cur_row - (r - kernel_radius)];
+          inv_weight * gauss_kernel[cur_row - (r - kernel_radius)];
       for (int c = 0; c < this->Cols(); c++) {
-        image_[r][c] += horiz_image[cur_row][c]*gauss_term;
+        image_[r][c] += horiz_image[cur_row][c] * gauss_term;
       }
     }
   }
 }
 
-template <typename T>
-void Image<T>::GaussianBlur(double sigma) {
+template <typename T> void Image<T>::GaussianBlur(double sigma) {
   GaussianBlur(sigma, this);
 }
 
-template <typename T>
-void Image<T>::HalfSample(Image<T>* dest) const {
+template <typename T> void Image<T>::HalfSample(Image<T>* dest) const {
   CVD::halfSample(image_, dest->image_);
 }
 
-template <typename T>
-Image<T> Image<T>::HalfSample() const {
+template <typename T> Image<T> Image<T>::HalfSample() const {
   return Image<T>(CVD::halfSample(image_));
 }
 
-template <typename T>
-void Image<T>::TwoThirdsSample(Image<T>* dest) const {
+template <typename T> void Image<T>::TwoThirdsSample(Image<T>* dest) const {
   CVD::twoThirdsSample(image_, dest->image_);
 }
 
-template <typename T>
-Image<T> Image<T>::TwoThirdsSample() const {
+template <typename T> Image<T> Image<T>::TwoThirdsSample() const {
   return Image<T>(CVD::twoThirdsSample(image_));
 }
 
@@ -368,17 +351,15 @@ Image<D> Image<T>::Integrate() const {
   return Image<D>(integral_image);
 }
 
-template <typename T>
-void Image<T>::Resize(int new_rows, int new_cols) {
+template <typename T> void Image<T>::Resize(int new_rows, int new_cols) {
   CVD::Image<T> new_image = this->ResizeInternal(new_rows, new_cols);
   image_.copy_from(new_image);
   sub_image_ = image_;
 }
 
-template <typename T>
-void Image<T>::Resize(double scale) {
+template <typename T> void Image<T>::Resize(double scale) {
   // Add 0.5 so that it will round to the nearest integer pixel size.
-  Resize(scale*this->Rows() + 0.5, scale*this->Cols() + 0.5);
+  Resize(scale * this->Rows() + 0.5, scale * this->Cols() + 0.5);
 }
 
 template <typename T>
@@ -386,10 +367,9 @@ Image<T> Image<T>::ResizeAndCopy(int new_rows, int new_cols) {
   return Image<T>(this->ResizeInternal(new_rows, new_cols), true);
 }
 
-template <typename T>
-Image<T> Image<T>::ResizeAndCopy(double scale) {
+template <typename T> Image<T> Image<T>::ResizeAndCopy(double scale) {
   // Add 0.5 so that it will round to the nearest integer pixel size.
-  return ResizeAndCopy(scale*this->Rows() + 0.5, scale*this->Cols() + 0.5);
+  return ResizeAndCopy(scale * this->Rows() + 0.5, scale * this->Cols() + 0.5);
 }
 
 // Evaluates the Lanczos filter of the given filter size window for the given
@@ -404,15 +384,14 @@ Image<T> Image<T>::ResizeAndCopy(double scale) {
 template <typename T>
 inline double Image<T>::LanczosFilter(double filter_size, double x) {
   // Outside of the window.
-  if (x <= -filter_size || x >= filter_size)
-    return 0.0f;
+  if (x <= -filter_size || x >= filter_size) return 0.0f;
   // Special case the discontinuity at the origin.
   if (x > -std::numeric_limits<double>::epsilon() &&
       x < std::numeric_limits<double>::epsilon())
     return 1.0f;
-  double xpi = x*static_cast<double>(M_PI);
+  double xpi = x * static_cast<double>(M_PI);
   // sinc(x)*sinc(x/filter_size)
-  return (sin(xpi)/xpi)*sin(xpi/filter_size)/(xpi/filter_size);
+  return (sin(xpi) / xpi) * sin(xpi / filter_size) / (xpi / filter_size);
 }
 
 template <typename T>
@@ -420,16 +399,16 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
   int old_cols = image_.size().x;
   int old_rows = image_.size().y;
   double col_scale =
-      static_cast<double>(new_cols)/static_cast<double>(old_cols);
+      static_cast<double>(new_cols) / static_cast<double>(old_cols);
   double row_scale =
-      static_cast<double>(new_rows)/static_cast<double>(old_rows);
+      static_cast<double>(new_rows) / static_cast<double>(old_rows);
 
   double clamped_col_scale = std::min(1.0, col_scale);
   double clamped_row_scale = std::min(1.0, row_scale);
-  double inv_col_scale = 1.0/col_scale;
-  double inv_row_scale = 1.0/row_scale;
-  double src_col_support = lanczos_size_/clamped_col_scale;
-  double src_row_support = lanczos_size_/clamped_row_scale;
+  double inv_col_scale = 1.0 / col_scale;
+  double inv_row_scale = 1.0 / row_scale;
+  double src_col_support = lanczos_size_ / clamped_col_scale;
+  double src_row_support = lanczos_size_ / clamped_row_scale;
 
   CVD::Image<T> horiz_image(CVD::ImageRef(new_cols, old_rows));
   horiz_image.zero();
@@ -439,7 +418,7 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
   std::vector<double> lanc_kernel_terms;
   for (int c = 0; c < new_cols; c++) {
     // "Overlay" new image onto the old image.
-    double src_col = static_cast<double>(c + 0.5)*inv_col_scale;
+    double src_col = static_cast<double>(c + 0.5) * inv_col_scale;
     // The old col corresponding to the closest new col.
     int src_begin = std::max(0, FloorInt(src_col - src_col_support));
     int src_end = std::min(old_cols - 1, CeilInt(src_col + src_col_support));
@@ -448,13 +427,13 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
     // Add up terms across the filter.
     for (int cur_col = src_begin; cur_col <= src_end; cur_col++) {
       double src_filter_dist = static_cast<double>(cur_col) + 0.5 - src_col;
-      double dest_filter_dist = src_filter_dist*clamped_col_scale;
+      double dest_filter_dist = src_filter_dist * clamped_col_scale;
       double lanc_term = LanczosFilter(lanczos_size_, dest_filter_dist);
       lanc_kernel_terms.push_back(lanc_term);
       weight += lanc_term;
     }
     // Normalize the filter.
-    double inv_weight = 1.0/weight;
+    double inv_weight = 1.0 / weight;
     for (; last_index < lanc_kernel_terms.size(); last_index++) {
       lanc_kernel_terms[last_index] *= inv_weight;
     }
@@ -465,14 +444,14 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
     int i = 0;
     for (int c = 0; c < new_cols; c++) {
       // "Overlay" new image onto the old image.
-      double src_col = static_cast<double>(c + 0.5)*inv_col_scale;
+      double src_col = static_cast<double>(c + 0.5) * inv_col_scale;
       // The old col corresponding to the closest new col.
       int src_begin = std::max(0, FloorInt(src_col - src_col_support));
       int src_end = std::min(old_cols - 1, CeilInt(src_col + src_col_support));
       // Add up terms across the filter.
       for (int cur_col = src_begin; cur_col <= src_end; cur_col++) {
         double lanc_term = lanc_kernel_terms[i++];
-        horiz_image[r][c] += image_[r][cur_col]*lanc_term;
+        horiz_image[r][c] += image_[r][cur_col] * lanc_term;
       }
     }
   }
@@ -481,7 +460,7 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
   CVD::Image<T> new_image(CVD::ImageRef(new_cols, new_rows));
   new_image.zero();
   for (int r = 0; r < new_rows; r++) {
-    double src_row = static_cast<double>(r + 0.5)*inv_row_scale;
+    double src_row = static_cast<double>(r + 0.5) * inv_row_scale;
     int src_begin = std::max(0, FloorInt(src_row - src_row_support));
     int src_end = std::min(old_rows - 1, CeilInt(src_row + src_row_support));
     double weight = 0.0;
@@ -490,16 +469,16 @@ CVD::Image<T> Image<T>::ResizeInternal(int new_rows, int new_cols) {
     // only calculate the kernel values once.
     for (int cur_row = src_begin; cur_row <= src_end; cur_row++) {
       double src_filter_dist = static_cast<double>(cur_row) + 0.5 - src_row;
-      double dest_filter_dist = src_filter_dist*clamped_row_scale;
+      double dest_filter_dist = src_filter_dist * clamped_row_scale;
       double lanc_term = LanczosFilter(lanczos_size_, dest_filter_dist);
       weight += lanc_term;
       // Add the kernel contribution. Doing it this way takes advantage of the
       // row-major locality of CVD images.
       for (int c = 0; c < new_cols; c++) {
-        new_image[r][c] += horiz_image[cur_row][c]*lanc_term;
+        new_image[r][c] += horiz_image[cur_row][c] * lanc_term;
       }
     }
-    double inv_weight = 1.0/weight;
+    double inv_weight = 1.0 / weight;
     // Fix the weight for all values in this row.
     for (int c = 0; c < new_cols; c++) {
       new_image[r][c] *= inv_weight;

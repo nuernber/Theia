@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -35,7 +35,6 @@
 #include "math/polynomial.h"
 
 #include <glog/logging.h>
-#include "gtest/gtest.h"
 #include <stdlib.h>
 
 #include <algorithm>
@@ -43,6 +42,7 @@
 #include <iostream>
 #include <vector>
 
+#include "gtest/gtest.h"
 #include "util/random.h"
 
 namespace theia {
@@ -50,8 +50,7 @@ using std::vector;
 namespace {
 double kEps = 1e-9;
 
-template<int degree>
-void PrintPoly(const Polynomial<degree>& poly) {
+template <int degree> void PrintPoly(const Polynomial<degree>& poly) {
   std::cout << "Poly = ";
   for (int i = 0; i <= poly.GetDegree(); i++)
     std::cout << std::setw(14) << poly[i];
@@ -142,10 +141,10 @@ TEST(Polynomial, Multiplication) {
   // If the degree of the polynomial is high, the machine precision can make
   // this a difficult value to assess. Instead, we ensure that hte difference
   // between the two evaluations is less than some precision.
-  ASSERT_LT(
-      fabs(product.EvalAt(rand_x) -
-           poly1.EvalAt(rand_x)*poly2.EvalAt(rand_x))/product.EvalAt(rand_x),
-      kEps);
+  ASSERT_LT(fabs(product.EvalAt(rand_x) -
+                 poly1.EvalAt(rand_x) * poly2.EvalAt(rand_x)) /
+                product.EvalAt(rand_x),
+            kEps);
 }
 
 TEST(Polynomial, Division) {
@@ -164,25 +163,23 @@ TEST(Polynomial, Division) {
 
   Polynomial<poly1_size> poly1(coeffs1);
   Polynomial<poly2_size> poly2(coeffs2);
-  std::pair<Polynomial<poly1_size - poly2_size>,
-            Polynomial<poly2_size - 1> > divided = poly1.Divide(poly2);
+  std::pair<Polynomial<poly1_size - poly2_size>, Polynomial<poly2_size - 1> >
+      divided = poly1.Divide(poly2);
   Polynomial<poly1_size - poly2_size> quotient = divided.first;
   Polynomial<poly2_size - 1> remainder = divided.second;
 
   // ASSERT that the evaluation of the two polys multiplied together is correct.
   double rand_x = RandDouble(-10, 10);
-  double diff = poly1.EvalAt(rand_x) -
-      ((poly2.Multiply(quotient)).EvalAt(rand_x) +
-       remainder.EvalAt(rand_x));
+  double diff =
+      poly1.EvalAt(rand_x) -
+      ((poly2.Multiply(quotient)).EvalAt(rand_x) + remainder.EvalAt(rand_x));
   // If the degree of the polynomial is high, the machine precision can make
   // this a difficult value to assess. Instead, we ensure that hte difference
   // between the two evaluations is less than some precision.
-  ASSERT_LT(fabs(diff)/poly1.EvalAt(rand_x),
-            kEps);
+  ASSERT_LT(fabs(diff) / poly1.EvalAt(rand_x), kEps);
 }
 
-TEST(Polynomial, Differentiate) {
-}
+TEST(Polynomial, Differentiate) {}
 
 TEST(Polynomial, FindRealRoots) {
   double kRootsEps = 1e-6;
@@ -192,18 +189,28 @@ TEST(Polynomial, FindRealRoots) {
     coeffs[i] = RandDouble(-1, 1);
   }
 
-  // Construct the polynomial as the mulitiplication of all the roots.
-  Polynomial<10> my_poly =
-      Polynomial<1>({-coeffs[0], 1.0})*
-      Polynomial<1>({-coeffs[1], 1.0})*
-      Polynomial<1>({-coeffs[2], 1.0})*
-      Polynomial<1>({-coeffs[3], 1.0})*
-      Polynomial<1>({-coeffs[4], 1.0})*
-      Polynomial<1>({-coeffs[5], 1.0})*
-      Polynomial<1>({-coeffs[6], 1.0})*
-      Polynomial<1>({-coeffs[7], 1.0})*
-      Polynomial<1>({-coeffs[8], 1.0})*
-      Polynomial<1>({-coeffs[9], 1.0});
+    // Construct the polynomial as the mulitiplication of all the roots.
+  Polynomial<10> my_poly = Polynomial<1>({
+    -coeffs[0], 1.0
+  }) * Polynomial<1>({
+    -coeffs[1], 1.0
+  }) * Polynomial<1>({
+    -coeffs[2], 1.0
+  }) * Polynomial<1>({
+    -coeffs[3], 1.0
+  }) * Polynomial<1>({
+    -coeffs[4], 1.0
+  }) * Polynomial<1>({
+    -coeffs[5], 1.0
+  }) * Polynomial<1>({
+    -coeffs[6], 1.0
+  }) * Polynomial<1>({
+    -coeffs[7], 1.0
+  }) * Polynomial<1>({
+    -coeffs[8], 1.0
+  }) * Polynomial<1>({
+    -coeffs[9], 1.0
+  });
 
   // Extract real roots.
   std::vector<double> real_roots = my_poly.RealRoots();

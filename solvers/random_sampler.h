@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -35,25 +35,24 @@
 #ifndef SOLVERS_RANDOM_SAMPLER_H_
 #define SOLVERS_RANDOM_SAMPLER_H_
 
-#include <algorithm>
 #include <chrono>
-#include <random>
 #include <stdlib.h>
+#include <random>
+#include <algorithm>
 #include <vector>
 
 #include "solvers/sampler.h"
 
 namespace theia {
 // Random sampler used for RANSAC.
-template<class Datum>
-class RandomSampler : public Sampler<Datum> {
+template <class Datum> class RandomSampler : public Sampler<Datum> {
  public:
   // num_samples: the number of samples needed. Typically this corresponds to
   //   the minumum number of samples needed to estimate a model.
   explicit RandomSampler(int num_samples)
       : num_samples_(num_samples),
-        generator(std::chrono::system_clock::now().time_since_epoch().count())
-  {}
+        generator(std::chrono::system_clock::now().time_since_epoch().count()) {
+  }
 
   ~RandomSampler() {}
   // Samples the input variable data and fills the vector subset with the
@@ -65,10 +64,9 @@ class RandomSampler : public Sampler<Datum> {
     for (int i = 0; i < num_samples_; i++) {
       int rand_number;
       // Generate a random number that has not already been used.
-      while (std::find(random_numbers.begin(),
-                       random_numbers.end(),
-                       (rand_number = distribution(generator)))
-             != random_numbers.end());
+      while (std::find(random_numbers.begin(), random_numbers.end(),
+                       (rand_number = distribution(generator))) !=
+             random_numbers.end());
       random_numbers.push_back(rand_number);
       subset->at(i) = data[rand_number];
     }
@@ -82,5 +80,5 @@ class RandomSampler : public Sampler<Datum> {
   // Random number generator engine.
   std::default_random_engine generator;
 };
-}  // namespace theia
+}       // namespace theia
 #endif  // SOLVERS_RANDOM_SAMPLER_H_

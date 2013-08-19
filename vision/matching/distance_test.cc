@@ -106,7 +106,6 @@ TEST(L2Distance, KnownDistance) {
     L2 l2_dist;
     ASSERT_EQ(l2_dist(descriptor1, descriptor2), l2_sum);
   }
-
 }
 
 // Zero distance.
@@ -139,7 +138,7 @@ TEST(HammingDistance, MaxDistance) {
 // Known distance.
 TEST(HammingDistance, KnownDistance) {
   InitRandomGenerator();
-  
+
   std::bitset<512> zeros;
   zeros.reset();
   TestBinaryDescriptor descriptor1;
@@ -156,7 +155,7 @@ TEST(HammingDistance, KnownDistance) {
         hamming_dist++;
       }
     }
-    
+
     SetBinaryValues(rand_bitset, &descriptor2);
     Hamming hamming_distance;
     ASSERT_EQ(hamming_distance(descriptor1, descriptor2), hamming_dist);
