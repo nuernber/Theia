@@ -54,16 +54,6 @@ class FreakDescriptor : public BinaryDescriptor {
   FreakDescriptor()
       : BinaryDescriptor(const_dimensions_, DescriptorType::FREAK) {}
 
-  int HammingDistance(const BinaryDescriptor& descriptor) const {
-    const std::bitset<const_dimensions_>* first_bitset =
-        reinterpret_cast<const std::bitset<const_dimensions_>*>(
-            this->CharData());
-    const std::bitset<const_dimensions_>* second_bitset =
-        reinterpret_cast<const std::bitset<const_dimensions_>*>(
-            descriptor.CharData());
-    return (*first_bitset ^ *second_bitset).count();
-  }
-
  private:
   friend class FreakDescriptorExtractor;
   static constexpr int const_dimensions_ = 512;

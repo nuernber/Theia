@@ -43,6 +43,7 @@
 #ifndef THEIA_NO_PROTOCOL_BUFFERS
 #include "image/descriptor/descriptor.pb.h"
 #endif
+#include "vision/matching/distance.h"
 
 DEFINE_string(test_img, "image/descriptor/img1.png",
               "Name of test image file.");
@@ -98,11 +99,9 @@ TEST(BriskDescriptor, ProtoTest) {
 
   // Assert that they are equal.
   ASSERT_EQ(brisk_descriptors.size(), proto_descriptors.size());
+  Hamming hamming_distance;
   for (int i = 0; i < brisk_descriptors.size(); i++) {
-    BriskDescriptor* brisk_descriptor =
-        dynamic_cast<BriskDescriptor*>(brisk_descriptors[i]);
-    ASSERT_EQ(brisk_descriptor->HammingDistance(
-        *(dynamic_cast<BriskDescriptor*>(proto_descriptors[i]))),
+    ASSERT_EQ(hamming_distance(*brisk_descriptors[i], *proto_descriptors[i]),
               0);
   }
 }

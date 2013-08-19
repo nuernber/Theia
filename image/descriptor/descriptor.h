@@ -209,13 +209,6 @@ class BinaryDescriptor : public Descriptor {
   virtual inline uchar* CharData() { return data_; }
   virtual inline const uchar* CharData() const { return data_; }
 
-  // Helper function to be implemented by each derived class. We have fixed-size
-  // binary descriptors for each derived class, so the subclasses can implement
-  // fast hamming distance computations using std::bitset since the size is
-  // known. This method must be deferred to the subclasses because it is
-  // templated on the size of descriptors.
-  virtual int HammingDistance(const BinaryDescriptor& descriptor) const = 0;
-
  protected:
   // data_ is the uchar array which contains the data. The location of this data
   // is constant! We use a reinterpret cast to reference the data as a bitset
