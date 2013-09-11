@@ -20,12 +20,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
@@ -37,9 +37,9 @@
 
 #include <chrono>
 #include <Eigen/Dense>
+#include <random>
 #include <glog/logging.h>
 #include "gtest/gtest.h"
-#include <random>
 
 namespace theia {
 namespace test {
@@ -86,6 +86,49 @@ void ExpectArraysNear(int n,
   for (int i = 0; i < n; i++) {
     EXPECT_NEAR(a[i], b[i], tolerance) << "i = " << i;
   }
+}
+
+// Expects that for all i = 1,.., n - 1
+//
+//   |p[i] / max_norm_p - q[i] / max_norm_q| < tolerance
+//
+// where max_norm_p and max_norm_q are the max norms of the arrays p
+// and q respectively.
+bool ArraysEqualUpToScale(int n, const double* p, const double* q,
+                          double tolerance) {
+  CHECK_GT(n, 0);
+  CHECK(p);
+  CHECK(q);
+
+  double p_max = 0;
+  double q_max = 0;
+  int p_i = 0;
+  int q_i = 0;
+
+  for (int i = 0; i < n; ++i) {
+    if (std::abs(p[i]) > p_max) {
+      p_max = std::abs(p[i]);
+      p_i = i;
+    }
+    if (std::abs(q[i]) > q_max) {
+      q_max = std::abs(q[i]);
+      q_i = i;
+    }
+  }
+
+  // If both arrays are all zeros, they are equal up to scale, but for testing
+  // purposes, that's more likely to be an error than a desired result.
+  CHECK_NE(p_max, 0.0);
+  CHECK_NE(q_max, 0.0);
+
+  for (int i = 0; i < n; ++i) {
+    double p_norm = p[i] / p[p_i];
+    double q_norm = q[i] / q[q_i];
+
+    if (std::abs(p_norm - q_norm) < tolerance)
+      return false;
+  }
+  return true;
 }
 
 }  // namespace test

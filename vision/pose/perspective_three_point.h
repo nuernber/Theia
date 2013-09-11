@@ -56,6 +56,14 @@ int PoseThreePoints(const double image_points[3][3],
                     double rotation[][3][3],
                     double translation[][3]);
 
+int PoseFromThreeCalibrated(const double points_2d[2 * 3],
+                            const double points_3d[3 * 3],
+                            const double focal_length[2],
+                            const double principal_point[2],
+                            double solutions[12 * 4]);
+
+
+
 // Computes pose using three point algorithm (method above). The fourth
 // correspondence is used to determine the best solution of the (up to 4)
 // candidate solutions. Same parameters as above, except only the best solution

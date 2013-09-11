@@ -37,67 +37,69 @@
 #include <Eigen/Core>
 #include <math.h>
 #include "gtest/gtest.h"
-
+#include "test/test_utils.h"
 #include "util/random.h"
 
 namespace theia {
+
+using Eigen::Map;
 using Eigen::Matrix3d;
-using Eigen::Matrix;
 using Eigen::Vector3d;
-using Eigen::Vector4d;
 
-namespace {
-double kEpsilon = 1e-9;
-}
+void PoseFromThreeCalibratedTest() {
+  // Projection matrix.
+  const double kP[] = { 0.846169, -0.0901237, -0.525239,
+                       -0.130189, 0.920775, -0.367729,
+                       0.516768, 0.379541, 0.767398,
+                       -0.365021, -0.0120234, 4.66054};
 
-TEST(PerspectiveThreePoint, Normalized) {
-  // World coordinates of the 4 control points. Let them be random points in the
-  // 2x2x2 centered around the origin.
-  InitRandomGenerator();
-  double world_points[4][3];
-  for (int i = 0; i < 4; i++)
-    for (int j = 0; j < 3; j++)
-      world_points[i][j] = RandDouble(-2, 2);
+  // Points in the 3D scene.
+  const double kPoints3d[] = {-0.3001, -0.5840, -1.2271,
+                              -1.4487, 0.6965, -0.3889,
+                              -0.7815, 0.7642, -0.1257};
 
-  // Find the camera projections of each of these points.
-  // Make the camera at (0, 0, 8) looking straight down the axis.
-  Matrix<double, 3, 4> transformation;
-  transformation << 1, 0, 0, 0,
-      0, -1, 0, 0,
-      0, 0, -1, 8;
+  // Points in the camera view.
+  const double kPoints2d[] = {-0.2877, -0.2416,
+                              -0.3868, 0.1258,
+                              -0.2537, 0.1522};
 
-  double image_points[4][3];
-  for (int i = 0; i < 4; i++) {
-    Vector4d world_pt(world_points[i][0],
-                      world_points[i][1],
-                      world_points[i][2],
-                      1.0);
-    Vector3d proj_point = transformation*world_pt;
-    image_points[i][0] = proj_point[0];
-    image_points[i][1] = proj_point[1];
-    image_points[i][2] = proj_point[2];
-  }
+  const double kFocalLength[] = {1.0, 1.0};
+  const double kPrincipalPoint[] = {0.0, 0.0};
 
-  double rotation[4][3][3];
-  double translation[4][3];
-  int num_solutions = PoseThreePoints(image_points,
-                                      world_points,
-                                      rotation,
-                                      translation);
-  ASSERT_GT(num_solutions, 0);
-
-  double best_rotation[3][3];
-  double best_translation[3];
-  bool solved = PoseFourPoints(image_points,
-                               world_points,
-                               best_rotation,
-                               best_translation);
-
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      ASSERT_LT(std::abs(best_rotation[i][j] - transformation(i, j)), kEpsilon);
+  double solutions[4*12];
+  int num_solutions = PoseFromThreeCalibrated(kPoints2d,
+                                              kPoints3d,
+                                              kFocalLength,
+                                              kPrincipalPoint,
+                                              solutions);
+  bool matched_transform = false;
+  for (int i = 0; i < num_solutions; ++i) {
+    if (test::ArraysEqualUpToScale(12, kP, solutions + i * 12, 1e-6)) {
+      matched_transform = true;
+      for (int n = 0; n < 3; ++n) {
+        const Vector3d pt_3d =
+            Map<const Vector3d> (kPoints3d + n * 3);
+        const Vector3d proj_3d =
+            Map<const Matrix3d>(kP) * pt_3d + Map<const Vector3d>(kP + 9);
+        for (int d = 0; d < 2; ++d) {
+          EXPECT_NEAR(kPoints2d[d + n * 2], proj_3d[d] / proj_3d[2], 1e-4);
+        }
+      }
     }
-    ASSERT_LT(std::abs(best_translation[i] - transformation(i, 3)), kEpsilon);
   }
+  EXPECT_TRUE(matched_transform);
 }
+
+TEST(pose, PoseFromThreeCalibrated) {
+  PoseFromThreeCalibratedTest();
+}
+
+// TODO(cmsweeney): Add benchmark.
+// static void BM_PoseFromThreeCalibrated(int iters) {
+//   for (int i = 0; i < iters; i++)
+//     PoseFromThreeCalibratedTest();
+// }
+
+// BENCHMARK(BM_PoseFromThreeCalibrated);
+
 }  // namespace theia
