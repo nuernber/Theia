@@ -66,7 +66,7 @@ void PoseFromThreeCalibratedTest() {
   const double kFocalLength[] = {1.0, 1.0};
   const double kPrincipalPoint[] = {0.0, 0.0};
 
-  double solutions[4*12];
+  double solutions[4 * 12];
   int num_solutions = PoseFromThreeCalibrated(kPoints2d,
                                               kPoints3d,
                                               kFocalLength,

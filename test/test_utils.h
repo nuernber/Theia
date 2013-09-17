@@ -110,6 +110,7 @@ bool ArraysEqualUpToScale(int n, const double* p, const double* q,
       p_max = std::abs(p[i]);
       p_i = i;
     }
+    LOG(INFO) << std::abs(q[i]);
     if (std::abs(q[i]) > q_max) {
       q_max = std::abs(q[i]);
       q_i = i;

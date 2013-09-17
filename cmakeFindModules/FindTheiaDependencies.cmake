@@ -3,6 +3,8 @@
 
 macro(set_compile_parameters)
   # Force default build type to be Release
+  MESSAGE("CXX = ${CMAKE_CXX_COMPILER}")
+  MESSAGE("CC = ${CMAKE_CC_COMPILER}")
   IF (NOT CMAKE_BUILD_TYPE)
     MESSAGE("-- No build type specified; defaulting to CMAKE_BUILD_TYPE=Release.")
     SET(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -157,7 +159,6 @@ macro(find_theia_dependencies)
 
   # LibCVD
   FIND_PACKAGE(CVD REQUIRED)
-  INCLUDE_DIRECTORIES(${CVD_INCLUDE})
-  SET(THEIA_LIBRARY_DEPENDENCIES ${THEIA_LIBRARY_DEPENDENCIES} ${CVD_LIB})
-
+  INCLUDE_DIRECTORIES(${CVD_INCLUDE_DIR})
+  SET(THEIA_LIBRARY_DEPENDENCIES ${THEIA_LIBRARY_DEPENDENCIES} ${CVD_LIBRARY})
 endmacro(find_theia_dependencies)
