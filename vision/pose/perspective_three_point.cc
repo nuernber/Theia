@@ -343,7 +343,7 @@ bool PoseFourPointsCalibrated(const double image_points[2 * 4],
   int best_pose_index = 0;
   if (num_valid_poses == 0) return false;
 
-  const Vector3d pt_3d = Map<const Vector3d>(world_points + 3 * 3);
+  Map<const Vector3d> pt_3d(world_points + 3 * 3);
   const Vector3d image_pt(image_points[0 + 2 * 3], image_points[1 + 2 * 3],
                           1.0);
   for (int i = 0; i < num_valid_poses; i++) {

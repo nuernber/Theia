@@ -55,7 +55,7 @@ void ComposeProjectionMatrix(const double focal_length[2],
       0.0, focal_length[1], principle_point[1],
       0.0, 0.0, 1.0;
 
-  Matrix<double, 3, 4> proj_mat = Map<Matrix<double, 3, 4> >(projection_matrix);
+  Map<Matrix<double, 3, 4> > proj_mat(projection_matrix);
   proj_mat.block<3, 3>(0, 0) = Map<const Matrix3d>(rotation);
   proj_mat.block<3, 1>(0, 3) = Map<const Vector3d>(translation);
 }

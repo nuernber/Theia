@@ -96,40 +96,13 @@ void ExpectArraysNear(int n,
 // and q respectively.
 bool ArraysEqualUpToScale(int n, const double* p, const double* q,
                           double tolerance) {
-  CHECK_GT(n, 0);
-  CHECK(p);
-  CHECK(q);
+  Eigen::Map<const Eigen::VectorXd> p_vec(p, n);
+  Eigen::Map<const Eigen::VectorXd> q_vec(q, n);
 
-  double p_max = 0;
-  double q_max = 0;
-  int p_i = 0;
-  int q_i = 0;
-
-  for (int i = 0; i < n; ++i) {
-    if (std::abs(p[i]) > p_max) {
-      p_max = std::abs(p[i]);
-      p_i = i;
-    }
-    LOG(INFO) << std::abs(q[i]);
-    if (std::abs(q[i]) > q_max) {
-      q_max = std::abs(q[i]);
-      q_i = i;
-    }
-  }
-
-  // If both arrays are all zeros, they are equal up to scale, but for testing
-  // purposes, that's more likely to be an error than a desired result.
-  CHECK_NE(p_max, 0.0);
-  CHECK_NE(q_max, 0.0);
-
-  for (int i = 0; i < n; ++i) {
-    double p_norm = p[i] / p[p_i];
-    double q_norm = q[i] / q[q_i];
-
-    if (std::abs(p_norm - q_norm) < tolerance)
-      return false;
-  }
-  return true;
+  // Use the cos term in the dot product to determine equality normalized for
+  // scale.
+  const double cos_diff = p_vec.dot(q_vec) / (p_vec.norm() * q_vec.norm());
+  return std::abs(cos_diff) >= 1.0 - tolerance;
 }
 
 }  // namespace test
