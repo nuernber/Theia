@@ -18,6 +18,7 @@ OPTION(BUILD_TESTING
   "Enable testing"
   ON)
 ENABLE_TESTING()
+ADD_DEFINITIONS(-DGTEST_USE_OWN_TR1_TUPLE=1)
 
 set_compile_parameters()
 find_theia_dependencies()

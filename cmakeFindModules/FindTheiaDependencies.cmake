@@ -141,7 +141,7 @@ macro(find_theia_dependencies)
     "Enable protocol buffers support."
     ON)
   IF (${PROTOBUF})
-    FIND_PACKAGE(Protobuf)
+    FIND_PACKAGE(Protobuf REQUIRED)
     IF (${PROTOBUF_FOUND})
       INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIRS})
       MESSAGE("-- Found Protocol Buffer library!")

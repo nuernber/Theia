@@ -62,5 +62,6 @@ bool HarrisDetector::DetectKeypoints(const GrayImage& image,
     harris_keypoint->set_strength(harris_corner.first);
     keypoints->push_back(harris_keypoint);
   }
+  return true;
 }
 }  // namespace theia
