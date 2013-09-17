@@ -156,22 +156,7 @@ macro(find_theia_dependencies)
   ENDIF (${PROTOBUF})
 
   # LibCVD
-  MESSAGE("-- Check for LibCVD")
-  FIND_LIBRARY(CVD_LIB NAMES cvd PATHS ${SEARCH_LIBS})
-  IF (NOT EXISTS ${CVD_LIB})
-    MESSAGE(FATAL_ERROR
-      "Can't find LibCVD. Please specify: "
-      "-DCVD_LIB=...")
-  ENDIF (NOT EXISTS ${CVD_LIB})
-  MESSAGE("-- Found libCVD: ${CVD_LIB}")
-
-  FIND_PATH(CVD_INCLUDE NAMES cvd/image.h PATHS ${SEARCH_HEADERS})
-  IF (NOT EXISTS ${CVD_INCLUDE})
-    MESSAGE(FATAL_ERROR
-      "Can't find libCVD. Please specify: "
-      "-DCVD_INCLUDE=...")
-  ENDIF (NOT EXISTS ${CVD_INCLUDE})
-  MESSAGE("-- Found libCVD header in: ${CVD_INCLUDE}")
+  FIND_PACKAGE(CVD REQUIRED)
   INCLUDE_DIRECTORIES(${CVD_INCLUDE})
   SET(THEIA_LIBRARY_DEPENDENCIES ${THEIA_LIBRARY_DEPENDENCIES} ${CVD_LIB})
 
