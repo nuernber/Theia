@@ -62,14 +62,14 @@ class Ransac : public SampleConsensusEstimator<Datum, Model> {
 
   // See MaxItersFromOutlierProb for parameters.
   Ransac(int min_sample_size, double error_threshold, int min_num_inliers,
-         double outlier_probability, double no_fail_probability = 0.99)
+         double outlier_probability, double no_fail_probability)
       : SampleConsensusEstimator<Datum, Model>(
             new RandomSampler<Datum>(min_sample_size),
             new InlierSupport(error_threshold, min_num_inliers),
-            max_iters_(MaxItersFromOutlierProb(min_sample_size,
-                                               outlier_probability,
-                                               no_fail_probability))) {}
-  ~Ransac() {}
+            MaxItersFromOutlierProb(min_sample_size, outlier_probability,
+                                    no_fail_probability)) {}
+
+  virtual ~Ransac() {}
 
  private:
   // Set the max iterations based on Eq. 4.18 in Hartley & Zisserman.
@@ -83,5 +83,7 @@ class Ransac : public SampleConsensusEstimator<Datum, Model> {
                 log(1.0 - pow(1.0 - outlier_probability, min_sample_size)));
   }
 };
+
 }       // namespace theia
+
 #endif  // SOLVERS_RANSAC_H_

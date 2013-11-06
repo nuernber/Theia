@@ -35,10 +35,8 @@
 #ifndef VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_
 #define VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_
 
-#include <vector>
-
 namespace theia {
-class EssentialMatrix;
+
 // Computes the relative pose between two cameras using 5 corresponding
 // points. Algorithm is implemented based on "An Efficient Solution to the
 // Five-Point Relative Pose Problem" by Nister.
@@ -49,8 +47,10 @@ class EssentialMatrix;
 //   image2_points: Location of features on the image plane (x[i][*] = i-th
 //     image point)
 // Return: essential_matrix: Output all solutions of the 5 point algorithm.
-std::vector<EssentialMatrix> FivePointRelativePose(
-    const double image1_points[5][3], const double image2_points[5][3]);
+int FivePointRelativePose(const double image1_points[3 * 5],
+                          const double image2_points[3 * 5],
+                          double rotation[9 * 10],
+                          double translation[3 * 10]);
 }  // namespace theia
 
 #endif  // VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_

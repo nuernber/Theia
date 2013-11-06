@@ -10,5 +10,6 @@ CC_LIBRARY(sequential_probability_ratio sequential_probability_ratio.cc)
 IF(${BUILD_TESTING})
   #Comment this out because it is unsupported right now !
   #GTEST(kolmogorov_smirnoff_test math / probability / kolmogorov_smirnoff)
-  GTEST(sprt_test math/probability/sequential_probability_ratio util/random)
+  GTEST(sprt_test math/probability/sequential_probability_ratio
+    util/random)
 ENDIF(${BUILD_TESTING})

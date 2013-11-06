@@ -65,9 +65,12 @@ class LineEstimator : public Estimator<Point, Line> {
   LineEstimator() {}
   ~LineEstimator() {}
 
-  bool EstimateModel(const std::vector<Point>& data, Line* model) const {
-    model->m = (data[1].y - data[0].y) / (data[1].x - data[0].x);
-    model->b = data[1].y - model->m * data[1].x;
+  bool EstimateModel(const std::vector<Point>& data,
+                     std::vector<Line>* models) const {
+    Line model;
+    model.m = (data[1].y - data[0].y) / (data[1].x - data[0].x);
+    model.b = data[1].y - model.m * data[1].x;
+    models->push_back(model);
     return true;
   }
 
@@ -89,23 +92,19 @@ TEST(MlesacTest, LineFitting) {
 
   const int num_points = 10000;
   std::vector<Point> input_points(num_points);
-  std::vector<double> confidence(num_points);
 
   for (int i = 0; i < num_points; ++i) {
     if (i % 20 == 0) {
       input_points[i] = Point(i, i);
-      confidence[i] = 1.0;
     } else {
       double noise_x = gauss_distribution(generator);
       double noise_y = gauss_distribution(generator);
       input_points[i] = Point(i + noise_x, i + noise_y);
-      confidence[i] = 0.1;
     }
   }
-
   LineEstimator line_estimator;
   Line line;
-  Mlesac<Point, Line> mlesac_line(2, 0.0, 1.0, -100, 100, confidence, 0.95);
+  Mlesac<Point, Line> mlesac_line(2, 0.0, 0.1, -1, 1, -8000);
   mlesac_line.Estimate(input_points, line_estimator, &line);
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }

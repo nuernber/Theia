@@ -175,19 +175,19 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
   RandomSampler<Datum> random_sampler(min_sample_size_);
   ProsacSampler<Datum> prosac_sampler(min_sample_size_);
   while (k <= m_prime) {
-    Model hypothesis;
+    std::vector<Model> hypotheses;
     if (!inner_ransac) {
       // Generate hypothesis h(k) with k-th PROSAC sample.
       std::vector<Datum> prosac_subset;
       prosac_sampler.SetSampleNumber(k);
       prosac_sampler.Sample(data_input, &prosac_subset);
-      estimator.EstimateModel(prosac_subset, &hypothesis);
+      estimator.EstimateModel(prosac_subset, &hypotheses);
     } else {
       // Generate hypothesis h(k) with subset generated from inliers of a
       // previous hypothesis.
       std::vector<Datum> random_subset;
       random_sampler.Sample(data, &random_subset);
-      estimator.EstimateModel(random_subset, &hypothesis);
+      estimator.EstimateModel(random_subset, &hypotheses);
 
       inner_ransac_its++;
       if (inner_ransac_its == max_inner_ransac_its) {
@@ -196,53 +196,57 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
       }
     }
 
-    int num_tested_points;
-    double observed_inlier_ratio;
-    // Evaluate hypothesis h(k) with SPRT.
-    std::vector<double> residuals = estimator.Residuals(data_input, hypothesis);
-    bool sprt_test = SequentialProbabilityRatioTest(
-        residuals, error_thresh_, sigma_, epsilon_, decision_threshold,
-        &num_tested_points, &observed_inlier_ratio);
+    for (const Model& hypothesis : hypotheses) {
+      int num_tested_points;
+      double observed_inlier_ratio;
+      // Evaluate hypothesis h(k) with SPRT.
+      std::vector<double> residuals =
+          estimator.Residuals(data_input, hypothesis);
+      bool sprt_test = SequentialProbabilityRatioTest(
+          residuals, error_thresh_, sigma_, epsilon_, decision_threshold,
+          &num_tested_points, &observed_inlier_ratio);
 
-    // If the model was rejected by the SPRT test.
-    if (!sprt_test) {
-      // re-estimate params of SPRT (if required)
-      // sigma = average of inlier ratios in bad models
-      // TODO(cmsweeney): determine if this estimation (and epsilon) is:
-      //    number of inliers observed / total number of points    or
-      //    number of inliers observed / number of points observed in SPRT
-      rejected_accum_inlier_ratio += observed_inlier_ratio;
-      num_rejected_hypotheses++;
-      sigma_ = rejected_accum_inlier_ratio /
-               static_cast<double>(num_rejected_hypotheses);
-    } else if (floor(observed_inlier_ratio * num_tested_points) >
-               max_num_inliers) {
-      // Else if hypothesis h(k) is accepted and has the largest support so far.
-      accepted_hypotheses->push_back(hypothesis);
-      max_num_inliers = floor(observed_inlier_ratio * num_tested_points);
+      // If the model was rejected by the SPRT test.
+      if (!sprt_test) {
+        // re-estimate params of SPRT (if required)
+        // sigma = average of inlier ratios in bad models
+        // TODO(cmsweeney): determine if this estimation (and epsilon) is:
+        //    number of inliers observed / total number of points    or
+        //    number of inliers observed / number of points observed in SPRT
+        rejected_accum_inlier_ratio += observed_inlier_ratio;
+        num_rejected_hypotheses++;
+        sigma_ = rejected_accum_inlier_ratio /
+                 static_cast<double>(num_rejected_hypotheses);
+      } else if (floor(observed_inlier_ratio * num_tested_points) >
+                 max_num_inliers) {
+        // Else if hypothesis h(k) is accepted and has the largest support so
+        // far.
+        accepted_hypotheses->push_back(hypothesis);
+        max_num_inliers = floor(observed_inlier_ratio * num_tested_points);
 
-      // Set parameters to force inner ransac to execute.
-      inner_ransac = true;
-      inner_ransac_its = 0;
+        // Set parameters to force inner ransac to execute.
+        inner_ransac = true;
+        inner_ransac_its = 0;
 
-      // Set U_in = support of hypothesis h(k).
-      data.clear();
-      for (int i = 0; i < data_input.size(); i++) {
-        if (estimator.Error(data_input[i], hypothesis) < error_thresh_)
-          data.push_back(data_input[i]);
+        // Set U_in = support of hypothesis h(k).
+        data.clear();
+        for (int i = 0; i < data_input.size(); i++) {
+          if (estimator.Error(data_input[i], hypothesis) < error_thresh_)
+            data.push_back(data_input[i]);
+        }
+
+        // Re-estimate params of SPRT.
+        // Estimate epsilon as inlier ratio for largest size of support.
+        epsilon_ = static_cast<double>(max_num_inliers) /
+                   static_cast<double>(data_input.size());
+        // estimate inlier ratio e' and M_prime (eq 1) Cap M_prime at max of M
+        // TODO(cmsweeney): verify that num_tested_points is the correct value
+        // here and not data_input.size().
+        int m_prime =
+            ceil(log(1 - inlier_confidence_) /
+                 log(1 - pow(observed_inlier_ratio, num_tested_points)));
+        m_prime = std::max(max_candidate_hyps_, m_prime);
       }
-
-      // Re-estimate params of SPRT.
-      // Estimate epsilon as inlier ratio for largest size of support.
-      epsilon_ = static_cast<double>(max_num_inliers) /
-                 static_cast<double>(data_input.size());
-      // estimate inlier ratio e' and M_prime (eq 1) Cap M_prime at max of M
-      // TODO(cmsweeney): verify that num_tested_points is the correct value
-      // here and not data_input.size().
-      int m_prime =
-          ceil(log(1 - inlier_confidence_) /
-               log(1 - pow(observed_inlier_ratio, num_tested_points)));
-      m_prime = std::max(max_candidate_hyps_, m_prime);
     }
     k++;
   }
@@ -322,15 +326,17 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
           random_sampler.Sample(data, &data_random_subset);
 
           // Estimate new hypothesis model.
-          Model estimated_model;
-          estimator.EstimateModel(data_random_subset, &estimated_model);
-          ScoredData<Model> new_hypothesis(estimated_model, 0.0);
-          // Score the newly generated model.
-          for (int l = 0; l < i; l++)
-            if (estimator.Error(data[l], new_hypothesis.data) < error_thresh_)
-              new_hypothesis.score += 1.0;
-          // Add newly generated model to the hypothesis set.
-          hypotheses.push_back(new_hypothesis);
+          std::vector<Model> estimated_models;
+          estimator.EstimateModel(data_random_subset, &estimated_models);
+          for (const Model& estimated_model : estimated_models) {
+            ScoredData<Model> new_hypothesis(estimated_model, 0.0);
+            // Score the newly generated model.
+            for (int l = 0; l < i; l++)
+              if (estimator.Error(data[l], new_hypothesis.data) < error_thresh_)
+                new_hypothesis.score += 1.0;
+            // Add newly generated model to the hypothesis set.
+            hypotheses.push_back(new_hypothesis);
+          }
         }
 
         // Update k to be our new maximum candidate hypothesis size.

@@ -43,6 +43,7 @@
 #include "solvers/sample_consensus_estimator.h"
 
 namespace theia {
+
 template <class Datum, class Model>
 class Mlesac : public SampleConsensusEstimator<Datum, Model> {
  public:
@@ -54,19 +55,43 @@ class Mlesac : public SampleConsensusEstimator<Datum, Model> {
   //    e.g. -100px
   //  search_right: Right bound of the search region of image correspondances.
   //    e.g. 100px
-  //  confidence: Vector containing the confidences of each correspondance.
-  //  confidence_threshold: Correspondances above this are considered inliers.
+  //  confidence: Model termination criterion.
+  //  inlier_probability: Probability of inliers in the data.
   Mlesac(int min_sample_size, double inlier_mean, double inlier_sigma,
-         double search_left, double search_right,
-         const std::vector<double>& confidence, double confidence_threshold)
-      : SampleConsensusEstimator<Datum, Model>(
+         double search_left, double search_right, double confidence_threshold,
+         double inlier_probability)
+      : norm_dist_(NormalDistribution(inlier_mean, inlier_sigma)),
+        SampleConsensusEstimator<Datum, Model>(
             new RandomSampler<Datum>(min_sample_size),
-            new MLEQualityMeasurement(
-                NormalDistribution(inlier_mean, inlier_sigma),
-                UniformDistribution(search_left, search_right), confidence,
-                confidence_threshold)) {}
+            new MLEQualityMeasurement(norm_dist_,
+                                      (1.0 / (search_right - search_left)),
+                                      confidence_threshold,
+                                      inlier_probability)) {}
+
+  // Params:
+  //  min_sample_size: the minimum number of samples needed to estimate a model
+  //  inline_mean: Mean of inlier noise distribution.
+  //  inlier_sigma: Sigma of the inlier noise distribution.
+  //  search_left: Left bound of the search region of image correspondances.
+  //    e.g. -100px
+  //  search_right: Right bound of the search region of image correspondances.
+  //    e.g. 100px
+  //  confidence: Model termination criterion.
+  Mlesac(int min_sample_size, double inlier_mean, double inlier_sigma,
+         double search_left, double search_right, double confidence_threshold)
+      : norm_dist_(NormalDistribution(inlier_mean, inlier_sigma)),
+        SampleConsensusEstimator<Datum, Model>(
+            new RandomSampler<Datum>(min_sample_size),
+            new MLEQualityMeasurement(norm_dist_,
+                                      (1.0 / (search_right - search_left)),
+                                      confidence_threshold, 0.5)) {}
 
   ~Mlesac() {}
+
+ private:
+  const NormalDistribution norm_dist_;
 };
-}       // namespace theia
+
+}  // namespace theia
+
 #endif  // SOLVERS_MLESAC_H_

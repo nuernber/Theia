@@ -52,17 +52,17 @@ class MLEQualityMeasurement : public QualityMeasurement {
   //  inlier_dist: Distribution of inlier noise. Typically a gaussian mixture.
   //  outlier_dist: Distribution of outlier noise. Typically a uniform
   //    distribution over the search radius (in pixels).
-  //  confidence: The confidence of each measurement.
-  //  confidence_thesh: All measurements with a confidence higher than this will
-  //    be considered an inlier.
+  //  confidence_threshold: if the confidence of the data is greater then this
+  //    then MLESAC will terminate.
+  //  inlier_prob: An initial guess for the inlier probability (range 0 to 1).
   MLEQualityMeasurement(const Distribution& inlier_dist,
-                        const Distribution& outlier_dist,
-                        const std::vector<double>& confidence,
-                        double confidence_thresh)
+                        double uniform_prob,
+                        double confidence_threshold,
+                        double inlier_prob)
       : inlier_dist_(inlier_dist),
-        outlier_dist_(outlier_dist),
-        confidence_(confidence),
-        confidence_threshold_(confidence_thresh) {}
+        outlier_prob_(uniform_prob),
+        confidence_threshold_(confidence_threshold),
+        inlier_probability_(inlier_prob) {}
 
   ~MLEQualityMeasurement() {}
 
@@ -70,31 +70,28 @@ class MLEQualityMeasurement : public QualityMeasurement {
   // quality assessment and outputs a vector of bools indicating the inliers.
   double Calculate(const std::vector<double>& residuals,
                    std::vector<bool>* inliers) {
-    const double kInfinity = 1e24;
     inliers->resize(residuals.size(), false);
-    double mle = 0.0;
-    for (int i = 0; i < residuals.size(); i++) {
-      const double& r = residuals[i];
-      const double& v = confidence_[i];
 
-      double pr_inlier = inlier_dist_.eval(r) * v;
-      double pr_outlier = outlier_dist_.eval(r) * (1.0 - v);
-
-      double arglog = pr_inlier + pr_outlier;
-      // If the arglog = 0 then this is a horrible model. Return the max value
-      // possible and stop computation.
-      if (arglog == 0.0) return kInfinity;
-
-      // If our confidence of this measurement is sufficiently high, add it to
-      // the inlier list.
-      double confidence = pr_inlier / arglog;
-      if (confidence > confidence_threshold_) {
-        inliers->at(i) = true;
-
-        mle += log(arglog);
+    double estimated_inlier_prob = inlier_probability_;
+    const int kNumEMIterations = 5;
+    double arglog;
+    double gamma_sum;
+      for (int i = 0; i < kNumEMIterations; i++) {
+      arglog = 0.0;
+      gamma_sum = 0.0;
+      for (int i = 0; i < residuals.size(); i++) {
+        const double& r = residuals[i];
+        double pr_inlier = inlier_dist_.eval(r) * estimated_inlier_prob;
+        double pr_outlier = outlier_prob_ * (1.0 - estimated_inlier_prob);
+        arglog += log(pr_inlier + pr_outlier);
+        gamma_sum += pr_inlier / (pr_inlier + pr_outlier);
       }
+      estimated_inlier_prob = gamma_sum / residuals.size();
     }
-    return mle;
+    const double kSmallNumber = 1e-6;
+    if (arglog == 0.0)
+      arglog = kSmallNumber;
+    return -arglog;
   }
 
   // Given two quality measurements, determine which is betters. Note that
@@ -116,10 +113,12 @@ class MLEQualityMeasurement : public QualityMeasurement {
 
   // Distribution of inlier data.
   const Distribution& inlier_dist_;
+
   // Distribution of outlier data.
-  const Distribution& outlier_dist_;
-  // Confidences of each data point.
-  const std::vector<double>& confidence_;
+  const double outlier_prob_;
+
+  // Estimated inlier probability of the data.
+  const double inlier_probability_;
 };
 }       // namespace theia
 #endif  // SOLVERS_MLE_QUALITY_MEASUREMENT_H_

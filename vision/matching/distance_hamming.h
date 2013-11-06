@@ -37,7 +37,6 @@
 
 #ifdef THEIA_USE_SSE
 #include <emmintrin.h>
-#include <nmmintrin.h>
 #include <tmmintrin.h>
 #endif
 #include <functional>
@@ -47,7 +46,7 @@
 
 namespace theia {
 
-#ifndef THEIA_USE_SSE
+#ifdef THEIA_USE_SSE
 
 #ifdef __GNUC__
 static const char __attribute__((aligned(16)))
@@ -69,7 +68,7 @@ static const __m128i shiftval = _mm_set_epi32(0, 0, 0, 4);
 
 // - SSSE3 - better alorithm, minimized psadbw usage - adapted from
 // http://wm.ite.pl/articles/sse-popcount.html
-inline uint32_t HammingSSE(const char* a, const char*b,
+inline uint32_t HammingSSE(const uchar* a, const uchar*b,
                            const int size) {
   uint32_t result = 0;
 
@@ -92,7 +91,8 @@ inline uint32_t HammingSSE(const char* a, const char*b,
   // accumulator
   xmm5 = _mm_setzero_si128();
 
-  const size_t end = static_cast<size_t>(signature1 + number_of_128_bit_words);
+  const size_t end =
+      reinterpret_cast<const size_t>(signature1 + number_of_128_bit_words);
 
   xmm4 = xmm5;
 
@@ -163,5 +163,7 @@ struct Hamming {
   }
 };
 #endif
-}       // namespace theia
+
+}  // namespace theia
+
 #endif  // VISION_MATCHING_DISTANCE_HAMMING_H_

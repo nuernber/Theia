@@ -65,7 +65,7 @@ class Prosac : public SampleConsensusEstimator<Datum, Model> {
 
   // See MaxItersFromOutlierProb for parameters.
   Prosac(int min_sample_size, double error_threshold, int min_num_inliers,
-         double outlier_probability, double no_fail_probability = 0.99)
+         double outlier_probability, double no_fail_probability)
       : SampleConsensusEstimator<Datum, Model>(
             new ProsacSampler<Datum>(min_sample_size),
             new InlierSupport(error_threshold, min_num_inliers),

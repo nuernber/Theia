@@ -41,11 +41,20 @@
 
 #include "math/matrix/gauss_jordan.h"
 #include "math/polynomial.h"
-#include "vision/models/essential_matrix.h"
+#include "vision/pose/util.h"
 
 namespace theia {
+
+using Eigen::Map;
+using Eigen::Matrix3d;
+using Eigen::Matrix4d;
 using Eigen::Matrix;
+using Eigen::RowVector3d;
 using Eigen::RowVector4d;
+using Eigen::Vector3d;
+using Eigen::Vector4d;
+
+typedef Matrix<double, 3, 3, Eigen::RowMajor> RowMatrix3d;
 
 namespace {
 // Multiplies two polynomials over the same variable.
@@ -123,7 +132,7 @@ Matrix<double, 1, 20> MultiplyDegTwoDegOnePoly(const Matrix<double, 1, 10>& a,
 // Shorthand for multiplying the Essential matrix with its transpose according
 // to Eq. 20 in Nister paper.
 Matrix<double, 1, 10> EETranspose(
-    const Eigen::Matrix<double, 9, 4>& null_matrix, int i, int j) {
+    const Matrix<double, 9, 4>& null_matrix, int i, int j) {
   return MultiplyDegOnePoly(null_matrix.row(3 * i), null_matrix.row(3 * j)) +
          MultiplyDegOnePoly(null_matrix.row(3 * i + 1),
                             null_matrix.row(3 * j + 1)) +
@@ -137,7 +146,7 @@ Matrix<double, 1, 10> EETranspose(
 // that the columns correspond to: x^3, yx^2, y^2x, y^3, zx^2, zyx, zy^2, z^2x,
 // z^2y, z^3, x^2, yx, y^2, zx, zy, z^2, x, y, z, 1.
 Matrix<double, 10, 20> BuildConstraintMatrix(
-    const Eigen::Matrix<double, 9, 4>& null_space) {
+    const Matrix<double, 9, 4>& null_space) {
   Matrix<double, 10, 20> constraint_matrix;
   // Singularity constraint.
   constraint_matrix.row(0) =
@@ -198,40 +207,158 @@ Matrix<double, 9, 4> EfficientNullspaceExtraction(
   GaussJordan(&constraint_copy);
   Matrix<double, 4, 9> null_space;
   null_space << constraint_copy.rightCols(4).transpose(),
-      -Eigen::Matrix4d::Identity();
+      -Matrix4d::Identity();
   return null_space.transpose();
+}
+
+void EfficientSVDDecomp(const Matrix3d& essential_mat,
+                        Vector3d* null_space,
+                        Matrix3d rotation[4],
+                        Vector3d translation[4]) {
+  Matrix3d d;
+  d << 0, 1, 0,
+      -1, 0, 0,
+      0, 0, 1;
+
+  const Vector3d& ea = essential_mat.row(0);
+  const Vector3d& eb = essential_mat.row(1);
+  const Vector3d& ec = essential_mat.row(2);
+
+  // Generate cross products.
+  Matrix3d cross_products;
+  cross_products << ea.cross(eb), ea.cross(ec), eb.cross(ec);
+
+  // Choose the cross product with the largest norm (for numerical accuracy).
+  const Vector3d cf_scales(cross_products.col(0).squaredNorm(),
+                           cross_products.col(1).squaredNorm(),
+                           cross_products.col(2).squaredNorm());
+  int max_index;
+  double max_cf = cf_scales.maxCoeff(&max_index);
+
+  // For index 0, 1, we want ea and for index 2 we want eb.
+  int max_e_index = max_index / 2;
+
+  // Construct v of the SVD.
+  Matrix3d v = Matrix3d::Zero();
+  v.col(2) = cross_products.col(max_index).normalized();
+  v.col(0) = essential_mat.row(max_e_index).normalized();
+  v.col(1) = v.col(2).cross(v.col(0));
+
+  // Construct U of the SVD.
+  Matrix3d u = Matrix3d::Zero();
+  u.col(0) = (essential_mat * v.col(0)).normalized();
+  u.col(1) = (essential_mat * v.col(1)).normalized();
+  u.col(2) = u.col(0).cross(u.col(1));
+
+  // Possible rotation configurations.
+  const RowMatrix3d ra = u * d * v.transpose();
+  const RowMatrix3d rb = u * d.transpose() * v.transpose();
+
+  // Scale t to be proper magnitude. Scale factor is derived from the fact that
+  // U*diag*V^t = E. We simply choose to scale it such that the last terms will
+  // be equal.
+  const Vector3d t = u.col(2).normalized();
+  const Vector3d t_neg = -t;
+
+  // Copy the 4 possible decompositions into the output arrays.
+  rotation[0] = ra;
+  translation[0] = t;
+  rotation[1] = ra;
+  translation[1] = t_neg;
+  rotation[2] = rb;
+  translation[2] = t;
+  rotation[3] = rb;
+  translation[3] = t_neg;
+
+  *null_space = v.col(2);
+}
+
+void DecomposeWithIdealCorrespondence(const Vector3d& image_point1,
+                                      const Vector3d& image_point2,
+                                      const Matrix3d& essential_mat,
+                                      double rotation[9 * 4],
+                                      double translation[3 * 4]) {
+  // Map the image points to vectors.
+  Matrix3d candidate_rotation[4];
+  Vector3d candidate_translation[4];
+  Vector3d null_space;
+  EfficientSVDDecomp(essential_mat, &null_space, candidate_rotation,
+                     candidate_translation);
+
+  Matrix<double, 3, 4> projection_mat;
+  projection_mat.block<3, 3>(0, 0) = candidate_rotation[0];
+  projection_mat.block<3, 1>(0, 3) = candidate_translation[0];
+
+  // Compute c.
+  Matrix3d temp_diag = Matrix3d::Identity();
+  temp_diag(2, 2) = 0.0;
+  const Vector3d c =
+      image_point2.cross(temp_diag * essential_mat * image_point1);
+
+  // Compute C.
+  const Vector4d C = projection_mat.transpose() * c;
+  const Vector4d Q(image_point1(0) * C(3),
+                   image_point1(1) * C(3),
+                   image_point1(2) * C(3),
+                   -(image_point1.dot(C.head<3>())));
+  // We only care about the sign of the depth because it informs us of the
+  // direction of the point (i.e. if it is in front of the camera). Use a
+  // multiply instead of divide for speed.
+  const double scaled_depth_1  = Q(2) * Q(3);
+  const double scaled_depth_2 = projection_mat.row(2).dot(Q) * Q(3);
+
+  // Create the twisted pair transformation.
+  const Vector4d twisted_transformation(-2.0 * null_space(0),
+                                        -2.0 * null_space(1),
+                                        -2.0 * null_space(2),
+                                        -1.0);
+
+  // Determine the proper configuration for the R,t decomposition.
+  int best_index;
+  if (scaled_depth_1 > 0 && scaled_depth_2 > 0) {
+    best_index = 0;
+  } else if (scaled_depth_1 < 0 && scaled_depth_2 < 0) {
+    best_index = 1;
+  } else if (Q(2) * twisted_transformation.dot(Q) > 0) {
+    best_index = 2;
+  } else {
+    best_index = 3;
+  }
+
+  Map<Matrix3d> best_rotation(rotation);
+  best_rotation = candidate_rotation[best_index];
+  Map<Vector3d> best_translation(translation);
+  best_translation = candidate_translation[best_index];
 }
 
 }  // namespace
 
 // Implementation of Nister from "An Efficient Solution to the Five-Point
 // Relative Pose Problem"
-std::vector<EssentialMatrix> FivePointRelativePose(
-    const double image1_points[5][3],
-    const double image2_points[5][3]) {
-  using Eigen::Vector3d;
-  using Eigen::RowVector3d;
-
+int FivePointRelativePose(const double image1_points[3 * 5],
+                          const double image2_points[3 * 5],
+                          double rotation[9 * 40],
+                          double translation[3 * 40]) {
   // Step 1. Create the 5x9 matrix containing epipolar constraints.
   //   Essential matrix is a linear combination of the 4 vectors spanning the
   //   null space of this matrix (found by SVD).
   Matrix<double, 5, 9> epipolar_constraint;
   for (int i = 0; i < 5; i++) {
     // Make image points homogeneous.
-    Eigen::Map<const Vector3d> tmp_img1(image1_points[i]);
-    Eigen::Map<const Vector3d> tmp_img2(image2_points[i]);
+    const Map<const Vector3d> tmp_img1(image1_points + 3 * i);
+    const Map<const Vector3d> tmp_img2(image2_points + 3 * i);
     // Fill matrix with the epipolar constraint from q'_t*E*q = 0. Where q is
     // from the first image, and q' is from the second. Eq. 8 in the Nister
     // paper.
     for (int j = 0; j < 3; j++)
       for (int k = 0; k < 3; k++)
-        epipolar_constraint(i, 3*j + k) = tmp_img1(k)*tmp_img2(j);
+        epipolar_constraint(i, 3 * j + k) = tmp_img1(k) * tmp_img2(j);
   }
 
   // Solve for right null space of the 5x9 matrix. NOTE: We use a
   // super-efficient method that is a variation of the QR decomposition
   // described in the Nister paper.  by roughly 5x.
-  Eigen::Matrix<double, 9, 4> null_space =
+  Matrix<double, 9, 4> null_space =
       EfficientNullspaceExtraction(epipolar_constraint);
 
   // Step 2. Expansion of the epipolar constraints Eq. 5 and 6 from Nister
@@ -300,25 +427,29 @@ std::vector<EssentialMatrix> FivePointRelativePose(
                             MultiplyPoly(p3, b33);
 
   // Step 5. Extract real roots of the 10th degree polynomial.
-  std::vector<EssentialMatrix> essential_matrices;
   Polynomial<10> determinant_poly(n.data());
   std::vector<double> roots = determinant_poly.RealRoots();
-  for (double z : roots) {
-    double x = EvaluatePoly(p1, z)/EvaluatePoly(p3, z);
-    double y = EvaluatePoly(p2, z)/EvaluatePoly(p3, z);
+  for (int i = 0; i < roots.size(); i++) {
+    double x = EvaluatePoly(p1, roots[i]) / EvaluatePoly(p3, roots[i]);
+    double y = EvaluatePoly(p2, roots[i]) / EvaluatePoly(p3, roots[i]);
     Matrix<double, 9, 1> temp_sum =
-        x * null_space.col(0) + y * null_space.col(1) + z * null_space.col(2) +
-        null_space.col(3);
+        x * null_space.col(0) + y * null_space.col(1) +
+        roots[i] * null_space.col(2) + null_space.col(3);
     // Need to do it like this because temp_sum is a row vector and recasting
     // it as a 3x3 will load it column-major.
-    Eigen::Matrix3d candidate_essential_mat;
-    candidate_essential_mat << temp_sum.head(3).transpose(),
-        temp_sum.segment(3, 3).transpose(),
-        temp_sum.tail(3).transpose();
+    Matrix3d candidate_essential_mat;
+    candidate_essential_mat << temp_sum.head<3>().transpose(),
+        temp_sum.segment(3, 3).transpose(), temp_sum.tail(3).transpose();
 
-    // TODO(csweeney): allow for 3x3 arrays output instead of essential mats.
-    essential_matrices.push_back(EssentialMatrix(candidate_essential_mat));
+    // Decompose into R, t using the first point correspondence.
+    Map<const Vector3d> tmp_img1(image1_points + 3 * 0);
+    Map<const Vector3d> tmp_img2(image2_points + 3 * 0);
+
+    DecomposeWithIdealCorrespondence(tmp_img1, tmp_img2,
+                                     candidate_essential_mat, rotation + 9 * i,
+                                     translation + 3 * i);
   }
-  return essential_matrices;
+  return roots.size();
 }
+
 }  // namespace theia

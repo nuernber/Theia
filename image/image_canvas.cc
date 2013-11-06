@@ -88,6 +88,12 @@ void ImageCanvas::DrawLine(int image_index, int x1, int y1, int x2, int y2,
            pixel_offsets_[image_index] + x2, y2, color);
 }
 
+void ImageCanvas::DrawLine(int image_index1, int x1, int y1, int image_index2,
+                           int x2, int y2, const RGBPixel& color) {
+  DrawLine(pixel_offsets_[image_index1] + x1, y1,
+           pixel_offsets_[image_index2] + x2, y2, color);
+}
+
 // Draw a line onto the image canvas.
 void ImageCanvas::DrawLine(int x1, int y1, int x2, int y2,
                            const RGBPixel& color) {

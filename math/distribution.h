@@ -36,6 +36,7 @@
 #define MATH_DISTRIBUTION_H_
 
 #include <glog/logging.h>
+#include <stdio.h>
 #include <cmath>
 
 namespace theia {
@@ -64,7 +65,8 @@ class NormalDistribution : public Distribution {
 
   ~NormalDistribution() {}
 
-  double eval(double x) const { return alpha_ * exp(beta_ * x * x); }
+  double eval(double x) const {
+    return alpha_ * exp(beta_ * x * x); }
 
  private:
   // Mean of data.

@@ -34,22 +34,23 @@
 
 #include "math/closed_form_polynomial_solver.h"
 
+#include <algorithm>
 #include <complex>
 #include "gtest/gtest.h"
 
-using std::complex;
-
 namespace theia {
+
+const double kTolerance = 1e-12;
 
 TEST(SolveQuadraticPolynomial, DegenerateSolution) {
   // - 2x + 1 = 0
-  double a = 0.0;
-  double b = -2.0;
-  double c = 1.0;
+  const double a = 0.0;
+  const double b = -2.0;
+  const double c = 1.0;
   double roots[2];
-  int num_roots = SolveQuadraticReals(a, b, c, roots);
+  int num_roots = SolveQuadraticReals(a, b, c, kTolerance, roots);
   EXPECT_EQ(num_roots, 1);
-  EXPECT_EQ(roots[0], 0.5);
+  EXPECT_DOUBLE_EQ(roots[0], 0.5);
 }
 
 TEST(SolveQuadraticPolynomial, SolveReals) {
@@ -58,60 +59,75 @@ TEST(SolveQuadraticPolynomial, SolveReals) {
   double b = -2.0;
   double c = 1.0;
   double roots[2];
-  int num_roots = SolveQuadraticReals(a, b, c, roots);
+  int num_roots = SolveQuadraticReals(a, b, c, kTolerance, roots);
   EXPECT_EQ(num_roots, 2);
-  EXPECT_EQ(roots[0], 1.0);
+  EXPECT_DOUBLE_EQ(roots[0], 1.0);
+  EXPECT_DOUBLE_EQ(roots[1], 1.0);
 
   // x^2 - 11x + 30 = 0
   a = 1.0;
   b = -11.0;
   c = 30.0;
-  num_roots = SolveQuadraticReals(a, b, c, roots);
+  num_roots = SolveQuadraticReals(a, b, c, kTolerance, roots);
   EXPECT_EQ(num_roots, 2);
-  EXPECT_NE(roots[0], roots[1]);
-  EXPECT_TRUE(roots[0] == 5.0 || roots[1] == 5.0);
-  EXPECT_TRUE(roots[0] == 6.0 || roots[1] == 6.0);
+
+  const double soln_roots[2] = { 5.0, 6.0 };
+  std::sort(std::begin(roots), std::end(roots));
+  for (int i = 0; i < num_roots; i++) {
+    EXPECT_DOUBLE_EQ(roots[i], soln_roots[i]);
+  }
 }
 
 TEST(SolveQuadraticPolynomial, SolveComplex) {
   // x^2 - 2x + 5 = 0 should yield 1 + 2i, 1 - 2i
-  double a = 1.0;
-  double b = -2.0;
-  double c = 5.0;
-  complex<double> roots[2];
+  const double a = 1.0;
+  const double b = -2.0;
+  const double c = 5.0;
+  std::complex<double> roots[2];
   int num_roots = SolveQuadratic(a, b, c, roots);
   EXPECT_EQ(num_roots, 2);
-  EXPECT_EQ(roots[0].real(), 1.0);
-  EXPECT_EQ(roots[1].real(), 1.0);
-  EXPECT_TRUE(roots[0].imag() == 2.0 || roots[0].imag() == -2.0);
-  EXPECT_TRUE(roots[1].imag() == 2.0 || roots[1].imag() == -2.0);
+  EXPECT_DOUBLE_EQ(roots[0].real(), 1.0);
+  EXPECT_DOUBLE_EQ(roots[1].real(), 1.0);
+  EXPECT_DOUBLE_EQ(fabs(roots[0].imag()), 2.0);
+  EXPECT_DOUBLE_EQ(fabs(roots[1].imag()), 2.0);
 }
 
 TEST(SolveCubicPolynomial, SolveReals) {
   // x^3 - 6x^2 + 11x - 6 = 0
-  double a = 1.0;
-  double b = -6.0;
-  double c = 11.0;
-  double d = -6.0;
+  const double a = 1.0;
+  const double b = -6.0;
+  const double c = 11.0;
+  const double d = -6.0;
   double roots[3];
-  int num_roots = SolveCubicReals(a, b, c, d, roots);
-  std::cout << "num roots: " << num_roots << std::endl;
-  for (int i = 0; i < 3; i++)
-    std::cout << roots[i] << std::endl;
+  int num_roots = SolveCubicReals(a, b, c, d, kTolerance, roots);
+  EXPECT_EQ(num_roots, 3);
+
+  // Check that each root is valid.
+  std::sort(std::begin(roots), std::end(roots));
+  const double soln_roots[3] = { 1.0, 2.0, 3.0 };
+  for (int i = 0; i < num_roots; i++) {
+    EXPECT_DOUBLE_EQ(roots[i], soln_roots[i]);
+  }
 }
 
 TEST(SolveQuarticPolynomial, SolveReals) {
   // y = 3x^4 + 6x^3 - 123x^2 - 126x + 1080 = 0
-  double a = 3.0;
-  double b = 6.0;
-  double c = -123.0;
-  double d = -126.0;
-  double e = 1080.0;
+  const long double a = 3.0;
+  const long double b = 6.0;
+  const long double c = -123.0;
+  const long double d = -126.0;
+  const long double e = 1080.0;
 
-  double roots[4];
-  int num_roots = SolveQuarticReals(a, b, c, d, e, roots);
-  std::cout << "num roots: " << num_roots << std::endl;
-  for (int i = 0; i < 4; i++)
-    std::cout << roots[i] << std::endl;
+  long double roots[4];
+  int num_roots = SolveQuarticReals(a, b, c, d, e, kTolerance, roots);
+  EXPECT_EQ(num_roots, 4);
+
+  // Check that each root is valid.
+  std::sort(std::begin(roots), std::end(roots));
+  const long double soln_roots[4] = { -6.0, -4.0, 3.0, 5.0 };
+  for (int i = 0; i < num_roots; i++) {
+    EXPECT_DOUBLE_EQ(roots[i], soln_roots[i]);
+  }
 }
+
 }  // namespace test

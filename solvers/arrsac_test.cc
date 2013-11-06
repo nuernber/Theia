@@ -79,9 +79,12 @@ class LineEstimator : public Estimator<Point, Line> {
   LineEstimator() {}
   ~LineEstimator() {}
 
-  bool EstimateModel(const vector<Point>& data, Line* model) const {
-    model->m = (data[1].y - data[0].y) / (data[1].x - data[0].x);
-    model->b = data[1].y - model->m * data[1].x;
+  bool EstimateModel(const vector<Point>& data,
+                     std::vector<Line>* models) const {
+    Line model;
+    model.m = (data[1].y - data[0].y) / (data[1].x - data[0].x);
+    model.b = data[1].y - model.m * data[1].x;
+    models->push_back(model);
     return true;
   }
 

@@ -57,6 +57,7 @@ class BruteForceMatcher : public Matcher<Metric> {
   // Build an index or other data structures needed to perform the search.
   bool Build(const std::vector<Descriptor*>& descriptors) {
     descriptors_ = descriptors;
+    return true;
   }
 
   // Search for the sole nearest neighbor for a single query.

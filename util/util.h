@@ -43,5 +43,10 @@ typedef unsigned char uchar;
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
+
+// Determines the array size an array a.
+#define ARRAYSIZE(a) \
+  ((sizeof(a) / sizeof(*(a))) / \
+  static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 }
 #endif  // UTIL_UTIL_H_

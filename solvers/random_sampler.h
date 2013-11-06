@@ -35,12 +35,11 @@
 #ifndef SOLVERS_RANDOM_SAMPLER_H_
 #define SOLVERS_RANDOM_SAMPLER_H_
 
-#include <chrono>
 #include <stdlib.h>
-#include <random>
 #include <algorithm>
 #include <vector>
 
+#include "util/random.h"
 #include "solvers/sampler.h"
 
 namespace theia {
@@ -49,24 +48,23 @@ template <class Datum> class RandomSampler : public Sampler<Datum> {
  public:
   // num_samples: the number of samples needed. Typically this corresponds to
   //   the minumum number of samples needed to estimate a model.
-  explicit RandomSampler(int num_samples)
-      : num_samples_(num_samples),
-        generator(std::chrono::system_clock::now().time_since_epoch().count()) {
+  explicit RandomSampler(int num_samples) : num_samples_(num_samples) {
+    InitRandomGenerator();
   }
 
   ~RandomSampler() {}
   // Samples the input variable data and fills the vector subset with the
   // random samples.
   bool Sample(const std::vector<Datum>& data, std::vector<Datum>* subset) {
-    std::uniform_int_distribution<int> distribution(0, data.size() - 1);
     subset->resize(num_samples_);
     std::vector<int> random_numbers;
     for (int i = 0; i < num_samples_; i++) {
       int rand_number;
       // Generate a random number that has not already been used.
       while (std::find(random_numbers.begin(), random_numbers.end(),
-                       (rand_number = distribution(generator))) !=
+                       (rand_number = RandInt(0, data.size() - 1))) !=
              random_numbers.end());
+
       random_numbers.push_back(rand_number);
       subset->at(i) = data[rand_number];
     }
@@ -76,9 +74,7 @@ template <class Datum> class RandomSampler : public Sampler<Datum> {
  private:
   // Number of samples to obtain.
   int num_samples_;
-
-  // Random number generator engine.
-  std::default_random_engine generator;
 };
+
 }       // namespace theia
 #endif  // SOLVERS_RANDOM_SAMPLER_H_

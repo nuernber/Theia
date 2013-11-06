@@ -35,13 +35,45 @@
 #ifndef VISION_POSE_UTIL_H_
 #define VISION_POSE_UTIL_H_
 
+#include <Eigen/Core>
+#include <vector>
+
 namespace theia {
 
+// Fills the projection_matrix output variable with a projection matrix composed
+// from the input parameters.
 void ComposeProjectionMatrix(const double focal_length[2],
-                             const double principle_point[2],
+                             const double principal_point[2],
                              const double rotation[9],
                              const double translation[3],
                              double projection_matrix[12]);
+
+// Adds noise to the 3D point passed in.
+void AddNoiseToPoint(const double noise_factor, Eigen::Vector3d* point);
+
+// Adds noise to the ray i.e. the projection of the point.
+void AddNoiseToProjection(const double noise_factor, Eigen::Vector3d* ray);
+
+void AddGaussianNoise(const double noise_factor, Eigen::Vector3d* ray);
+
+// Creates points that are randomly distributed within a viewing frustum.
+void CreateRandomPointsInFrustum(const double near_plane_width,
+                                 const double near_plane_height,
+                                 const double near_plane_depth,
+                                 const double far_plane_depth,
+                                 const int num_points,
+                                 std::vector<Eigen::Vector3d>* random_points);
+
+// Calculates Sampson distance for two correspondances and an essential or
+// fundamental matrix by eq. 11.9 in Hartley and Zisserman.
+double SampsonDistance(const Eigen::Matrix3d& F, const Eigen::Vector3d& x,
+                       const Eigen::Vector3d& y);
+
+// Returns the cross product matrix of a vector: if cross_vec = [x y z] then
+//                        [ 0  -z   y]
+// cross product matrix = [ z   0  -y]
+//                        [-y   x   0]
+Eigen::Matrix3d CrossProductMatrix(const Eigen::Vector3d& cross_vec);
 
 }  // namespace theia
 

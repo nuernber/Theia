@@ -1,4 +1,4 @@
 ADD_SUBDIRECTORY(matching)
-ADD_SUBDIRECTORY(models)
 ADD_SUBDIRECTORY(pose)
 ADD_SUBDIRECTORY(transformation)
+ADD_SUBDIRECTORY(triangulation)

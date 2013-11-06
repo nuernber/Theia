@@ -37,6 +37,7 @@
 #include <Eigen/Core>
 #include <math.h>
 #include "gtest/gtest.h"
+#include "test/benchmark.h"
 #include "test/test_utils.h"
 #include "util/random.h"
 
@@ -72,6 +73,7 @@ void PoseFromThreeCalibratedTest() {
                                               kFocalLength,
                                               kPrincipalPoint,
                                               solutions);
+
   bool matched_transform = false;
   for (int i = 0; i < num_solutions; ++i) {
     if (test::ArraysEqualUpToScale(12, kP, solutions + i * 12, 1e-6)) {
@@ -90,16 +92,12 @@ void PoseFromThreeCalibratedTest() {
   EXPECT_TRUE(matched_transform);
 }
 
-TEST(pose, PoseFromThreeCalibrated) {
+TEST(P3P, PoseFromThreeCalibrated) {
   PoseFromThreeCalibratedTest();
 }
 
-// TODO(cmsweeney): Add benchmark.
-// static void BM_PoseFromThreeCalibrated(int iters) {
-//   for (int i = 0; i < iters; i++)
-//     PoseFromThreeCalibratedTest();
-// }
-
-// BENCHMARK(BM_PoseFromThreeCalibrated);
+BENCHMARK(P3P, benchmark, 100, 1000) {
+  PoseFromThreeCalibratedTest();
+}
 
 }  // namespace theia

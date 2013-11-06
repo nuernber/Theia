@@ -79,6 +79,8 @@ class ImageCanvas {
   // Draw a line in the image at image_index.
   void DrawLine(int image_index, int x1, int y1, int x2, int y2,
                 const RGBPixel& color);
+  void DrawLine(int image_index1, int x1, int y1, int image_index2, int x2,
+                int y2, const RGBPixel& color);
   // Draw a line onto the image canvas.
   void DrawLine(int x1, int y1, int x2, int y2, const RGBPixel& color);
 

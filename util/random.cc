@@ -61,4 +61,11 @@ int RandInt(int lower, int upper) {
   std::uniform_int_distribution<int> distribution(lower, upper);
   return distribution(util_generator);
 }
+
+// Gaussian Distribution with the corresponding mean and std dev.
+double RandGaussian(double mean, double std_dev) {
+  std::normal_distribution<double> distribution(mean, std_dev);
+  return distribution(util_generator);
+}
+
 }  // namespace theia

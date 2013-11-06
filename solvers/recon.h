@@ -368,10 +368,11 @@ void Recon<Datum, Model>::ComputeMeanInliers(
   std::sort(mean.begin(), mean.end(), ResidualDataPoint::SortByIndex);
 
   // For each model, we add the residual of the inlier to our mean model.
-  for (ModelResiduals& model : *models) {
-    std::sort(model.begin(), model.end(), ResidualDataPoint::SortByIndex);
+  for (int model_num = 0; model_num < models->size(); model_num++) {
+    ModelResidual* model = &((*models)[model_num]);
+    std::sort(model->begin(), model->end(), ResidualDataPoint::SortByIndex);
     for (int i = 0; i < inliers.size(); i++) {
-      mean[i].SetResidual(mean[i].GetResidual() + model[i].GetResidual());
+      mean[i].SetResidual(mean[i].GetResidual() + (*model)[i].GetResidual());
     }
   }
   // Sort the mean residuals.

@@ -49,5 +49,10 @@ double RandDouble(double lower, double upper);
 
 // Get a random double between lower and upper (inclusive).
 int RandInt(int lower, int upper);
-}       // namespace theia
+
+// Generate a number drawn from a gaussian distribution.
+double RandGaussian(double mean, double std_dev);
+
+}  // namespace theia
+
 #endif  // UTIL_RANDOM_H_

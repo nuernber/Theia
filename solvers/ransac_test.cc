@@ -63,9 +63,12 @@ class LineEstimator : public Estimator<Point, Line> {
   LineEstimator() {}
   ~LineEstimator() {}
 
-  bool EstimateModel(const std::vector<Point>& data, Line* model) const {
-    model->m = (data[1].y - data[0].y) / (data[1].x - data[0].x);
-    model->b = data[1].y - model->m * data[1].x;
+  bool EstimateModel(const std::vector<Point>& data,
+                     std::vector<Line>* models) const {
+    Line model;
+    model.m = (data[1].y - data[0].y) / (data[1].x - data[0].x);
+    model.b = data[1].y - model.m * data[1].x;
+    models->push_back(model);
     return true;
   }
 
@@ -82,15 +85,21 @@ TEST(RansacTest, LineFitting) {
   // Create a set of points along y=x with a small random pertubation.
   std::vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1.0, 1.0);
-    double noise_y = RandDouble(-1.0, 1.0);
-    input_points.push_back(Point(i + noise_x, i + noise_y));
+    if (i % 2 == 0) {
+      double noise_x = RandGaussian(0.0, 0.1);
+      double noise_y = RandGaussian(0.0, 0.1);
+      input_points.push_back(Point(i + noise_x, i + noise_y));
+    } else {
+      double noise_x = RandDouble(0.0, 10000);
+      double noise_y = RandDouble(0.0, 10000);
+      input_points.push_back(Point(noise_x, noise_y));
+    }
   }
 
   LineEstimator line_estimator;
   Line line;
-  Ransac<Point, Line> ransac_line(2, 0.3, 7000, 10000);
-  ransac_line.Estimate(input_points, line_estimator, &line);
+  Ransac<Point, Line> ransac_line(2, 0.3, 3000, 1000);
+  CHECK(ransac_line.Estimate(input_points, line_estimator, &line));
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }
 
@@ -98,20 +107,26 @@ TEST(RansacTest, GetInliers) {
   // Create a set of points along y=x with a small random pertubation.
   std::vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1, 1);
-    double noise_y = RandDouble(-1, 1);
-    input_points.push_back(Point(i + noise_x, i + noise_y));
+    if (i % 2 == 0) {
+      double noise_x = RandGaussian(0.0, 0.1);
+      double noise_y = RandGaussian(0.0, 0.1);
+      input_points.push_back(Point(i + noise_x, i + noise_y));
+    } else {
+      double noise_x = RandDouble(0.0, 10000);
+      double noise_y = RandDouble(0.0, 10000);
+      input_points.push_back(Point(noise_x, noise_y));
+    }
   }
 
   LineEstimator line_estimator;
   Line line;
-  double error_thresh = 0.3;
-  // Set an un-obtainable value for the inlier ratio (e.g. > 1.0)
-  Ransac<Point, Line> ransac_line(2, error_thresh, 7000, 10000);
-  ransac_line.Estimate(input_points, line_estimator, &line);
+  double error_thresh = 0.5;
+  Ransac<Point, Line> ransac_line(2, error_thresh, 3000, 1000);
+  CHECK(ransac_line.Estimate(input_points, line_estimator, &line));
 
   // Ensure each inlier is actually an inlier.
   std::vector<bool> inliers = ransac_line.GetInliers();
+  CHECK_EQ(inliers.size(), input_points.size());
   for (int i = 0; i < input_points.size(); i++) {
     bool verified_inlier =
         line_estimator.Error(input_points[i], line) < error_thresh;
@@ -121,20 +136,26 @@ TEST(RansacTest, GetInliers) {
 
 TEST(RansacTest, TerminationNumInliers) {
   // Create a set of points along y=x with a small random pertubation.
+  // Create a set of points along y=x with a small random pertubation.
   std::vector<Point> input_points;
   for (int i = 0; i < 10000; ++i) {
-    double noise_x = RandDouble(-1, 1);
-    double noise_y = RandDouble(-1, 1);
-    input_points.push_back(Point(i + noise_x, i + noise_y));
+    if (i % 2 == 0) {
+      double noise_x = RandGaussian(0.0, 0.1);
+      double noise_y = RandGaussian(0.0, 0.1);
+      input_points.push_back(Point(i + noise_x, i + noise_y));
+    } else {
+      double noise_x = RandDouble(0.0, 10000);
+      double noise_y = RandDouble(0.0, 10000);
+      input_points.push_back(Point(noise_x, noise_y));
+    }
   }
 
   LineEstimator line_estimator;
   Line line;
-  // Set an un-obtainable value for the inlier ratio (e.g. > 1.0)
-  Ransac<Point, Line> ransac_line(2, 2.0, 300, 10000);
+  Ransac<Point, Line> ransac_line(2, 0.5, 3000, 1000);
   ransac_line.Estimate(input_points, line_estimator, &line);
 
   int num_inliers = ransac_line.GetNumInliers();
-  ASSERT_GE(num_inliers, 10);
+  ASSERT_GE(num_inliers, 2500);
 }
 }  // namespace theia

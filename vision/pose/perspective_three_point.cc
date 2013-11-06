@@ -38,6 +38,7 @@
 #include <math.h>
 
 #include <Eigen/Dense>
+#include <complex>
 #include <algorithm>
 #include "math/closed_form_polynomial_solver.h"
 #include "vision/pose/util.h"
@@ -57,8 +58,8 @@ int SolvePlaneRotation(const Vector3d normalized_image_points[3],
                        const Vector3d& intermediate_image_point,
                        const Vector3d& intermediate_world_point,
                        const double d_12,
-                       double real_roots[4],
-                       double cot_alphas[4],
+                       long double cos_theta[4],
+                       long double cot_alphas[4],
                        double* b) {
   // Calculate these parameters ahead of time for reuse and
   // readability. Notation for these variables is consistent with the notation
@@ -113,14 +114,14 @@ int SolvePlaneRotation(const Vector3d normalized_image_points[3],
       f_2_pw2 * p_2_pw2 * d_12_pw2 * b_pw2;
 
   // Computation of roots.
-  const int num_solutions =
-      SolveQuarticReals(coefficients[0], coefficients[1], coefficients[2],
-                        coefficients[3], coefficients[4], real_roots);
-
-  // Calculate cot(alpha) needed for back-substitution.
-  for (int i = 0; i < num_solutions; i++) {
-    cot_alphas[i] = (-f_1 * p_1 / f_2 - real_roots[i] * p_2 + d_12 * (*b)) /
-                    (-f_1 * real_roots[i] * p_2 / f_2 + p_1 - d_12);
+  const double kTolerance = 1e-6;
+  const int num_solutions = SolveQuarticReals(
+      coefficients[0], coefficients[1], coefficients[2], coefficients[3],
+      coefficients[4], kTolerance, cos_theta);
+      // Calculate cot(alpha) needed for back-substitution.
+      for (int i = 0; i < num_solutions; i++) {
+    cot_alphas[i] = (-f_1 * p_1 / f_2 - cos_theta[i] * p_2 + d_12 * (*b)) /
+                    (-f_1 * cos_theta[i] * p_2 / f_2 + p_1 - d_12);
   }
 
   return num_solutions;
@@ -132,12 +133,13 @@ int SolvePlaneRotation(const Vector3d normalized_image_points[3],
 void Backsubstitute(const Matrix3d& intermediate_world_frame,
                     const Matrix3d& intermediate_camera_frame,
                     const Vector3d& world_point_0,
-                    const double cos_theta,
-                    const double cot_alpha,
+                    const long double cos_theta,
+                    const long double cot_alpha,
                     const double d_12,
                     const double b,
                     double solution_translation[3],
                     double solution_rotation[9]) {
+  CHECK_LE(fabs(cos_theta), 1.0);
   const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
   const double sin_alpha = sqrt(1.0 / (cot_alpha * cot_alpha + 1.0));
   double cos_alpha = sqrt(1.0 - sin_alpha * sin_alpha);
@@ -176,31 +178,19 @@ void Backsubstitute(const Matrix3d& intermediate_world_frame,
   translation = rotation * (-translation);
 }
 
-int PoseFromThreePoints(const double points_2d[2 * 3],
+}  // namespace
+
+int PoseFromThreePoints(const double image_ray[3 * 3],
                         const double points_3d[3 * 3],
-                        const double f[2],
-                        const double c[2],
                         double solution_rotations[9 * 4],
                         double solution_translations[3 * 4]) {
-  CHECK_GT(f[0], 0.0);
-  CHECK_GT(f[1], 0.0);
-
-  // Compute the 3D unit length vectors from camera center to each
-  // image point. First undo the calibration matrix transformation:
-  // x = (pt[0] - c_x) / f_x
-  // y = (pt[1] - c_y) / f_y
-  // z = 1.0
-  // Then normalize those vectors to length 1.
   Vector3d normalized_image_points[3];
   // Store points_3d in world_points for ease of use. NOTE: we cannot use a
   // const ref or a Map because the world_points entries may be swapped later.
   Vector3d world_points[3];
   for (int i = 0; i < 3; ++i) {
-    normalized_image_points[i][0] = (points_2d[2 * i + 0] - c[0]) / f[0];
-    normalized_image_points[i][1] = (points_2d[2 * i + 1] - c[1]) / f[1];
-    normalized_image_points[i][2] = 1.0;
-    normalized_image_points[i].normalize();
-
+    normalized_image_points[i] = Vector3d(
+        image_ray[i * 3 + 0], image_ray[i * 3 + 1], image_ray[i * 3 + 2]);
     world_points[i] = Vector3d(points_3d[i * 3 + 0], points_3d[i * 3 + 1],
                                points_3d[i * 3 + 2]);
   }
@@ -211,7 +201,7 @@ int PoseFromThreePoints(const double points_2d[2 * 3],
   const Vector3d world_2_0 = world_points[2] - world_points[0];
   if (world_1_0.cross(world_2_0).squaredNorm() < kTolerance) {
     LOG(INFO) << "The 3 world points are collinear! No solution for absolute "
-                 "pose exits";
+        "pose exits.";
     return 0;
   }
 
@@ -249,43 +239,41 @@ int PoseFromThreePoints(const double points_2d[2 * 3],
     std::swap(world_points[0], world_points[1]);
   }
 
-  // Create the intermediate world frame transformation where that has the
+  // Create the intermediate world frame transformation that has the
   // origin at world_points[0] and the x-axis in the direction of
   // world_points[1]. This is defined by the transformation: N = [nx, ny, nz]
   // where nx = (p1 - p0) / ||p1 - p0||
   // nz = nx x (p2 - p0) / || nx x (p2 -p0) || and ny = nz x nx
   // Where p0, p1, p2 are the world points.
   Matrix3d intermediate_world_frame;
-  intermediate_world_frame.row(0) =
-      (world_points[1] - world_points[0]).normalized();
-  intermediate_world_frame.row(2) = intermediate_world_frame.row(0)
-      .cross(world_points[2] - world_points[0]).normalized();
+  intermediate_world_frame.row(0) = world_1_0.normalized();
+  intermediate_world_frame.row(2) =
+      intermediate_world_frame.row(0).cross(world_2_0).normalized();
   intermediate_world_frame.row(1) =
       intermediate_world_frame.row(2).cross(intermediate_world_frame.row(0));
 
   // Transform world_point[2] to the intermediate world frame coordinates.
-  Vector3d intermediate_world_point =
-      intermediate_world_frame * (world_points[2] - world_points[0]);
+  Vector3d intermediate_world_point = intermediate_world_frame * world_2_0;
 
   // Distance from world_points[1] to the intermediate world frame origin.
-  double d_12 = (world_points[1] - world_points[0]).norm();
+  double d_12 = world_1_0.norm();
 
   // Solve for the cos(theta) that will give us the transformation from
   // intermediate world frame to intermediate camera frame. We also get the
   // cot(alpha) for each solution necessary for back-substitution.
-  double real_roots[4];
-  double cot_alphas[4];
+  long double cos_theta[4];
+  long double cot_alphas[4];
   double b;
   const int num_solutions = SolvePlaneRotation(
       normalized_image_points, intermediate_image_point,
-      intermediate_world_point, d_12, real_roots, cot_alphas, &b);
+      intermediate_world_point, d_12, cos_theta, cot_alphas, &b);
 
   // Backsubstitution of each solution
   for (int i = 0; i < num_solutions; i++) {
     Backsubstitute(intermediate_world_frame,
                    intermediate_camera_frame,
                    world_points[0],
-                   real_roots[i],
+                   cos_theta[i],
                    cot_alphas[i],
                    d_12,
                    b,
@@ -295,8 +283,6 @@ int PoseFromThreePoints(const double points_2d[2 * 3],
   return num_solutions;
 }
 
-}  // namespace
-
 int PoseFromThreeCalibrated(const double points_2d[2 * 3],
                             const double points_3d[3 * 3],
                             const double focal_length[2],
@@ -305,10 +291,28 @@ int PoseFromThreeCalibrated(const double points_2d[2 * 3],
   double rotation_solutions[9 * 4];
   double translation_solutions[3 * 4];
 
-  int n = PoseFromThreePoints(points_2d,
+  CHECK_GT(focal_length[0], 0.0);
+  CHECK_GT(focal_length[1], 0.0);
+
+  // Compute the 3D unit length vectors from camera center to each
+  // image point. First undo the calibration matrix transformation:
+  // x = (pt[0] - c_x) / f_x
+  // y = (pt[1] - c_y) / f_y
+  // z = 1.0
+  // Then normalize those vectors to length 1.
+  double image_rays[3 * 3];
+  for (int i = 0; i < 3; ++i) {
+    Map<Vector3d> normalized_image_ray(image_rays + i * 3);
+    normalized_image_ray[0] =
+        (points_2d[2 * i + 0] - principal_point[0]) / focal_length[0];
+    normalized_image_ray[1] =
+        (points_2d[2 * i + 1] - principal_point[1]) / focal_length[1];
+    normalized_image_ray[2] = 1.0;
+    normalized_image_ray.normalize();
+  }
+
+  int n = PoseFromThreePoints(image_rays,
                               points_3d,
-                              focal_length,
-                              principal_point,
                               rotation_solutions,
                               translation_solutions);
 

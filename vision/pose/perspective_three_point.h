@@ -42,36 +42,31 @@ namespace theia {
 // Camera position and Orientation" by Kneip et. al.
 //
 // Params:
-//   image_points: Location of features on the image plane (x[i][*] = i-th image
-//     point).
-//   world_points: 3D location of features. Must correspond to the image_point
+//   image_rays: Normalized image rays corresponding to model points.
+//   points_3d: 3D location of features. Must correspond to the image_ray
 //     of the same index (x[i][*] = i-th world point)
-//   rotation: The candidate rotations computed from the 3 point algorithm.
-//   translation: The candidate translations computed.
-// NOTE: P3P returns up to 4 poses, so the rotation and translation arrays are
-//       indeed arrays of 3x3 and 3x1 arrays respectively.
+//   solution_rotations: the rotation matrix of the candidate solutions
+//   solution_translation: the translation of the candidate solutions
 // Return: the number of poses computed.
-int PoseThreePoints(const double image_points[3][3],
-                    const double world_points[3][3],
-                    double rotation[][3][3],
-                    double translation[][3]);
+int PoseFromThreePoints(const double image_ray[3 * 3],
+                        const double points_3d[3 * 3],
+                        double solution_rotations[9 * 4],
+                        double solution_translations[3 * 4]);
 
+// Uses the method above for a calibrated camera setup.
+// Params:
+//   points_2d: Location of features on the image plane (x[i][*] = i-th image
+//     point). Location must be normalized
+//   points_3d: 3D location of features. Must correspond to the image_point
+//     of the same index (x[i][*] = i-th world point)
+//   focal_length: fx, and fy the focal length parameters
+//   principle_point: the principle point of the image
+//   solutions: the projection matrices for the candidate solutions
+// Return: the number of poses computed.
 int PoseFromThreeCalibrated(const double points_2d[2 * 3],
                             const double points_3d[3 * 3],
                             const double focal_length[2],
                             const double principal_point[2],
                             double solutions[12 * 4]);
-
-
-
-// Computes pose using three point algorithm (method above). The fourth
-// correspondence is used to determine the best solution of the (up to 4)
-// candidate solutions. Same parameters as above, except only the best solution
-// is returned in the output parameters, rotation and translation.
-// Return: true if a successful pose is found, false else.
-bool PoseFourPoints(const double image_points[4][3],
-                    const double world_points[4][3],
-                    double rotation[3][3],
-                    double translation[3]);
 }  // namespace theia
 #endif  // VISION_POSE_PERSPECTIVE_THREE_POINT_H_

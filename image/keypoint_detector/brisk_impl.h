@@ -1,5 +1,5 @@
 /*
-  BRISK reference implementation, modified to remove OpenCV dependency and use
+  Brisk reference implementation, modified to remove OpenCV dependency and use
   Theia's Image class instead.
   Changes Copyright (C) 2013 Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
@@ -25,7 +25,8 @@
   used to endorse or promote products derived from this software without
   specific prior written permission.
 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND
   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
@@ -67,8 +68,7 @@ class BriskLayer {
     static const int TWOTHIRDSAMPLE = 1;
   };
   // construct a base layer
-  BriskLayer(const Image<unsigned char>& img,
-             float scale = 1.0f,
+  BriskLayer(const Image<unsigned char>& img, float scale = 1.0f,
              float offset = 0.0f);
   // derive a layer
   BriskLayer(const BriskLayer& layer, int mode);
@@ -79,23 +79,26 @@ class BriskLayer {
   // get scores - NOTE: this is in layer coordinates, not scale=1 coordinates!
   inline uint8_t getAgastScore(int x, int y, uint8_t threshold);
   inline uint8_t getAgastScore(float xf, float yf, uint8_t threshold,
-                               float scale=1.0f);
+                               float scale = 1.0f);
   inline uint8_t getAgastScore_5_8(int x, int y, uint8_t threshold);
 
   // accessors
-  inline const Image<unsigned char>& img() const {return img_;}
-  inline const Image<unsigned char>& scores() const {return scores_;}
-  inline float scale() const {return scale_;}
-  inline float offset() const {return offset_;}
+  inline const Image<unsigned char>& img() const { return img_; }
+  inline const Image<unsigned char>& scores() const { return scores_; }
+  inline float scale() const { return scale_; }
+  inline float offset() const { return offset_; }
 
   // half sampling
-  static inline void halfsample(const Image<unsigned char>& srcimg, Image<unsigned char>& dstimg);
+  static inline void halfsample(const Image<unsigned char>& srcimg,
+                                Image<unsigned char>& dstimg);
   // two third sampling
-  static inline void twothirdsample(const Image<unsigned char>& srcimg, Image<unsigned char>& dstimg);
+  static inline void twothirdsample(const Image<unsigned char>& srcimg,
+                                    Image<unsigned char>& dstimg);
 
  private:
   // access gray values (smoothed/interpolated)
-  inline uint8_t value(const Image<unsigned char>& mat, float xf, float yf, float scale);
+  inline uint8_t value(const Image<unsigned char>& mat, float xf, float yf,
+                       float scale);
   // the image
   Image<unsigned char> img_;
   // its Fast scores
@@ -111,54 +114,53 @@ class BriskLayer {
 class BriskScaleSpace {
  public:
   // construct telling the octaves number:
-  BriskScaleSpace(uint8_t _octaves=3);
+  explicit BriskScaleSpace(uint8_t _octaves = 3);
   ~BriskScaleSpace() {}
 
   // construct the image pyramids
   void constructPyramid(const Image<unsigned char>& image);
 
   // get Keypoints
-  void getKeypoints(const uint8_t _threshold, std::vector<Keypoint*>* keypoints);
+  void getKeypoints(const uint8_t _threshold,
+                    std::vector<Keypoint*>* keypoints);
 
  private:
   // nonmax suppression:
-  inline bool isMax2D(const uint8_t layer,
-                      const int x_layer, const int y_layer);
+  inline bool isMax2D(const uint8_t layer, const int x_layer,
+                      const int y_layer);
   // 1D (scale axis) refinement:
   // around octave
-  inline float refine1D(const float s_05,
-                        const float s0, const float s05, float& max);
+  inline float refine1D(const float s_05, const float s0, const float s05,
+                        float& max);
   // around intra
-  inline float refine1D_1(const float s_05,
-                          const float s0, const float s05, float& max);
+  inline float refine1D_1(const float s_05, const float s0, const float s05,
+                          float& max);
   // around octave 0 only
-  inline float refine1D_2(const float s_05,
-                          const float s0, const float s05, float& max);
+  inline float refine1D_2(const float s_05, const float s0, const float s05,
+                          float& max);
   // 2D maximum refinement:
   inline float subpixel2D(const int s_0_0, const int s_0_1, const int s_0_2,
                           const int s_1_0, const int s_1_1, const int s_1_2,
                           const int s_2_0, const int s_2_1, const int s_2_2,
                           float& delta_x, float& delta_y);
   // 3D maximum refinement centered around (x_layer,y_layer)
-  inline float refine3D(const uint8_t layer,
-                        const int x_layer, const int y_layer,
-                        float& x, float& y, float& scale, bool& ismax);
+  inline float refine3D(const uint8_t layer, const int x_layer,
+                        const int y_layer, float& x, float& y, float& scale,
+                        bool& ismax);
 
   // interpolated score access with recalculation when needed:
-  inline int getScoreAbove(const uint8_t layer,
-                           const int x_layer, const int y_layer);
-  inline int getScoreBelow(const uint8_t layer,
-                           const int x_layer, const int y_layer);
+  inline int getScoreAbove(const uint8_t layer, const int x_layer,
+                           const int y_layer);
+  inline int getScoreBelow(const uint8_t layer, const int x_layer,
+                           const int y_layer);
 
   // return the maximum of score patches above or below
-  inline float getScoreMaxAbove(const uint8_t layer,
-                                const int x_layer, const int y_layer,
-                                const int threshold, bool& ismax,
-                                float& dx, float& dy);
-  inline float getScoreMaxBelow(const uint8_t layer,
-                                const int x_layer, const int y_layer,
-                                const int threshold, bool& ismax,
-                                float& dx, float& dy);
+  inline float getScoreMaxAbove(const uint8_t layer, const int x_layer,
+                                const int y_layer, const int threshold,
+                                bool& ismax, float& dx, float& dy);
+  inline float getScoreMaxBelow(const uint8_t layer, const int x_layer,
+                                const int y_layer, const int threshold,
+                                bool& ismax, float& dx, float& dy);
 
   // the image pyramids:
   uint8_t layers_;

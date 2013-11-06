@@ -26,6 +26,7 @@ include(theia_macros)
 
 include (OptimizeForArchitecture)
 OptimizeForArchitecture()
+
 IF (SSE2_FOUND )
   IF(CMAKE_BUILD_TYPE STREQUAL "Release")
     ADD_DEFINITIONS(-DTHEIA_USE_SSE)
@@ -43,6 +44,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/libraries
   ${flann_SOURCE_DIR}/src/cpp
   ${gtest_SOURCE_DIR}/include
   ${gtest_SOURCE_DIR}
+  ${hayai_SOURCE_DIR}
   ${vlfeat_SOURCE_DIR}
   ${agast_SOURCE_DIR})
 

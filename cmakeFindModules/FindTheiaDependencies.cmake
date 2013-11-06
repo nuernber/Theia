@@ -20,7 +20,6 @@ macro(set_compile_parameters)
   ENDIF (NOT CMAKE_BUILD_TYPE)
 
   # Set c++ standard to c++11
-  SET(CMAKE_CXX_FLAGS)
   if(CMAKE_COMPILER_IS_GNUCXX)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
     if (GCC_VERSION VERSION_GREATER 4.7 OR GCC_VERSION VERSION_EQUAL 4.7)

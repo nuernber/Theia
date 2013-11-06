@@ -47,6 +47,7 @@ namespace theia {
 
 template<class T>
 struct FeatureMatch {
+  FeatureMatch() {}
   FeatureMatch(int f1_ind, int f2_ind, T dist)
       : feature1_ind(f1_ind), feature2_ind(f2_ind), distance(dist) {}
   // Index of the feature in the first image.

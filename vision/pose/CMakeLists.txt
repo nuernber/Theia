@@ -7,17 +7,19 @@ CC_LIBRARY(perspective_three_point perspective_three_point.cc
 
 # 5 Point relative pose
 CC_LIBRARY(five_point_relative_pose five_point_relative_pose.cc
-  vision/models/essential_matrix)
+  vision/pose/util)
 
 # Utility functions
-CC_LIBRARY(util util.cc)
+CC_LIBRARY(util util.cc
+  util/random)
 
 # Tests:
 IF (${BUILD_TESTING})
   GTEST(perspective_three_point_test
     util/random
     vision/pose/perspective_three_point)
+
   GTEST(five_point_relative_pose_test
     vision/pose/five_point_relative_pose
-    vision/models/essential_matrix)
+    vision/pose/util)
 ENDIF (${BUILD_TESTING})
