@@ -13,6 +13,8 @@ set(CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmakeFindModules)
 include(FindTheiaDependencies)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Add GTest if testing is enabled
 OPTION(BUILD_TESTING
   "Enable testing"
