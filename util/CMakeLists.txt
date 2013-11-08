@@ -1,1 +1,0 @@
-CC_LIBRARY(random random.cc)

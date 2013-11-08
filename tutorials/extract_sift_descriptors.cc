@@ -37,11 +37,11 @@
 #include <string>
 #include <vector>
 
-#include "image/image.h"
-#include "image/image_canvas.h"
-#include "image/descriptor/sift_descriptor.h"
-#include "image/keypoint_detector/keypoint.h"
-#include "image/keypoint_detector/sift_detector.h"
+#include "theia/image/image.h"
+#include "theia/image/image_canvas.h"
+#include "theia/image/descriptor/sift_descriptor.h"
+#include "theia/image/keypoint_detector/keypoint.h"
+#include "theia/image/keypoint_detector/sift_detector.h"
 
 DEFINE_string(input_image, "image.png",
               "Image to extract SIFT keypoints and descriptors from.");

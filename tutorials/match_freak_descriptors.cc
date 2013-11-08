@@ -38,14 +38,14 @@
 #include <string>
 #include <vector>
 
-#include "image/image.h"
-#include "image/image_canvas.h"
-#include "image/descriptor/freak_descriptor.h"
-#include "image/keypoint_detector/keypoint.h"
-#include "image/keypoint_detector/brisk_detector.h"
-#include "vision/matching/distance.h"
-#include "vision/matching/brute_force_matcher.h"
-#include "vision/matching/image_matcher.h"
+#include "theia/image/image.h"
+#include "theia/image/image_canvas.h"
+#include "theia/image/descriptor/freak_descriptor.h"
+#include "theia/image/keypoint_detector/keypoint.h"
+#include "theia/image/keypoint_detector/brisk_detector.h"
+#include "theia/vision/matching/distance.h"
+#include "theia/vision/matching/brute_force_matcher.h"
+#include "theia/vision/matching/image_matcher.h"
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");

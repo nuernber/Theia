@@ -1,29 +1,11 @@
-CC_BINARY(extract_sift_descriptors
-  image/image
-  image/image_canvas
-  image/descriptor/sift_descriptor
-  image/keypoint_detector/keypoint
-  image/keypoint_detector/sift_detector)
+ADD_EXECUTABLE(extract_sift_descriptors extract_sift_descriptors.cc)
+TARGET_LINK_LIBRARIES(extract_sift_descriptors theia)
 
-CC_BINARY(extract_freak_descriptors
-  image/image
-  image/image_canvas
-  image/descriptor/freak_descriptor
-  image/keypoint_detector/keypoint
-  image/keypoint_detector/brisk_detector)
+ADD_EXECUTABLE(extract_freak_descriptors extract_freak_descriptors.cc)
+TARGET_LINK_LIBRARIES(extract_freak_descriptors theia)
 
-CC_BINARY(match_sift_descriptors
-  image/image
-  image/image_canvas
-  image/descriptor/sift_descriptor
-  image/keypoint_detector/keypoint
-  image/keypoint_detector/sift_detector
-  vision/matching/brute_force_matcher)
+ADD_EXECUTABLE(match_sift_descriptors match_sift_descriptors.cc)
+TARGET_LINK_LIBRARIES(match_sift_descriptors theia)
 
-CC_BINARY(match_freak_descriptors
-  image/image
-  image/image_canvas
-  image/descriptor/freak_descriptor
-  image/keypoint_detector/keypoint
-  image/keypoint_detector/brisk_detector
-  vision/matching/brute_force_matcher)
+ADD_EXECUTABLE(match_freak_descriptors match_freak_descriptors.cc)
+TARGET_LINK_LIBRARIES(match_freak_descriptors theia)

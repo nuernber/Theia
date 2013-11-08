@@ -39,11 +39,11 @@
 #include <string>
 #include <vector>
 
-#include "image/image.h"
-#include "image/image_canvas.h"
-#include "image/descriptor/freak_descriptor.h"
-#include "image/keypoint_detector/keypoint.h"
-#include "image/keypoint_detector/brisk_detector.h"
+#include "theia/image/image.h"
+#include "theia/image/image_canvas.h"
+#include "theia/image/descriptor/freak_descriptor.h"
+#include "theia/image/keypoint_detector/keypoint.h"
+#include "theia/image/keypoint_detector/brisk_detector.h"
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, ".", "Name of output image dir.");
