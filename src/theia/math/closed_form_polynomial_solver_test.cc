@@ -130,4 +130,4 @@ TEST(SolveQuarticPolynomial, SolveReals) {
   }
 }
 
-}  // namespace test
+}  // namespace theia

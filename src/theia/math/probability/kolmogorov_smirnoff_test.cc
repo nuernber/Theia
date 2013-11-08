@@ -32,11 +32,12 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include <chrono>
 #include <math.h>
-#include <random>
 #include <algorithm>
+#include <chrono>
+#include <random>
 #include <vector>
+
 #include "gtest/gtest.h"
 
 #include "theia/math/probability/kolmogorov_smirnoff.h"

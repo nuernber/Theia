@@ -35,11 +35,11 @@
 #ifndef THEIA_SOLVERS_PROSAC_SAMPLER_H_
 #define THEIA_SOLVERS_PROSAC_SAMPLER_H_
 
-#include <chrono>
 #include <glog/logging.h>
-#include <random>
 #include <stdlib.h>
 #include <algorithm>
+#include <chrono>
+#include <random>
 #include <vector>
 
 #include "theia/solvers/sampler.h"
@@ -97,7 +97,7 @@ template <class Datum> class ProsacSampler : public Sampler<Datum> {
         int rand_number;
         while (std::find(random_numbers.begin(), random_numbers.end(),
                          (rand_number = distribution(generator))) !=
-               random_numbers.end());
+               random_numbers.end()) {}
 
         random_numbers.push_back(rand_number);
 
@@ -113,7 +113,7 @@ template <class Datum> class ProsacSampler : public Sampler<Datum> {
         int rand_number;
         while (std::find(random_numbers.begin(), random_numbers.end(),
                          (rand_number = distribution(generator))) !=
-               random_numbers.end());
+               random_numbers.end()) {}
         random_numbers.push_back(rand_number);
 
         // Push the *unique* random index back.

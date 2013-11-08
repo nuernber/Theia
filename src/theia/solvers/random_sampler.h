@@ -39,8 +39,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "theia/util/random.h"
 #include "theia/solvers/sampler.h"
+#include "theia/util/random.h"
 
 namespace theia {
 // Random sampler used for RANSAC.
@@ -63,7 +63,7 @@ template <class Datum> class RandomSampler : public Sampler<Datum> {
       // Generate a random number that has not already been used.
       while (std::find(random_numbers.begin(), random_numbers.end(),
                        (rand_number = RandInt(0, data.size() - 1))) !=
-             random_numbers.end());
+             random_numbers.end()) {}
 
       random_numbers.push_back(rand_number);
       subset->at(i) = data[rand_number];

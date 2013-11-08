@@ -84,7 +84,7 @@ class DescriptorExtractor {
                                         const std::vector<Keypoint*>& keypoints,
                                         std::vector<Descriptor*>* descriptors);
 
- protected:
+ private:
   DISALLOW_COPY_AND_ASSIGN(DescriptorExtractor);
 };
 

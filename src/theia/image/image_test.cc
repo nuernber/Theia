@@ -56,12 +56,14 @@ std::string img_filename =
       ASSERT_EQ(cvd_img[i][j].blue, theia_img[i][j].blue);      \
     }                                                           \
   }
-}
+
 
 #define ASSERT_GRAY_IMG_EQ(cvd_img, theia_img, rows, cols)      \
   for (int i = 0; i < rows; i++)                                \
     for (int j = 0; j < cols; j++)                              \
       ASSERT_EQ(cvd_img[i][j], theia_img[i][j]);                \
+
+}  // namespace
 
 // Test that inputting the old fashioned way is the same as through our class.
 TEST(Image, RGBInput) {
@@ -261,4 +263,5 @@ TEST(Image, GrayFillSubImage) {
     }
   }
 }
+
 }  // namespace theia

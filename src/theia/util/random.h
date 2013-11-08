@@ -35,10 +35,6 @@
 #ifndef THEIA_UTIL_RANDOM_H_
 #define THEIA_UTIL_RANDOM_H_
 
-#include <chrono>
-#include <glog/logging.h>
-#include <random>
-
 namespace theia {
 // Initializes the random generator to be based on the current time. Does not
 // have to be called before calling RandDouble, but it works best if it is.

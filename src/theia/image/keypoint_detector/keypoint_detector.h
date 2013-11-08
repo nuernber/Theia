@@ -61,7 +61,7 @@ class KeypointDetector {
   virtual bool DetectKeypoints(const GrayImage& image,
                                std::vector<Keypoint*>* keypoints) = 0;
 
- protected:
+ private:
   DISALLOW_COPY_AND_ASSIGN(KeypointDetector);
 };
 

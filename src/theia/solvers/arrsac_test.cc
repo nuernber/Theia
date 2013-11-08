@@ -32,12 +32,11 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include <chrono>
 #include <math.h>
+#include <chrono>
 #include <vector>
 
 #include "gtest/gtest.h"
-
 #include "theia/solvers/arrsac.h"
 #include "theia/solvers/estimator.h"
 #include "theia/util/random.h"

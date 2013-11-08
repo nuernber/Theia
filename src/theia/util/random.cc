@@ -34,8 +34,8 @@
 
 #include "theia/util/random.h"
 
-#include <chrono>
 #include <glog/logging.h>
+#include <chrono>
 #include <random>
 
 namespace theia {
