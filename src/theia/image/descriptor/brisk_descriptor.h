@@ -65,6 +65,8 @@ class BriskDescriptor : public BinaryDescriptor {
 // the same style guides as the rest of the code.
 class BriskDescriptorExtractor : public DescriptorExtractor {
  public:
+  // Set rotation_invariant and scale_invariant to true to calculate descriptors
+  // that are invariant to under those shifts.
   BriskDescriptorExtractor(bool rotation_invariant, bool scale_invariant,
                            float pattern_scale);
   BriskDescriptorExtractor() : BriskDescriptorExtractor(true, true, 1.0) {}

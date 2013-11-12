@@ -10,10 +10,10 @@ INSTALL(DIRECTORY ${SPHINX_HTML_DIR}
         PATTERN "${SPHINX_HTML_DIR}/*")
 
 # Building using 'make_docs.py' python script
-ADD_CUSTOM_TARGET(ceres_docs ALL
+ADD_CUSTOM_TARGET(theia_docs ALL
                   python
-                  "${CMAKE_SOURCE_DIR}/make_docs.py"
+                  "${CMAKE_SOURCE_DIR}/docs/make_docs.py"
                   "${CMAKE_SOURCE_DIR}"
-                  "${CMAKE_BINARY_DIR}/docs"
+                  "${CMAKE_SOURCE_DIR}/docs"
                   "${SPHINX_EXECUTABLE}"
                   COMMENT "Building HTML documentation with Sphinx")

@@ -35,19 +35,19 @@
 #ifndef THEIA_RANSAC_H_
 #define THEIA_RANSAC_H_
 
-#include "solvers/arrsac.h"
-#include "solvers/estimator.h"
-#include "solvers/inlier_support.h"
-#include "solvers/mle_quality_measurement.h"
-#include "solvers/mlesac.h"
-#include "solvers/prosac.h"
-#include "solvers/prosac_sampler.h"
-#include "solvers/quality_measurement.h"
-#include "solvers/random_sampler.h"
-#include "solvers/ransac.h"
+#include "theia/solvers/arrsac.h"
+#include "theia/solvers/estimator.h"
+#include "theia/solvers/inlier_support.h"
+#include "theia/solvers/mle_quality_measurement.h"
+#include "theia/solvers/mlesac.h"
+#include "theia/solvers/prosac.h"
+#include "theia/solvers/prosac_sampler.h"
+#include "theia/solvers/quality_measurement.h"
+#include "theia/solvers/random_sampler.h"
+#include "theia/solvers/ransac.h"
 // Not currently supported
-// #include "solvers/recon.h"
-#include "solvers/sample_consensus_estimator.h"
-#include "solvers/sampler.h"
+// #include "theia/solvers/recon.h"
+#include "theia/solvers/sample_consensus_estimator.h"
+#include "theia/solvers/sampler.h"
 
 #endif  // THEIA_RANSAC_H_

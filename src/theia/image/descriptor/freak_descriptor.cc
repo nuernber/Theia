@@ -294,7 +294,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
   // compute the scale index corresponding to the keypoint size and remove
   // keypoints close to the border.
   descriptors->resize(keypoints.size());
-  if (scale_normalized_) {
+  if (scale_invariant_) {
     for (size_t k = keypoints.size(); k--;) {
       // Is k non-zero? If so, decrement it and continue.
       kp_scale_idx[k] = std::max(
@@ -344,7 +344,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       continue;
     }
     // estimate orientation (gradient)
-    if (!orientation_normalized_) {
+    if (!rotation_invariant_) {
       // assign 0° to all keypoints
       theta_idx = 0;
       freak_descriptor->set_orientation(0.0);

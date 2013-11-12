@@ -29,11 +29,17 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" />
-    <link rel="up" title="Tutorials" href="tutorials.html" />
-    <link rel="next" title="Point Cloud" href="point_cloud.html" />
+    <link rel="up" title="Documentation" href="documentation.html" />
+    <link rel="next" title="Structure from Motion (SfM)" href="sfm.html" />
     <link rel="prev" title="Pose and Resectioning" href="pose.html" /> 
   </head>
   <body>
@@ -44,13 +50,13 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="point_cloud.html" title="Point Cloud"
+          <a href="sfm.html" title="Structure from Motion (SfM)"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pose.html" title="Pose and Resectioning"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Theia Documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
+          <li><a href="documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -90,7 +96,7 @@ int <tt class="descname">SolveCubicReals</tt><big>(</big>double <em>a</em>, doub
 <dl class="function">
 <dt id="SolveCubic__double.double.double.double.std::complex:double:P">
 int <tt class="descname">SolveCubic</tt><big>(</big>double <em>a</em>, double <em>b</em>, double <em>c</em>, double <em>d</em>, std::complex&lt;double&gt;* <em>roots</em><big>)</big><a class="headerlink" href="#SolveCubic__double.double.double.double.std::complex:double:P" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provides solutions to the equation <span class="math">\(a*x^3 + b*x^2 + c*x + d = 0\)</span> using <a class="reference external" href="http://en.wikipedia.org/wiki/Cubic_function#Cardano.27s_method">Cardan&#8217;s</a> method.</p>
+<dd><p>Provides solutions to the equation <span class="math">\(a*x^3 + b*x^2 + c*x + d = 0\)</span> using <a class="reference external" href="http://en.wikipedia.org/wiki/Cubic_function#Cardano.27s_method">Cardano&#8217;s</a> method.</p>
 </dd></dl>
 
 <dl class="function">
@@ -101,7 +107,7 @@ int <tt class="descname">SolveQuarticReals</tt><big>(</big>double <em>a</em>, do
 <dl class="function">
 <dt id="SolveQuartic__double.double.double.double.double.std::complex:double:P">
 int <tt class="descname">SolveQuartic</tt><big>(</big>double <em>a</em>, double <em>b</em>, double <em>c</em>, double <em>d</em>, double <em>e</em>, std::complex&lt;double&gt;* <em>roots</em><big>)</big><a class="headerlink" href="#SolveQuartic__double.double.double.double.double.std::complex:double:P" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provides solutions to the equation <span class="math">\(a*x^4 + b*x^3 + c*x^2 + d*x + e = 0\)</span> using <a class="reference external" href="http://en.wikipedia.org/wiki/Quartic_function#Ferrari.27s_solution">Ferrari&#8217;s method</a> to reduce to problem to a cubic.</p>
+<dd><p>Provides solutions to the equation <span class="math">\(a*x^4 + b*x^3 + c*x^2 + d*x + e = 0\)</span> using <a class="reference external" href="http://en.wikipedia.org/wiki/Quartic_function#Ferrari.27s_solution">Ferrari&#8217;s method</a> to reduce to problem to a depressed cubic.</p>
 </dd></dl>
 
 </div>
@@ -240,23 +246,18 @@ details.</p>
         <div class="sphinxsidebarwrapper">
 
 <h3><a href="index.html">Theia</a></h3>
-<ul class="current current">
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="documentation.html">Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="image.html">Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="features.html">Features</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Math</a></li>
-<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sfm.html">Structure from Motion (SfM)</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Math</a></li>
-<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributions.html">Contributing to Theia</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
@@ -267,8 +268,8 @@ details.</p>
   <p class="topless"><a href="pose.html"
                         title="previous chapter">Pose and Resectioning</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="point_cloud.html"
-                        title="next chapter">Point Cloud</a></p>
+  <p class="topless"><a href="sfm.html"
+                        title="next chapter">Structure from Motion (SfM)</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -293,13 +294,13 @@ details.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="point_cloud.html" title="Point Cloud"
+          <a href="sfm.html" title="Structure from Motion (SfM)"
              >next</a> |</li>
         <li class="right" >
           <a href="pose.html" title="Pose and Resectioning"
              >previous</a> |</li>
         <li><a href="index.html">Theia Documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
+          <li><a href="documentation.html" >Documentation</a> &raquo;</li> 
       </ul>
     </div>
 <div class="footer">

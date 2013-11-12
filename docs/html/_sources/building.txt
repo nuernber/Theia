@@ -23,7 +23,7 @@ Theia relies on a number of open source libraries. Luckily, most of the will be 
 
 4. `libCVD <http://www.edwardrosten.com/cvd>`_ is used as the underlying image class for Theia.
 
-5. `Ceres Solver <https://code.google.com/p/ceres-solver/>`_ is a library for solving non-linear least squares problems. In particular, Theia uses it for Bundle Adjustment. Install Ceres to the "libraries" folder inside the Theia source.
+5. `Ceres Solver <https://code.google.com/p/ceres-solver/>`_ is a library for solving non-linear least squares problems. In particular, Theia uses it for Bundle Adjustment.
 
 **NOTE**: Theia also depends on the following libraries, but they are included in the installation of Ceres so you do not need to reinstall them.
 
@@ -34,17 +34,14 @@ Theia relies on a number of open source libraries. Luckily, most of the will be 
 7. `gflags <http://code.google.com/p/gflags>`_ is a library for processing command line flags. It is used by some of the examples and tests. While it is not strictly necessary to build the library, we strongly recommend building the library with gflags.
 
 
-The following libraries are also used, but are included with the Theia distribution
-
-8. `googletest <http://http://code.google.com/p/googletest>`_ is used for unit tests. Every file in Theia (with a few minor exceptions) is covered by a unittest.
-
+Make sure all of these libraries are installed properly before proceeding. Improperly installing any of these libraries can cause Theia to not build.
 
 .. _section-building:
 
 Building
 --------
 
-Building should be equivalent on all platforms, thanks to CMake. To install Theia, simply run the following commands after you have installed the :ref:`section-dependencies`. 
+Building should be equivalent on all platforms, thanks to CMake. To install Theia, simply run the following commands after you have installed the :ref:`section-dependencies`.
 
 .. code-block:: bash
 
@@ -55,7 +52,7 @@ Building should be equivalent on all platforms, thanks to CMake. To install Thei
  make -j4
  make test
 
-If you can run make test without repeatedly getting errors (NOTE: some of the methods in this library are inherently probabilistic, so always have a small chance of failing. This will be fixed in future versions!), then you are ready to install. Theia can be install using the make install command
+If all tests pass, then you are ready to install. Theia can be install using the make install command
 
 .. code-block:: bash
 
@@ -76,3 +73,7 @@ It is possible to customize the build process by passing appropriate flags to
 #. ``-DBUILD_TESTING=OFF``: Use this flag to enable or disable building the unit tests. By default, this option is enabled.
 
 #. ``-DOPENMP=OFF``: By default, Theia uses OpenMP to multithread/parallelize certain parts of the code. Certain platforms don't play nice with this, so you can disable this option.
+
+#. ``-DBUILD_TUTORIALS=OFF``: By default, building Theia will build several tutorial programs to demonstrate some uses of the library. You can disable this option.
+
+#. ``-DBUILD_DOCUMENTATION=ON``: Turn this flag to ``ON`` to build the documentation with Theia. This option is disabled by default.

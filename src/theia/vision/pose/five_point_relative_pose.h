@@ -42,10 +42,10 @@ namespace theia {
 // Five-Point Relative Pose Problem" by Nister.
 //
 // Params:
-//   image1_points: Location of features on the image plane (x[i][*] = i-th
+//   image1_points: Location of features on the image plane (x[i * 5] = i-th
 //     image point)
-//   image2_points: Location of features on the image plane (x[i][*] = i-th
-//     image point)
+//   image2_points: Location of features on the image plane of image 2
+//     (x[i * 5] = i-th image point)
 // Return: essential_matrix: Output all solutions of the 5 point algorithm.
 int FivePointRelativePose(const double image1_points[3 * 5],
                           const double image2_points[3 * 5],

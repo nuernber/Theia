@@ -48,8 +48,10 @@ class Keypoint;
 class HarrisDetector : public KeypointDetector {
  public:
   // Set the number of corners to detect, and the blur settings.
-  HarrisDetector(int num_corners, double blur = 1.0, double sigma = 3.0)
+  HarrisDetector(int num_corners, double blur, double sigma)
       : num_corners_(num_corners), blur_(blur), sigma_(sigma) {}
+  explicit HarrisDetector(int num_corners)
+      : HarrisDetector(num_corners, 1.0, 3.0) {}
   ~HarrisDetector() {}
 
   bool DetectKeypoints(const GrayImage& image,

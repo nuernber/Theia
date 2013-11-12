@@ -156,7 +156,7 @@ template <typename T> class Image : public SubImage<T> {
                                 int num_cols) const;
 
   // Gaussian blur.
-  void GaussianBlur(double sigma, Image<T>* out);
+  void GaussianBlur(double sigma, Image<T>* out) const;
   void GaussianBlur(double sigma);
 
   // Sampling techniques.
@@ -258,7 +258,8 @@ inline double Image<T>::Gaussian(double x, double mu, double sigma) {
   return std::exp(-(x - mu) * (x - mu) / (2.0 * sigma * sigma));
 }
 
-template <typename T> void Image<T>::GaussianBlur(double sigma, Image<T>* out) {
+template <typename T>
+void Image<T>::GaussianBlur(double sigma, Image<T>* out) const {
   // NOTE: some VERY odd artifacts are occuring with CVD's gaussian
   // convolution with high sigmas...
 

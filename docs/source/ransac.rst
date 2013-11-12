@@ -18,7 +18,7 @@ extend.
 This module can be included in your code with:
 
 .. code-block:: c++
- 
+
   #include <theia/ransac.h>
 
 **NOTE**: For the descriptions below, we often use the term "RANSAC" to mean the general strategy of model estimation via sample consensus. Most of the time, "RANSAC" refers to RANSAC and the variants we have implemented.
@@ -40,21 +40,21 @@ method for estimating a model from data points. The interface to do the latter
 requires you implement derived class of the :class:`Estimator` class.
 
 .. class:: Estimator
-	
+
 	.. code-block:: c++
-	
+
 	 template <class Datum, class Model>
 	 class Estimator {
 	  public:
 	   Estimator() {}
 	   virtual ~Estimator() {}
 	   virtual bool EstimateModel(const std::vector<Datum>& data,
-				      Model* model) const = 0;
+				      std::vector<Model>* model) const = 0;
 	   virtual double Error(const Datum& data, const Model& model) const = 0;
 
 	   // Functions to optionally implement.
 	   virtual bool EstimateModelNonminimal(const std::vector<Datum>& data,
-						Model* model) const;
+						std::vector<Model>* model) const;
 	   virtual bool RefineModel(const std::vector<Datum>& data, Model* model) const;
 	   virtual bool ValidModel(const Model& model) const;
 
@@ -114,12 +114,15 @@ We will illustrate the use of the RANSAC class with a simple line estimation exa
    // Estimator class.
    class LineEstimator: public Estimator<Point, Line> {
      // Estimate a line from two points.
-     bool EstimateModel(const std::vector<Point>& data, Line* model) const {
-       model->m = (data[1].y - data[0].y)/(data[1].x - data[0].x);
-       model->b = data[1].y - model->m*data[1].x;
+     bool EstimateModel(const std::vector<Point>& data,
+                        std::vector<Line>* models) const {
+       Line model;
+       model.m = (data[1].y - data[0].y)/(data[1].x - data[0].x);
+       model.b = data[1].y - model.m*data[1].x;
+       models->push_back(model);
        return true;
      }
-     
+
      // Calculate the error as the y distance of the point to the line.
      double Error(const Point& point, const Line& line) const {
        return point.y - (line.m*point.x + line.b);
@@ -143,19 +146,19 @@ use a RANSAC method to use the :class:`LineEstimator`.
       // Add 300 outliers.
       for (int i = 0; i < 300; i++) {
         input_data.push_back(outlier_point);
-      }	
+      }
 
       // Specify RANSAC parameters.
       double error_threshold = 0.3;
-      int min_num_inliers = 700;
-      int max_iters = 10000;
+      int min_num_inliers = 600;
+      int max_iters = 1000;
 
       // Estimate the line with RANSAC.
       LineEstimator line_estimator;
       Line best_line;
       Ransac<Point, Line> ransac_estimator(2, error_threshold, min_num_inliers, max_iters);
       ransac_estimator.Estimate(input_data, line_estimator, &best_line);
-      std::cout << "Line m = " << best_line.m << "*x + " << best_line.b << std::endl;
+      LOG(INFO) << "Line m = " << best_line.m << "*x + " << best_line.b;
 
       return 0;
     }
@@ -228,7 +231,7 @@ constructor. The constructors for each method are specified as follows
 
   A generalization of RANSAC that chooses to maximize the likelihood of an estimation rather than the inlier count. Proposed by [Torr]_ et. al.
 
-  .. function:: Mlesac(int min_sample_size, double inlier_mean, double inlier_sigma, double search_left, double search_right, const std::vector<double>& confidence, double confidence_threshold)
+  .. function:: Mlesac(int min_sample_size, double inlier_mean, double inlier_sigma, double search_left, double search_right, double confidence_threshold, double inlier_probability)
 
     ``min_sample_size``: The minimum number of samples needed to estimate a model
 
@@ -240,9 +243,9 @@ constructor. The constructors for each method are specified as follows
 
     ``search_right``: Right bound of the search region. e.g. 100px for image correspondences
 
-    ``confidence``: Vector containing the confidences of each data point.
-
     ``confidence_threshold``: Correspondances above this are considered inliers.
+
+    ``inlier_probability``: An initial guess for the inlier probability (set to 0.5 by default).
 
 
 .. class:: Arrsac
@@ -266,25 +269,6 @@ constructor. The constructors for each method are specified as follows
 
   **NOTE**: This method works for all the unit tests currently in Theia, but needs to be tested further to ensure correctness. Use with caution.
 
-.. class:: Recon
-
-  Residual Consensus estimation as proposed by [RaguramFrahm]_. The driving idea
-  is to generate several models from random samples, then compare the
-  distribution of their residuals. If the same data points all have small
-  residuals, then these points are likely to be inliers. If enough models agree
-  with each other on this principle, then the models are likely to be drawn from
-  inliers (i.e. uncontaminated models). For more details, refer to the paper.
-
-  .. function:: Recon(int min_sample_size, int min_consisten_models, double sigma_max)
-
-    ``min_sample_size``: The minimum number of samples needed to estimate a model
-
-    ``min_consistent_models``: Number of consistent models that must be generated before a solution is determined.
-
-    ``sigma_max``: A *rough* estimate of the maximum noise variance of the inlier poitns. This only needs to be correct up to an order of magnitude in order to be useful.
-
-  **NOTE**: Our implementation was not able to achieve the stability that the paper records. We had great difficulty in distinguishing all-outliers cases with all-inliers cases using the KS test as recommended. Thus, the current implementation requires a maximum estimation of sigma (the inlier noise) to be provided.
-
 
 Implementing a New RANSAC Method
 ================================
@@ -300,7 +284,7 @@ good results. Both the :class:`Sampler` and :class:`QualityMeasurement` classes
 are pure virtual classes that must be derived for all RANSAC methods. Further,
 the :func:`Estimate` method implemented in the :class:`SampleConsensusEstimator`
 base class performs a typical RANSAC style routine, sampling according to the
-:class:`Sampler` and :class:`QualityMeasurement` specified. 
+:class:`Sampler` and :class:`QualityMeasurement` specified.
 
 To implement a new RANSAC method, you should create a class derived from
 :class:`SampleConsensusEstimator`. Most methods will probably involve simply
@@ -314,7 +298,7 @@ function will not change and can simply be inherited from the
     template<class Datum, class Model>
     class Ransac : public SampleConsensusEstimator<Datum, Model> {
      public:
-  
+
       Ransac(int min_sample_size,
              double error_threshold,
        	     int min_num_inliers,
@@ -336,7 +320,5 @@ for more details.
 
 If you want to create a new RANSAC method that involves changing the way
 estimation happens, your class can override the :func:`Estimate` method. For our
-implementation, :class:`Recon` and :class:`Arrsac` both do this. See the code
-for those classes for a good example on how you should override the
-:func:`Estimate` method.
-
+implementation, :class:`Arrsac` does this. See the code for those classes for a
+good example on how you should override the :func:`Estimate` method.

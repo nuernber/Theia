@@ -29,7 +29,13 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" />
     <link rel="next" title="Acknowledgements" href="acknowledgements.html" />
@@ -76,33 +82,7 @@ ensure the usage of the code (or to prove the bug is fixed!).</p>
 </div>
 <div class="section" id="cmake">
 <h2>CMake<a class="headerlink" href="#cmake" title="Permalink to this headline">¶</a></h2>
-<p>We have implemented some particular strategies worth noting in our CMake files. We choose to break up the files in Theia into targets. This makes things simpler when compiling &#8211; we only need to include the relevant targets. True, when the library is compiled as a whole all targets will be included anyways, but this strategy reduces the compile time significantly during development and testing. Further, these macros will automatically include the proper external libraries for you, so you will only need to specify the internal dependencies.</p>
-<p>We have defined a CMake macro to aid in building source targets:</p>
-<dl class="function">
-<dt id="CC_LIBRARY">
-<tt class="descname">CC_LIBRARY</tt><big>(</big><em>target_name source_file dependency_targets ...</em><big>)</big><a class="headerlink" href="#CC_LIBRARY" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">target_name</span></tt>: Name of the target to be created</p>
-<p><tt class="docutils literal"><span class="pre">source_file</span></tt>: The c++ source file used to generate the target (should end in .cc)</p>
-<p><tt class="docutils literal"><span class="pre">dependency_targets</span> <span class="pre">...</span></tt>: A space-delimited list (can be empty) of all targets that this target depends on.</p>
-</dd></dl>
-
-<p><strong>NOTE</strong> targets are generated according to target_name and the directory where the target resides. For instance, the target &#8220;essential_matrix&#8221; inside the folder vision/models/ will be referenced as &#8220;vision/models/essential_matrix&#8221; after it is generated. This also means that dependency_targets should be listed by their full director/target_name style.</p>
-<p>Similarly, there is a CMake macro for header-only targets</p>
-<dl class="function">
-<dt id="HEADER_LIBRARY">
-<tt class="descname">HEADER_LIBRARY</tt><big>(</big><em>target_name header_file dependency_targest ...</em><big>)</big><a class="headerlink" href="#HEADER_LIBRARY" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">source_file</span></tt>: The c++ header file used to generate the target (should end in .h)</p>
-</dd></dl>
-
-<p>Finally, we have also implemented a similar macro for testing:</p>
-<dl class="function">
-<dt id="GTEST">
-<tt class="descname">GTEST</tt><big>(</big><em>test_name dependency_targets</em><big>)</big><a class="headerlink" href="#GTEST" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">test_name</span></tt>: The name of the test to be generated. This assumes there is a test file &#8220;test_name.cc&#8221; in the current folder, and will generate an executable &#8220;test_name&#8221; in the bin directory.</p>
-<p><tt class="docutils literal"><span class="pre">dependency_targets</span></tt>: A space-delimited list (can be empty) of all targets that this test depends on.</p>
-</dd></dl>
-
-<p>Since these are non-traditional uses of CMake, we recommend that you check out the CMakeLists.txt files in the source code to get a feel of how to use them before developing on your own.</p>
+<p>We use CMake to generate makefiles for Theia to maximize the cross-platform usability. If you need to add a new library or a new file to Theia, you will likely need to add that file to the CMakeLists.txt in src/theia (along with a unit test!).</p>
 </div>
 </div>
 

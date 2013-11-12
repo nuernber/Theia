@@ -29,12 +29,18 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" />
-    <link rel="up" title="Tutorials" href="tutorials.html" />
+    <link rel="up" title="Documentation" href="documentation.html" />
     <link rel="next" title="Pose and Resectioning" href="pose.html" />
-    <link rel="prev" title="Tutorials" href="tutorials.html" /> 
+    <link rel="prev" title="Features" href="features.html" /> 
   </head>
   <body>
     <div class="related">
@@ -47,10 +53,10 @@
           <a href="pose.html" title="Pose and Resectioning"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="tutorials.html" title="Tutorials"
+          <a href="features.html" title="Features"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Theia Documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
+          <li><a href="documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -78,7 +84,7 @@ extend.</p>
 <li><a class="reference internal" href="#Prosac" title="Prosac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Prosac</span></tt></a></li>
 <li><a class="reference internal" href="#Mlesac" title="Mlesac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Mlesac</span></tt></a></li>
 <li><a class="reference internal" href="#Arrsac" title="Arrsac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Arrsac</span></tt></a></li>
-<li><a class="reference internal" href="#Recon" title="Recon"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Recon</span></tt></a></li>
+<li><tt class="xref cpp cpp-class docutils literal"><span class="pre">Recon</span></tt></li>
 </ul>
 <div class="section" id="estimator">
 <h2><a class="reference internal" href="#Estimator" title="Estimator"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Estimator</span></tt></a><a class="headerlink" href="#estimator" title="Permalink to this headline">¶</a></h2>
@@ -95,12 +101,12 @@ requires you implement derived class of the <a class="reference internal" href="
   <span class="n">Estimator</span><span class="p">()</span> <span class="p">{}</span>
   <span class="k">virtual</span> <span class="o">~</span><span class="n">Estimator</span><span class="p">()</span> <span class="p">{}</span>
   <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">EstimateModel</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span>
-                             <span class="n">Model</span><span class="o">*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                             <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Model</span><span class="o">&gt;*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="k">virtual</span> <span class="kt">double</span> <span class="n">Error</span><span class="p">(</span><span class="k">const</span> <span class="n">Datum</span><span class="o">&amp;</span> <span class="n">data</span><span class="p">,</span> <span class="k">const</span> <span class="n">Model</span><span class="o">&amp;</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 
   <span class="c1">// Functions to optionally implement.</span>
   <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">EstimateModelNonminimal</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span>
-                                       <span class="n">Model</span><span class="o">*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+                                       <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Model</span><span class="o">&gt;*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
   <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">RefineModel</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span> <span class="n">Model</span><span class="o">*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
   <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">ValidModel</span><span class="p">(</span><span class="k">const</span> <span class="n">Model</span><span class="o">&amp;</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
 
@@ -161,9 +167,12 @@ undefined behavior) upon failure.</p>
 <span class="c1">// Estimator class.</span>
 <span class="k">class</span> <span class="nc">LineEstimator</span><span class="o">:</span> <span class="k">public</span> <span class="n">Estimator</span><span class="o">&lt;</span><span class="n">Point</span><span class="p">,</span> <span class="n">Line</span><span class="o">&gt;</span> <span class="p">{</span>
   <span class="c1">// Estimate a line from two points.</span>
-  <span class="kt">bool</span> <span class="n">EstimateModel</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Point</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span> <span class="n">Line</span><span class="o">*</span> <span class="n">model</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
-    <span class="n">model</span><span class="o">-&gt;</span><span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">y</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">x</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">x</span><span class="p">);</span>
-    <span class="n">model</span><span class="o">-&gt;</span><span class="n">b</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">y</span> <span class="o">-</span> <span class="n">model</span><span class="o">-&gt;</span><span class="n">m</span><span class="o">*</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">x</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">EstimateModel</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Point</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span>
+                     <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Line</span><span class="o">&gt;*</span> <span class="n">models</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="n">Line</span> <span class="n">model</span><span class="p">;</span>
+    <span class="n">model</span><span class="p">.</span><span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">y</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">x</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">x</span><span class="p">);</span>
+    <span class="n">model</span><span class="p">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">y</span> <span class="o">-</span> <span class="n">model</span><span class="p">.</span><span class="n">m</span><span class="o">*</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">x</span><span class="p">;</span>
+    <span class="n">models</span><span class="o">-&gt;</span><span class="n">push_back</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
     <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
   <span class="p">}</span>
 
@@ -194,15 +203,15 @@ use a RANSAC method to use the <tt class="xref cpp cpp-class docutils literal"><
 
   <span class="c1">// Specify RANSAC parameters.</span>
   <span class="kt">double</span> <span class="n">error_threshold</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">;</span>
-  <span class="kt">int</span> <span class="n">min_num_inliers</span> <span class="o">=</span> <span class="mi">700</span><span class="p">;</span>
-  <span class="kt">int</span> <span class="n">max_iters</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">min_num_inliers</span> <span class="o">=</span> <span class="mi">600</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">max_iters</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
 
   <span class="c1">// Estimate the line with RANSAC.</span>
   <span class="n">LineEstimator</span> <span class="n">line_estimator</span><span class="p">;</span>
   <span class="n">Line</span> <span class="n">best_line</span><span class="p">;</span>
   <span class="n">Ransac</span><span class="o">&lt;</span><span class="n">Point</span><span class="p">,</span> <span class="n">Line</span><span class="o">&gt;</span> <span class="n">ransac_estimator</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">error_threshold</span><span class="p">,</span> <span class="n">min_num_inliers</span><span class="p">,</span> <span class="n">max_iters</span><span class="p">);</span>
   <span class="n">ransac_estimator</span><span class="p">.</span><span class="n">Estimate</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">line_estimator</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">best_line</span><span class="p">);</span>
-  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Line m = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">best_line</span><span class="p">.</span><span class="n">m</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;*x + &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">best_line</span><span class="p">.</span><span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">LOG</span><span class="p">(</span><span class="n">INFO</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Line m = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">best_line</span><span class="p">.</span><span class="n">m</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;*x + &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">best_line</span><span class="p">.</span><span class="n">b</span><span class="p">;</span>
 
   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
@@ -272,15 +281,15 @@ algorithm degenerates to RANSAC, but typically is significantly faster.</div></b
 <em class="property">class </em><tt class="descname">Mlesac</tt><a class="headerlink" href="#Mlesac" title="Permalink to this definition">¶</a></dt>
 <dd><p>A generalization of RANSAC that chooses to maximize the likelihood of an estimation rather than the inlier count. Proposed by <a class="reference internal" href="bibliography.html#torr">[Torr]</a> et. al.</p>
 <dl class="function">
-<dt id="Mlesac::Mlesac__i.double.double.double.double.std::vector:double:CR.double">
- <tt class="descname">Mlesac</tt><big>(</big>int <em>min_sample_size</em>, double <em>inlier_mean</em>, double <em>inlier_sigma</em>, double <em>search_left</em>, double <em>search_right</em>, const std::vector&lt;double&gt;&amp; <em>confidence</em>, double <em>confidence_threshold</em><big>)</big><a class="headerlink" href="#Mlesac::Mlesac__i.double.double.double.double.std::vector:double:CR.double" title="Permalink to this definition">¶</a></dt>
+<dt id="Mlesac::Mlesac__i.double.double.double.double.double.double">
+ <tt class="descname">Mlesac</tt><big>(</big>int <em>min_sample_size</em>, double <em>inlier_mean</em>, double <em>inlier_sigma</em>, double <em>search_left</em>, double <em>search_right</em>, double <em>confidence_threshold</em>, double <em>inlier_probability</em><big>)</big><a class="headerlink" href="#Mlesac::Mlesac__i.double.double.double.double.double.double" title="Permalink to this definition">¶</a></dt>
 <dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
 <p><tt class="docutils literal"><span class="pre">inline_mean</span></tt>: Mean of inlier noise distribution.</p>
 <p><tt class="docutils literal"><span class="pre">inlier_sigma</span></tt>: Sigma of the inlier noise distribution.</p>
 <p><tt class="docutils literal"><span class="pre">search_left</span></tt>: Left bound of the search region. e.g. -100px for image correspondences</p>
 <p><tt class="docutils literal"><span class="pre">search_right</span></tt>: Right bound of the search region. e.g. 100px for image correspondences</p>
-<p><tt class="docutils literal"><span class="pre">confidence</span></tt>: Vector containing the confidences of each data point.</p>
 <p><tt class="docutils literal"><span class="pre">confidence_threshold</span></tt>: Correspondances above this are considered inliers.</p>
+<p><tt class="docutils literal"><span class="pre">inlier_probability</span></tt>: An initial guess for the inlier probability (set to 0.5 by default).</p>
 </dd></dl>
 
 </dd></dl>
@@ -303,26 +312,6 @@ results. This results in a very fast method which can be used for real-time appl
 </dd></dl>
 
 <p><strong>NOTE</strong>: This method works for all the unit tests currently in Theia, but needs to be tested further to ensure correctness. Use with caution.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="Recon">
-<em class="property">class </em><tt class="descname">Recon</tt><a class="headerlink" href="#Recon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Residual Consensus estimation as proposed by <a class="reference internal" href="bibliography.html#raguramfrahm">[RaguramFrahm]</a>. The driving idea
-is to generate several models from random samples, then compare the
-distribution of their residuals. If the same data points all have small
-residuals, then these points are likely to be inliers. If enough models agree
-with each other on this principle, then the models are likely to be drawn from
-inliers (i.e. uncontaminated models). For more details, refer to the paper.</p>
-<dl class="function">
-<dt id="Recon::Recon__i.i.double">
- <tt class="descname">Recon</tt><big>(</big>int <em>min_sample_size</em>, int <em>min_consisten_models</em>, double <em>sigma_max</em><big>)</big><a class="headerlink" href="#Recon::Recon__i.i.double" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
-<p><tt class="docutils literal"><span class="pre">min_consistent_models</span></tt>: Number of consistent models that must be generated before a solution is determined.</p>
-<p><tt class="docutils literal"><span class="pre">sigma_max</span></tt>: A <em>rough</em> estimate of the maximum noise variance of the inlier poitns. This only needs to be correct up to an order of magnitude in order to be useful.</p>
-</dd></dl>
-
-<p><strong>NOTE</strong>: Our implementation was not able to achieve the stability that the paper records. We had great difficulty in distinguishing all-outliers cases with all-inliers cases using the KS test as recommended. Thus, the current implementation requires a maximum estimation of sigma (the inlier noise) to be provided.</p>
 </dd></dl>
 
 </div>
@@ -373,9 +362,8 @@ of <tt class="xref cpp cpp-class docutils literal"><span class="pre">Sampler</sp
 for more details.</p>
 <p>If you want to create a new RANSAC method that involves changing the way
 estimation happens, your class can override the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method. For our
-implementation, <a class="reference internal" href="#Recon" title="Recon"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Recon</span></tt></a> and <a class="reference internal" href="#Arrsac" title="Arrsac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Arrsac</span></tt></a> both do this. See the code
-for those classes for a good example on how you should override the
-<tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method.</p>
+implementation, <a class="reference internal" href="#Arrsac" title="Arrsac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Arrsac</span></tt></a> does this. See the code for those classes for a
+good example on how you should override the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method.</p>
 </div>
 </div>
 
@@ -387,23 +375,18 @@ for those classes for a good example on how you should override the
         <div class="sphinxsidebarwrapper">
 
 <h3><a href="index.html">Theia</a></h3>
-<ul class="current current">
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="documentation.html">Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="image.html">Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="features.html">Features</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Ransac</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
-<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sfm.html">Structure from Motion (SfM)</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="">Ransac</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
-<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributions.html">Contributing to Theia</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
@@ -411,8 +394,8 @@ for those classes for a good example on how you should override the
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="tutorials.html"
-                        title="previous chapter">Tutorials</a></p>
+  <p class="topless"><a href="features.html"
+                        title="previous chapter">Features</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="pose.html"
                         title="next chapter">Pose and Resectioning</a></p>
@@ -443,10 +426,10 @@ for those classes for a good example on how you should override the
           <a href="pose.html" title="Pose and Resectioning"
              >next</a> |</li>
         <li class="right" >
-          <a href="tutorials.html" title="Tutorials"
+          <a href="features.html" title="Features"
              >previous</a> |</li>
         <li><a href="index.html">Theia Documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
+          <li><a href="documentation.html" >Documentation</a> &raquo;</li> 
       </ul>
     </div>
 <div class="footer">

@@ -29,10 +29,16 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" />
-    <link rel="up" title="Tutorials" href="tutorials.html" />
+    <link rel="up" title="Documentation" href="documentation.html" />
     <link rel="next" title="Math" href="math.html" />
     <link rel="prev" title="Ransac" href="ransac.html" /> 
   </head>
@@ -50,7 +56,7 @@
           <a href="ransac.html" title="Ransac"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Theia Documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
+          <li><a href="documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -74,44 +80,51 @@ resectioning algorithms. We attempted to make each method as general as possible
 <div class="section" id="perspective-three-point-p3p">
 <span id="section-p3p"></span><h2>Perspective Three Point (P3P)<a class="headerlink" href="#perspective-three-point-p3p" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="PoseThreePoints__doubleCAA.doubleCAA.doubleAAA.doubleAA">
-int <tt class="descname">PoseThreePoints</tt><big>(</big>const double <em>image_points</em>[3][3], const double <em>world_points</em>[3][3], double <em>rotation</em>[][3][3], double <em>translation</em>[][3]<big>)</big><a class="headerlink" href="#PoseThreePoints__doubleCAA.doubleCAA.doubleAAA.doubleAA" title="Permalink to this definition">¶</a></dt>
+<dt id="PoseFromThreePoints__doubleCA.doubleCA.doubleA.doubleA">
+int <tt class="descname">PoseFromThreePoints</tt><big>(</big>const double <em>image_ray</em>[3 * 3], const double <em>points_3d</em>[3 * 3], double <em>solution_rotations</em>[9 * 4], double <em>solution_translations</em>[3 * 4]<big>)</big><a class="headerlink" href="#PoseFromThreePoints__doubleCA.doubleCA.doubleA.doubleA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes camera pose using the three point algorithm and returns all possible
 solutions (up to 4). Follows steps from the paper &#8220;A Novel Parameterization of
 the Perspective-Three-Point Problem for a direct computation of Absolute
 Camera position and Orientation&#8221; by <a class="reference internal" href="bibliography.html#kneip">[Kneip]</a>. This algorithm has been proven
 to be up to an order of magnitude faster than other methods.</p>
-<p><tt class="docutils literal"><span class="pre">image_points</span></tt>: Location of features on the image plane (x[i][*] = i-th image point).</p>
-<p><tt class="docutils literal"><span class="pre">world_points</span></tt>: 3D location of features. Must correspond to the image_point of the same index (x[i][*] = i-th world point)</p>
-<p><tt class="docutils literal"><span class="pre">rotation</span></tt>: The candidate rotations computed from the 3 point algorithm.</p>
-<p><tt class="docutils literal"><span class="pre">translation</span></tt>: The candidate translations computed.</p>
+<p><tt class="docutils literal"><span class="pre">image_ray</span></tt>: Normalized image rays corresponding to model points.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">world_point</span></tt>: 3D location of features. Must correspond to the image_ray of</dt>
+<dd>the same index (x[i][*] = i-th world point)</dd>
+</dl>
+<p><tt class="docutils literal"><span class="pre">solution_rotations</span></tt>: the rotation matrix of the candidate solutions</p>
+<p><tt class="docutils literal"><span class="pre">solution_translation</span></tt>: the translation of the candidate solutions</p>
 <p><tt class="docutils literal"><span class="pre">Returns</span></tt>: The number of poses computed, along with the output parameters <tt class="docutils literal"><span class="pre">rotation</span></tt> and <tt class="docutils literal"><span class="pre">translation</span></tt> filled with the valid poses.</p>
 <p><strong>NOTE</strong>: P3P returns up to 4 poses, so the rotation and translation arrays are indeed arrays of 3x3 and 3x1 arrays respectively.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="PoseFourPoints__doubleCAA.doubleCAA.doubleAA.doubleA">
-bool <tt class="descname">PoseFourPoints</tt><big>(</big>const double <em>image_points</em>[4][3], const double <em>world_points</em>[4][3], double <em>rotation</em>[3][3], double <em>translation</em>[3]<big>)</big><a class="headerlink" href="#PoseFourPoints__doubleCAA.doubleCAA.doubleAA.doubleA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes pose using three point algorithm (method above). The fourth
-correspondence is used to determine the best solution of the (up to 4)
-candidate solutions. All parameter are the same as above, except only the
-best solution is returned in the output parameters, rotation and translation.</p>
-<p><tt class="docutils literal"><span class="pre">Returns</span></tt>: True if a successful pose is found, false else.</p>
+<dt id="PoseFromThreeCalibrated__doubleCA.doubleCA.doubleCA.doubleCA.doubleA">
+int <tt class="descname">PoseFromThreeCalibrated</tt><big>(</big>const double <em>image_points</em>[2 * 3], const double <em>world_points</em>[3 * 3], const double <em>focal_length</em>[2], const double <em>principal_point</em>[2], double <em>solutions</em>[12 * 4]<big>)</big><a class="headerlink" href="#PoseFromThreeCalibrated__doubleCA.doubleCA.doubleCA.doubleCA.doubleA" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">image_points</span></tt>: Location of features on the image plane</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">world_points</span></tt>: 3D location of features. Must correspond to the image_point</dt>
+<dd>of the same index (x[i][*] = i-th world point)</dd>
+</dl>
+<p><tt class="docutils literal"><span class="pre">focal_length</span></tt>: fx, and fy the focal length parameters</p>
+<p><tt class="docutils literal"><span class="pre">principle_point</span></tt>: the principle point of the image</p>
+<p><tt class="docutils literal"><span class="pre">solutions</span></tt>: the projection matrices for the candidate solutions</p>
+<p><tt class="docutils literal"><span class="pre">Return</span></tt>: the number of poses computed.</p>
 </dd></dl>
 
 </div>
 <div class="section" id="five-point-relative-pose">
 <span id="section-five-point"></span><h2>Five Point Relative Pose<a class="headerlink" href="#five-point-relative-pose" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="FivePointRelativePose__doubleCAA.doubleCAA">
-std::vector&lt;EssentialMatrix&gt; <tt class="descname">FivePointRelativePose</tt><big>(</big>const double <em>image1_points</em>[5][3], const double <em>image2_points</em>[5][3]<big>)</big><a class="headerlink" href="#FivePointRelativePose__doubleCAA.doubleCAA" title="Permalink to this definition">¶</a></dt>
+<dt id="FivePointRelativePose__doubleCA.doubleCA.doubleA.doubleA">
+int <tt class="descname">FivePointRelativePose</tt><big>(</big>const double <em>image1_points</em>[3 * 5], const double <em>image2_points</em>[3 * 5], double <em>rotation</em>[9 * 10], double <em>translation</em>[3 * 10]<big>)</big><a class="headerlink" href="#FivePointRelativePose__doubleCA.doubleCA.doubleA.doubleA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the relative pose between two cameras using 5 corresponding
 points. Algorithm is implemented based on &#8220;An Efficient Solution to the
 Five-Point Relative Pose Problem&#8221; by <a class="reference internal" href="bibliography.html#nister">[Nister]</a>.</p>
-<p><tt class="docutils literal"><span class="pre">image1_points</span></tt>: Location of features on the image plane (x[i][*] = i-th image point)</p>
-<p><tt class="docutils literal"><span class="pre">image2_points</span></tt>: Location of features on the image plane (x[i][*] = i-th image point)</p>
-<p><tt class="docutils literal"><span class="pre">Returns</span></tt>: Output all solutions of the 5 point algorithm as <tt class="xref cpp cpp-class docutils literal"><span class="pre">EssentialMatrix</span></tt>.</p>
-<p><strong>TODO:</strong> Make this output 3x3 double arrays as well.</p>
+<p><tt class="docutils literal"><span class="pre">image1_points</span></tt>: Location of features on the image plane of image 1.</p>
+<p><tt class="docutils literal"><span class="pre">image2_points</span></tt>: Location of features on the image plane of image 2.</p>
+<p><tt class="docutils literal"><span class="pre">Returns</span></tt>: Output the number of poses computed as well as the relative
+rotation and translation.</p>
 </dd></dl>
 
 </div>
@@ -125,23 +138,18 @@ Five-Point Relative Pose Problem&#8221; by <a class="reference internal" href="b
         <div class="sphinxsidebarwrapper">
 
 <h3><a href="index.html">Theia</a></h3>
-<ul class="current current">
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="documentation.html">Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="image.html">Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="features.html">Features</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Pose and Resectioning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
-<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sfm.html">Structure from Motion (SfM)</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Pose and Resectioning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
-<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributions.html">Contributing to Theia</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
@@ -184,7 +192,7 @@ Five-Point Relative Pose Problem&#8221; by <a class="reference internal" href="b
           <a href="ransac.html" title="Ransac"
              >previous</a> |</li>
         <li><a href="index.html">Theia Documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
+          <li><a href="documentation.html" >Documentation</a> &raquo;</li> 
       </ul>
     </div>
 <div class="footer">

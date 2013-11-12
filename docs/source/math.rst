@@ -35,14 +35,14 @@ have implemented solvers for these cases.
 
 .. function::  int SolveCubic(double a, double b, double c, double d, std::complex<double>* roots)
 
-   Provides solutions to the equation :math:`a*x^3 + b*x^2 + c*x + d = 0` using `Cardan's <http://en.wikipedia.org/wiki/Cubic_function#Cardano.27s_method>`_ method.
+   Provides solutions to the equation :math:`a*x^3 + b*x^2 + c*x + d = 0` using `Cardano's <http://en.wikipedia.org/wiki/Cubic_function#Cardano.27s_method>`_ method.
 
 
 .. function::  int SolveQuarticReals(double a, double b, double c, double d, double e, double* roots)
 
 .. function::  int SolveQuartic(double a, double b, double c, double d, double e, std::complex<double>* roots)
 
-  Provides solutions to the equation :math:`a*x^4 + b*x^3 + c*x^2 + d*x + e = 0` using `Ferrari's method <http://en.wikipedia.org/wiki/Quartic_function#Ferrari.27s_solution>`_ to reduce to problem to a cubic.
+  Provides solutions to the equation :math:`a*x^4 + b*x^3 + c*x^2 + d*x + e = 0` using `Ferrari's method <http://en.wikipedia.org/wiki/Quartic_function#Ferrari.27s_solution>`_ to reduce to problem to a depressed cubic.
 
 
 .. _section-generic_poly:
@@ -90,7 +90,7 @@ For polynomials of degree > 4 there are no easy closed-form solutions, making th
   differentiation, etc.). The functions are particular note are the roots functions:
 
   .. function:: std::vector<std::complex<double> > Roots() const
-    
+
     These methods calculate the roots of the polynomial (up to roughly degree
     100) efficiently by building a companion matrix and solving for the
     eigenvalues. This method has been shown to be very efficient, and also takes
@@ -115,7 +115,7 @@ Guass-Jordan
 
 
 .. function:: void GaussJordan(Eigen::MatrixBase<Derived>* input, int max_rows = 99999)
-  
+
   Perform traditional Gauss-Jordan elimination on an Eigen3 matrix. If
   ``max_rows`` is specified, it will on perform Gauss-Jordan on the first
   ``max_rows`` number of rows. This is useful for problems where your system is
@@ -168,13 +168,13 @@ RANSAC with Sequential Probability Ratio Test"
  details.
 
  ``residuals``: Error residuals to use for SPRT analysis.
- 
+
  ``error_thresh``: Error threshold for determining when Datum fits the model.
- 
+
  ``sigma``: Probability of rejecting a good model.
- 
+
  ``epsilon``: Inlier ratio.
- 
+
  ``decision_threshold``: The decision threshold at which to terminate.
- 
+
  ``observed_inlier_ratio``: Output parameter of inlier ratio tested.

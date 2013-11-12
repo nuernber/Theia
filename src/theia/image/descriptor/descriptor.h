@@ -62,7 +62,7 @@ const int kTheiaInvalidDescriptorVar = -9999;
 
 class Descriptor {
  public:
-  Descriptor(int dimensions, DescriptorType type)
+  Descriptor(std::size_t dimensions, DescriptorType type)
       : dimensions_(dimensions),
         descriptor_type_(type),
         x_(kTheiaInvalidDescriptorVar),
@@ -134,7 +134,7 @@ class Descriptor {
   }
 
  protected:
-  const int dimensions_;
+  const std::size_t dimensions_;
   DescriptorType descriptor_type_;
   double x_;
   double y_;
@@ -146,7 +146,7 @@ class Descriptor {
 // Class for Float descriptors.
 class FloatDescriptor : public Descriptor {
  public:
-  FloatDescriptor(int dimensions, DescriptorType type)
+  FloatDescriptor(std::size_t dimensions, DescriptorType type)
       : Descriptor(dimensions, type) {
     data_ = new float[dimensions];
   }
@@ -173,18 +173,19 @@ class FloatDescriptor : public Descriptor {
 // Class for binary descriptors.
 class BinaryDescriptor : public Descriptor {
  public:
-  BinaryDescriptor(int dimensions, DescriptorType type)
+  BinaryDescriptor(std::size_t dimensions, DescriptorType type)
       : Descriptor(dimensions, type) {
-    data_ = new uchar[dimensions / sizeof(uchar)];
+    const std::size_t num_char_blocks = (dimensions_ - 1) / sizeof(uchar) + 1;
+    data_ = new uchar[num_char_blocks];
   }
 
   // Copy constructor needs to be explicitly defined because of the reinterpret
   // cast.
   BinaryDescriptor(const BinaryDescriptor& copy_from)
       : BinaryDescriptor(copy_from.Dimensions(), copy_from.descriptor_type()) {
-    data_ = new uchar[dimensions_ / sizeof(uchar)];
-    std::copy(copy_from.data_, copy_from.data_ + dimensions_ / sizeof(uchar),
-              data_);
+    const std::size_t num_char_blocks = (dimensions_ - 1) / sizeof(uchar) + 1;
+    data_ = new uchar[num_char_blocks];
+    std::copy(copy_from.data_, copy_from.data_ + num_char_blocks, data_);
   }
 
   // Assignment operator is explicitly defined so that the reinterpret cast
@@ -192,9 +193,9 @@ class BinaryDescriptor : public Descriptor {
   BinaryDescriptor& operator=(const BinaryDescriptor& copy_from) {
     if (this != &copy_from) {
       CHECK_EQ(dimensions_, copy_from.Dimensions());
-      uchar* new_data = new uchar[dimensions_ / sizeof(uchar)];
-      std::copy(copy_from.data_, copy_from.data_ + dimensions_ / sizeof(uchar),
-                new_data);
+      const std::size_t num_char_blocks = (dimensions_ - 1) / sizeof(uchar) + 1;
+      uchar* new_data = new uchar[num_char_blocks];
+      std::copy(copy_from.data_, copy_from.data_ + num_char_blocks, new_data);
       delete[] data_;
       data_ = new_data;
     }

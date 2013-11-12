@@ -35,6 +35,7 @@
 #ifndef THEIA_POINT_CLOUD_H_
 #define THEIA_POINT_CLOUD_H_
 
-#include "vision/transformation/align_point_clouds.h"
+#include "theia/vision/transformation/align_point_clouds.h"
+#include "theia/vision/triangulation/triangulation.h"
 
 #endif  // THEIA_POINT_CLOUD_H_

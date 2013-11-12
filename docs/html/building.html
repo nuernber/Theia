@@ -29,7 +29,13 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" />
     <link rel="next" title="Documentation" href="documentation.html" />
@@ -68,17 +74,14 @@
 <li><a class="reference external" href="http://www.cmake.org">CMake</a> is a cross platform build system. Theia needs a relatively recent version of CMake (version 2.8.0 or better).</li>
 <li><a class="reference external" href="http://eigen.tuxfamily.org/index.php?title=Main_Page">eigen3</a> is used extensively for doing nearly all the matrix and linear algebra operations.</li>
 <li><a class="reference external" href="http://www.edwardrosten.com/cvd">libCVD</a> is used as the underlying image class for Theia.</li>
-<li><a class="reference external" href="https://code.google.com/p/ceres-solver/">Ceres Solver</a> is a library for solving non-linear least squares problems. In particular, Theia uses it for Bundle Adjustment. Install Ceres to the &#8220;libraries&#8221; folder inside the Theia source.</li>
+<li><a class="reference external" href="https://code.google.com/p/ceres-solver/">Ceres Solver</a> is a library for solving non-linear least squares problems. In particular, Theia uses it for Bundle Adjustment.</li>
 </ol>
 <p><strong>NOTE</strong>: Theia also depends on the following libraries, but they are included in the installation of Ceres so you do not need to reinstall them.</p>
 <ol class="arabic simple" start="6">
 <li><a class="reference external" href="http://http://code.google.com/p/google-glog">google-glog</a> is used for error checking and logging. Ceres needs glog version 0.3.1 or later. Version 0.3 (which ships with Fedora 16) has a namespace bug which prevents Ceres from building.</li>
 <li><a class="reference external" href="http://code.google.com/p/gflags">gflags</a> is a library for processing command line flags. It is used by some of the examples and tests. While it is not strictly necessary to build the library, we strongly recommend building the library with gflags.</li>
 </ol>
-<p>The following libraries are also used, but are included with the Theia distribution</p>
-<ol class="arabic simple" start="8">
-<li><a class="reference external" href="http://http://code.google.com/p/googletest">googletest</a> is used for unit tests. Every file in Theia (with a few minor exceptions) is covered by a unittest.</li>
-</ol>
+<p>Make sure all of these libraries are installed properly before proceeding. Improperly installing any of these libraries can cause Theia to not build.</p>
 </div>
 <div class="section" id="building">
 <span id="section-building"></span><h2>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h2>
@@ -91,7 +94,7 @@ make -j4
 make <span class="nb">test</span>
 </pre></div>
 </div>
-<p>If you can run make test without repeatedly getting errors (NOTE: some of the methods in this library are inherently probabilistic, so always have a small chance of failing. This will be fixed in future versions!), then you are ready to install. Theia can be install using the make install command</p>
+<p>If all tests pass, then you are ready to install. Theia can be install using the make install command</p>
 <div class="highlight-bash"><div class="highlight"><pre>make install
 </pre></div>
 </div>
@@ -104,6 +107,8 @@ make <span class="nb">test</span>
 <ol class="arabic simple">
 <li><tt class="docutils literal"><span class="pre">-DBUILD_TESTING=OFF</span></tt>: Use this flag to enable or disable building the unit tests. By default, this option is enabled.</li>
 <li><tt class="docutils literal"><span class="pre">-DOPENMP=OFF</span></tt>: By default, Theia uses OpenMP to multithread/parallelize certain parts of the code. Certain platforms don&#8217;t play nice with this, so you can disable this option.</li>
+<li><tt class="docutils literal"><span class="pre">-DBUILD_TUTORIALS=OFF</span></tt>: By default, building Theia will build several tutorial programs to demonstrate some uses of the library. You can disable this option.</li>
+<li><tt class="docutils literal"><span class="pre">-DBUILD_DOCUMENTATION=ON</span></tt>: Turn this flag to <tt class="docutils literal"><span class="pre">ON</span></tt> to build the documentation with Theia. This option is disabled by default.</li>
 </ol>
 </div>
 </div>

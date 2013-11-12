@@ -28,7 +28,7 @@ Perspective Three Point (P3P)
 =============================
 
 
-.. function:: int PoseThreePoints(const double image_points[3][3], const double world_points[3][3], double rotation[][3][3], double translation[][3])
+.. function:: int PoseFromThreePoints(const double image_ray[3 * 3], const double points_3d[3 * 3], double solution_rotations[9 * 4], double solution_translations[3 * 4])
 
   Computes camera pose using the three point algorithm and returns all possible
   solutions (up to 4). Follows steps from the paper "A Novel Parameterization of
@@ -36,27 +36,35 @@ Perspective Three Point (P3P)
   Camera position and Orientation" by [Kneip]_\. This algorithm has been proven
   to be up to an order of magnitude faster than other methods.
 
-  ``image_points``: Location of features on the image plane (x[i][*] = i-th image point).
+  ``image_ray``: Normalized image rays corresponding to model points.
 
-  ``world_points``: 3D location of features. Must correspond to the image_point of the same index (x[i][*] = i-th world point)
+  ``world_point``: 3D location of features. Must correspond to the image_ray of
+     the same index (x[i][*] = i-th world point)
 
-  ``rotation``: The candidate rotations computed from the 3 point algorithm.
+  ``solution_rotations``: the rotation matrix of the candidate solutions
 
-  ``translation``: The candidate translations computed.
+  ``solution_translation``: the translation of the candidate solutions
 
   ``Returns``: The number of poses computed, along with the output parameters ``rotation`` and ``translation`` filled with the valid poses.
 
   **NOTE**: P3P returns up to 4 poses, so the rotation and translation arrays are indeed arrays of 3x3 and 3x1 arrays respectively.
 
 
-.. function:: bool PoseFourPoints(const double image_points[4][3], const double world_points[4][3], double rotation[3][3], double translation[3])
+.. function:: int PoseFromThreeCalibrated(const double image_points[2 * 3], const double world_points[3 * 3], const double focal_length[2], const double principal_point[2], double solutions[12 * 4])
 
-   Computes pose using three point algorithm (method above). The fourth
-   correspondence is used to determine the best solution of the (up to 4)
-   candidate solutions. All parameter are the same as above, except only the
-   best solution is returned in the output parameters, rotation and translation.
+   ``image_points``: Location of features on the image plane
 
-   ``Returns``: True if a successful pose is found, false else.
+   ``world_points``: 3D location of features. Must correspond to the image_point
+     of the same index (x[i][*] = i-th world point)
+
+   ``focal_length``: fx, and fy the focal length parameters
+
+   ``principle_point``: the principle point of the image
+
+   ``solutions``: the projection matrices for the candidate solutions
+
+   ``Return``: the number of poses computed.
+
 
 
 .. _section-five_point:
@@ -64,17 +72,16 @@ Perspective Three Point (P3P)
 Five Point Relative Pose
 ========================
 
-.. function:: std::vector<EssentialMatrix> FivePointRelativePose(const double image1_points[5][3], const double image2_points[5][3])
+.. function:: int FivePointRelativePose(const double image1_points[3 * 5], const double image2_points[3 * 5], double rotation[9 * 10], double translation[3 * 10])
+
 
   Computes the relative pose between two cameras using 5 corresponding
   points. Algorithm is implemented based on "An Efficient Solution to the
   Five-Point Relative Pose Problem" by [Nister]_.
 
-  ``image1_points``: Location of features on the image plane (x[i][*] = i-th image point)
+  ``image1_points``: Location of features on the image plane of image 1.
 
-  ``image2_points``: Location of features on the image plane (x[i][*] = i-th image point)
+  ``image2_points``: Location of features on the image plane of image 2.
 
-  ``Returns``: Output all solutions of the 5 point algorithm as :class:`EssentialMatrix`.
-
-  **TODO:** Make this output 3x3 double arrays as well.  
-
+  ``Returns``: Output the number of poses computed as well as the relative
+  rotation and translation.

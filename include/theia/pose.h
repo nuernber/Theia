@@ -35,8 +35,7 @@
 #ifndef THEIA_POSE_H_
 #define THEIA_POSE_H_
 
-#include "vision/models/essential_matrix.h"
-#include "vision/pose/five_point_relative_pose.h"
-#include "vision/pose/perspective_three_point.h"
+#include "theia/vision/pose/five_point_relative_pose.h"
+#include "theia/vision/pose/perspective_three_point.h"
 
 #endif  // THEIA_POSE_H_

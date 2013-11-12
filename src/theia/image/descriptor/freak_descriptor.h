@@ -61,13 +61,13 @@ class FreakDescriptor : public BinaryDescriptor {
 class FreakDescriptorExtractor : public DescriptorExtractor {
  public:
   // Params:
-  //  orientation_normalized: Enable orientation normalization.
-  //  scale_normalized: Enable scale normalization.
+  //  rotation_invariant: Enable orientation normalization.
+  //  scale_invariant: Enable scale normalization.
   //  num_octaves: Number of octaves covered by the keypoints.
-  FreakDescriptorExtractor(bool orientation_normalized, bool scale_normalized,
+  FreakDescriptorExtractor(bool rotation_invariant, bool scale_invariant,
                            int num_octaves)
-      : orientation_normalized_(orientation_normalized),
-        scale_normalized_(scale_normalized),
+      : rotation_invariant_(rotation_invariant),
+        scale_invariant_(scale_invariant),
         num_octaves_(num_octaves),
         pattern_scale_(22.0) {}
 
@@ -100,8 +100,8 @@ class FreakDescriptorExtractor : public DescriptorExtractor {
                       const unsigned int scale, const unsigned int rot,
                       const unsigned int point) const;
 
-  bool orientation_normalized_;
-  bool scale_normalized_;
+  bool rotation_invariant_;
+  bool scale_invariant_;
   bool num_octaves_;
   const float pattern_scale_;
 

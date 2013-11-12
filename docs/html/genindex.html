@@ -31,7 +31,13 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" /> 
   </head>
@@ -56,7 +62,9 @@
 
 <div class="genindex-jumpbox">
  <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
@@ -73,6 +81,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="features.html#AgastDetector::AgastDetector__AstPattern.i.b">AgastDetector::AgastDetector (C++ function)</a>
+  </dt>
+
+      
   <dt><a href="ransac.html#Arrsac">Arrsac (C++ class)</a>
   </dt>
 
@@ -80,6 +92,22 @@
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="ransac.html#Arrsac::Arrsac__i.double.i.i">Arrsac::Arrsac (C++ function)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="features.html#BriskDescriptorExtractor::BriskDescriptorExtractor__b.b.float">BriskDescriptorExtractor::BriskDescriptorExtractor (C++ function)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="features.html#BriskDetector::BriskDetector__i.i">BriskDetector::BriskDetector (C++ function)</a>
   </dt>
 
   </dl></td>
@@ -93,9 +121,35 @@
   </dt>
 
   </dl></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="contributions.html#CC_LIBRARY">CC_LIBRARY() (built-in function)</a>
+  <dt><a href="image.html#Data">Data (C++ function)</a>
+  </dt>
+
+      
+  <dt><a href="features.html#Descriptor">Descriptor (C++ class)</a>
+  </dt>
+
+      
+  <dt><a href="features.html#DescriptorExtractor">DescriptorExtractor (C++ class)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="features.html#DescriptorExtractor::ComputeDescriptor__GrayImageCR.KeypointCR">DescriptorExtractor::ComputeDescriptor (C++ function)</a>
+  </dt>
+
+      
+  <dt><a href="features.html#DescriptorExtractor::ComputeDescriptors__GrayImageCR.std::vector:KeypointP:CR.std::vector:DescriptorP:P">DescriptorExtractor::ComputeDescriptors (C++ function)</a>
+  </dt>
+
+      
+  <dt><a href="features.html#DescriptorExtractor::Initialize">DescriptorExtractor::Initialize (C++ function)</a>
   </dt>
 
   </dl></td>
@@ -115,7 +169,17 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pose.html#FivePointRelativePose__doubleCAA.doubleCAA">FivePointRelativePose (C++ function)</a>
+  <dt><a href="features.html#FastDetector::FastDetector__i.b.b">FastDetector::FastDetector (C++ function)</a>
+  </dt>
+
+      
+  <dt><a href="pose.html#FivePointRelativePose__doubleCA.doubleCA.doubleA.doubleA">FivePointRelativePose (C++ function)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="features.html#FreakDescriptorExtractor::FreakDescriptorExtractor__b.b.i">FreakDescriptorExtractor::FreakDescriptorExtractor (C++ function)</a>
   </dt>
 
   </dl></td>
@@ -128,18 +192,10 @@
   <dt><a href="math.html#GaussJordan__Eigen::MatrixBase:Derived:P.i">GaussJordan (C++ function)</a>
   </dt>
 
-      
-  <dt><a href="image.html#GrayImage">GrayImage (C++ class)</a>
-  </dt>
-
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="image.html#GraySubImage">GraySubImage (C++ class)</a>
-  </dt>
-
-      
-  <dt><a href="contributions.html#GTEST">GTEST() (built-in function)</a>
+  <dt><a href="image.html#GrayImage">GrayImage (C++ class)</a>
   </dt>
 
   </dl></td>
@@ -149,7 +205,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="contributions.html#HEADER_LIBRARY">HEADER_LIBRARY() (built-in function)</a>
+  <dt><a href="features.html#HarrisDetector::HarrisDetector__i.double.double">HarrisDetector::HarrisDetector (C++ function)</a>
   </dt>
 
   </dl></td>
@@ -162,10 +218,30 @@
   <dt><a href="image.html#Image:T:">Image&lt;T&gt; (C++ class)</a>
   </dt>
 
+      
+  <dt><a href="image.html#Image:T:::GaussianBlur__double.Image:T:PC">Image&lt;T&gt;::GaussianBlur (C++ function)</a>, <a href="image.html#Image:T:::GaussianBlur__double">[1]</a>
+  </dt>
+
+      
+  <dt><a href="image.html#Image:T:::GetSubImage__i.i.i.i">Image&lt;T&gt;::GetSubImage (C++ function)</a>
+  </dt>
+
+      
+  <dt><a href="image.html#Image:T:::HalfSample__Image:T:PC">Image&lt;T&gt;::HalfSample (C++ function)</a>, <a href="image.html#Image:T:::HalfSampleC">[1]</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="image.html#Image:T:::GetSubImage__i.i.i.i">Image&lt;T&gt;::GetSubImage (C++ function)</a>
+  <dt><a href="image.html#Image:T:::Integrate">Image&lt;T&gt;::Integrate (C++ function)</a>
+  </dt>
+
+      
+  <dt><a href="image.html#Image:T:::Resize__i.i">Image&lt;T&gt;::Resize (C++ function)</a>, <a href="image.html#Image:T:::Resize__double">[1]</a>
+  </dt>
+
+      
+  <dt><a href="image.html#Image:T:::TwoThirdsSample__Image:T:PC">Image&lt;T&gt;::TwoThirdsSample (C++ function)</a>, <a href="image.html#Image:T:::TwoThirdsSampleC">[1]</a>
   </dt>
 
   </dl></td>
@@ -174,6 +250,24 @@
 <h2 id="K">K</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="features.html#Keypoint">Keypoint (C++ class)</a>
+  </dt>
+
+      
+  <dt><a href="features.html#KeypointDetector">KeypointDetector (C++ class)</a>
+  </dt>
+
+      
+  <dt><a href="features.html#KeypointDetector::DetectKeypoints__GrayImageCR.std::vector:KeypointP:P">KeypointDetector::DetectKeypoints (C++ function)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="features.html#KeypointDetector::Initialize">KeypointDetector::Initialize (C++ function)</a>
+  </dt>
+
       
   <dt><a href="math.html#KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR">KolmogorovSmirnoffTest (C++ function)</a>, <a href="math.html#KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i">[1]</a>, <a href="math.html#KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i.i">[2]</a>
   </dt>
@@ -191,7 +285,7 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="ransac.html#Mlesac::Mlesac__i.double.double.double.double.std::vector:double:CR.double">Mlesac::Mlesac (C++ function)</a>
+  <dt><a href="ransac.html#Mlesac::Mlesac__i.double.double.double.double.double.double">Mlesac::Mlesac (C++ function)</a>
   </dt>
 
   </dl></td>
@@ -200,6 +294,10 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="features.html#PatchDescriptorExtractor::PatchDescriptorExtractor__i.i">PatchDescriptorExtractor::PatchDescriptorExtractor (C++ function)</a>
+  </dt>
+
       
   <dt><a href="math.html#Polynomial">Polynomial (C++ class)</a>
   </dt>
@@ -212,14 +310,14 @@
   <dt><a href="math.html#Polynomial::RootsC">Polynomial::Roots (C++ function)</a>
   </dt>
 
-      
-  <dt><a href="pose.html#PoseFourPoints__doubleCAA.doubleCAA.doubleAA.doubleA">PoseFourPoints (C++ function)</a>
-  </dt>
-
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pose.html#PoseThreePoints__doubleCAA.doubleCAA.doubleAAA.doubleAA">PoseThreePoints (C++ function)</a>
+  <dt><a href="pose.html#PoseFromThreeCalibrated__doubleCA.doubleCA.doubleCA.doubleCA.doubleA">PoseFromThreeCalibrated (C++ function)</a>
+  </dt>
+
+      
+  <dt><a href="pose.html#PoseFromThreePoints__doubleCA.doubleCA.doubleA.doubleA">PoseFromThreePoints (C++ function)</a>
   </dt>
 
       
@@ -244,16 +342,8 @@
   <dt><a href="ransac.html#Ransac::Ransac__i.double.i.i">Ransac::Ransac (C++ function)</a>, <a href="ransac.html#Ransac::Ransac__i.double.i.double.double">[1]</a>
   </dt>
 
-      
-  <dt><a href="ransac.html#Recon">Recon (C++ class)</a>
-  </dt>
-
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="ransac.html#Recon::Recon__i.i.double">Recon::Recon (C++ function)</a>
-  </dt>
-
       
   <dt><a href="image.html#RGBImage">RGBImage (C++ class)</a>
   </dt>
@@ -277,6 +367,14 @@
   </dt>
 
       
+  <dt><a href="features.html#SiftDescriptorExtractor::SiftDescriptorExtractor__i.i.i">SiftDescriptorExtractor::SiftDescriptorExtractor (C++ function)</a>
+  </dt>
+
+      
+  <dt><a href="features.html#SiftDetector::SiftDetector__i.i.i">SiftDetector::SiftDetector (C++ function)</a>
+  </dt>
+
+      
   <dt><a href="math.html#SolveCubic__double.double.double.double.std::complex:double:P">SolveCubic (C++ function)</a>
   </dt>
 
@@ -284,12 +382,12 @@
   <dt><a href="math.html#SolveCubicReals__double.double.double.double.doubleP">SolveCubicReals (C++ function)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="math.html#SolveQuadratic__double.double.double.std::complex:double:P">SolveQuadratic (C++ function)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="math.html#SolveQuadraticReals__double.double.double.doubleP">SolveQuadraticReals (C++ function)</a>
   </dt>
@@ -300,6 +398,10 @@
 
       
   <dt><a href="math.html#SolveQuarticReals__double.double.double.double.double.doubleP">SolveQuarticReals (C++ function)</a>
+  </dt>
+
+      
+  <dt><a href="image.html#SubImage">SubImage (C++ class)</a>
   </dt>
 
       

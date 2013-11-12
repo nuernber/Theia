@@ -29,7 +29,13 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" />
     <link rel="next" title="License" href="license.html" />
@@ -59,6 +65,14 @@
             
   <div class="section" id="bibliography">
 <span id="sec-bibliography"></span><h1>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this headline">¶</a></h1>
+<table class="docutils citation" frame="void" id="alahi" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Alahi]</td><td>A. Alahi, R. Ortiz, and P. Vandergheynst. <strong>FREAK: Fast Retina
+Keypoint</strong>. <em>In IEEE Conference on Computer Vision and Pattern Recognition,
+CVPR 2012</em></td></tr>
+</tbody>
+</table>
 <table class="docutils citation" frame="void" id="chum" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
@@ -93,6 +107,22 @@ Position and Orientation</strong>, <em>Proc. of The IEEE Conference on Computer 
 and Pattern Recognition (CVPR)</em>. Colorado Springs, USA. June 2011.</td></tr>
 </tbody>
 </table>
+<table class="docutils citation" frame="void" id="leutenegger" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Leutenegger]</td><td>S. Leutenegger, M. Chli and R. Siegwart, <strong>BRISK: Binary Robust
+Invariant Scalable Keypoints</strong>, <em>In Proceedings of the IEEE International
+Conference on Computer Vision (ICCV) 2011</em></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="lowe" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Lowe]</td><td>David G. Lowe, <strong>Object recognition from local scale-invariant features</strong>,
+<em>International Conference on Computer Vision, Corfu, Greece (September 1999)</em>,
+pp. 1150-1157</td></tr>
+</tbody>
+</table>
 <table class="docutils citation" frame="void" id="matas" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
@@ -100,6 +130,15 @@ and Pattern Recognition (CVPR)</em>. Colorado Springs, USA. June 2011.</td></tr>
 Probability Ratio Test</strong>. <em>In Proceedings of the Tenth IEEE International
 Conference on Computer Vision - Volume 2 (ICCV &#8216;05)</em>, Vol. 2. IEEE Computer
 Society, Washington, DC, USA, 1727-1732.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mair" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Mair]</td><td>E. Mair, G. D. Hager, D. Burschka, M. Suppa, and G. Hirzinger.
+<strong>Adaptive and generic corner detection based on the accelerated segment test</strong>.
+<em>In Proceedings of the European Conference on Computer Vision (ECCV&#8216;10)</em>,
+September 2010.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="nister" rules="none">
@@ -148,7 +187,7 @@ Underst</em>. 78, 1 (April 2000), 138-156.</td></tr>
 <h3><a href="index.html">Theia</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
-<li class="toctree-l1"><a class="reference internal" href="documentation.html">Theia Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributions.html">Contributing to Theia</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>

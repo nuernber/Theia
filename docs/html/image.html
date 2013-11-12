@@ -29,11 +29,17 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" />
     <link rel="up" title="Documentation" href="documentation.html" />
-    <link rel="next" title="Ransac" href="ransac.html" />
+    <link rel="next" title="Features" href="features.html" />
     <link rel="prev" title="Documentation" href="documentation.html" /> 
   </head>
   <body>
@@ -44,7 +50,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="ransac.html" title="Ransac"
+          <a href="features.html" title="Features"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="documentation.html" title="Documentation"
@@ -62,9 +68,10 @@
   <div class="section" id="image">
 <span id="documentation-image"></span><h1>Image<a class="headerlink" href="#image" title="Permalink to this headline">¶</a></h1>
 <p>Theia provides a basic <a class="reference internal" href="#Image:T:" title="Image&lt;T&gt;"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image&lt;T&gt;</span></tt></a> class to use for SfM and SLAM
-applications. The class is very lightweight, and is largely a wrapper for the
+applications. The class is fairly lightweight, and is largely a wrapper for the
 <a class="reference external" href="http://www.edwardrosten.com/cvd/cvd/html/index.html">CVD Image class</a> but
-allows for more general use.</p>
+allows for more general use. It is the standard image class that used for
+feature detection within Theia.</p>
 <dl class="class">
 <dt id="RGBImage">
 <em class="property">class </em><tt class="descname">RGBImage</tt><a class="headerlink" href="#RGBImage" title="Permalink to this definition">¶</a></dt>
@@ -83,12 +90,16 @@ and <a class="reference internal" href="#GrayImage" title="GrayImage"><tt class=
 of the <a class="reference internal" href="#Image:T:" title="Image&lt;T&gt;"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Image&lt;T&gt;</span></tt></a> class, so their interfaces will be nearly
 identical. Images can be easily read in from a file upon contruction or with
 the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Read()</span></tt> command.</p>
-<div class="highlight-c++"><div class="highlight"><pre><span class="n">string</span> <span class="n">img_filename</span> <span class="o">=</span> <span class="s">&quot;...&quot;</span><span class="p">;</span> <span class="c1">// Image you would like to read in.</span>
-<span class="n">RGBImage</span> <span class="n">my_rgb_image</span><span class="p">(</span><span class="n">img_filename</span><span class="p">);</span>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">RGBImage</span> <span class="n">my_rgb_image</span><span class="p">(</span><span class="n">img_filename</span><span class="p">);</span>
 
 <span class="c1">// Or alternatively:</span>
 <span class="n">RGBImage</span> <span class="n">my_rgb_image</span><span class="p">;</span>
 <span class="n">my_rgb_image</span><span class="p">.</span><span class="n">Read</span><span class="p">(</span><span class="n">img_filename</span><span class="p">);</span>
+
+<span class="c1">// ... do some stuff ... //</span>
+
+<span class="c1">// Write the image back out.</span>
+<span class="n">my_rgb_image</span><span class="p">.</span><span class="n">Write</span><span class="p">(</span><span class="n">out_filename</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Once an image is loaded, pixel values can be accessed with standard <tt class="docutils literal"><span class="pre">[]</span></tt>
@@ -97,7 +108,7 @@ operators. Pixels are referenced in row then column order.</p>
 will be returned (for <tt class="xref cpp cpp-class docutils literal"><span class="pre">RBGImage</span></tt> and <a class="reference internal" href="#GrayImage" title="GrayImage"><tt class="xref cpp cpp-class docutils literal"><span class="pre">GrayImage</span></tt></a>
 respectively). The <tt class="xref cpp cpp-class docutils literal"><span class="pre">RGBPixel</span></tt> contains members <tt class="xref cpp cpp-member docutils literal"><span class="pre">red</span></tt>,
 <tt class="xref cpp cpp-member docutils literal"><span class="pre">green</span></tt>, and <tt class="xref cpp cpp-member docutils literal"><span class="pre">blue</span></tt> (all of type <tt class="xref cpp cpp-class docutils literal"><span class="pre">float</span></tt>).</p>
-<div class="highlight-c++"><div class="highlight"><pre><span class="c1">// Load RGB and Grayscale images.</span>
+<div class="highlight-c++"><div class="highlight"><pre><span class="c1">// Load RGB and scale images.</span>
 <span class="n">RGBImage</span> <span class="n">my_rgb_img</span><span class="p">(</span><span class="s">&quot;test_img.jpg&quot;</span><span class="p">);</span>
 <span class="n">GrayImage</span> <span class="n">my_gray_img</span><span class="p">(</span><span class="s">&quot;test_img.jpg&quot;</span><span class="p">);</span>
 
@@ -110,12 +121,12 @@ respectively). The <tt class="xref cpp cpp-class docutils literal"><span class="
 <span class="kt">float</span> <span class="n">middle_gray_pixel</span> <span class="o">=</span> <span class="n">my_gray_img</span><span class="p">[</span><span class="n">middle_row</span><span class="p">][</span><span class="n">middle_col</span><span class="p">];</span>
 
 <span class="c1">// Output the RGB Pixel value.</span>
-<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;red = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_rgb_pixel</span><span class="p">.</span><span class="n">red</span>
+<span class="n">LOG</span><span class="p">(</span><span class="n">INFO</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;red = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_rgb_pixel</span><span class="p">.</span><span class="n">red</span>
           <span class="o">&lt;&lt;</span> <span class="s">&quot; green = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_rgb_pixel</span><span class="p">.</span><span class="n">green</span>
-          <span class="o">&lt;&lt;</span> <span class="s">&quot; blue = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_rgb_pixel</span><span class="p">.</span><span class="n">blue</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+          <span class="o">&lt;&lt;</span> <span class="s">&quot; blue = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_rgb_pixel</span><span class="p">.</span><span class="n">blue</span><span class="p">;</span>
 
 <span class="c1">// Output the grayscale pixel value.</span>
-<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;gray = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_gray_pixel</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="n">LOG</span><span class="p">(</span><span class="n">INFO</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;gray = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">middle_gray_pixel</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>You can also extra patches from images using the <a class="reference internal" href="#Image:T:::GetSubImage__i.i.i.i" title="Image&lt;T&gt;::GetSubImage"><tt class="xref cpp cpp-func docutils literal"><span class="pre">GetSubImage()</span></tt></a> function.</p>
@@ -158,8 +169,59 @@ must be taken when deleting images. <a class="reference internal" href="#Image:T
 <dd></dd></dl>
 
 <dl class="class">
-<dt id="GraySubImage">
-<em class="property">class </em><tt class="descname">GraySubImage</tt><a class="headerlink" href="#GraySubImage" title="Permalink to this definition">¶</a></dt>
+<dt id="SubImage">
+<em class="property">class </em><tt class="descname">SubImage</tt><a class="headerlink" href="#SubImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>We have also implemented some useful member functions of the <tt class="xref cpp cpp-class docutils literal"><span class="pre">Image</span></tt> class. For a full list of functions, <cite>theia/image/image.h</cite></p>
+<dl class="function">
+<dt id="Data">
+T* <tt class="descname">Data</tt><big>(</big><big>)</big><a class="headerlink" href="#Data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Image:T:::GaussianBlur__double.Image:T:PC">
+void <tt class="descclassname">Image&lt;T&gt;::</tt><tt class="descname">GaussianBlur</tt><big>(</big>double <em>sigma</em>, Image&lt;T&gt;* <em>out_image</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#Image:T:::GaussianBlur__double.Image:T:PC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Image:T:::GaussianBlur__double">
+void <tt class="descclassname">Image&lt;T&gt;::</tt><tt class="descname">GaussianBlur</tt><big>(</big>double <em>sigma</em><big>)</big><a class="headerlink" href="#Image:T:::GaussianBlur__double" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Image:T:::Integrate">
+Image&lt;T&gt; <tt class="descclassname">Image&lt;T&gt;::</tt><tt class="descname">Integrate</tt><big>(</big><big>)</big><a class="headerlink" href="#Image:T:::Integrate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Image:T:::Resize__i.i">
+void <tt class="descclassname">Image&lt;T&gt;::</tt><tt class="descname">Resize</tt><big>(</big>int <em>new_rows</em>, int <em>new_cols</em><big>)</big><a class="headerlink" href="#Image:T:::Resize__i.i" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Image:T:::Resize__double">
+void <tt class="descclassname">Image&lt;T&gt;::</tt><tt class="descname">Resize</tt><big>(</big>double <em>scale</em><big>)</big><a class="headerlink" href="#Image:T:::Resize__double" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Image:T:::HalfSample__Image:T:PC">
+void <tt class="descclassname">Image&lt;T&gt;::</tt><tt class="descname">HalfSample</tt><big>(</big>Image&lt;T&gt;* <em>out_image</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#Image:T:::HalfSample__Image:T:PC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Image:T:::HalfSampleC">
+Image&lt;T&gt; <tt class="descclassname">Image&lt;T&gt;::</tt><tt class="descname">HalfSample</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#Image:T:::HalfSampleC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Image:T:::TwoThirdsSample__Image:T:PC">
+void <tt class="descclassname">Image&lt;T&gt;::</tt><tt class="descname">TwoThirdsSample</tt><big>(</big>Image&lt;T&gt;* <em>out_image</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#Image:T:::TwoThirdsSample__Image:T:PC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Image:T:::TwoThirdsSampleC">
+Image&lt;T&gt; <tt class="descclassname">Image&lt;T&gt;::</tt><tt class="descname">TwoThirdsSample</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#Image:T:::TwoThirdsSampleC" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -176,10 +238,11 @@ must be taken when deleting images. <a class="reference internal" href="#Image:T
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="documentation.html">Documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="">Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="features.html">Features</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
-<li class="toctree-l2"><a class="reference internal" href="point_cloud.html">Point Cloud</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sfm.html">Structure from Motion (SfM)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
@@ -193,8 +256,8 @@ must be taken when deleting images. <a class="reference internal" href="#Image:T
   <p class="topless"><a href="documentation.html"
                         title="previous chapter">Documentation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="ransac.html"
-                        title="next chapter">Ransac</a></p>
+  <p class="topless"><a href="features.html"
+                        title="next chapter">Features</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -219,7 +282,7 @@ must be taken when deleting images. <a class="reference internal" href="#Image:T
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="ransac.html" title="Ransac"
+          <a href="features.html" title="Features"
              >next</a> |</li>
         <li class="right" >
           <a href="documentation.html" title="Documentation"

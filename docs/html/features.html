@@ -1,0 +1,411 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>Features &mdash; Theia Documentation</title>
+
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+
+
+    
+    <link rel="stylesheet" href="_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
+    <script type="text/javascript" src="_static/searchtools.js"></script>
+    <link rel="top" title="Theia Documentation" href="index.html" />
+    <link rel="up" title="Documentation" href="documentation.html" />
+    <link rel="next" title="Ransac" href="ransac.html" />
+    <link rel="prev" title="Image" href="image.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ransac.html" title="Ransac"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="image.html" title="Image"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="features">
+<span id="documentation-features"></span><h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
+<p>Feature detection and description is a major area of focus in Computer Vision. While SIFT remains the gold standard because of its robustness and matching performance, many other detectors and descriptors are used and often have other competitive advantages. Theia presents friendly classes for feature detection and decription such that the interface is always the same regardless of the methods used.</p>
+<p>This module can be included in your code with:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="cp">#include &lt;theia/features.h&gt;</span>
+</pre></div>
+</div>
+<div class="section" id="keypoint">
+<h2><a class="reference internal" href="#Keypoint" title="Keypoint"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Keypoint</span></tt></a><a class="headerlink" href="#keypoint" title="Permalink to this headline">¶</a></h2>
+<p>The base <a class="reference internal" href="#Keypoint" title="Keypoint"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Keypoint</span></tt></a> class is a glorified struct that holds information about a keypoint that has been detected with a <a class="reference internal" href="#KeypointDetector" title="KeypointDetector"><tt class="xref cpp cpp-class docutils literal"><span class="pre">KeypointDetector</span></tt></a>. Information about the keypoint&#8217;s position, strength, scale, and orientation can be easily added and retrieved. The type of keypoint can be retrieved with the <tt class="xref cpp cpp-func docutils literal"><span class="pre">keypoint_type()</span></tt> function.</p>
+<dl class="class">
+<dt id="Keypoint">
+<em class="property">class </em><tt class="descname">Keypoint</tt><a class="headerlink" href="#Keypoint" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-c++"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Keypoint</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+   <span class="k">enum</span> <span class="n">KeypointType</span> <span class="p">{</span>
+       <span class="n">INVALID</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+       <span class="n">OTHER</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+       <span class="n">FAST</span><span class="p">,</span>
+       <span class="n">HARRIS</span><span class="p">,</span>
+       <span class="n">SIFT</span><span class="p">,</span>
+       <span class="n">AGAST</span><span class="p">,</span>
+       <span class="n">BRISK</span>
+       <span class="p">};</span>
+
+   <span class="n">Keypoint</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span><span class="p">,</span> <span class="n">KeypointType</span> <span class="n">type</span><span class="p">);</span>
+   <span class="o">~</span><span class="n">Keypoint</span><span class="p">()</span> <span class="p">{}</span>
+
+   <span class="c1">// Required Keypoint type.</span>
+   <span class="kr">inline</span> <span class="n">KeypointType</span> <span class="n">keypoint_type</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+   <span class="kr">inline</span> <span class="kt">void</span> <span class="n">set_keypoint_type</span><span class="p">(</span><span class="n">KeypointType</span> <span class="n">type</span><span class="p">);</span>
+
+   <span class="c1">// Required Variable x.</span>
+   <span class="kr">inline</span> <span class="kt">double</span> <span class="n">x</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+   <span class="kr">inline</span> <span class="kt">void</span> <span class="n">set_x</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">);</span>
+
+   <span class="c1">// Required Variable y.</span>
+   <span class="kr">inline</span> <span class="kt">double</span> <span class="n">y</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+   <span class="kr">inline</span> <span class="kt">void</span> <span class="n">set_y</span><span class="p">(</span><span class="kt">double</span> <span class="n">y</span><span class="p">);</span>
+
+   <span class="c1">// Optional variable strength.</span>
+   <span class="kr">inline</span> <span class="kt">bool</span> <span class="n">has_strength</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+   <span class="kr">inline</span> <span class="kt">double</span> <span class="n">strength</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+   <span class="kr">inline</span> <span class="kt">void</span> <span class="n">set_strength</span><span class="p">(</span><span class="kt">double</span> <span class="n">strength</span><span class="p">);</span>
+
+   <span class="c1">// Optional variable scale.</span>
+   <span class="kr">inline</span> <span class="kt">bool</span> <span class="n">has_scale</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+   <span class="kr">inline</span> <span class="kt">double</span> <span class="n">scale</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+   <span class="kr">inline</span> <span class="kt">void</span> <span class="n">set_scale</span><span class="p">(</span><span class="kt">double</span> <span class="n">scale</span><span class="p">);</span>
+
+   <span class="c1">// Optional variable orientation.</span>
+   <span class="kr">inline</span> <span class="kt">bool</span> <span class="n">has_orientation</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+   <span class="kr">inline</span> <span class="kt">double</span> <span class="n">orientation</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+   <span class="kr">inline</span> <span class="kt">void</span> <span class="n">set_orientation</span><span class="p">(</span><span class="kt">double</span> <span class="n">orientation</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="keypointdetector">
+<h2><a class="reference internal" href="#KeypointDetector" title="KeypointDetector"><tt class="xref cpp cpp-class docutils literal"><span class="pre">KeypointDetector</span></tt></a><a class="headerlink" href="#keypointdetector" title="Permalink to this headline">¶</a></h2>
+<p>Detecting keypoints with Theia is very simple, and we have implemented a number of keypoint detectors that are commonly used in Computer Vision. Each keypoint detector is derived from the virtual class <a class="reference internal" href="#KeypointDetector" title="KeypointDetector"><tt class="xref cpp cpp-class docutils literal"><span class="pre">KeypointDetector</span></tt></a>. Each derived class must implement the <tt class="xref cpp cpp-func docutils literal"><span class="pre">DetectKeypoints()</span></tt> method</p>
+<dl class="class">
+<dt id="KeypointDetector">
+<em class="property">class </em><tt class="descname">KeypointDetector</tt><a class="headerlink" href="#KeypointDetector" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="function">
+<dt id="KeypointDetector::Initialize">
+bool <tt class="descname">Initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#KeypointDetector::Initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method initializes any internal parameters that must be generated,
+precalculated, or otherwise are independent of the image. The
+<a class="reference internal" href="#KeypointDetector::Initialize" title="KeypointDetector::Initialize"><tt class="xref cpp cpp-func docutils literal"><span class="pre">Initialize()</span></tt></a> function must be called before using the keypoint
+detector.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="KeypointDetector::DetectKeypoints__GrayImageCR.std::vector:KeypointP:P">
+bool <tt class="descname">DetectKeypoints</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, std::vector&lt;Keypoint*&gt;* <em>output_keypoints</em><big>)</big><a class="headerlink" href="#KeypointDetector::DetectKeypoints__GrayImageCR.std::vector:KeypointP:P" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">input_image</span></tt>: The image that you want to detect keypoints on.</p>
+<p><tt class="docutils literal"><span class="pre">ouput_keypoints</span></tt>: A pointer to a vector that will hold pointers to the
+keypoints detected. Note that the vector should be empty when passed to this
+function. The caller is responsible for deleting the keypoints.</p>
+</dd></dl>
+
+<div class="highlight-c++"><div class="highlight"><pre><span class="c1">// Assume var keypoint_detector was created with one of the constructors below.</span>
+
+<span class="n">GrayImage</span> <span class="n">input_image</span><span class="p">(</span><span class="n">input_image_filename</span><span class="p">);</span>
+<span class="k">const</span> <span class="kt">bool</span> <span class="n">initialization_success</span> <span class="o">=</span> <span class="n">keypoint_detector</span><span class="p">.</span><span class="n">Initialize</span><span class="p">();</span>
+
+<span class="c1">// Container for the detected keypoints.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Keypoint</span><span class="o">*&gt;</span> <span class="n">detected_keypoint</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">bool</span> <span class="n">detection_success</span> <span class="o">=</span>
+    <span class="n">keypoint_detector</span><span class="p">.</span><span class="n">DetectKeypoints</span><span class="p">(</span><span class="n">input_image</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">detected_keypoints</span><span class="p">);</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>The following keypoint detectors have been implemented in Theia (class constructors are given):</p>
+<dl class="function">
+<dt id="FastDetector::FastDetector__i.b.b">
+ <tt class="descclassname">FastDetector::</tt><tt class="descname">FastDetector</tt><big>(</big>int <em>threshold</em>, bool <em>nonmax_suppression</em>, bool <em>strength</em><big>)</big><a class="headerlink" href="#FastDetector::FastDetector__i.b.b" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the <tt class="docutils literal"><span class="pre">threshold</span></tt> for keypoint scores (usually 20 is a good threshold) and
+indicated whether you want to perform nonmaximum suppression. Set <tt class="docutils literal"><span class="pre">score</span></tt> to
+<cite>true</cite> if you want the corner strength to be set for each keypoint that is
+detected.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="HarrisDetector::HarrisDetector__i.double.double">
+ <tt class="descclassname">HarrisDetector::</tt><tt class="descname">HarrisDetector</tt><big>(</big>int <em>num_corners</em>, double <em>blur</em>, double <em>blur_sigma</em><big>)</big><a class="headerlink" href="#HarrisDetector::HarrisDetector__i.double.double" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the maximum number of corners to detect. Parameters <tt class="docutils literal"><span class="pre">blur</span></tt> and
+<tt class="docutils literal"><span class="pre">blur_sigma</span></tt> specify the amount of blurring to add to the image before
+detecting corners. Default values for <tt class="docutils literal"><span class="pre">blur</span></tt> and <tt class="docutils literal"><span class="pre">blur_sigma</span></tt> are 1.0 and
+3.0 respectively.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="SiftDetector::SiftDetector__i.i.i">
+ <tt class="descclassname">SiftDetector::</tt><tt class="descname">SiftDetector</tt><big>(</big>int <em>num_octaves</em>, int <em>num_scale_levels</em>, int <em>first_octave</em><big>)</big><a class="headerlink" href="#SiftDetector::SiftDetector__i.i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>The algorithm originally proposed by <a class="reference internal" href="bibliography.html#lowe">[Lowe]</a> that uses the <a class="reference external" href="http://www.vlfeat.org">VLFeat</a> as the underlying engine.</p>
+<p>Specify the number of image octaves, number of scale levels per octave, and
+where the first octave should start. The default constructor sets these values
+to values -1 (i.e., as many octaves as can be generated), 3, and 0 (i.e., the
+source image)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="AgastDetector::AgastDetector__AstPattern.i.b">
+ <tt class="descclassname">AgastDetector::</tt><tt class="descname">AgastDetector</tt><big>(</big>AstPattern <em>pattern</em>, int <em>threshold</em>, bool <em>nonmax_suppression</em><big>)</big><a class="headerlink" href="#AgastDetector::AgastDetector__AstPattern.i.b" title="Permalink to this definition">¶</a></dt>
+<dd><p>The improved FAST detection scheme of <a class="reference internal" href="bibliography.html#mair">[Mair]</a> et al.</p>
+<p><tt class="docutils literal"><span class="pre">enum</span> <span class="pre">AstPattern</span></tt> specifies one of 4 types of sampling patterns for the
+AGAST corner detect: <tt class="docutils literal"><span class="pre">AGAST5_8</span></tt> is the AGAST pattern with an 8 pixel mask,
+<tt class="docutils literal"><span class="pre">AGAST7_12D</span></tt> is the AGAST diamond pattern with a 12 pixel mask,
+<tt class="docutils literal"><span class="pre">AGAST7_12S</span></tt> is the square configuration, and <tt class="docutils literal"><span class="pre">OAST9_16</span></tt> is the 16 pixel
+mask. By default, we the detector uses <tt class="docutils literal"><span class="pre">AGAST5_8</span></tt> with a threshold of 30 and
+nonmaximum suppression turn on. More details on the configurations can be
+found at the <a class="reference external" href="http://www6.in.tum.de/Main/ResearchAgast">AGAST Project website</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="BriskDetector::BriskDetector__i.i">
+ <tt class="descclassname">BriskDetector::</tt><tt class="descname">BriskDetector</tt><big>(</big>int <em>threshold</em>, int <em>num_octaves</em><big>)</big><a class="headerlink" href="#BriskDetector::BriskDetector__i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>The &#8220;Binary Robust Invariant Scalable Keypoints&#8221; algorithm of <a class="reference internal" href="bibliography.html#leutenegger">[Leutenegger]</a>
+et al.</p>
+<p>Specify the threshold for keypoint scores (default is 30) and the number of
+octaves to downsample the image (default is 3).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="descriptor">
+<h2><a class="reference internal" href="#Descriptor" title="Descriptor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Descriptor</span></tt></a><a class="headerlink" href="#descriptor" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Descriptor">
+<em class="property">class </em><tt class="descname">Descriptor</tt><a class="headerlink" href="#Descriptor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Theia uses a generic <a class="reference internal" href="#Descriptor" title="Descriptor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Descriptor</span></tt></a> class as the interface for all descriptor types. This includes floating point and binary descriptors. Like <tt class="xref cpp cpp-class docutils literal"><span class="pre">Keypoints</span></tt>, descriptors have requried variables <tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, and <tt class="docutils literal"><span class="pre">descriptor_type</span></tt>, as well as optional variables <tt class="docutils literal"><span class="pre">strength</span></tt>, <tt class="docutils literal"><span class="pre">scale</span></tt>, and <tt class="docutils literal"><span class="pre">orientation</span></tt>. All access and &#8220;set&#8221; methods are the same as for the <a class="reference internal" href="#Keypoint" title="Keypoint"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Keypoint</span></tt></a> class.</p>
+<p>Theia has implemented descriptors as one of two subclasses of the <a class="reference internal" href="#Descriptor" title="Descriptor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Descriptor</span></tt></a> class: <tt class="xref cpp cpp-class docutils literal"><span class="pre">FloatDescriptor</span></tt> or <tt class="xref cpp cpp-class docutils literal"><span class="pre">BinaryDescriptor</span></tt>.   All binary descriptors (and extractors) have been implemented very efficiently with SSE and/or <tt class="docutils literal"><span class="pre">std::bitset</span></tt> instructions. The Theia build system will automatically detect if SSE instructions are available and will use the optimal strategy.</p>
+<p><tt class="xref cpp cpp-class docutils literal"><span class="pre">FloatDescriptor</span></tt> provides accessors via <tt class="docutils literal"><span class="pre">operator</span> <span class="pre">[]</span></tt> to access individual dimensions of the descriptor. <tt class="xref cpp cpp-class docutils literal"><span class="pre">BinaryDescriptor</span></tt> does not provide such an interface since getting and setting individual bits can be quite messy and dangerous. However, both classes implement accessors to the pointers of the underlying data via calls to <tt class="xref cpp cpp-func docutils literal"><span class="pre">FloatData()</span></tt> and <tt class="xref cpp cpp-func docutils literal"><span class="pre">CharData()</span></tt> (the latter can be used with a <tt class="docutils literal"><span class="pre">std::bitset</span></tt> type to access binary data when the descriptor size is known).</p>
+</div>
+<div class="section" id="descriptorextractor">
+<h2><a class="reference internal" href="#DescriptorExtractor" title="DescriptorExtractor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">DescriptorExtractor</span></tt></a><a class="headerlink" href="#descriptorextractor" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="DescriptorExtractor">
+<em class="property">class </em><tt class="descname">DescriptorExtractor</tt><a class="headerlink" href="#DescriptorExtractor" title="Permalink to this definition">¶</a></dt>
+<dd><p>We enforce a <a class="reference internal" href="#DescriptorExtractor" title="DescriptorExtractor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">DescriptorExtractor</span></tt></a> interface similar to the
+<a class="reference internal" href="#KeypointDetector" title="KeypointDetector"><tt class="xref cpp cpp-class docutils literal"><span class="pre">KeypointDetector</span></tt></a> so that we can extract descriptors at runtime. Each
+descriptor has a corresponding extractor class that is used to compute that
+descriptor given keypoints. However, we must call the <a class="reference internal" href="#DescriptorExtractor::Initialize" title="DescriptorExtractor::Initialize"><tt class="xref cpp cpp-func docutils literal"><span class="pre">Initialize()</span></tt></a>
+method before computing descriptors.</p>
+<dl class="function">
+<dt id="DescriptorExtractor::Initialize">
+bool <tt class="descname">Initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#DescriptorExtractor::Initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method initializes any internal parameters that must be generated,
+precalculated, or otherwise are independent of the image. The
+<a class="reference internal" href="#DescriptorExtractor::Initialize" title="DescriptorExtractor::Initialize"><tt class="xref cpp cpp-func docutils literal"><span class="pre">Initialize()</span></tt></a> function must be called before using the keypoint
+detector.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="DescriptorExtractor::ComputeDescriptor__GrayImageCR.KeypointCR">
+Descriptor* <tt class="descname">ComputeDescriptor</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, const Keypoint&amp; <em>keypoints</em><big>)</big><a class="headerlink" href="#DescriptorExtractor::ComputeDescriptor__GrayImageCR.KeypointCR" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">input_image</span></tt>: The image that you want to detect keypoints on.</p>
+<p><tt class="docutils literal"><span class="pre">keypoint</span></tt>: The keypoint that the descriptor will be computed from.</p>
+<p><tt class="docutils literal"><span class="pre">returns</span> <span class="pre">Descriptor*</span></tt>: returns a <a class="reference internal" href="#Descriptor" title="Descriptor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Descriptor</span></tt></a> that has been created
+from the keypoint passed to the function. Caller is responsible for deleting
+the descriptor.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="DescriptorExtractor::ComputeDescriptors__GrayImageCR.std::vector:KeypointP:CR.std::vector:DescriptorP:P">
+bool <tt class="descname">ComputeDescriptors</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, const std::vector&lt;Keypoint*&gt;&amp; <em>keypoints</em>, std::vector&lt;Descriptor*&gt;* <em>output_descriptors</em><big>)</big><a class="headerlink" href="#DescriptorExtractor::ComputeDescriptors__GrayImageCR.std::vector:KeypointP:CR.std::vector:DescriptorP:P" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">input_image</span></tt>: The image that you want to detect keypoints on.</p>
+<p><tt class="docutils literal"><span class="pre">keypoints</span></tt>: A vector of the keypoint pointers that will have descriptors
+extracted.</p>
+<p><tt class="docutils literal"><span class="pre">ouput_descriptors</span></tt>: A pointer to a vector that will hold pointers to the
+descriptors computed. Note that the vector should be empty when passed to this
+function. The caller is responsible for deleting the keypoints.</p>
+</dd></dl>
+
+<div class="highlight-c++"><div class="highlight"><pre><span class="c1">// Open image we want to extract features from.</span>
+<span class="n">GrayImage</span> <span class="n">input_image</span><span class="p">(</span><span class="n">input_image_filename</span><span class="p">);</span>
+
+<span class="c1">// Detect keypoints.</span>
+<span class="n">SiftDetector</span> <span class="n">sift_keypoint_detector</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">bool</span> <span class="n">keypoint_init_success</span> <span class="o">=</span> <span class="n">sift_keypoint_detector</span><span class="p">.</span><span class="n">Initialize</span><span class="p">();</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Keypoint</span><span class="o">&gt;</span> <span class="n">sift_keypoints</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">bool</span> <span class="n">detection_success</span> <span class="o">=</span>
+    <span class="n">sift_keypoint_detector</span><span class="p">.</span><span class="n">DetectKeypoints</span><span class="p">(</span><span class="n">input_image</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sift_keypoints</span><span class="p">);</span>
+
+<span class="c1">// Initialize descriptor extractor.</span>
+<span class="n">SiftDescriptorExtractor</span> <span class="n">sift_extractor</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">bool</span> <span class="n">descriptor_init_succes</span> <span class="o">=</span> <span class="n">sift_extractor</span><span class="p">.</span><span class="n">Initialize</span><span class="p">();</span>
+
+<span class="c1">// E.g., compute a single descriptor</span>
+<span class="n">Descriptor</span><span class="o">*</span> <span class="n">sift_descriptor</span> <span class="o">=</span>
+  <span class="n">sift_extractor</span><span class="p">.</span><span class="n">ComputeDescriptor</span><span class="p">(</span><span class="n">input_image</span><span class="p">,</span> <span class="o">*</span><span class="n">keypoint</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+
+<span class="c1">// E.g., compute many descriptors.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Descriptor</span><span class="o">*&gt;</span> <span class="n">sift_descriptors</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">bool</span> <span class="n">extraction_success</span> <span class="o">=</span>
+  <span class="n">sift_extractor</span><span class="p">.</span><span class="n">ComputeDescriptors</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">sift_keypoints</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sift_descriptors</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>We implement the following descriptor extractors (and corresponding descriptors) in Theia (constructors are given).</p>
+<dl class="function">
+<dt id="PatchDescriptorExtractor::PatchDescriptorExtractor__i.i">
+ <tt class="descclassname">PatchDescriptorExtractor::</tt><tt class="descname">PatchDescriptorExtractor</tt><big>(</big>int <em>patch_rows</em>, int <em>patch_cols</em><big>)</big><a class="headerlink" href="#PatchDescriptorExtractor::PatchDescriptorExtractor__i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify the size of the patch to extract from the image.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="SiftDescriptorExtractor::SiftDescriptorExtractor__i.i.i">
+ <tt class="descclassname">SiftDescriptorExtractor::</tt><tt class="descname">SiftDescriptorExtractor</tt><big>(</big>int <em>num_octaves</em>, int <em>num_scale_levels</em>, int <em>first_octave</em><big>)</big><a class="headerlink" href="#SiftDescriptorExtractor::SiftDescriptorExtractor__i.i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>The algorithm originally proposed by <a class="reference internal" href="bibliography.html#lowe">[Lowe]</a> that uses the <a class="reference external" href="http://www.vlfeat.org">VLFeat</a> as the underlying engine.</p>
+<p>We only implement the standard 128-dimension descriptor. Specify the number
+of image octaves, number of scale levels per octave, and where the first
+octave should start. The default constructor sets these values to values -1
+(i.e., as many octaves as can be generated), 3, and 0 (i.e., the source
+image). Typically these parameters are set to match the <tt class="xref cpp cpp-class docutils literal"><span class="pre">SiftDetector</span></tt>
+parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="FreakDescriptorExtractor::FreakDescriptorExtractor__b.b.i">
+ <tt class="descclassname">FreakDescriptorExtractor::</tt><tt class="descname">FreakDescriptorExtractor</tt><big>(</big>bool <em>rotation_invariant</em>, bool <em>scale_invariant</em>, int <em>num_octaves</em><big>)</big><a class="headerlink" href="#FreakDescriptorExtractor::FreakDescriptorExtractor__b.b.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>The &#8220;Fast Retina Keypoint&#8221; algorithm proposed by <a class="reference internal" href="bibliography.html#alahi">[Alahi]</a> et al.</p>
+<p><tt class="docutils literal"><span class="pre">rotation_invariant</span></tt>: Set to true if you want to normalize the orientation of the keypoints before computing the descriptor.</p>
+<p><tt class="docutils literal"><span class="pre">scale_invariant</span></tt>: Set to true if you want to normalize the scale of keypoints before computing the descriptor.</p>
+<p><tt class="docutils literal"><span class="pre">num_octaves</span></tt>: The number of octaves that the keypoints span.</p>
+<p>The <tt class="xref cpp cpp-class docutils literal"><span class="pre">FreakDescriptorExtractor</span></tt> is typically used with the
+<tt class="xref cpp cpp-class docutils literal"><span class="pre">BriskDetector</span></tt> to detect keypoints.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="BriskDescriptorExtractor::BriskDescriptorExtractor__b.b.float">
+ <tt class="descclassname">BriskDescriptorExtractor::</tt><tt class="descname">BriskDescriptorExtractor</tt><big>(</big>bool <em>rotation_invariant</em>, bool <em>scale_invariant</em>, float <em>pattern_scale</em><big>)</big><a class="headerlink" href="#BriskDescriptorExtractor::BriskDescriptorExtractor__b.b.float" title="Permalink to this definition">¶</a></dt>
+<dd><p>The &#8220;Binary Robust Invariant Scalable Keypoints&#8221; algorithm of <a class="reference internal" href="bibliography.html#leutenegger">[Leutenegger]</a>
+et al.</p>
+<p><tt class="docutils literal"><span class="pre">rotation_invariant</span></tt>: Set to true if you want to normalize the orientation of the keypoints before computing the descriptor.</p>
+<p><tt class="docutils literal"><span class="pre">scale_invariant</span></tt>: Set to true if you want to normalize the scale of keypoints before computing the descriptor.</p>
+<p><tt class="docutils literal"><span class="pre">pattern_scale</span></tt>: Scale of the BRISK pattern to use.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+<h3><a href="index.html">Theia</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="documentation.html">Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="image.html">Image</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sfm.html">Structure from Motion (SfM)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributions.html">Contributing to Theia</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="image.html"
+                        title="previous chapter">Image</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ransac.html"
+                        title="next chapter">Ransac</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ransac.html" title="Ransac"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="image.html" title="Image"
+             >previous</a> |</li>
+        <li><a href="index.html">Theia Documentation</a> &raquo;</li>
+          <li><a href="documentation.html" >Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+<div class="footer">
+    &copy; Copyright 2013, Chris Sweeney.
+</div>
+
+
+
+
+
+  </body>
+</html>

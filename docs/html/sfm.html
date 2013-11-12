@@ -8,7 +8,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
 
-    <title>Point Cloud &mdash; Theia Documentation</title>
+    <title>Structure from Motion (SfM) &mdash; Theia Documentation</title>
 
 <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
 
@@ -29,11 +29,17 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      availableFonts: ["TeX"]
+    }
+  });
+</script>
     <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="top" title="Theia Documentation" href="index.html" />
-    <link rel="up" title="Tutorials" href="tutorials.html" />
-    <link rel="next" title="Contributing to Theia" href="contributions.html" />
+    <link rel="up" title="Documentation" href="documentation.html" />
+    <link rel="next" title="Tutorials" href="tutorials.html" />
     <link rel="prev" title="Math" href="math.html" /> 
   </head>
   <body>
@@ -44,13 +50,13 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="contributions.html" title="Contributing to Theia"
+          <a href="tutorials.html" title="Tutorials"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="math.html" title="Math"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">Theia Documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" accesskey="U">Tutorials</a> &raquo;</li> 
+          <li><a href="documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -59,9 +65,57 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="point-cloud">
-<span id="documentation-point-cloud"></span><h1>Point Cloud<a class="headerlink" href="#point-cloud" title="Permalink to this headline">¶</a></h1>
-<p>We implement ICP for point clouds.</p>
+  <div class="section" id="structure-from-motion-sfm">
+<span id="documentation-sfm"></span><h1>Structure from Motion (SfM)<a class="headerlink" href="#structure-from-motion-sfm" title="Permalink to this headline">¶</a></h1>
+<p>Theia has implementations of many common Structure from Motion (sfm) algorithms. We
+attempt to use a generic interface whenever possible so as to maximize
+compatibility with other libraries.</p>
+<p>You can include the SfM module in your code with the following line:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="cp">#include &lt;theia/sfm.h&gt;</span>
+</pre></div>
+</div>
+<div class="section" id="triangulation">
+<h2>Triangulation<a class="headerlink" href="#triangulation" title="Permalink to this headline">¶</a></h2>
+<p>Triangulation in structure from motion calculates the 3D position of an image
+coordinate that has been tracked through several, if not many, images.</p>
+<dl class="function">
+<dt>
+<tt class="descname">Eigen::Vector4d Triangulate(const Matrix3x4d&amp; pose_left, const Matrix3x4d&amp; pose_right, const Eigen::Vector3d&amp; point_left, const Eigen::Vector3d&amp; point_right)</tt></dt>
+<dd><p>2-view triangulation using the DLT method described in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">Eigen::Vector4d TriangulateNView(const std::vector&lt;Matrix3x4d&gt;&amp; poses,</tt></dt>
+<dt>
+<tt class="descname">const std::vector&lt;Eigen::Vector3d&gt;&amp; points);</tt></dt>
+<dd><p>N-view triangluation that minimizes an algebraic approximation of the
+geometric error.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="icp">
+<h2>ICP<a class="headerlink" href="#icp" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descname">void AlignPointClouds(const double left[][3], const double right[][3], int num_points, double rotation[3][3], double translation[3]);</tt></dt>
+<dd><p>We implement ICP for point clouds. We use Besl-McKay registration to align
+point clouds. We use SVD decomposition to find the rotation, as this is much
+more likely to find the global minimum as compared to traditional ICP, which
+is only guaranteed to find a local minimum. Our goal is to find the
+transformation from the left to the right coordinate system. We assume that
+the left and right models have the same number of points, and that the points
+are aligned by correspondence (i.e. left[i] corresponds to right[i]).</p>
+<p>NOTE: SVD is indeed excessive for a 3 dimensional problem, as it leads to SVD
+decomposition of a 3x3. However, after running multiple tests with traditional
+ICP, it was noted that the local minimum achieved was often not
+satisfactory. If runtime becomes an issue, then I may consider switching back
+to an (improved) true ICP method, as it is an analytic and closed form
+solution so it is very fast. Because of this, this is not a true ICP method,
+but it achieves the same registration using a method suggested by Besl-McKay.</p>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -72,23 +126,18 @@
         <div class="sphinxsidebarwrapper">
 
 <h3><a href="index.html">Theia</a></h3>
-<ul class="current current">
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Theia Library</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="documentation.html">Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="image.html">Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="features.html">Features</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Point Cloud</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Structure from Motion (SfM)</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="ransac.html">Ransac</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pose.html">Pose and Resectioning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="math.html">Math</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Point Cloud</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributions.html">Contributing to Theia</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
@@ -99,8 +148,8 @@
   <p class="topless"><a href="math.html"
                         title="previous chapter">Math</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="contributions.html"
-                        title="next chapter">Contributing to Theia</a></p>
+  <p class="topless"><a href="tutorials.html"
+                        title="next chapter">Tutorials</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -125,13 +174,13 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="contributions.html" title="Contributing to Theia"
+          <a href="tutorials.html" title="Tutorials"
              >next</a> |</li>
         <li class="right" >
           <a href="math.html" title="Math"
              >previous</a> |</li>
         <li><a href="index.html">Theia Documentation</a> &raquo;</li>
-          <li><a href="tutorials.html" >Tutorials</a> &raquo;</li> 
+          <li><a href="documentation.html" >Documentation</a> &raquo;</li> 
       </ul>
     </div>
 <div class="footer">
