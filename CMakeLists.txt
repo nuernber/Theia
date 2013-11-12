@@ -186,10 +186,11 @@ ENDIF (BUILD_DOCUMENTATION)
 
 # ---------------- Install commands ----------------- #
 # Install the .h files
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/src DESTINATION include
-  FILES_MATCHING REGEX PATTERN "*.h")
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include DESTINATION include
-  FILES_MATCHING REGEX PATTERN "*.h")
+FILE(GLOB THEIA_HDRS ${CMAKE_SOURCE_DIR}/include/theia/*.h)
+INSTALL(FILES ${THEIA_HDRS} DESTINATION include/theia)
+
+FILE(GLOB_RECURSE THEIA_INTERNAL_HDRS ${CMAKE_SOURCE_DIR}/src/theia/*.h)
+INSTALL(DIRECTORY src/theia/ DESTINATION include/theia FILES_MATCHING PATTERN "*.h")
 
 # # Add an uninstall target to remove all installed files.
 # CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/uninstall.cmake.in"
