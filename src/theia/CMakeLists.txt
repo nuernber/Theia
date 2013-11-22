@@ -16,7 +16,6 @@ SET(THEIA_SRC
   image/keypoint_detector/harris_detector.cc
   image/keypoint_detector/sift_detector.cc
   math/closed_form_polynomial_solver.cc
-  math/probability/kolmogorov_smirnoff.cc
   math/probability/sequential_probability_ratio.cc
   util/random.cc
   vision/pose/five_point_relative_pose.cc
@@ -84,7 +83,6 @@ IF (BUILD_TESTING)
   GTEST(math/closed_form_polynomial_solver)
   GTEST(math/matrix/gauss_jordan)
   GTEST(math/polynomial)
-  GTEST(math/probability/kolmogorov_smirnoff)
   GTEST(math/probability/sprt)
   GTEST(solvers/arrsac)
   GTEST(solvers/mlesac)

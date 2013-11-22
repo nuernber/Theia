@@ -45,8 +45,6 @@
 #include "theia/solvers/quality_measurement.h"
 #include "theia/solvers/random_sampler.h"
 #include "theia/solvers/ransac.h"
-// Not currently supported
-// #include "theia/solvers/recon.h"
 #include "theia/solvers/sample_consensus_estimator.h"
 #include "theia/solvers/sampler.h"
 

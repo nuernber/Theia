@@ -39,8 +39,6 @@
 #include "theia/math/distribution.h"
 #include "theia/math/matrix/gauss_jordan.h"
 #include "theia/math/polynomial.h"
-// Not currently supported
-// #include "theia/math/probability/kolmogorov_smirnoff.h"
 #include "theia/math/probability/sequential_probability_ratio.h"
 
 #endif  // THEIA_MATH_H_
