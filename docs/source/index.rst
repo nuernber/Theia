@@ -9,7 +9,7 @@ Theia
 
 Theia is a computer vision library aimed at providing efficient and reliable
 algorithms for Structure from Motion (SfM) and Simultaneous Localization and
-Mapping (SLAM) systems.
+Mapping (SLAM) systems. The goal of this library is to provide researchers with an out of the box tool for multi-view reconstruction that can be easily extended. Many common algorithms for pose, feature detection and description, matching, and reconstruction have been implemented. All contain simple interfaces, limited dependencies, and extensive documentation.
 
 * Download the latest `release <https://github.com/kip622/Theia>`_ or clone the
   `repo <https://github.com/kip622/Theia>`_ for development.
@@ -29,4 +29,3 @@ Mapping (SLAM) systems.
    acknowledgements
    bibliography
    license
-
