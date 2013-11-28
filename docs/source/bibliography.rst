@@ -21,9 +21,12 @@ Bibliography
 .. [HartleyZisserman] R.I. Hartley & A. Zisserman, **Multiview
    Geometry in Computer Vision**, Cambridge University Press, 2004.
 
+.. [Hesch] J. Hesch, S. Roumeliotis. **A Direct Least-Squares (DLS) Approach for PnP**,
+   *In Proceedings of the IEEE International Conference on Computer Vision (ICCV) 2013*
+
 .. [Kneip] L. Kneip, D. Scaramuzza, R. Siegwart, **A Novel Parametrization of the
    Perspective-Three-Point Problem for a Direct Computation of Absolute Camera
-   Position and Orientation**, *Proc. of The IEEE Conference on Computer Vision
+   Position and Orientation**, *In Proceedings of The IEEE Conference on Computer Vision
    and Pattern Recognition (CVPR)*. Colorado Springs, USA. June 2011.
 
 .. [Leutenegger] S. Leutenegger, M. Chli and R. Siegwart, **BRISK: Binary Robust

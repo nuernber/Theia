@@ -72,6 +72,7 @@ resectioning algorithms. We attempted to make each method as general as possible
 <ul class="simple">
 <li><a class="reference internal" href="#section-p3p"><em>Perspective Three Point (P3P)</em></a></li>
 <li><a class="reference internal" href="#section-five-point"><em>Five Point Relative Pose</em></a></li>
+<li><a class="reference internal" href="#section-dls-pnp"><em>Perspective N-Point</em></a></li>
 </ul>
 <p>You can include the Pose module in your code with the following line:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span class="cp">#include &lt;theia/pose.h&gt;</span>
@@ -125,6 +126,29 @@ Five-Point Relative Pose Problem&#8221; by <a class="reference internal" href="b
 <p><tt class="docutils literal"><span class="pre">image2_points</span></tt>: Location of features on the image plane of image 2.</p>
 <p><tt class="docutils literal"><span class="pre">Returns</span></tt>: Output the number of poses computed as well as the relative
 rotation and translation.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perspective-n-point">
+<span id="section-dls-pnp"></span><h2>Perspective N-Point<a class="headerlink" href="#perspective-n-point" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="DlsPnp__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Quaterniond:P.std::vector:Eigen::Vector3d:P">
+void <tt class="descname">DlsPnp</tt><big>(</big>const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_ray</em>, const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>world_point</em>, std::vector&lt;Eigen::Quaterniond&gt;* <em>solution_rotation</em>, std::vector&lt;Eigen::Vector3d&gt;* <em>solution_translation</em><big>)</big><a class="headerlink" href="#DlsPnp__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Quaterniond:P.std::vector:Eigen::Vector3d:P" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the camera pose using the Perspective N-point method from &#8220;A Direct
+Least-Squares (DLS) Method for PnP&#8221; by <a class="reference internal" href="bibliography.html#hesch">[Hesch]</a> and Stergios
+Roumeliotis. This method is extremely scalable and highly accurate for the PnP
+problem. A minimum of 4 points are required, but there is no maximum number of
+points allowed as this is a least-squared approach. Theoretically, up to 27
+solutions may be returned, but in practice only 4 real solutions arise and in
+almost all cases where n &gt;= 6 there is only one solution which places the
+observed points in front of the camera.</p>
+<p><tt class="docutils literal"><span class="pre">image_ray</span></tt>: Normalized image rays corresponding to model points. Must
+contain at least 4 points.</p>
+<p><tt class="docutils literal"><span class="pre">points_3d</span></tt>: 3D location of features. Must correspond to the image_ray of
+the same index. Must contain the same number of points as image_ray, and at
+least 4.</p>
+<p><tt class="docutils literal"><span class="pre">solution_rotation</span></tt>: the rotation quaternion of the candidate solutions</p>
+<p><tt class="docutils literal"><span class="pre">solution_translation</span></tt>: the translation of the candidate solutions</p>
 </dd></dl>
 
 </div>
