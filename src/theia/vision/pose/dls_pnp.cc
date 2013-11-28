@@ -152,7 +152,6 @@ void DlsPnp(const std::vector<Vector3d>& image_ray,
     const double kEpsilon = 1e-6;
     if (fabs(s1.imag()) < kEpsilon && fabs(s2.imag()) < kEpsilon &&
         fabs(s3.imag()) < kEpsilon) {
-
       // Compute the rotation (which is the transpose rotation of our solution)
       // and translation.
       Quaterniond soln_rotation(1.0, s1.real(), s2.real(), s3.real());

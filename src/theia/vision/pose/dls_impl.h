@@ -32,8 +32,8 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_VISION_POSE_DLS_PNP_IMPL_H_
-#define THEIA_VISION_POSE_DLS_PNP_IMPL_H_
+#ifndef THEIA_VISION_POSE_DLS_IMPL_H_
+#define THEIA_VISION_POSE_DLS_IMPL_H_
 
 #include <Eigen/Core>
 #include <glog/logging.h>
@@ -66,4 +66,4 @@ Eigen::Matrix<double, 120, 120> CreateMacaulayMatrix(
 }  // namespace dls_impl
 }  // namespace theia
 
-#endif  // THEIA_VISION_POSE_DLS_PNP_IMPL_H_
+#endif  // THEIA_VISION_POSE_DLS_IMPL_H_

@@ -239,7 +239,6 @@ TEST(DlsPnp, ManyPoints) {
                           kMaxAllowedRotationDifference,
                           kMaxAllowedTranslationDifference);
     }
-
   }
 }
 
@@ -295,7 +294,6 @@ TEST(DlsPnp, NoTranslation) {
                       kMaxReprojectionError,
                       kMaxAllowedRotationDifference,
                       kMaxAllowedTranslationDifference);
-
 }
 
 TEST(DlsPnp, OrthogonalRotation) {
