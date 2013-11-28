@@ -18,6 +18,8 @@ SET(THEIA_SRC
   math/closed_form_polynomial_solver.cc
   math/probability/sequential_probability_ratio.cc
   util/random.cc
+  vision/pose/dls_impl.cc
+  vision/pose/dls_pnp.cc
   vision/pose/five_point_relative_pose.cc
   vision/pose/perspective_three_point.cc
   vision/pose/util.cc
@@ -89,6 +91,7 @@ IF (BUILD_TESTING)
   GTEST(solvers/prosac)
   GTEST(solvers/ransac)
   GTEST(vision/matching/distance)
+  GTEST(vision/pose/dls_pnp)
   GTEST(vision/pose/five_point_relative_pose)
   GTEST(vision/pose/perspective_three_point)
   GTEST(vision/transformation/align_point_clouds)
