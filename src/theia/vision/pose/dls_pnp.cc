@@ -34,6 +34,8 @@
 
 #include "theia/vision/pose/dls_pnp.h"
 
+#include <ctime>
+
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 #include <Eigen/Geometry>
@@ -131,12 +133,13 @@ void DlsPnp(const std::vector<Vector3d>& image_ray,
   Matrix<double, 27, 27> solution_polynomial =
       macaulay_matrix.block<27, 27>(0, 0) -
       (macaulay_matrix.block<27, 93>(0, 27) *
-       macaulay_matrix.block<93, 93>(27, 27).inverse() *
-       macaulay_matrix.block<93, 27>(27, 0));
+       macaulay_matrix.block<93, 93>(27, 27).partialPivLu().solve(
+           macaulay_matrix.block<93, 27>(27, 0)));
 
   // Extract eigenvectors of the solution polynomial to obtain the roots which
   // are contained in the entries of the eigenvectors.
   Eigen::EigenSolver<Matrix<double, 27, 27> > eigen_solver(solution_polynomial);
+
   // Many of the eigenvectors will contain complex solutions so we must filter
   // them to find the real solutions.
   auto eigen_vectors = eigen_solver.eigenvectors();
