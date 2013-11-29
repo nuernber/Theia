@@ -57,8 +57,10 @@ namespace theia {
 //     and at least 4.
 //   solution_rotation: the rotation quaternion of the candidate solutions
 //   solution_translation: the translation of the candidate solutions
-void DlsPnp(;
-
+void DlsPnp(const std::vector<Eigen::Vector3d>& image_ray,
+            const std::vector<Eigen::Vector3d>& world_point,
+            std::vector<Eigen::Quaterniond>* solution_rotation,
+            std::vector<Eigen::Vector3d>* solution_translation);
 }  // namespace theia
 
 #endif  // THEIA_VISION_POSE_DLS_PNP_H_
