@@ -34,8 +34,6 @@
 
 #include "theia/vision/pose/dls_pnp.h"
 
-#include <ctime>
-
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 #include <Eigen/Geometry>
