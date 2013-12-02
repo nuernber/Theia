@@ -76,7 +76,7 @@ void DlsPnp(const std::vector<Vector3d>& image_ray,
   for (int i = 0; i < num_correspondences; i++) {
     h_inverse = h_inverse  - (image_ray[i] * image_ray[i].transpose());
   }
-  Matrix3d h_matrix = h_inverse.inverse();
+  const Matrix3d h_matrix = h_inverse.inverse();
 
   // Compute V*W*b with the rotation parameters factored out. This is the
   // translation parameterized by the 9 entries of the rotation matrix.
@@ -122,13 +122,13 @@ void DlsPnp(const std::vector<Vector3d>& image_ray,
                                     RandDouble(0.0, 100.0) };
 
   // Create Macaulay matrix that will be used to solve our polynonomial system.
-  Matrix<double, 120, 120> macaulay_matrix =
+  const Matrix<double, 120, 120> macaulay_matrix =
       CreateMacaulayMatrix(f1_coeff, f2_coeff, f3_coeff, macaulay_term);
 
   // Via the Schur complement trick, the top-left of the Macaulay matrix
   // contains a multiplication matrix whose eigenvectors correspond to solutions
   // to our system of equations.
-  Matrix<double, 27, 27> solution_polynomial =
+  const Matrix<double, 27, 27> solution_polynomial =
       macaulay_matrix.block<27, 27>(0, 0) -
       (macaulay_matrix.block<27, 93>(0, 27) *
        macaulay_matrix.block<93, 93>(27, 27).partialPivLu().solve(
@@ -136,11 +136,12 @@ void DlsPnp(const std::vector<Vector3d>& image_ray,
 
   // Extract eigenvectors of the solution polynomial to obtain the roots which
   // are contained in the entries of the eigenvectors.
-  Eigen::EigenSolver<Matrix<double, 27, 27> > eigen_solver(solution_polynomial);
+  const Eigen::EigenSolver<Matrix<double, 27, 27> > eigen_solver(
+      solution_polynomial);
 
   // Many of the eigenvectors will contain complex solutions so we must filter
   // them to find the real solutions.
-  auto eigen_vectors = eigen_solver.eigenvectors();
+  const auto eigen_vectors = eigen_solver.eigenvectors();
   for (int i = 0; i < 27; i++) {
     // The first entry of the eigenvector should equal 1 according to our
     // polynomial, so we must divide each solution by the first entry.
@@ -160,7 +161,7 @@ void DlsPnp(const std::vector<Vector3d>& image_ray,
 
       const Matrix3d rot_mat = soln_rotation.inverse().toRotationMatrix();
       const Eigen::Map<const Matrix<double, 9, 1> > rot_vec(rot_mat.data());
-      Vector3d soln_translation = translation_factor * rot_vec;
+      const Vector3d soln_translation = translation_factor * rot_vec;
 
       // TODO(cmsweeney): evaluate cost function and return it as an output
       // variable.
