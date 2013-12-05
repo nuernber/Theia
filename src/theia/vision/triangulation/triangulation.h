@@ -44,14 +44,24 @@ namespace theia {
 // typedef.
 typedef Eigen::Matrix<double, 3, 4> Matrix3x4d;
 
-// Triangulates 2 posed views using the DLT method from HZZ 12.2 p 312.
+// Triangulates 2 posed views using the DLT method from HZZ 12.2 p 312. The
+// inputs are the projection matrices and the unit image observations.
 Eigen::Vector4d Triangulate(const Matrix3x4d& pose_left,
                             const Matrix3x4d& pose_right,
                             const Eigen::Vector3d& point_left,
                             const Eigen::Vector3d& point_right);
 
 // Computes n-view triangulation by computing the SVD that wil approximately
-// minimize reprojection error.
+// minimize reprojection error. The inputs are the projection matrices and the
+// unit image observations.
+Eigen::Vector4d TriangulateNViewSVD(const std::vector<Matrix3x4d>& poses,
+                                    const std::vector<Eigen::Vector3d>& points);
+
+// Computes n-view triangulation by an efficient L2 minimization of the
+// algebraic error. This minimization is independent of the number of points, so
+// it is extremely scalable. It gives better reprojection errors in the results
+// and is significantly faster. The inputs are the projection matrices and the
+// unit image observations.
 Eigen::Vector4d TriangulateNView(const std::vector<Matrix3x4d>& poses,
                                  const std::vector<Eigen::Vector3d>& points);
 

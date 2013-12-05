@@ -81,7 +81,7 @@ void TestTriangulationBasic(const Vector3d& point_3d,
 
   // Check the error.
   for (int i = 0; i < 3; i++) {
-    CHECK_NEAR(triangulated_point[i], point_3d[i], max_point_difference);
+    EXPECT_NEAR(triangulated_point[i], point_3d[i], max_point_difference);
   }
 
   // TODO(cmsweeney): also check reprojection error!
@@ -140,6 +140,7 @@ void TestTriangulationManyPoints(const double projection_noise,
                                kTestPoints[j][2]);
     for (int i = 0; i < num_views; i++) {
       image_points[i] = kRotations[i] * model_point + kTranslations[i];
+      image_points[i].normalize();
     }
 
     // Add projection noise if required.
@@ -163,7 +164,7 @@ void TestTriangulationManyPoints(const double projection_noise,
 
     // Check the error.
     for (int i = 0; i < 3; i++) {
-      CHECK_NEAR(triangulated_point[i], model_point[i], max_point_difference);
+      ASSERT_NEAR(triangulated_point[i], model_point[i], max_point_difference);
     }
   }
 }

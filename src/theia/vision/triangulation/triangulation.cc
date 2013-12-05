@@ -65,8 +65,8 @@ Vector4d Triangulate(const Matrix3x4d& pose_left, const Matrix3x4d& pose_right,
 }
 
 // Triangulates N views by computing SVD that minimizes the error.
-Vector4d TriangulateNView(const std::vector<Matrix3x4d>& poses,
-                          const std::vector<Vector3d>& points) {
+Vector4d TriangulateNViewSVD(const std::vector<Matrix3x4d>& poses,
+                             const std::vector<Vector3d>& points) {
   CHECK_EQ(poses.size(), points.size());
 
   MatrixXd design_matrix(3 * points.size(), 4 + points.size());
@@ -77,6 +77,45 @@ Vector4d TriangulateNView(const std::vector<Matrix3x4d>& poses,
   }
   return design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV()
       .col(design_matrix.cols() - 1).head(4);
+}
+
+Vector4d TriangulateNView(const std::vector<Matrix3x4d>& poses,
+                          const std::vector<Vector3d>& points) {
+  CHECK_EQ(poses.size(), points.size());
+
+  Matrix3x4d coeff = Matrix3x4d::Zero();
+  for (int i = 0; i < points.size(); i++) {
+    coeff = coeff + (poses[i] - points[i] * points[i].transpose() * poses[i]);
+  }
+
+  const double divisor = coeff(0, 0) * coeff(1, 1) * coeff(2, 2) -
+                         coeff(0, 0) * coeff(1, 2) * coeff(2, 1) -
+                         coeff(0, 1) * coeff(1, 0) * coeff(2, 2) +
+                         coeff(0, 1) * coeff(1, 2) * coeff(2, 0) +
+                         coeff(0, 2) * coeff(1, 0) * coeff(2, 1) -
+                         coeff(0, 2) * coeff(1, 1) * coeff(2, 0);
+
+  Vector4d world_point(-(coeff(0, 1) * coeff(1, 2) * coeff(2, 3) -
+                         coeff(0, 1) * coeff(1, 3) * coeff(2, 2) -
+                         coeff(0, 2) * coeff(1, 1) * coeff(2, 3) +
+                         coeff(0, 2) * coeff(1, 3) * coeff(2, 1) +
+                         coeff(0, 3) * coeff(1, 1) * coeff(2, 2) -
+                         coeff(0, 3) * coeff(1, 2) * coeff(2, 1)) / divisor,
+                       (coeff(0, 0) * coeff(1, 2) * coeff(2, 3) -
+                        coeff(0, 0) * coeff(1, 3) * coeff(2, 2) -
+                        coeff(0, 2) * coeff(1, 0) * coeff(2, 3) +
+                        coeff(0, 2) * coeff(1, 3) * coeff(2, 0) +
+                        coeff(0, 3) * coeff(1, 0) * coeff(2, 2) -
+                        coeff(0, 3) * coeff(1, 2) * coeff(2, 0)) / divisor,
+                       -(coeff(0, 0) * coeff(1, 1) * coeff(2, 3) -
+                         coeff(0, 0) * coeff(1, 3) * coeff(2, 1) -
+                         coeff(0, 1) * coeff(1, 0) * coeff(2, 3) +
+                         coeff(0, 1) * coeff(1, 3) * coeff(2, 0) +
+                         coeff(0, 3) * coeff(1, 0) * coeff(2, 1) -
+                         coeff(0, 3) * coeff(1, 1) * coeff(2, 0)) / divisor,
+                       1.0);
+
+  return world_point;
 }
 
 }  // namespace theia
