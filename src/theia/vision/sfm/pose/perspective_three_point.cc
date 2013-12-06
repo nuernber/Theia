@@ -32,7 +32,7 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "theia/vision/pose/perspective_three_point.h"
+#include "theia/vision/sfm/pose/perspective_three_point.h"
 
 #include <glog/logging.h>
 #include <math.h>
@@ -41,7 +41,7 @@
 #include <algorithm>
 
 #include "theia/math/closed_form_polynomial_solver.h"
-#include "theia/vision/pose/util.h"
+#include "theia/vision/sfm/pose/util.h"
 
 namespace theia {
 using Eigen::Map;

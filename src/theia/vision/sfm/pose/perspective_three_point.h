@@ -32,8 +32,8 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_VISION_POSE_PERSPECTIVE_THREE_POINT_H_
-#define THEIA_VISION_POSE_PERSPECTIVE_THREE_POINT_H_
+#ifndef THEIA_VISION_SFM_POSE_PERSPECTIVE_THREE_POINT_H_
+#define THEIA_VISION_SFM_POSE_PERSPECTIVE_THREE_POINT_H_
 
 namespace theia {
 // Computes camera pose using the three point algorithm and returns all possible
@@ -70,4 +70,4 @@ int PoseFromThreeCalibrated(const double image_points[2 * 3],
                             double solutions[12 * 4]);
 
 }  // namespace theia
-#endif  // THEIA_VISION_POSE_PERSPECTIVE_THREE_POINT_H_
+#endif  // THEIA_VISION_SFM_POSE_PERSPECTIVE_THREE_POINT_H_

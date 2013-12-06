@@ -40,8 +40,8 @@
 #include "gtest/gtest.h"
 
 #include "theia/math/util.h"
-#include "theia/vision/pose/five_point_relative_pose.h"
-#include "theia/vision/pose/util.h"
+#include "theia/vision/sfm/pose/five_point_relative_pose.h"
+#include "theia/vision/sfm/pose/util.h"
 #include "theia/test/benchmark.h"
 
 namespace theia {

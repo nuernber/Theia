@@ -32,7 +32,7 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "theia/vision/pose/dls_impl.h"
+#include "theia/vision/sfm/pose/dls_impl.h"
 
 #include <Eigen/Core>
 #include <glog/logging.h>

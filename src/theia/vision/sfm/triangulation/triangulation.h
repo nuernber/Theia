@@ -32,49 +32,37 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_VISION_POSE_UTIL_H_
-#define THEIA_VISION_POSE_UTIL_H_
+#ifndef THEIA_VISION_SFM_TRIANGULATION_TRIANGULATION_H_
+#define THEIA_VISION_SFM_TRIANGULATION_TRIANGULATION_H_
 
 #include <Eigen/Core>
 #include <vector>
 
+#include "theia/vision/sfm/projection_matrix.h"
+
 namespace theia {
+// Triangulates 2 posed views using the DLT method from HZZ 12.2 p 312. The
+// inputs are the projection matrices and the unit image observations.
+Eigen::Vector4d Triangulate(const TransformationMatrix& pose_left,
+                            const TransformationMatrix& pose_right,
+                            const Eigen::Vector3d& point_left,
+                            const Eigen::Vector3d& point_right);
 
-// Fills the projection_matrix output variable with a projection matrix composed
-// from the input parameters.
-void ComposeProjectionMatrix(const double focal_length[2],
-                             const double principal_point[2],
-                             const double rotation[9],
-                             const double translation[3],
-                             double projection_matrix[12]);
+// Computes n-view triangulation by computing the SVD that wil approximately
+// minimize reprojection error. The inputs are the projection matrices and the
+// unit image observations.
+Eigen::Vector4d TriangulateNViewSVD(
+    const std::vector<TransformationMatrix>& poses,
+    const std::vector<Eigen::Vector3d>& points);
 
-// Adds noise to the 3D point passed in.
-void AddNoiseToPoint(const double noise_factor, Eigen::Vector3d* point);
-
-// Adds noise to the ray i.e. the projection of the point.
-void AddNoiseToProjection(const double noise_factor, Eigen::Vector3d* ray);
-
-void AddGaussianNoise(const double noise_factor, Eigen::Vector3d* ray);
-
-// Creates points that are randomly distributed within a viewing frustum.
-void CreateRandomPointsInFrustum(const double near_plane_width,
-                                 const double near_plane_height,
-                                 const double near_plane_depth,
-                                 const double far_plane_depth,
-                                 const int num_points,
-                                 std::vector<Eigen::Vector3d>* random_points);
-
-// Calculates Sampson distance for two correspondances and an essential or
-// fundamental matrix by eq. 11.9 in Hartley and Zisserman.
-double SampsonDistance(const Eigen::Matrix3d& F, const Eigen::Vector3d& x,
-                       const Eigen::Vector3d& y);
-
-// Returns the cross product matrix of a vector: if cross_vec = [x y z] then
-//                        [ 0  -z   y]
-// cross product matrix = [ z   0  -y]
-//                        [-y   x   0]
-Eigen::Matrix3d CrossProductMatrix(const Eigen::Vector3d& cross_vec);
+// Computes n-view triangulation by an efficient L2 minimization of the
+// algebraic error. This minimization is independent of the number of points, so
+// it is extremely scalable. It gives better reprojection errors in the results
+// and is significantly faster. The inputs are the projection matrices and the
+// unit image observations.
+Eigen::Vector4d TriangulateNView(const std::vector<TransformationMatrix>& poses,
+                                 const std::vector<Eigen::Vector3d>& points);
 
 }  // namespace theia
 
-#endif  // THEIA_VISION_POSE_UTIL_H_
+#endif  // THEIA_VISION_SFM_TRIANGULATION_TRIANGULATION_H_

@@ -32,35 +32,23 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_VISION_POSE_DLS_PNP_H_
-#define THEIA_VISION_POSE_DLS_PNP_H_
+#ifndef THEIA_VISION_SFM_PROJECTION_MATRIX_H_
+#define THEIA_VISION_SFM_PROJECTION_MATRIX_H_
 
-#include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <vector>
 
 namespace theia {
-// Computes the camera pose using the Perspective N-point method from "A Direct
-// Least-Squares (DLS) Method for PnP" by Joel Hesch and Stergios
-// Roumeliotis. This method is extremely scalable and highly accurate for the
-// PnP problem. A minimum of 4 points are required, but there is no maximum
-// number of points allowed as this is a least-squared approach. Theoretically,
-// up to 27 solutions may be returned, but in practice only 4 real solutions
-// arise and in almost all cases where n >= 6 there is only one solution which
-// places the observed points in front of the camera.
-//
-// Params:
-//   image_ray: Normalized image rays corresponding to model points. Must
-//     contain at least 4 points.
-//   points_3d: 3D location of features. Must correspond to the image_ray
-//     of the same index. Must contain the same number of points as image_ray,
-//     and at least 4.
-//   solution_rotation: the rotation quaternion of the candidate solutions
-//   solution_translation: the translation of the candidate solutions
-void DlsPnp(const std::vector<Eigen::Vector3d>& image_ray,
-            const std::vector<Eigen::Vector3d>& world_point,
-            std::vector<Eigen::Quaterniond>* solution_rotation,
-            std::vector<Eigen::Vector3d>* solution_translation);
+
+// Matrix representing [R | t]
+typedef Eigen::Transform<double, 3, Eigen::AffineCompact> TransformationMatrix;
+
+// Matrix representing K * [R | t] where K is the camera calibration matrix.
+typedef Eigen::Matrix<double, 3, 4> ProjectionMatrix;
+
+// Convenience function for creating a transformation matrix [R | t].
+TransformationMatrix TransformationMatrixFromRt(
+    const Eigen::Matrix3d& rotation, const Eigen::Vector3d& translation);
+
 }  // namespace theia
 
-#endif  // THEIA_VISION_POSE_DLS_PNP_H_
+#endif  // THEIA_VISION_SFM_PROJECTION_MATRIX_H_

@@ -32,39 +32,35 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_VISION_TRIANGULATION_TRIANGULATION_H_
-#define THEIA_VISION_TRIANGULATION_TRIANGULATION_H_
+#ifndef THEIA_VISION_SFM_POSE_DLS_PNP_H_
+#define THEIA_VISION_SFM_POSE_DLS_PNP_H_
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <vector>
 
 namespace theia {
-
-// TODO(cmsweeney): Implement projection matrix class and get rid of this
-// typedef.
-typedef Eigen::Matrix<double, 3, 4> Matrix3x4d;
-
-// Triangulates 2 posed views using the DLT method from HZZ 12.2 p 312. The
-// inputs are the projection matrices and the unit image observations.
-Eigen::Vector4d Triangulate(const Matrix3x4d& pose_left,
-                            const Matrix3x4d& pose_right,
-                            const Eigen::Vector3d& point_left,
-                            const Eigen::Vector3d& point_right);
-
-// Computes n-view triangulation by computing the SVD that wil approximately
-// minimize reprojection error. The inputs are the projection matrices and the
-// unit image observations.
-Eigen::Vector4d TriangulateNViewSVD(const std::vector<Matrix3x4d>& poses,
-                                    const std::vector<Eigen::Vector3d>& points);
-
-// Computes n-view triangulation by an efficient L2 minimization of the
-// algebraic error. This minimization is independent of the number of points, so
-// it is extremely scalable. It gives better reprojection errors in the results
-// and is significantly faster. The inputs are the projection matrices and the
-// unit image observations.
-Eigen::Vector4d TriangulateNView(const std::vector<Matrix3x4d>& poses,
-                                 const std::vector<Eigen::Vector3d>& points);
-
+// Computes the camera pose using the Perspective N-point method from "A Direct
+// Least-Squares (DLS) Method for PnP" by Joel Hesch and Stergios
+// Roumeliotis. This method is extremely scalable and highly accurate for the
+// PnP problem. A minimum of 4 points are required, but there is no maximum
+// number of points allowed as this is a least-squared approach. Theoretically,
+// up to 27 solutions may be returned, but in practice only 4 real solutions
+// arise and in almost all cases where n >= 6 there is only one solution which
+// places the observed points in front of the camera.
+//
+// Params:
+//   image_ray: Normalized image rays corresponding to model points. Must
+//     contain at least 4 points.
+//   points_3d: 3D location of features. Must correspond to the image_ray
+//     of the same index. Must contain the same number of points as image_ray,
+//     and at least 4.
+//   solution_rotation: the rotation quaternion of the candidate solutions
+//   solution_translation: the translation of the candidate solutions
+void DlsPnp(const std::vector<Eigen::Vector3d>& image_ray,
+            const std::vector<Eigen::Vector3d>& world_point,
+            std::vector<Eigen::Quaterniond>* solution_rotation,
+            std::vector<Eigen::Vector3d>* solution_translation);
 }  // namespace theia
 
-#endif  // THEIA_VISION_TRIANGULATION_TRIANGULATION_H_
+#endif  // THEIA_VISION_SFM_POSE_DLS_PNP_H_

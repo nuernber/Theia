@@ -43,8 +43,8 @@
 #include "theia/math/util.h"
 #include "theia/test/benchmark.h"
 #include "theia/util/util.h"
-#include "theia/vision/triangulation/triangulation.h"
-#include "theia/vision/pose/util.h"
+#include "theia/vision/sfm/triangulation/triangulation.h"
+#include "theia/vision/sfm/pose/util.h"
 
 namespace theia {
 using Eigen::MatrixXd;
@@ -53,9 +53,10 @@ using Eigen::Quaterniond;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 
-double ReprojectionError(const Matrix3x4d& pose, const Vector4d& world_point,
+double ReprojectionError(const TransformationMatrix& pose,
+                         const Vector4d& world_point,
                          const Vector3d& image_point) {
-  const Vector3d reprojected_point = pose * world_point;
+  const Vector3d reprojected_point = pose.matrix() * world_point;
   const double sq_reproj_error = (reprojected_point / reprojected_point.z() -
           image_point / image_point.z()).squaredNorm();
   return sq_reproj_error;
@@ -78,10 +79,10 @@ void TestTriangulationBasic(const Vector3d& point_3d,
   }
 
   // Triangulate.
-  Matrix3x4d pose_left, pose_right;
-  pose_left.block<3, 3>(0, 0) = Matrix3d::Identity();
-  pose_right.block<3, 3>(0, 0) = rel_rotation.toRotationMatrix();
-  pose_right.col(3) = rel_translation;
+  TransformationMatrix pose_left = TransformationMatrix::Identity();
+  TransformationMatrix pose_right = TransformationMatrixFromRt(
+      rel_rotation.toRotationMatrix(), rel_translation);
+
   const Vector4d triangulated_point =
       Triangulate(pose_left, pose_right, image_point_1, image_point_2);
 
@@ -139,10 +140,10 @@ void TestTriangulationManyPoints(const double projection_noise,
   };
 
   // Set up pose matrices.
-  std::vector<Matrix3x4d> poses(num_views);
+  std::vector<TransformationMatrix> poses(num_views);
   for (int i = 0; i < num_views; i++) {
-    poses[i].block<3, 3>(0, 0) = kRotations[i].toRotationMatrix();
-    poses[i].col(3) = kTranslations[i];
+    poses[i] = TransformationMatrixFromRt(kRotations[i].toRotationMatrix(),
+                                          kTranslations[i]);
   }
 
   for (int j = 0; j < ARRAYSIZE(kTestPoints); j++) {

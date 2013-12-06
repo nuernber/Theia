@@ -18,13 +18,14 @@ SET(THEIA_SRC
   math/closed_form_polynomial_solver.cc
   math/probability/sequential_probability_ratio.cc
   util/random.cc
-  vision/pose/dls_impl.cc
-  vision/pose/dls_pnp.cc
-  vision/pose/five_point_relative_pose.cc
-  vision/pose/perspective_three_point.cc
-  vision/pose/util.cc
+  vision/sfm/pose/dls_impl.cc
+  vision/sfm/pose/dls_pnp.cc
+  vision/sfm/pose/five_point_relative_pose.cc
+  vision/sfm/pose/perspective_three_point.cc
+  vision/sfm/pose/util.cc
+  vision/sfm/projection_matrix.cc
+  vision/sfm/triangulation/triangulation.cc
   vision/transformation/align_point_clouds.cc
-  vision/triangulation/triangulation.cc
   )
 
 SET(THEIA_LIBRARY_DEPENDENCIES
@@ -91,10 +92,10 @@ IF (BUILD_TESTING)
   GTEST(solvers/prosac)
   GTEST(solvers/ransac)
   GTEST(vision/matching/distance)
-  GTEST(vision/pose/dls_pnp)
-  GTEST(vision/pose/five_point_relative_pose)
-  GTEST(vision/pose/perspective_three_point)
+  GTEST(vision/sfm/pose/dls_pnp)
+  GTEST(vision/sfm/pose/five_point_relative_pose)
+  GTEST(vision/sfm/pose/perspective_three_point)
+  GTEST(vision/sfm/triangulation/triangulation)
   GTEST(vision/transformation/align_point_clouds)
-  GTEST(vision/triangulation/triangulation)
 
 ENDIF (BUILD_TESTING)

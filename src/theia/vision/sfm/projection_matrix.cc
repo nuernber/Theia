@@ -32,10 +32,16 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_POINT_CLOUD_H_
-#define THEIA_POINT_CLOUD_H_
+#include "theia/vision/sfm/projection_matrix.h"
 
-#include "theia/vision/transformation/align_point_clouds.h"
-#include "theia/vision/sfm/triangulation/triangulation.h"
+namespace theia {
 
-#endif  // THEIA_POINT_CLOUD_H_
+TransformationMatrix TransformationMatrixFromRt(
+    const Eigen::Matrix3d& rotation, const Eigen::Vector3d& translation) {
+  TransformationMatrix transformation;
+  transformation.linear() = rotation;
+  transformation.translation() = translation;
+  return transformation;
+}
+
+}  // namespace theia

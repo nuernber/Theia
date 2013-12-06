@@ -35,8 +35,8 @@
 #ifndef THEIA_POSE_H_
 #define THEIA_POSE_H_
 
-#include "theia/vision/pose/dls_pnp.h"
-#include "theia/vision/pose/five_point_relative_pose.h"
-#include "theia/vision/pose/perspective_three_point.h"
+#include "theia/vision/sfm/pose/dls_pnp.h"
+#include "theia/vision/sfm/pose/five_point_relative_pose.h"
+#include "theia/vision/sfm/pose/perspective_three_point.h"
 
 #endif  // THEIA_POSE_H_

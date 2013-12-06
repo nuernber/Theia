@@ -32,8 +32,8 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_
-#define THEIA_VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_
+#ifndef THEIA_VISION_SFM_POSE_FIVE_POINT_RELATIVE_POSE_H_
+#define THEIA_VISION_SFM_POSE_FIVE_POINT_RELATIVE_POSE_H_
 
 namespace theia {
 
@@ -53,4 +53,4 @@ int FivePointRelativePose(const double image1_points[3 * 5],
                           double translation[3 * 10]);
 }  // namespace theia
 
-#endif  // THEIA_VISION_POSE_FIVE_POINT_RELATIVE_POSE_H_
+#endif  // THEIA_VISION_SFM_POSE_FIVE_POINT_RELATIVE_POSE_H_

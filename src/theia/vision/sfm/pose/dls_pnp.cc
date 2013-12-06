@@ -32,7 +32,7 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "theia/vision/pose/dls_pnp.h"
+#include "theia/vision/sfm/pose/dls_pnp.h"
 
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
@@ -42,7 +42,7 @@
 #include <vector>
 
 #include "theia/util/random.h"
-#include "theia/vision/pose/dls_impl.h"
+#include "theia/vision/sfm/pose/dls_impl.h"
 
 namespace theia {
 

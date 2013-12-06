@@ -38,7 +38,7 @@
 #include <glog/logging.h>
 #include <vector>
 
-#include "theia/vision/triangulation/triangulation.h"
+#include "theia/vision/sfm/triangulation/triangulation.h"
 
 namespace theia {
 using Eigen::MatrixXd;
@@ -47,7 +47,8 @@ using Eigen::Vector3d;
 using Eigen::Vector4d;
 
 // Triangulates 2 posed views
-Vector4d Triangulate(const Matrix3x4d& pose_left, const Matrix3x4d& pose_right,
+Vector4d Triangulate(const TransformationMatrix& pose_left,
+                     const TransformationMatrix& pose_right,
                      const Vector3d& point_left, const Vector3d& point_right) {
   Matrix4d design_matrix;
   for (int i = 0; i < 4; i++) {
@@ -62,37 +63,39 @@ Vector4d Triangulate(const Matrix3x4d& pose_left, const Matrix3x4d& pose_right,
   }
 
   // Extract nullspace.
-  return design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().col(3);
+  return design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>();
 }
 
 // Triangulates N views by computing SVD that minimizes the error.
-Vector4d TriangulateNViewSVD(const std::vector<Matrix3x4d>& poses,
+Vector4d TriangulateNViewSVD(const std::vector<TransformationMatrix>& poses,
                              const std::vector<Vector3d>& points) {
   CHECK_EQ(poses.size(), points.size());
 
   MatrixXd design_matrix(3 * points.size(), 4 + points.size());
 
   for (int i = 0; i < points.size(); i++) {
-    design_matrix.block<3, 4>(3 * i, 0) = -poses[i];
+    design_matrix.block<3, 4>(3 * i, 0) = -poses[i].matrix();
     design_matrix.block<3, 1>(3 * i, 4 + i) = (points[i] / points[i].z());
   }
-  return design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV()
-      .col(design_matrix.cols() - 1).head(4);
+
+  // Computing SVD on A'A is more efficient and gives the same null-space.
+  return (design_matrix.transpose() * design_matrix)
+      .jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>().head(4);
 }
 
-Vector4d TriangulateNView(const std::vector<Matrix3x4d>& poses,
+Vector4d TriangulateNView(const std::vector<TransformationMatrix>& poses,
                           const std::vector<Vector3d>& points) {
   CHECK_EQ(poses.size(), points.size());
 
   Matrix4d design_matrix = Matrix4d::Zero();
   for (int i = 0; i < points.size(); i++) {
-    const Matrix3x4d cost_term =
-        (poses[i] - points[i] * points[i].transpose() * poses[i]);
+    const Eigen::Matrix<double, 3, 4> cost_term =
+        poses[i].matrix() -
+        points[i] * points[i].transpose() * poses[i].matrix();
     design_matrix = design_matrix + cost_term.transpose() * cost_term;
   }
 
-  Matrix4d action_matrix = design_matrix.transpose() * design_matrix;
-  Eigen::SelfAdjointEigenSolver<Matrix4d> eigen_solver(action_matrix);
+  Eigen::SelfAdjointEigenSolver<Matrix4d> eigen_solver(design_matrix);
   return eigen_solver.eigenvectors().col(0);
 }
 

@@ -43,8 +43,8 @@
 #include "theia/test/benchmark.h"
 #include "theia/util/random.h"
 #include "theia/util/util.h"
-#include "theia/vision/pose/dls_pnp.h"
-#include "theia/vision/pose/util.h"
+#include "theia/vision/sfm/pose/dls_pnp.h"
+#include "theia/vision/sfm/pose/util.h"
 
 namespace theia {
 namespace {

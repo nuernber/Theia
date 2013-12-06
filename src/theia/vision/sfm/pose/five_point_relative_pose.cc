@@ -32,7 +32,7 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "theia/vision/pose/five_point_relative_pose.h"
+#include "theia/vision/sfm/pose/five_point_relative_pose.h"
 
 #include <Eigen/Dense>
 #include <cmath>
@@ -41,7 +41,7 @@
 
 #include "theia/math/matrix/gauss_jordan.h"
 #include "theia/math/polynomial.h"
-#include "theia/vision/pose/util.h"
+#include "theia/vision/sfm/pose/util.h"
 
 namespace theia {
 

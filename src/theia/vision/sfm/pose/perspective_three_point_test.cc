@@ -39,7 +39,7 @@
 #include "theia/test/benchmark.h"
 #include "theia/test/test_utils.h"
 #include "theia/util/random.h"
-#include "theia/vision/pose/perspective_three_point.h"
+#include "theia/vision/sfm/pose/perspective_three_point.h"
 
 namespace theia {
 
