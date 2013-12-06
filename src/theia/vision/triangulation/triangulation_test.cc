@@ -53,11 +53,19 @@ using Eigen::Quaterniond;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 
+double ReprojectionError(const Matrix3x4d& pose, const Vector4d& world_point,
+                         const Vector3d& image_point) {
+  const Vector3d reprojected_point = pose * world_point;
+  const double sq_reproj_error = (reprojected_point / reprojected_point.z() -
+          image_point / image_point.z()).squaredNorm();
+  return sq_reproj_error;
+}
+
 void TestTriangulationBasic(const Vector3d& point_3d,
                             const Quaterniond& rel_rotation,
                             const Vector3d& rel_translation,
                             const double projection_noise,
-                            const double max_point_difference) {
+                            const double max_reprojection_error) {
   // Reproject point into both image 2, assume image 1 is identity rotation at
   // the origin.
   Vector3d image_point_1 = point_3d;
@@ -74,21 +82,18 @@ void TestTriangulationBasic(const Vector3d& point_3d,
   pose_left.block<3, 3>(0, 0) = Matrix3d::Identity();
   pose_right.block<3, 3>(0, 0) = rel_rotation.toRotationMatrix();
   pose_right.col(3) = rel_translation;
-  const Vector4d triangulated_point_homogeneous =
+  const Vector4d triangulated_point =
       Triangulate(pose_left, pose_right, image_point_1, image_point_2);
-  const Vector3d triangulated_point(triangulated_point_homogeneous.head<3>() /
-                                    triangulated_point_homogeneous[3]);
 
-  // Check the error.
-  for (int i = 0; i < 3; i++) {
-    EXPECT_NEAR(triangulated_point[i], point_3d[i], max_point_difference);
-  }
-
-  // TODO(cmsweeney): also check reprojection error!
+  // Check the reprojection error.
+  CHECK_LE(ReprojectionError(pose_left, triangulated_point, image_point_1),
+           max_reprojection_error);
+  CHECK_LE(ReprojectionError(pose_right, triangulated_point, image_point_2),
+           max_reprojection_error);
 }
 
 void TestTriangulationManyPoints(const double projection_noise,
-                                 const double max_point_difference) {
+                                 const double max_reprojection_error) {
   using Eigen::AngleAxisd;
 
   static const int num_views = 8;
@@ -133,6 +138,13 @@ void TestTriangulationManyPoints(const double projection_noise,
     { 0.31, -2.77, 7.54 }, { 0.54, -3.77, 9.77 },
   };
 
+  // Set up pose matrices.
+  std::vector<Matrix3x4d> poses(num_views);
+  for (int i = 0; i < num_views; i++) {
+    poses[i].block<3, 3>(0, 0) = kRotations[i].toRotationMatrix();
+    poses[i].col(3) = kTranslations[i];
+  }
+
   for (int j = 0; j < ARRAYSIZE(kTestPoints); j++) {
     // Reproject model point into the images.
     std::vector<Vector3d> image_points(num_views);
@@ -150,28 +162,20 @@ void TestTriangulationManyPoints(const double projection_noise,
       }
     }
 
-    // Set up pose matrices.
-    std::vector<Matrix3x4d> poses(num_views);
-    for (int i = 0; i < num_views; i++) {
-      poses[i].block<3, 3>(0, 0) = kRotations[i].toRotationMatrix();
-      poses[i].col(3) = kTranslations[i];
-    }
-
-    const Vector4d triangulated_point_homogeneous =
+    const Vector4d triangulated_point =
         TriangulateNView(poses, image_points);
-    const Vector3d triangulated_point(triangulated_point_homogeneous.head<3>() /
-                                      triangulated_point_homogeneous[3]);
 
-    // Check the error.
-    for (int i = 0; i < 3; i++) {
-      ASSERT_NEAR(triangulated_point[i], model_point[i], max_point_difference);
+    // Check the reprojection error.
+    for (int i = 0; i < num_views; i++) {
+    CHECK_LE(ReprojectionError(poses[i], triangulated_point, image_points[i]),
+             max_reprojection_error);
     }
   }
 }
 
 TEST(Triangluation, BasicTest) {
   static const double kProjectionNoise = 0.0;
-  static const double kTriangulationTolerance = 1e-12;
+  static const double kReprojectionTolerance = 1e-12;
 
   // Set up model points.
   const Vector3d points_3d[2] = { Vector3d(5.0, 20.0, 23.0),
@@ -189,13 +193,13 @@ TEST(Triangluation, BasicTest) {
                            kRotation,
                            kTranslation,
                            kProjectionNoise,
-                           kTriangulationTolerance);
+                           kReprojectionTolerance);
   }
 }
 
 TEST(Triangluation, NoiseTest) {
-  static const double kProjectionNoise = 0.5 / 512.0;
-  static const double kTriangulationTolerance = 0.5;
+  static const double kProjectionNoise = 1.0 / 512.0;
+  static const double kReprojectionTolerance = 1e-6;
 
   // Set up model points.
   const Vector3d points_3d[2] = { Vector3d(5.0, 20.0, 23.0),
@@ -213,28 +217,32 @@ TEST(Triangluation, NoiseTest) {
                            kRotation,
                            kTranslation,
                            kProjectionNoise,
-                           kTriangulationTolerance);
+                           kReprojectionTolerance);
   }
 }
 
 TEST(TriangluationNView, BasicTest) {
   static const double kProjectionNoise = 0.0;
-  static const double kTriangulationTolerance = 1e-12;
+  static const double kReprojectionTolerance = 1e-12;
 
   // Run the test.
-  for (int i = 0; i < 2; i++) {
-    TestTriangulationManyPoints(kProjectionNoise, kTriangulationTolerance);
-  }
+  TestTriangulationManyPoints(kProjectionNoise, kReprojectionTolerance);
 }
 
 TEST(TriangluationNView, NoiseTest) {
-  static const double kProjectionNoise = 0.5 / 512.0;
-  static const double kTriangulationTolerance = 0.25;
+  static const double kProjectionNoise = 1.0 / 512.0;
+  static const double kReprojectionTolerance = 1e-4;
 
   // Run the test.
-  for (int i = 0; i < 2; i++) {
-    TestTriangulationManyPoints(kProjectionNoise, kTriangulationTolerance);
-  }
+  TestTriangulationManyPoints(kProjectionNoise, kReprojectionTolerance);
+}
+
+BENCHMARK(TriangulationNView, Benchmark, 100, 1000) {
+  static const double kProjectionNoise = 0.0;
+  static const double kReprojectionTolerance = 1e-12;
+
+  // Run the test.
+  TestTriangulationManyPoints(kProjectionNoise, kReprojectionTolerance);
 }
 
 }  // namespace theia

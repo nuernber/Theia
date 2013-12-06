@@ -34,6 +34,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/SVD>
+#include <Eigen/Eigenvalues>
 #include <glog/logging.h>
 #include <vector>
 
@@ -83,39 +84,16 @@ Vector4d TriangulateNView(const std::vector<Matrix3x4d>& poses,
                           const std::vector<Vector3d>& points) {
   CHECK_EQ(poses.size(), points.size());
 
-  Matrix3x4d coeff = Matrix3x4d::Zero();
+  Matrix4d design_matrix = Matrix4d::Zero();
   for (int i = 0; i < points.size(); i++) {
-    coeff = coeff + (poses[i] - points[i] * points[i].transpose() * poses[i]);
+    const Matrix3x4d cost_term =
+        (poses[i] - points[i] * points[i].transpose() * poses[i]);
+    design_matrix = design_matrix + cost_term.transpose() * cost_term;
   }
 
-  const double divisor = coeff(0, 0) * coeff(1, 1) * coeff(2, 2) -
-                         coeff(0, 0) * coeff(1, 2) * coeff(2, 1) -
-                         coeff(0, 1) * coeff(1, 0) * coeff(2, 2) +
-                         coeff(0, 1) * coeff(1, 2) * coeff(2, 0) +
-                         coeff(0, 2) * coeff(1, 0) * coeff(2, 1) -
-                         coeff(0, 2) * coeff(1, 1) * coeff(2, 0);
-
-  Vector4d world_point(-(coeff(0, 1) * coeff(1, 2) * coeff(2, 3) -
-                         coeff(0, 1) * coeff(1, 3) * coeff(2, 2) -
-                         coeff(0, 2) * coeff(1, 1) * coeff(2, 3) +
-                         coeff(0, 2) * coeff(1, 3) * coeff(2, 1) +
-                         coeff(0, 3) * coeff(1, 1) * coeff(2, 2) -
-                         coeff(0, 3) * coeff(1, 2) * coeff(2, 1)) / divisor,
-                       (coeff(0, 0) * coeff(1, 2) * coeff(2, 3) -
-                        coeff(0, 0) * coeff(1, 3) * coeff(2, 2) -
-                        coeff(0, 2) * coeff(1, 0) * coeff(2, 3) +
-                        coeff(0, 2) * coeff(1, 3) * coeff(2, 0) +
-                        coeff(0, 3) * coeff(1, 0) * coeff(2, 2) -
-                        coeff(0, 3) * coeff(1, 2) * coeff(2, 0)) / divisor,
-                       -(coeff(0, 0) * coeff(1, 1) * coeff(2, 3) -
-                         coeff(0, 0) * coeff(1, 3) * coeff(2, 1) -
-                         coeff(0, 1) * coeff(1, 0) * coeff(2, 3) +
-                         coeff(0, 1) * coeff(1, 3) * coeff(2, 0) +
-                         coeff(0, 3) * coeff(1, 0) * coeff(2, 1) -
-                         coeff(0, 3) * coeff(1, 1) * coeff(2, 0)) / divisor,
-                       1.0);
-
-  return world_point;
+  Matrix4d action_matrix = design_matrix.transpose() * design_matrix;
+  Eigen::SelfAdjointEigenSolver<Matrix4d> eigen_solver(action_matrix);
+  return eigen_solver.eigenvectors().col(0);
 }
 
 }  // namespace theia
