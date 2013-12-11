@@ -61,6 +61,8 @@ void TestDlsPnpWithNoise(const std::vector<Vector3d>& world_points,
                          const double max_reprojection_error,
                          const double max_rotation_difference,
                          const double max_translation_difference) {
+  InitRandomGenerator();
+
   const int num_points = world_points.size();
 
   std::vector<Vector3d> camera_rays;

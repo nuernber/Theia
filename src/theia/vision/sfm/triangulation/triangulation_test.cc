@@ -42,6 +42,7 @@
 
 #include "theia/math/util.h"
 #include "theia/test/benchmark.h"
+#include "theia/util/random.h"
 #include "theia/util/util.h"
 #include "theia/vision/sfm/triangulation/triangulation.h"
 #include "theia/vision/sfm/pose/util.h"
@@ -67,6 +68,8 @@ void TestTriangulationBasic(const Vector3d& point_3d,
                             const Vector3d& rel_translation,
                             const double projection_noise,
                             const double max_reprojection_error) {
+  InitRandomGenerator();
+
   // Reproject point into both image 2, assume image 1 is identity rotation at
   // the origin.
   Vector3d image_point_1 = point_3d;
@@ -202,7 +205,7 @@ TEST(Triangluation, BasicTest) {
 
 TEST(Triangluation, NoiseTest) {
   static const double kProjectionNoise = 1.0 / 512.0;
-  static const double kReprojectionTolerance = 1e-6;
+  static const double kReprojectionTolerance = 1e-5;
 
   // Set up model points.
   const Vector3d points_3d[2] = { Vector3d(5.0, 20.0, 23.0),
@@ -234,7 +237,7 @@ TEST(TriangluationNView, BasicTest) {
 
 TEST(TriangluationNView, NoiseTest) {
   static const double kProjectionNoise = 1.0 / 512.0;
-  static const double kReprojectionTolerance = 1e-4;
+  static const double kReprojectionTolerance = 5e-4;
 
   // Run the test.
   TestTriangulationManyPoints(kProjectionNoise, kReprojectionTolerance);

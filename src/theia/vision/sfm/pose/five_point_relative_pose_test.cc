@@ -40,6 +40,7 @@
 #include "gtest/gtest.h"
 
 #include "theia/math/util.h"
+#include "theia/util/random.h"
 #include "theia/vision/sfm/pose/five_point_relative_pose.h"
 #include "theia/vision/sfm/pose/util.h"
 #include "theia/test/benchmark.h"
@@ -71,6 +72,8 @@ void TestFivePointResultWithNoise(const Vector3d points_3d[5],
                                   const Vector3d& expected_translation,
                                   const double max_rotation_difference,
                                   const double max_angle_between_translation) {
+  InitRandomGenerator();
+
   // Calculates the image rays in both views.
   Vector3d view_one_rays[5];
   Vector3d view_two_rays[5];
@@ -138,11 +141,11 @@ void TestFivePointResultWithNoise(const Vector3d points_3d[5],
 
 void BasicTest() {
   // Ground truth essential matrix.
-  const Vector3d points_3d[5] = {Vector3d(-1.0, 3.0, 3.0),
-                                 Vector3d(1.0, -1.0, 2.0),
-                                 Vector3d(3.0, 1.0, 2.0),
-                                 Vector3d(-1.0, 1.0, 2.0),
-                                 Vector3d(2.0, 1.0, 3.0)};
+  const Vector3d points_3d[5] = { Vector3d(-1.0, 3.0, 3.0),
+                                  Vector3d(1.0, -1.0, 2.0),
+                                  Vector3d(3.0, 1.0, 2.0),
+                                  Vector3d(-1.0, 1.0, 2.0),
+                                  Vector3d(2.0, 1.0, 3.0) };
   const Matrix3d soln_rotation = Quaterniond(
       AngleAxisd(Radians(13.0), Vector3d(0.0, 0.0, 1.0))).toRotationMatrix();
   const Vector3d soln_translation(1.0, 1.0, 1.0);
@@ -178,8 +181,8 @@ TEST(FivePointRelativePose, NoiseTest) {
 
   const Vector3d soln_translation(1.0, 1.0, 1.0);
   const double kNoise = 1.0 / 512.0;
-  const double kMaxAllowedRotationDifference = 1e-2;
-  const double kMaxAllowedAngleBetweenTranslations = 1e-3;
+  const double kMaxAllowedRotationDifference = Radians(1.0);
+  const double kMaxAllowedAngleBetweenTranslations = Radians(1.0);
 
   TestFivePointResultWithNoise(points_3d,
                                kNoise,
@@ -201,8 +204,8 @@ TEST(FivePointRelativePose, ForwardMotion) {
 
   const Vector3d soln_translation(0.0, 0.0, 1.0);
   const double kNoise = 1.0 / 512.0;
-  const double kMaxAllowedRotationDifference = 1e-2;
-  const double kMaxAllowedAngleBetweenTranslations = 5e-2;
+  const double kMaxAllowedRotationDifference = Radians(2.0);
+  const double kMaxAllowedAngleBetweenTranslations = Radians(5.0);
 
   TestFivePointResultWithNoise(points_3d,
                                kNoise,
