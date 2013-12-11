@@ -15,6 +15,8 @@ resectioning algorithms. We attempted to make each method as general as possible
 
 * :ref:`section-five_point`
 
+* :ref:`section-eight_point`
+
 * :ref:`section-dls_pnp`
 
 You can include the Pose module in your code with the following line:
@@ -46,7 +48,8 @@ Perspective Three Point (P3P)
 
   ``solution_translation``: the translation of the candidate solutions
 
-  ``Returns``: The number of poses computed, along with the output parameters ``rotation`` and ``translation`` filled with the valid poses.
+  ``returns``: The number of poses computed, along with the output parameters
+  ``rotation`` and ``translation`` filled with the valid poses.
 
   **NOTE**: P3P returns up to 4 poses, so the rotation and translation arrays are indeed arrays of 3x3 and 3x1 arrays respectively.
 
@@ -64,8 +67,7 @@ Perspective Three Point (P3P)
 
    ``solutions``: the projection matrices for the candidate solutions
 
-   ``Return``: the number of poses computed.
-
+   ``returns``: the number of poses computed.
 
 
 .. _section-five_point:
@@ -84,9 +86,33 @@ Five Point Relative Pose
 
   ``image2_points``: Location of features on the image plane of image 2.
 
-  ``Returns``: Output the number of poses computed as well as the relative
+  ``returns``: Output the number of poses computed as well as the relative
   rotation and translation.
 
+
+.. _section-eight_point:
+
+Eight Point Algorithm for Fundamental Matrix
+============================================
+
+.. function:: bool NormalizedEightPoint(const std::vector<Eigen::Vector3d>& image_1_points, const std::vector<Eigen::Vector3d>& image_2_points, Eigen::Matrix3d* fundamental_matrix)
+
+.. function:: bool GoldStandardEightPoint(const std::vector<Eigen::Vector3d>& image_1_points, const std::vector<Eigen::Vector3d>& image_2_points, Eigen::Matrix3d* fundamental_matrix)
+
+  Computes the fundamental matrix relating image points between two images such
+  that :math:`x' F x = 0` for all correspondences :math:`x` and :math:`x'` in
+  images 1 and 2 respectively. The normalized eight point algorithm is a speedy
+  estimation of the fundamental matrix (Alg 11.1 in [HartleyZisserman]_), while
+  the gold standard algorithm minimizes the geometric error (i.e., reprojection
+  error) according to algorithm 11.3 in [HartleyZisserman]_.
+
+  ``image_1_points``: Image points from image 1. At least 8 points must be passed in.
+
+  ``image_2_points``: Image points from image 2. At least 8 points must be passed in.
+
+  ``fundamental_matrix``: The computed fundamental matrix.
+
+  ``returns:`` true on success, false on failure.
 
 .. _section-dls_pnp:
 

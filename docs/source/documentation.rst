@@ -4,7 +4,11 @@
 Documentation
 =============
 
-We have compacted Theia into modules so that each module represents a certain functionality of the library. There are currently 5 main modules in Theia, the contents of which can be added to your program with a single include line for each module. When using Theia in your program, only include the module(s) that are needed for your use.
+We have compacted Theia into modules so that each module represents a certain
+functionality of the library. There are currently several modules in Theia, the
+contents of which can be added to your program with a single include line for
+each module. When using Theia in your program, you can choose to only include
+the module(s) that are needed for your use.
 
 * :ref:`documentation-image` - ``#include <theia/image.h>``
 
@@ -17,6 +21,10 @@ We have compacted Theia into modules so that each module represents a certain fu
 * :ref:`documentation-math` - ``#include <theia/math.h>``
 
 * :ref:`documentation-sfm` - ``#include <theia/sfm.h>``
+
+To include all modules, simply add the following line to your program:
+
+``#include <theia/theia.h>``
 
 We attempt to provide sufficient documentation but often further documentation can be found in the source code itself. You will likely find the :ref:`chapter-tutorials` useful as well. Additionally, (nearly) every file is covered by a unit test that can be viewed as an example use case of the various methods and classes in Theia. If you have looked at the documentation, the tutorials, the source code, and the unit tests and still have confusion please email `the Theia mailing list <http://groups.google.com/group/theia-vision-library>`_
 

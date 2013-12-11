@@ -20,10 +20,6 @@
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
   ga('create', 'UA-46196711-1', 'ucsb.edu');
-  //Tracking Code Customizations Only
-  var pageTracker = _gat._getTracker("UA-46196711-1");
-  pageTracker._setCookiePath("/theia");
-  pageTracker._trackPageview();
   ga('send', 'pageview');
 
 </script>
@@ -90,23 +86,60 @@ compatibility with other libraries.</p>
 <div class="highlight-c++"><div class="highlight"><pre><span class="cp">#include &lt;theia/sfm.h&gt;</span>
 </pre></div>
 </div>
-<div class="section" id="triangulation">
-<h2>Triangulation<a class="headerlink" href="#triangulation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="projection-matrix">
+<h2>Projection Matrix<a class="headerlink" href="#projection-matrix" title="Permalink to this headline">¶</a></h2>
+<p>We provide two convenience matrices that are commonly used in multiview geometry. The first is a <tt class="xref py py-class docutils literal"><span class="pre">TransformationMatrix</span></tt> which is an affine transformation matrix composed of rotation and translation of the form: <span class="math">\(\left[R | t\right]\)</span>, i.e., the extrinsic parameters of a camera. The <tt class="xref py py-class docutils literal"><span class="pre">TransformationMatrix</span></tt> is merely a typedef of the Eigen affine transformation matrix. Similarly, a <tt class="xref py py-class docutils literal"><span class="pre">ProjectionMatrix</span></tt> class is defined that representsthe intrinsic and extrinsic parameters, nameley matrices of the form: <span class="math">\(K\left[R | t \right]\)</span> where <span class="math">\(K\)</span> is a 3x3 matrix of the camera intrinsics (e.g., focal length, principle point, and radial distortion). The <tt class="xref py py-class docutils literal"><span class="pre">ProjectionMatrix</span></tt> is merely a typedef of an Eigen 3x4 matrix.</p>
+</div>
+<div class="section" id="view-triangulation">
+<h2>2-View Triangulation<a class="headerlink" href="#view-triangulation" title="Permalink to this headline">¶</a></h2>
 <p>Triangulation in structure from motion calculates the 3D position of an image
 coordinate that has been tracked through several, if not many, images.</p>
 <dl class="function">
 <dt>
-<tt class="descname">Eigen::Vector4d Triangulate(const Matrix3x4d&amp; pose_left, const Matrix3x4d&amp; pose_right, const Eigen::Vector3d&amp; point_left, const Eigen::Vector3d&amp; point_right)</tt></dt>
+<tt class="descname">Eigen::Vector4d Triangulate(const ProjectionMatrix&amp; pose_left, const ProjectionMatrix&amp; pose_right, const Eigen::Vector3d&amp; point_left, const Eigen::Vector3d&amp; point_right)</tt></dt>
 <dd><p>2-view triangulation using the DLT method described in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
 </dd></dl>
 
+</div>
+<div class="section" id="n-view-triangulation">
+<h2>N-View Triangulation<a class="headerlink" href="#n-view-triangulation" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt>
-<tt class="descname">Eigen::Vector4d TriangulateNView(const std::vector&lt;Matrix3x4d&gt;&amp; poses,</tt></dt>
+<tt class="descname">Eigen::Vector4d TriangulateNViewSVD(const std::vector&lt;ProjectionMatrix&gt;&amp; poses,</tt></dt>
 <dt>
 <tt class="descname">const std::vector&lt;Eigen::Vector3d&gt;&amp; points);</tt></dt>
-<dd><p>N-view triangluation that minimizes an algebraic approximation of the
-geometric error.</p>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descname">Eigen::Vector4d TriangulateNView(const std::vector&lt;ProjectionMatrix&gt;&amp; poses,</tt></dt>
+<dt>
+<tt class="descname">const std::vector&lt;Eigen::Vector3d&gt;&amp; points);</tt></dt>
+<dd><p>We provide two N-view triangluation methods that minimizes an algebraic
+approximation of the geometric error. The first is the classic SVD method
+presented in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>. The second is a custom algebraic
+minimization. Note that we can derive an algebraic constraint where we note
+that the unit ray of an image observation can be stretched by depth
+<span class="math">\(\alpha\)</span> to meet the world point <span class="math">\(X\)</span> for each of the <span class="math">\(n\)</span>
+observations:</p>
+<div class="math">
+\[\alpha_i \bar{x_i} = P_i X,\]</div>
+<p>for images <span class="math">\(i=1,\ldots,n\)</span>. This equation can be effectively rewritten as:</p>
+<div class="math">
+\[\alpha_i = \bar{x_i}^\top P_i X,\]</div>
+<p>which can be substituted into our original constraint such that:</p>
+<div class="math">
+\[\bar{x_i} \bar{x_i}^\top P_i X = P_i X\]</div>
+<div class="math">
+\[0 = (P_i - \bar{x_i} \bar{x_i}^\top P_i) X\]</div>
+<p>We can then stack this constraint for each observation, leading to the linear
+least squares problem:</p>
+<div class="math">
+\[\begin{split}\begin{bmatrix} (P_1 - \bar{x_1} \bar{x_1}^\top P_1) \\ \vdots \\ (P_n - \bar{x_n} \bar{x_n}^\top P_n) \end{bmatrix} X = \textbf{0}\end{split}\]</div>
+<p>This system of equations is of the form <span class="math">\(AX=0\)</span> which can be solved by
+extracting the right nullspace of <span class="math">\(A\)</span>. The right nullspace of <span class="math">\(A\)</span>
+can be extracted efficiently by noting that it is equivalent to the nullspace
+of <span class="math">\(A^\top A\)</span>, which is a 4x4 matrix.</p>
 </dd></dl>
 
 </div>

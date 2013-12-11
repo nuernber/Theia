@@ -20,10 +20,6 @@
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
   ga('create', 'UA-46196711-1', 'ucsb.edu');
-  //Tracking Code Customizations Only
-  var pageTracker = _gat._getTracker("UA-46196711-1");
-  pageTracker._setCookiePath("/theia");
-  pageTracker._trackPageview();
   ga('send', 'pageview');
 
 </script>
@@ -92,10 +88,10 @@
 <li><a class="reference external" href="http://www.edwardrosten.com/cvd">libCVD</a> is used as the underlying image class for Theia.</li>
 <li><a class="reference external" href="https://code.google.com/p/ceres-solver/">Ceres Solver</a> is a library for solving non-linear least squares problems. In particular, Theia uses it for Bundle Adjustment.</li>
 </ol>
-<p><strong>NOTE</strong>: Theia also depends on the following libraries, but they are included in the installation of Ceres so you do not need to reinstall them.</p>
+<p><strong>NOTE</strong>: Theia also depends on the following libraries, but they are included in the installation of Ceres so it is likely that you do not need to reinstall them.</p>
 <ol class="arabic simple" start="6">
 <li><a class="reference external" href="http://http://code.google.com/p/google-glog">google-glog</a> is used for error checking and logging. Ceres needs glog version 0.3.1 or later. Version 0.3 (which ships with Fedora 16) has a namespace bug which prevents Ceres from building.</li>
-<li><a class="reference external" href="http://code.google.com/p/gflags">gflags</a> is a library for processing command line flags. It is used by some of the examples and tests. While it is not strictly necessary to build the library, we strongly recommend building the library with gflags.</li>
+<li><a class="reference external" href="http://code.google.com/p/gflags">gflags</a> is a library for processing command line flags. It is used by some of the examples and tests.</li>
 </ol>
 <p>Make sure all of these libraries are installed properly before proceeding. Improperly installing any of these libraries can cause Theia to not build.</p>
 </div>

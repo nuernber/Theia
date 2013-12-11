@@ -32,10 +32,12 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_POINT_CLOUD_H_
-#define THEIA_POINT_CLOUD_H_
+#ifndef THEIA_SFM_H_
+#define THEIA_SFM_H_
 
 #include "theia/vision/transformation/align_point_clouds.h"
+#include "theia/pose.h"
+#include "theia/vision/sfm/projection_matrix.h"
 #include "theia/vision/sfm/triangulation/triangulation.h"
 
-#endif  // THEIA_POINT_CLOUD_H_
+#endif  // THEIA_SFM_H_

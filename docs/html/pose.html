@@ -20,10 +20,6 @@
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
   ga('create', 'UA-46196711-1', 'ucsb.edu');
-  //Tracking Code Customizations Only
-  var pageTracker = _gat._getTracker("UA-46196711-1");
-  pageTracker._setCookiePath("/theia");
-  pageTracker._trackPageview();
   ga('send', 'pageview');
 
 </script>
@@ -88,6 +84,7 @@ resectioning algorithms. We attempted to make each method as general as possible
 <ul class="simple">
 <li><a class="reference internal" href="#section-p3p"><em>Perspective Three Point (P3P)</em></a></li>
 <li><a class="reference internal" href="#section-five-point"><em>Five Point Relative Pose</em></a></li>
+<li><a class="reference internal" href="#section-eight-point"><em>Eight Point Algorithm for Fundamental Matrix</em></a></li>
 <li><a class="reference internal" href="#section-dls-pnp"><em>Perspective N-Point</em></a></li>
 </ul>
 <p>You can include the Pose module in your code with the following line:</p>
@@ -111,7 +108,8 @@ to be up to an order of magnitude faster than other methods.</p>
 </dl>
 <p><tt class="docutils literal"><span class="pre">solution_rotations</span></tt>: the rotation matrix of the candidate solutions</p>
 <p><tt class="docutils literal"><span class="pre">solution_translation</span></tt>: the translation of the candidate solutions</p>
-<p><tt class="docutils literal"><span class="pre">Returns</span></tt>: The number of poses computed, along with the output parameters <tt class="docutils literal"><span class="pre">rotation</span></tt> and <tt class="docutils literal"><span class="pre">translation</span></tt> filled with the valid poses.</p>
+<p><tt class="docutils literal"><span class="pre">returns</span></tt>: The number of poses computed, along with the output parameters
+<tt class="docutils literal"><span class="pre">rotation</span></tt> and <tt class="docutils literal"><span class="pre">translation</span></tt> filled with the valid poses.</p>
 <p><strong>NOTE</strong>: P3P returns up to 4 poses, so the rotation and translation arrays are indeed arrays of 3x3 and 3x1 arrays respectively.</p>
 </dd></dl>
 
@@ -126,7 +124,7 @@ int <tt class="descname">PoseFromThreeCalibrated</tt><big>(</big>const double <e
 <p><tt class="docutils literal"><span class="pre">focal_length</span></tt>: fx, and fy the focal length parameters</p>
 <p><tt class="docutils literal"><span class="pre">principle_point</span></tt>: the principle point of the image</p>
 <p><tt class="docutils literal"><span class="pre">solutions</span></tt>: the projection matrices for the candidate solutions</p>
-<p><tt class="docutils literal"><span class="pre">Return</span></tt>: the number of poses computed.</p>
+<p><tt class="docutils literal"><span class="pre">returns</span></tt>: the number of poses computed.</p>
 </dd></dl>
 
 </div>
@@ -140,8 +138,31 @@ points. Algorithm is implemented based on &#8220;An Efficient Solution to the
 Five-Point Relative Pose Problem&#8221; by <a class="reference internal" href="bibliography.html#nister">[Nister]</a>.</p>
 <p><tt class="docutils literal"><span class="pre">image1_points</span></tt>: Location of features on the image plane of image 1.</p>
 <p><tt class="docutils literal"><span class="pre">image2_points</span></tt>: Location of features on the image plane of image 2.</p>
-<p><tt class="docutils literal"><span class="pre">Returns</span></tt>: Output the number of poses computed as well as the relative
+<p><tt class="docutils literal"><span class="pre">returns</span></tt>: Output the number of poses computed as well as the relative
 rotation and translation.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="eight-point-algorithm-for-fundamental-matrix">
+<span id="section-eight-point"></span><h2>Eight Point Algorithm for Fundamental Matrix<a class="headerlink" href="#eight-point-algorithm-for-fundamental-matrix" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="NormalizedEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP">
+bool <tt class="descname">NormalizedEightPoint</tt><big>(</big>const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_1_points</em>, const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_2_points</em>, Eigen::Matrix3d* <em>fundamental_matrix</em><big>)</big><a class="headerlink" href="#NormalizedEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="GoldStandardEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP">
+bool <tt class="descname">GoldStandardEightPoint</tt><big>(</big>const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_1_points</em>, const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_2_points</em>, Eigen::Matrix3d* <em>fundamental_matrix</em><big>)</big><a class="headerlink" href="#GoldStandardEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the fundamental matrix relating image points between two images such
+that <span class="math">\(x' F x = 0\)</span> for all correspondences <span class="math">\(x\)</span> and <span class="math">\(x'\)</span> in
+images 1 and 2 respectively. The normalized eight point algorithm is a speedy
+estimation of the fundamental matrix (Alg 11.1 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>), while
+the gold standard algorithm minimizes the geometric error (i.e., reprojection
+error) according to algorithm 11.3 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
+<p><tt class="docutils literal"><span class="pre">image_1_points</span></tt>: Image points from image 1. At least 8 points must be passed in.</p>
+<p><tt class="docutils literal"><span class="pre">image_2_points</span></tt>: Image points from image 2. At least 8 points must be passed in.</p>
+<p><tt class="docutils literal"><span class="pre">fundamental_matrix</span></tt>: The computed fundamental matrix.</p>
+<p><tt class="docutils literal"><span class="pre">returns:</span></tt> true on success, false on failure.</p>
 </dd></dl>
 
 </div>
