@@ -53,10 +53,10 @@ using Eigen::Quaterniond;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 
-double ReprojectionError(const TransformationMatrix& pose,
+double ReprojectionError(const ProjectionMatrix& pose,
                          const Vector4d& world_point,
                          const Vector3d& image_point) {
-  const Vector3d reprojected_point = pose.matrix() * world_point;
+  const Vector3d reprojected_point = pose * world_point;
   const double sq_reproj_error = (reprojected_point / reprojected_point.z() -
           image_point / image_point.z()).squaredNorm();
   return sq_reproj_error;
@@ -83,14 +83,16 @@ void TestTriangulationBasic(const Vector3d& point_3d,
   TransformationMatrix pose_right = TransformationMatrixFromRt(
       rel_rotation.toRotationMatrix(), rel_translation);
 
-  const Vector4d triangulated_point =
-      Triangulate(pose_left, pose_right, image_point_1, image_point_2);
+  const Vector4d triangulated_point = Triangulate(
+      pose_left.matrix(), pose_right.matrix(), image_point_1, image_point_2);
 
   // Check the reprojection error.
-  CHECK_LE(ReprojectionError(pose_left, triangulated_point, image_point_1),
-           max_reprojection_error);
-  CHECK_LE(ReprojectionError(pose_right, triangulated_point, image_point_2),
-           max_reprojection_error);
+  CHECK_LE(
+      ReprojectionError(pose_left.matrix(), triangulated_point, image_point_1),
+      max_reprojection_error);
+  CHECK_LE(
+      ReprojectionError(pose_right.matrix(), triangulated_point, image_point_2),
+      max_reprojection_error);
 }
 
 void TestTriangulationManyPoints(const double projection_noise,
@@ -140,10 +142,10 @@ void TestTriangulationManyPoints(const double projection_noise,
   };
 
   // Set up pose matrices.
-  std::vector<TransformationMatrix> poses(num_views);
+  std::vector<ProjectionMatrix> poses(num_views);
   for (int i = 0; i < num_views; i++) {
     poses[i] = TransformationMatrixFromRt(kRotations[i].toRotationMatrix(),
-                                          kTranslations[i]);
+                                          kTranslations[i]).matrix();
   }
 
   for (int j = 0; j < ARRAYSIZE(kTestPoints); j++) {

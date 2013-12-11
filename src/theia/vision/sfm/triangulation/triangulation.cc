@@ -47,27 +47,25 @@ using Eigen::Vector3d;
 using Eigen::Vector4d;
 
 // Triangulates 2 posed views
-Vector4d Triangulate(const TransformationMatrix& pose_left,
-                     const TransformationMatrix& pose_right,
+Vector4d Triangulate(const ProjectionMatrix& pose_left,
+                     const ProjectionMatrix& pose_right,
                      const Vector3d& point_left, const Vector3d& point_right) {
   Matrix4d design_matrix;
-  for (int i = 0; i < 4; i++) {
-    design_matrix(0, i) =
-        point_left[0] / point_left[2] * pose_left(2, i) - pose_left(0, i);
-    design_matrix(1, i) =
-        point_left[1] / point_left[2] * pose_left(2, i) - pose_left(1, i);
-    design_matrix(2, i) =
-        point_right[0] / point_right[2] * pose_right(2, i) - pose_right(0, i);
-    design_matrix(3, i) =
-        point_right[1] / point_right[2] * pose_right(2, i) - pose_right(1, i);
-  }
+  design_matrix.row(0) =
+      (point_left[0] / point_left[2]) * pose_left.row(2) - pose_left.row(0);
+  design_matrix.row(1) =
+      (point_left[1] / point_left[2]) * pose_left.row(2) - pose_left.row(1);
+  design_matrix.row(2) =
+      (point_right[0] / point_right[2]) * pose_right.row(2) - pose_right.row(0);
+  design_matrix.row(3) =
+      (point_right[1] / point_right[2]) * pose_right.row(2) - pose_right.row(1);
 
   // Extract nullspace.
   return design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>();
 }
 
 // Triangulates N views by computing SVD that minimizes the error.
-Vector4d TriangulateNViewSVD(const std::vector<TransformationMatrix>& poses,
+Vector4d TriangulateNViewSVD(const std::vector<ProjectionMatrix>& poses,
                              const std::vector<Vector3d>& points) {
   CHECK_EQ(poses.size(), points.size());
 
@@ -83,7 +81,7 @@ Vector4d TriangulateNViewSVD(const std::vector<TransformationMatrix>& poses,
       .jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>().head(4);
 }
 
-Vector4d TriangulateNView(const std::vector<TransformationMatrix>& poses,
+Vector4d TriangulateNView(const std::vector<ProjectionMatrix>& poses,
                           const std::vector<Vector3d>& points) {
   CHECK_EQ(poses.size(), points.size());
 

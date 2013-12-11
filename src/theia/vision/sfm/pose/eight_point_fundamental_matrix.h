@@ -32,37 +32,39 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_VISION_SFM_TRIANGULATION_TRIANGULATION_H_
-#define THEIA_VISION_SFM_TRIANGULATION_TRIANGULATION_H_
+#ifndef THEIA_VISION_SFM_POSE_EIGHT_POINT_FUNDAMENTAL_MATRIX_H_
+#define THEIA_VISION_SFM_POSE_EIGHT_POINT_FUNDAMENTAL_MATRIX_H_
 
 #include <Eigen/Core>
 #include <vector>
 
-#include "theia/vision/sfm/projection_matrix.h"
-
 namespace theia {
-// Triangulates 2 posed views using the DLT method from HZZ 12.2 p 312. The
-// inputs are the projection matrices and the unit image observations.
-Eigen::Vector4d Triangulate(const ProjectionMatrix& pose_left,
-                            const ProjectionMatrix& pose_right,
-                            const Eigen::Vector3d& point_left,
-                            const Eigen::Vector3d& point_right);
 
-// Computes n-view triangulation by computing the SVD that wil approximately
-// minimize reprojection error. The inputs are the projection matrices and the
-// unit image observations.
-Eigen::Vector4d TriangulateNViewSVD(
-    const std::vector<ProjectionMatrix>& poses,
-    const std::vector<Eigen::Vector3d>& points);
+// Computes the Fundamental Matrix
+// (http://en.wikipedia.org/wiki/Fundamental_matrix_(computer_vision) ) from 8
+// or more image correspondences according to the normalized 8 point algorithm
+// (Hartley and Zisserman alg 11.1 page 282). Image points are first normalized
+// by a translation and scale, and the fundamental matrix is computed from the
+// singular vector corresponding to the smallest singular vector of the stacked
+// epipolar constraints. The estimated fundamental matrix is the computed
+// fundamental matrix with the normalization transformation undone.
+//
+// Params:
+//   image_1_points: homogeneous image points from one image (8 or more).
+//   image_2_points: homogeneous image points from a second image (8 or more).
+//   fundamental_matrix: the estimated fundamental matrix.
+bool NormalizedEightPoint(const std::vector<Eigen::Vector3d>& image_1_points,
+                          const std::vector<Eigen::Vector3d>& image_2_points,
+                          Eigen::Matrix3d* fundamental_matrix);
 
-// Computes n-view triangulation by an efficient L2 minimization of the
-// algebraic error. This minimization is independent of the number of points, so
-// it is extremely scalable. It gives better reprojection errors in the results
-// and is significantly faster. The inputs are the projection matrices and the
-// unit image observations.
-Eigen::Vector4d TriangulateNView(const std::vector<ProjectionMatrix>& poses,
-                                 const std::vector<Eigen::Vector3d>& points);
+// Eight point algorithm for computing the fundamental matrix via the Gold
+// Standard Algorithm (Alg 11.3 in Hartley and Zisserman). This minimizes the
+// geometric error using Levenberg Marquardt with initialization from the
+// Normalized Eight Point algorithm.
+bool GoldStandardEightPoint(const std::vector<Eigen::Vector3d>& image_1_points,
+                            const std::vector<Eigen::Vector3d>& image_2_points,
+                            Eigen::Matrix3d* fundamental_matrix);
 
 }  // namespace theia
 
-#endif  // THEIA_VISION_SFM_TRIANGULATION_TRIANGULATION_H_
+#endif  // THEIA_VISION_SFM_POSE_EIGHT_POINT_FUNDAMENTAL_MATRIX_H_

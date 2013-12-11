@@ -65,8 +65,6 @@ double RotationAngularDistance(const Matrix3d& rot1, const Matrix3d& rot2) {
 // Noise can be added to the image projections by setting projection_noise.
 // The thresholds for rotation and translation similarity can be controlled
 // by max_rotation_difference and max_difference_between_translation.
-// If projection_noise_std_dev is non-zero then a random noise generator must
-// be passed in rng.
 void TestFivePointResultWithNoise(const Vector3d points_3d[5],
                                   const double projection_noise_std_dev,
                                   const Matrix3d& expected_rotation,
