@@ -75,6 +75,15 @@ double SampsonDistance(const Eigen::Matrix3d& F, const Eigen::Vector3d& x,
 //                        [-y   x   0]
 Eigen::Matrix3d CrossProductMatrix(const Eigen::Vector3d& cross_vec);
 
+// Given a 3xN matrix of image points (of the form [x, y, 1]), this method
+// calculates the matrix that will shift the points so that the centroid is at
+// the origin and the average distance from the centroid is sqrt(2). Returns the
+// transformation matrix and the transformed points.
+bool NormalizeImagePoints(
+    const std::vector<Eigen::Vector3d>& image_points,
+    std::vector<Eigen::Vector3d>* normalized_image_points,
+    Eigen::Matrix3d* normalization_matrix);
+
 }  // namespace theia
 
 #endif  // THEIA_VISION_SFM_POSE_UTIL_H_

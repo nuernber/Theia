@@ -51,25 +51,6 @@ using Eigen::Matrix3d;
 using Eigen::Matrix;
 using Eigen::Vector3d;
 
-// Computes the normalization matrix transformation that centers image points
-// around the origin with an average distance of sqrt(2) to the centroid. This
-// assumes that no points are at infinity.
-Matrix3d ComputeNormalizationMatrix(
-    const Matrix<double, 3, Eigen::Dynamic>& image_points) {
-  // Compute centroid.
-  const Vector3d centroid(image_points.rowwise().mean());
-
-  // Calculate average distance to centroid.
-  const double mean_dist = (image_points.colwise() - centroid).norm();
-
-  const double norm_factor = sqrt(2.0) / mean_dist;
-  Matrix3d normalization_matrix;
-  normalization_matrix << norm_factor, 0, -1.0 * norm_factor* centroid.x(),
-      0, norm_factor, -1.0 * norm_factor * centroid.y(),
-      0, 0, 1;
-  return normalization_matrix;
-}
-
 // Computes the right epipole from a fundamental matrix.
 void ComputeEpipoles(const Matrix3d& fundamental_matrix,
                      Vector3d* right_epipole) {
@@ -124,30 +105,23 @@ struct FundamentalReprojectionError {
 void NormalizedEightPointInternal(
     const std::vector<Vector3d>& image_1_points,
     const std::vector<Vector3d>& image_2_points,
-    Matrix<double, 3, Eigen::Dynamic>* norm_img1_points,
-    Matrix<double, 3, Eigen::Dynamic>* norm_img2_points,
-    Matrix3d* img1_norm_mat, Matrix3d* img2_norm_mat,
+    std::vector<Vector3d>* norm_img1_points,
+    std::vector<Vector3d>* norm_img2_points,
+    Matrix3d* img1_norm_mat,
+    Matrix3d* img2_norm_mat,
     Matrix3d* fundamental_matrix) {
-  for (int i = 0; i < image_1_points.size(); i++) {
-    norm_img1_points->col(i) = image_1_points[i] / image_1_points[i].z();
-    norm_img2_points->col(i) = image_2_points[i] / image_2_points[i].z();
-  }
-
   // Normalize the image points.
-  *img1_norm_mat = ComputeNormalizationMatrix(*norm_img1_points);
-  *img2_norm_mat = ComputeNormalizationMatrix(*norm_img2_points);
-
-  *norm_img1_points = (*img1_norm_mat) * (*norm_img1_points);
-  *norm_img2_points = (*img2_norm_mat) * (*norm_img2_points);
+  NormalizeImagePoints(image_1_points, norm_img1_points, img1_norm_mat);
+  NormalizeImagePoints(image_2_points, norm_img2_points, img2_norm_mat);
 
   // Build the constraint matrix based on x2' * F * x1 = 0.
   Matrix<double, Eigen::Dynamic, 9> constraint_matrix(image_1_points.size(), 9);
   for (int i = 0; i < image_1_points.size(); i++) {
     constraint_matrix.block<1, 3>(i, 0) =
-        norm_img1_points->col(i) * norm_img2_points->col(i).x();
+        (*norm_img1_points)[i] * (*norm_img2_points)[i].x();
     constraint_matrix.block<1, 3>(i, 3) =
-        norm_img1_points->col(i) * norm_img2_points->col(i).y();
-    constraint_matrix.block<1, 3>(i, 6) = norm_img1_points->col(i);
+        (*norm_img1_points)[i] * (*norm_img2_points)[i].y();
+    constraint_matrix.block<1, 3>(i, 6) = (*norm_img1_points)[i];
   }
 
   // Solve the constraint equation for F from nullspace extraction.
@@ -176,9 +150,8 @@ bool NormalizedEightPoint(const std::vector<Vector3d>& image_1_points,
   CHECK_EQ(image_1_points.size(), image_2_points.size());
   CHECK_GE(image_1_points.size(), 8);
 
-  // Convert image points to 2D points.
-  Matrix<double, 3, Eigen::Dynamic> norm_img1_points(3, image_1_points.size());
-  Matrix<double, 3, Eigen::Dynamic> norm_img2_points(3, image_2_points.size());
+  std::vector<Vector3d> norm_img1_points(image_1_points.size());
+  std::vector<Vector3d> norm_img2_points(image_2_points.size());
   Matrix3d img1_norm_mat, img2_norm_mat, singular_fmatrix;
   NormalizedEightPointInternal(
       image_1_points, image_2_points, &norm_img1_points, &norm_img2_points,
@@ -197,8 +170,9 @@ bool GoldStandardEightPoint(const std::vector<Vector3d>& image_1_points,
   CHECK_GE(image_1_points.size(), 8);
 
   // Convert image points to 2D points.
-  Matrix<double, 3, Eigen::Dynamic> norm_img1_points(3, image_1_points.size());
-  Matrix<double, 3, Eigen::Dynamic> norm_img2_points(3, image_2_points.size());
+  std::vector<Vector3d> norm_img1_points(image_1_points.size());
+  std::vector<Vector3d> norm_img2_points(image_2_points.size());
+
   Matrix3d img1_norm_mat, img2_norm_mat, singular_fmatrix;
   NormalizedEightPointInternal(
       image_1_points, image_2_points, &norm_img1_points, &norm_img2_points,
@@ -222,15 +196,15 @@ bool GoldStandardEightPoint(const std::vector<Vector3d>& image_1_points,
     // Triangulate 3D point.
     const Eigen::Vector4d world_homogeneous_point =
         Triangulate(identity_transformation, right_projection,
-                    norm_img1_points.col(i), norm_img2_points.col(i));
+                    norm_img1_points[i], norm_img2_points[i]);
     world_points[i] = world_homogeneous_point.head<3>() /
                            world_homogeneous_point(3);
 
     // Add residuals and parameters to the minimizer problem.
     ceres::CostFunction* cost_function =
         new ceres::AutoDiffCostFunction<FundamentalReprojectionError, 4, 12, 3>(
-            new FundamentalReprojectionError(norm_img1_points.col(i),
-                                             norm_img2_points.col(i)));
+            new FundamentalReprojectionError(norm_img1_points[i],
+                                             norm_img2_points[i]));
     problem.AddResidualBlock(cost_function, NULL /* squared loss */,
                              right_projection.data(), world_points[i].data());
   }

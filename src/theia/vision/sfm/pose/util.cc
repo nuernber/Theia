@@ -35,6 +35,7 @@
 #include "theia/vision/sfm/pose/util.h"
 
 #include <Eigen/Core>
+#include <Eigen/Dense>
 #include <glog/logging.h>
 #include "theia/util/random.h"
 
@@ -120,6 +121,51 @@ Eigen::Matrix3d CrossProductMatrix(const Vector3d& cross_vec) {
       cross_vec.z(), 0.0, -cross_vec.x(),
       -cross_vec.y(), cross_vec.x(), 0.0;
   return cross;
+}
+
+// Computes the normalization matrix transformation that centers image points
+// around the origin with an average distance of sqrt(2) to the centroid.
+// Returns the transformation matrix and the transformed points. This assumes
+// that no points are at infinity.
+bool NormalizeImagePoints(
+    const std::vector<Vector3d>& image_points,
+    std::vector<Vector3d>* normalized_image_points,
+    Matrix3d* normalization_matrix) {
+  Eigen::Map<const Matrix<double, 3, Eigen::Dynamic> > temp_image_points_mat(
+      image_points[0].data(), 3, image_points.size());
+
+  // Divide the image points by the homogeneous coordinate so that they are all
+  // on teh same image plane at z = 1.
+  Matrix<double, 3, Eigen::Dynamic> image_points_mat =
+      temp_image_points_mat;
+  image_points_mat.row(0).array() /= image_points_mat.row(2).array();
+  image_points_mat.row(1).array() /= image_points_mat.row(2).array();
+  image_points_mat.row(2).setConstant(1);
+
+  // Allocate the output vector and map an Eigen object to the underlying data
+  // for efficient calculations.
+  normalized_image_points->clear();
+  normalized_image_points->resize(image_points.size());
+  Eigen::Map<Matrix<double, 3, Eigen::Dynamic> >
+      normalized_image_points_mat((*normalized_image_points)[0].data(), 3,
+                                  image_points.size());
+
+  // Compute centroid.
+  const Vector3d centroid(image_points_mat.rowwise().mean());
+
+  // Calculate average distance to centroid.
+  const double mean_dist = (image_points_mat.colwise() - centroid).norm();
+
+  // Create normalization matrix.
+  const double norm_factor = sqrt(2.0) / mean_dist;
+  *normalization_matrix << norm_factor, 0, -1.0 * norm_factor* centroid.x(),
+      0, norm_factor, -1.0 * norm_factor * centroid.y(),
+      0, 0, 1;
+
+  // Normalize image points.
+  normalized_image_points_mat =
+      (*normalization_matrix) * image_points_mat;
+  return true;
 }
 
 }  // namespace theia

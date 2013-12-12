@@ -163,8 +163,8 @@ TEST(DlsPnp, NoiseTest) {
   const Vector3d soln_translation(1.0, 1.0, 1.0);
   const double kNoise = 1.0 / 512.0;
   const double kMaxReprojectionError = 5e-3;
-  const double kMaxAllowedRotationDifference = Radians(0.1);
-  const double kMaxAllowedTranslationDifference = 1e-4;
+  const double kMaxAllowedRotationDifference = Radians(0.25);
+  const double kMaxAllowedTranslationDifference = 1e-2;
 
   TestDlsPnpWithNoise(points_3d,
                       kNoise,
@@ -212,9 +212,9 @@ TEST(DlsPnp, ManyPoints) {
 
   static const int num_points[3] = { 100, 500, 1000 };
   const double kNoise = 1.0 / 512.0;
-  const double kMaxReprojectionError = 5e-3;
+  const double kMaxReprojectionError = 1e-2;
   const double kMaxAllowedRotationDifference = Radians(0.3);
-  const double kMaxAllowedTranslationDifference = 1e-3;
+  const double kMaxAllowedTranslationDifference = 5e-3;
 
   for (int i = 0; i < ARRAYSIZE(kAxes); i++) {
     const Quaterniond soln_rotation(AngleAxisd(kRotationAngles[i], kAxes[i]));
@@ -253,8 +253,8 @@ TEST(DlsPnp, NoRotation) {
   const Vector3d soln_translation(1.0, 1.0, 1.0);
   const double kNoise = 1.0 / 512.0;
   const double kMaxReprojectionError = 5e-3;
-  const double kMaxAllowedRotationDifference = Radians(0.2);
-  const double kMaxAllowedTranslationDifference = 1e-4;
+  const double kMaxAllowedRotationDifference = Radians(0.25);
+  const double kMaxAllowedTranslationDifference = 5e-4;
 
   TestDlsPnpWithNoise(points_3d,
                       kNoise,
@@ -280,8 +280,8 @@ TEST(DlsPnp, NoTranslation) {
   const Vector3d soln_translation(0.0, 0.0, 0.0);
   const double kNoise = 1.0 / 512.0;
   const double kMaxReprojectionError = 1e-2;
-  const double kMaxAllowedRotationDifference = Radians(0.1);
-  const double kMaxAllowedTranslationDifference = 1e-4;
+  const double kMaxAllowedRotationDifference = Radians(0.2);
+  const double kMaxAllowedTranslationDifference = 5e-3;
 
   TestDlsPnpWithNoise(points_3d,
                       kNoise,
@@ -307,8 +307,8 @@ TEST(DlsPnp, OrthogonalRotation) {
   const Vector3d soln_translation(1.0, 1.0, 1.0);
   const double kNoise = 1.0 / 512.0;
   const double kMaxReprojectionError = 5e-3;
-  const double kMaxAllowedRotationDifference = Radians(0.1);
-  const double kMaxAllowedTranslationDifference = 1e-4;
+  const double kMaxAllowedRotationDifference = Radians(0.25);
+  const double kMaxAllowedTranslationDifference = 5e-3;
 
   TestDlsPnpWithNoise(points_3d,
                       kNoise,
