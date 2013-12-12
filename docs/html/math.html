@@ -198,27 +198,6 @@ extremely overdetermined and you do not need all rows to be solved.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="kolmogorov-smirnoff-two-sample-test">
-<span id="section-ks-test"></span><h2>Kolmogorov-Smirnoff Two Sample Test<a class="headerlink" href="#kolmogorov-smirnoff-two-sample-test" title="Permalink to this headline">¶</a></h2>
-<p>Sometimes it is useful to test if two distributions come from the same distribution. This is particularly the case in RANSAC-like methods where inliers, for instance, are known to behave according to a chi-squared distribution. The <a class="reference external" href="http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test">Kolmogorov-Smirnoff Test</a> determines whether two sets of data come from the same distribution by inspecting the empirical distribution functions of the two sets. We have only implemented the two-sample Kolmogorov-Smirnoff test.</p>
-<dl class="function">
-<dt id="KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR">
-bool <tt class="descname">KolmogorovSmirnoffTest</tt><big>(</big>const std::vector&lt;double&gt;&amp; <em>residual1</em>, const std::vector&lt;double&gt;&amp; <em>residual2</em><big>)</big><a class="headerlink" href="#KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i">
-bool <tt class="descname">KolmogorovSmirnoffTest</tt><big>(</big>const std::vector&lt;double&gt;&amp; <em>residual1</em>, const std::vector&lt;double&gt;&amp; <em>residual2</em>, int <em>n</em><big>)</big><a class="headerlink" href="#KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">n</span></tt>: Only performs the KS-Test for the first n values of each set.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i.i">
-bool <tt class="descname">KolmogorovSmirnoffTest</tt><big>(</big>const std::vector&lt;double&gt;&amp; <em>residual1</em>, const std::vector&lt;double&gt;&amp; <em>residual2</em>, int <em>n1</em>, int <em>n2</em><big>)</big><a class="headerlink" href="#KolmogorovSmirnoffTest__std::vector:double:CR.std::vector:double:CR.i.i" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">n1,</span> <span class="pre">n2</span></tt> Only performs the KS-Test for the first n1 members of <tt class="docutils literal"><span class="pre">residual1</span></tt> and the first n2 members of <tt class="docutils literal"><span class="pre">residual2</span></tt>.</p>
-</dd></dl>
-
-</div>
 <div class="section" id="sequential-probability-ratio-test">
 <span id="section-sprt"></span><h2>Sequential Probability Ratio Test<a class="headerlink" href="#sequential-probability-ratio-test" title="Permalink to this headline">¶</a></h2>
 <p>Modified version of Wald&#8217;s <a class="reference external" href="http://en.wikipedia.org/wiki/Sequential_probability_ratio_test">SPRT</a> as <a class="reference internal" href="bibliography.html#matas">[Matas]</a> et. al. implement it in &#8220;Randomized

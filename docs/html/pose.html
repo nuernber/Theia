@@ -84,6 +84,7 @@ resectioning algorithms. We attempted to make each method as general as possible
 <ul class="simple">
 <li><a class="reference internal" href="#section-p3p"><em>Perspective Three Point (P3P)</em></a></li>
 <li><a class="reference internal" href="#section-five-point"><em>Five Point Relative Pose</em></a></li>
+<li><a class="reference internal" href="#section-four-point"><em>Four Point Algorith for Homography</em></a></li>
 <li><a class="reference internal" href="#section-eight-point"><em>Eight Point Algorithm for Fundamental Matrix</em></a></li>
 <li><a class="reference internal" href="#section-dls-pnp"><em>Perspective N-Point</em></a></li>
 </ul>
@@ -143,6 +144,21 @@ rotation and translation.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="four-point-algorith-for-homography">
+<span id="section-four-point"></span><h2>Four Point Algorith for Homography<a class="headerlink" href="#four-point-algorith-for-homography" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descname">bool FourPointHomography(const std::vector&lt;Eigen::Vector3d&gt;&amp; image_1_points, const std::vector&lt;Eigen::Vector3d&gt;&amp; image_2_points, Eigen::Matrix3d* homography);</tt></dt>
+<dd><p>Computes the 2D <a class="reference external" href="http://en.wikipedia.org/wiki/Homography_(computer_vision)">homography</a> mapping points
+in image 1 to image 2 such that: <span class="math">\(x' = Hx\)</span> where <span class="math">\(x\)</span> is a point in
+image 1 and <span class="math">\(x'\)</span> is a point in image 2. The algorithm implemented is
+the DLT algorithm based on algorithm 4.2 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
+<p><tt class="docutils literal"><span class="pre">image_1_points</span></tt>: Image points from image 1. At least 4 points must be passed in.</p>
+<p><tt class="docutils literal"><span class="pre">image_2_points</span></tt>: Image points from image 2. At least 4 points must be passed in.</p>
+<p><tt class="docutils literal"><span class="pre">homography</span></tt>: The computed 3x3 homography matrix.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="eight-point-algorithm-for-fundamental-matrix">
 <span id="section-eight-point"></span><h2>Eight Point Algorithm for Fundamental Matrix<a class="headerlink" href="#eight-point-algorithm-for-fundamental-matrix" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
@@ -153,12 +169,13 @@ bool <tt class="descname">NormalizedEightPoint</tt><big>(</big>const std::vector
 <dl class="function">
 <dt id="GoldStandardEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP">
 bool <tt class="descname">GoldStandardEightPoint</tt><big>(</big>const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_1_points</em>, const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_2_points</em>, Eigen::Matrix3d* <em>fundamental_matrix</em><big>)</big><a class="headerlink" href="#GoldStandardEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the fundamental matrix relating image points between two images such
-that <span class="math">\(x' F x = 0\)</span> for all correspondences <span class="math">\(x\)</span> and <span class="math">\(x'\)</span> in
-images 1 and 2 respectively. The normalized eight point algorithm is a speedy
-estimation of the fundamental matrix (Alg 11.1 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>), while
-the gold standard algorithm minimizes the geometric error (i.e., reprojection
-error) according to algorithm 11.3 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
+<dd><p>Computes the <a class="reference external" href="http://en.wikipedia.org/wiki/Fundamental_matrix_(computer_vision)">fundamental matrix</a> relating
+image points between two images such that <span class="math">\(x' F x = 0\)</span> for all
+correspondences <span class="math">\(x\)</span> and <span class="math">\(x'\)</span> in images 1 and 2 respectively. The
+normalized eight point algorithm is a speedy estimation of the fundamental
+matrix (Alg 11.1 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>), while the gold standard algorithm
+minimizes the geometric error (i.e., reprojection error) according to
+algorithm 11.3 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
 <p><tt class="docutils literal"><span class="pre">image_1_points</span></tt>: Image points from image 1. At least 8 points must be passed in.</p>
 <p><tt class="docutils literal"><span class="pre">image_2_points</span></tt>: Image points from image 2. At least 8 points must be passed in.</p>
 <p><tt class="docutils literal"><span class="pre">fundamental_matrix</span></tt>: The computed fundamental matrix.</p>

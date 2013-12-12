@@ -122,24 +122,6 @@ Guass-Jordan
   extremely overdetermined and you do not need all rows to be solved.
 
 
-.. _section_ks_test:
-
-Kolmogorov-Smirnoff Two Sample Test
-===================================
-
-Sometimes it is useful to test if two distributions come from the same distribution. This is particularly the case in RANSAC-like methods where inliers, for instance, are known to behave according to a chi-squared distribution. The `Kolmogorov-Smirnoff Test <http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test>`_ determines whether two sets of data come from the same distribution by inspecting the empirical distribution functions of the two sets. We have only implemented the two-sample Kolmogorov-Smirnoff test.
-
-.. function:: bool KolmogorovSmirnoffTest(const std::vector<double>& residual1, const std::vector<double>& residual2)
-
-.. function:: bool KolmogorovSmirnoffTest(const std::vector<double>& residual1, const std::vector<double>& residual2, int n)
-
-  ``n``: Only performs the KS-Test for the first n values of each set.
-
-.. function:: bool KolmogorovSmirnoffTest(const std::vector<double>& residual1, const std::vector<double>& residual2, int n1, int n2)
-
-  ``n1, n2`` Only performs the KS-Test for the first n1 members of ``residual1`` and the first n2 members of ``residual2``.
-
-
 .. _section-sprt:
 
 Sequential Probability Ratio Test

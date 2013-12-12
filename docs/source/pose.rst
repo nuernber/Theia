@@ -15,6 +15,8 @@ resectioning algorithms. We attempted to make each method as general as possible
 
 * :ref:`section-five_point`
 
+* :ref:`section-four_point`
+
 * :ref:`section-eight_point`
 
 * :ref:`section-dls_pnp`
@@ -89,6 +91,24 @@ Five Point Relative Pose
   ``returns``: Output the number of poses computed as well as the relative
   rotation and translation.
 
+.. _section-four_point:
+
+Four Point Algorith for Homography
+==================================
+
+.. function:: bool FourPointHomography(const std::vector<Eigen::Vector3d>& image_1_points, const std::vector<Eigen::Vector3d>& image_2_points, Eigen::Matrix3d* homography);
+
+  Computes the 2D `homography
+  <http://en.wikipedia.org/wiki/Homography_(computer_vision)>`_ mapping points
+  in image 1 to image 2 such that: :math:`x' = Hx` where :math:`x` is a point in
+  image 1 and :math:`x'` is a point in image 2. The algorithm implemented is
+  the DLT algorithm based on algorithm 4.2 in [HartleyZisserman]_.
+
+  ``image_1_points``: Image points from image 1. At least 4 points must be passed in.
+
+  ``image_2_points``: Image points from image 2. At least 4 points must be passed in.
+
+  ``homography``: The computed 3x3 homography matrix.
 
 .. _section-eight_point:
 
@@ -99,12 +119,14 @@ Eight Point Algorithm for Fundamental Matrix
 
 .. function:: bool GoldStandardEightPoint(const std::vector<Eigen::Vector3d>& image_1_points, const std::vector<Eigen::Vector3d>& image_2_points, Eigen::Matrix3d* fundamental_matrix)
 
-  Computes the fundamental matrix relating image points between two images such
-  that :math:`x' F x = 0` for all correspondences :math:`x` and :math:`x'` in
-  images 1 and 2 respectively. The normalized eight point algorithm is a speedy
-  estimation of the fundamental matrix (Alg 11.1 in [HartleyZisserman]_), while
-  the gold standard algorithm minimizes the geometric error (i.e., reprojection
-  error) according to algorithm 11.3 in [HartleyZisserman]_.
+  Computes the `fundamental matrix
+  <http://en.wikipedia.org/wiki/Fundamental_matrix_(computer_vision)>`_ relating
+  image points between two images such that :math:`x' F x = 0` for all
+  correspondences :math:`x` and :math:`x'` in images 1 and 2 respectively. The
+  normalized eight point algorithm is a speedy estimation of the fundamental
+  matrix (Alg 11.1 in [HartleyZisserman]_), while the gold standard algorithm
+  minimizes the geometric error (i.e., reprojection error) according to
+  algorithm 11.3 in [HartleyZisserman]_.
 
   ``image_1_points``: Image points from image 1. At least 8 points must be passed in.
 
