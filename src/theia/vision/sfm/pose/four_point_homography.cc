@@ -43,7 +43,7 @@
 #include "theia/vision/sfm/pose/util.h"
 
 namespace theia {
-
+using Eigen::Map;
 using Eigen::Matrix;
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
@@ -94,6 +94,23 @@ bool FourPointHomography(const std::vector<Vector3d>& image_1_points,
                 Eigen::Map<const Matrix3d>(null_vector.data()).transpose() *
                 norm_image_1_mat;
   return true;
+}
+
+bool FourPointHomography(const int num_points,
+                         const double image_1_points[],
+                         const double image_2_points[],
+                         double homography[9]) {
+  std::vector<Vector3d> img_1_pts(num_points);
+  std::vector<Vector3d> img_2_pts(num_points);
+  for (int i = 0; i < num_points; i++) {
+    img_1_pts[i] = Map<const Vector3d>(image_1_points + 3 * i);
+    img_2_pts[i] = Map<const Vector3d>(image_2_points + 3 * i);
+  }
+
+  Matrix3d homography_eig;
+  return FourPointHomography(img_1_pts, img_2_pts, &homography_eig);
+  Map<Matrix3d> soln_map(homography);
+  soln_map = homography;
 }
 
 }  // namespace theia

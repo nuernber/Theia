@@ -35,6 +35,9 @@
 #ifndef THEIA_VISION_SFM_POSE_FIVE_POINT_RELATIVE_POSE_H_
 #define THEIA_VISION_SFM_POSE_FIVE_POINT_RELATIVE_POSE_H_
 
+#include <Eigen/Core>
+#include <vector>
+
 namespace theia {
 
 // Computes the relative pose between two cameras using 5 corresponding
@@ -51,6 +54,13 @@ int FivePointRelativePose(const double image1_points[3 * 5],
                           const double image2_points[3 * 5],
                           double rotation[9 * 10],
                           double translation[3 * 10]);
+
+// Same as above, but with the Eigen interface. Returns true if more than one
+// solution was found.
+bool FivePointRelativePose(const Eigen::Vector3d image1_points[5],
+                           const Eigen::Vector3d image2_points[5],
+                           std::vector<Eigen::Matrix3d>* rotation,
+                           std::vector<Eigen::Vector3d>* translation);
 }  // namespace theia
 
 #endif  // THEIA_VISION_SFM_POSE_FIVE_POINT_RELATIVE_POSE_H_

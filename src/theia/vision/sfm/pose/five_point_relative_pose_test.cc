@@ -227,8 +227,8 @@ TEST(FivePointRelativePose, NoRotation) {
 
   const Vector3d soln_translation(1.0, 1.0, 1.0);
   const double kNoise = 1.0 / 512.0;
-  const double kMaxAllowedRotationDifference = 1e-2;
-  const double kMaxAllowedAngleBetweenTranslations = 1e-2;
+  const double kMaxAllowedRotationDifference = Radians(1.0);
+  const double kMaxAllowedAngleBetweenTranslations = Radians(1.0);
 
   TestFivePointResultWithNoise(points_3d,
                                kNoise,

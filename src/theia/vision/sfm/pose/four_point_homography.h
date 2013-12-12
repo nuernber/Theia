@@ -48,6 +48,20 @@ namespace theia {
 bool FourPointHomography(const std::vector<Eigen::Vector3d>& image_1_points,
                          const std::vector<Eigen::Vector3d>& image_2_points,
                          Eigen::Matrix3d* homography);
+
+// Same as above, but with a generic interface:
+// Params:
+//   num_points: the number of image correspondences used.
+//   image_1_points: a 3xn array of homogeneous image points from one image (8
+//     or more points).
+//   image_2_points: a 3xn array of homogeneous image points from a second image
+//     (8 or more points).
+//   homography: the estimated homography matrix.
+bool FourPointHomography(const int num_points,
+                         const double image_1_points[],
+                         const double image_2_points[],
+                         double homography[9]);
+
 }  // namespace theia
 
 #endif  // THEIA_VISION_SFM_POSE_FOUR_POINT_HOMOGRAPHY_H_

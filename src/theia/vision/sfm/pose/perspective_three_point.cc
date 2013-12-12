@@ -137,8 +137,8 @@ void Backsubstitute(const Matrix3d& intermediate_world_frame,
                     const long double cot_alpha,
                     const double d_12,
                     const double b,
-                    double solution_translation[3],
-                    double solution_rotation[9]) {
+                    Vector3d* translation,
+                    Matrix3d* rotation) {
   CHECK_LE(fabs(cos_theta), 1.0);
   const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
   const double sin_alpha = sqrt(1.0 / (cot_alpha * cot_alpha + 1.0));
@@ -157,8 +157,7 @@ void Backsubstitute(const Matrix3d& intermediate_world_frame,
 
   // Transform c_nu into world coordinates. Use a Map to put the solution
   // directly into the output.
-  Map<Vector3d> translation(solution_translation);
-  translation = world_point_0 + intermediate_world_frame.transpose() * c_nu;
+  *translation = world_point_0 + intermediate_world_frame.transpose() * c_nu;
 
   // Construct the transformation from the intermediate world frame to the
   // intermediate camera frame.
@@ -169,13 +168,12 @@ void Backsubstitute(const Matrix3d& intermediate_world_frame,
       0, -sin_theta, cos_theta;
 
   // Construct the rotation matrix.
-  Map<Matrix3d> rotation(solution_rotation);
-  rotation = (intermediate_world_frame.transpose() *
+  *rotation = (intermediate_world_frame.transpose() *
               intermediate_world_to_camera_rotation.transpose() *
               intermediate_camera_frame).transpose();
 
   // Adjust translation to account for rotation.
-  translation = rotation * (-translation);
+  *translation = (*rotation) * -(*translation);
 }
 
 }  // namespace
@@ -184,15 +182,38 @@ int PoseFromThreePoints(const double image_ray[3 * 3],
                         const double points_3d[3 * 3],
                         double solution_rotations[9 * 4],
                         double solution_translations[3 * 4]) {
+  Vector3d image_ray_eig[3];
+  Vector3d world_point_eig[3];
+  for (int i = 0; i < 3; i++) {
+    image_ray_eig[i] = Map<const Vector3d>(image_ray + 3 * i);
+    world_point_eig[i] = Map<const Vector3d>(points_3d + 3 * i);
+  }
+
+  std::vector<Matrix3d> eig_rotations;
+  std::vector<Vector3d> eig_translations;
+  PoseFromThreePoints(image_ray_eig, world_point_eig, &eig_rotations,
+                      &eig_translations);
+  const int num_solns = eig_rotations.size();
+  for (int i = 0; i < num_solns; i++) {
+    Map<Matrix3d> soln_rotation(solution_rotations + 9 * i);
+    soln_rotation = eig_rotations[i];
+    Map<Vector3d> soln_translation(solution_translations + 3 * i);
+    soln_translation = eig_translations[i];
+  }
+  return num_solns;
+}
+
+bool PoseFromThreePoints(const Vector3d image_ray[3],
+                         const Vector3d points_3d[3],
+                         std::vector<Matrix3d>* solution_rotations,
+                         std::vector<Vector3d>* solution_translations) {
   Vector3d normalized_image_points[3];
   // Store points_3d in world_points for ease of use. NOTE: we cannot use a
   // const ref or a Map because the world_points entries may be swapped later.
   Vector3d world_points[3];
   for (int i = 0; i < 3; ++i) {
-    normalized_image_points[i] = Vector3d(
-        image_ray[i * 3 + 0], image_ray[i * 3 + 1], image_ray[i * 3 + 2]);
-    world_points[i] = Vector3d(points_3d[i * 3 + 0], points_3d[i * 3 + 1],
-                               points_3d[i * 3 + 2]);
+    normalized_image_points[i] = image_ray[i].normalized();
+    world_points[i] = points_3d[i];
   }
 
   // If the points are collinear, there are no possible solutions.
@@ -269,6 +290,8 @@ int PoseFromThreePoints(const double image_ray[3 * 3],
       intermediate_world_point, d_12, cos_theta, cot_alphas, &b);
 
   // Backsubstitution of each solution
+  solution_translations->resize(num_solutions);
+  solution_rotations->resize(num_solutions);
   for (int i = 0; i < num_solutions; i++) {
     Backsubstitute(intermediate_world_frame,
                    intermediate_camera_frame,
@@ -277,10 +300,10 @@ int PoseFromThreePoints(const double image_ray[3 * 3],
                    cot_alphas[i],
                    d_12,
                    b,
-                   solution_translations + i * 3,
-                   solution_rotations + i * 9);
+                   &solution_translations->at(i),
+                   &solution_rotations->at(i));
   }
-  return num_solutions;
+  return num_solutions > 0;
 }
 
 int PoseFromThreeCalibrated(const double points_2d[2 * 3],

@@ -80,11 +80,11 @@
   <div class="section" id="pose-and-resectioning">
 <span id="documentation-pose"></span><h1>Pose and Resectioning<a class="headerlink" href="#pose-and-resectioning" title="Permalink to this headline">¶</a></h1>
 <p>Theia contains efficient and robust implementations of the following pose and
-resectioning algorithms. We attempted to make each method as general as possible so that users were not tied to Theia data structures to use the methods. This is why most methods use simple arrays as the input and output &#8211; we give the user the power to write simple wrappers for their own data structures if they so choose.</p>
+resectioning algorithms. We attempted to make each method as general as possible so that users were not tied to Theia data structures to use the methods. As such, we implemented two interfaces for each pose algorithm: a generic interface that uses primary expressions (e.g., double arrays) and an interface that utilizes the Eigen library vectors and matrices. If a pose algorithm does not have a generic interface, you can request an interface on the <a class="reference external" href="http://groups.google.com/group/theia-vision-library">mailing list</a></p>
 <ul class="simple">
 <li><a class="reference internal" href="#section-p3p"><em>Perspective Three Point (P3P)</em></a></li>
 <li><a class="reference internal" href="#section-five-point"><em>Five Point Relative Pose</em></a></li>
-<li><a class="reference internal" href="#section-four-point"><em>Four Point Algorith for Homography</em></a></li>
+<li><a class="reference internal" href="#section-four-point"><em>Four Point Algorithm for Homography</em></a></li>
 <li><a class="reference internal" href="#section-eight-point"><em>Eight Point Algorithm for Fundamental Matrix</em></a></li>
 <li><a class="reference internal" href="#section-dls-pnp"><em>Perspective N-Point</em></a></li>
 </ul>
@@ -94,9 +94,15 @@ resectioning algorithms. We attempted to make each method as general as possible
 </div>
 <div class="section" id="perspective-three-point-p3p">
 <span id="section-p3p"></span><h2>Perspective Three Point (P3P)<a class="headerlink" href="#perspective-three-point-p3p" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<blockquote>
+<div><dl class="function">
 <dt id="PoseFromThreePoints__doubleCA.doubleCA.doubleA.doubleA">
 int <tt class="descname">PoseFromThreePoints</tt><big>(</big>const double <em>image_ray</em>[3 * 3], const double <em>points_3d</em>[3 * 3], double <em>solution_rotations</em>[9 * 4], double <em>solution_translations</em>[3 * 4]<big>)</big><a class="headerlink" href="#PoseFromThreePoints__doubleCA.doubleCA.doubleA.doubleA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="PoseFromThreePoints__Eigen::Vector3dCA.Eigen::Vector3dCA.std::vector:Eigen::Matrix3d:P.std::vector:Eigen::Vector3d:P">
+bool <tt class="descname">PoseFromThreePoints</tt><big>(</big>const Eigen::Vector3d <em>image_ray</em>[3], const Eigen::Vector3d <em>world_point</em>[3], std::vector&lt;Eigen::Matrix3d&gt;* <em>solution_rotations</em>, std::vector&lt;Eigen::Vector3d&gt;* <em>solution_translations</em><big>)</big><a class="headerlink" href="#PoseFromThreePoints__Eigen::Vector3dCA.Eigen::Vector3dCA.std::vector:Eigen::Matrix3d:P.std::vector:Eigen::Vector3d:P" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes camera pose using the three point algorithm and returns all possible
 solutions (up to 4). Follows steps from the paper &#8220;A Novel Parameterization of
 the Perspective-Three-Point Problem for a direct computation of Absolute
@@ -122,12 +128,19 @@ int <tt class="descname">PoseFromThreeCalibrated</tt><big>(</big>const double <e
 <p><tt class="docutils literal"><span class="pre">returns</span></tt>: the number of poses computed.</p>
 </dd></dl>
 
+</div></blockquote>
 </div>
 <div class="section" id="five-point-relative-pose">
 <span id="section-five-point"></span><h2>Five Point Relative Pose<a class="headerlink" href="#five-point-relative-pose" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<blockquote>
+<div><dl class="function">
 <dt id="FivePointRelativePose__doubleCA.doubleCA.doubleA.doubleA">
 int <tt class="descname">FivePointRelativePose</tt><big>(</big>const double <em>image1_points</em>[3 * 5], const double <em>image2_points</em>[3 * 5], double <em>rotation</em>[9 * 10], double <em>translation</em>[3 * 10]<big>)</big><a class="headerlink" href="#FivePointRelativePose__doubleCA.doubleCA.doubleA.doubleA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="FivePointRelativePose__Eigen::Vector3dCA.Eigen::Vector3dCA.std::vector:Eigen::Matrix3d:P.std::vector:Eigen::Vector3d:P">
+bool <tt class="descname">FivePointRelativePose</tt><big>(</big>const Eigen::Vector3d <em>image1_points</em>[5], const Eigen::Vector3d <em>image2_points</em>[5], std::vector&lt;Eigen::Matrix3d&gt;* <em>rotation</em>, std::vector&lt;Eigen::Vector3d&gt;* <em>translation</em><big>)</big><a class="headerlink" href="#FivePointRelativePose__Eigen::Vector3dCA.Eigen::Vector3dCA.std::vector:Eigen::Matrix3d:P.std::vector:Eigen::Vector3d:P" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the relative pose between two cameras using 5 corresponding
 points. Algorithm is implemented based on &#8220;An Efficient Solution to the
 Five-Point Relative Pose Problem&#8221; by <a class="reference internal" href="bibliography.html#nister">[Nister]</a>.</p>
@@ -137,45 +150,80 @@ Five-Point Relative Pose Problem&#8221; by <a class="reference internal" href="b
 rotation and translation.</p>
 </dd></dl>
 
+</div></blockquote>
 </div>
-<div class="section" id="four-point-algorith-for-homography">
-<span id="section-four-point"></span><h2>Four Point Algorith for Homography<a class="headerlink" href="#four-point-algorith-for-homography" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="four-point-algorithm-for-homography">
+<span id="section-four-point"></span><h2>Four Point Algorithm for Homography<a class="headerlink" href="#four-point-algorithm-for-homography" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl class="function">
+<dt id="FourPointHomography__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP">
+bool <tt class="descname">FourPointHomography</tt><big>(</big>const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_1_points</em>, const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_2_points</em>, Eigen::Matrix3d* <em>homography</em><big>)</big><a class="headerlink" href="#FourPointHomography__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="function">
-<dt>
-<tt class="descname">bool FourPointHomography(const std::vector&lt;Eigen::Vector3d&gt;&amp; image_1_points, const std::vector&lt;Eigen::Vector3d&gt;&amp; image_2_points, Eigen::Matrix3d* homography);</tt></dt>
+<dt id="FourPointHomography__iC.doubleCA.doubleCA.doubleA">
+bool <tt class="descname">FourPointHomography</tt><big>(</big>const int <em>num_points</em>, const double <em>image_1_points</em>[], const double <em>image_2_points</em>[], double <em>homography</em>[9]<big>)</big><a class="headerlink" href="#FourPointHomography__iC.doubleCA.doubleCA.doubleA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the 2D <a class="reference external" href="http://en.wikipedia.org/wiki/Homography_(computer_vision)">homography</a> mapping points
 in image 1 to image 2 such that: <span class="math">\(x' = Hx\)</span> where <span class="math">\(x\)</span> is a point in
 image 1 and <span class="math">\(x'\)</span> is a point in image 2. The algorithm implemented is
 the DLT algorithm based on algorithm 4.2 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
-<p><tt class="docutils literal"><span class="pre">image_1_points</span></tt>: Image points from image 1. At least 4 points must be passed in.</p>
-<p><tt class="docutils literal"><span class="pre">image_2_points</span></tt>: Image points from image 2. At least 4 points must be passed in.</p>
+<p><tt class="docutils literal"><span class="pre">image_1_points</span></tt>: Image points from image 1. At least 4 points must be
+passed in.</p>
+<p><tt class="docutils literal"><span class="pre">image_2_points</span></tt>: Image points from image 2. At least 4 points must be
+passed in.</p>
 <p><tt class="docutils literal"><span class="pre">homography</span></tt>: The computed 3x3 homography matrix.</p>
 </dd></dl>
 
+</div></blockquote>
 </div>
 <div class="section" id="eight-point-algorithm-for-fundamental-matrix">
 <span id="section-eight-point"></span><h2>Eight Point Algorithm for Fundamental Matrix<a class="headerlink" href="#eight-point-algorithm-for-fundamental-matrix" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<blockquote>
+<div><dl class="function">
 <dt id="NormalizedEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP">
 bool <tt class="descname">NormalizedEightPoint</tt><big>(</big>const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_1_points</em>, const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_2_points</em>, Eigen::Matrix3d* <em>fundamental_matrix</em><big>)</big><a class="headerlink" href="#NormalizedEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="GoldStandardEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP">
-bool <tt class="descname">GoldStandardEightPoint</tt><big>(</big>const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_1_points</em>, const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_2_points</em>, Eigen::Matrix3d* <em>fundamental_matrix</em><big>)</big><a class="headerlink" href="#GoldStandardEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP" title="Permalink to this definition">¶</a></dt>
+<dt id="NormalizedEightPoint__iC.doubleCA.doubleCA.doubleA">
+bool <tt class="descname">NormalizedEightPoint</tt><big>(</big>const int <em>num_points</em>, const double <em>image_1_points</em>[], const double <em>image_2_points</em>[], double <em>fundamental_matrix</em>[9]<big>)</big><a class="headerlink" href="#NormalizedEightPoint__iC.doubleCA.doubleCA.doubleA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the <a class="reference external" href="http://en.wikipedia.org/wiki/Fundamental_matrix_(computer_vision)">fundamental matrix</a> relating
 image points between two images such that <span class="math">\(x' F x = 0\)</span> for all
 correspondences <span class="math">\(x\)</span> and <span class="math">\(x'\)</span> in images 1 and 2 respectively. The
 normalized eight point algorithm is a speedy estimation of the fundamental
-matrix (Alg 11.1 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>), while the gold standard algorithm
-minimizes the geometric error (i.e., reprojection error) according to
-algorithm 11.3 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
-<p><tt class="docutils literal"><span class="pre">image_1_points</span></tt>: Image points from image 1. At least 8 points must be passed in.</p>
-<p><tt class="docutils literal"><span class="pre">image_2_points</span></tt>: Image points from image 2. At least 8 points must be passed in.</p>
+matrix (Alg 11.1 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>) that minimizes an algebraic error.</p>
+<p><tt class="docutils literal"><span class="pre">image_1_points</span></tt>: Image points from image 1. At least 8 points must be
+passed in.</p>
+<p><tt class="docutils literal"><span class="pre">image_2_points</span></tt>: Image points from image 2. At least 8 points must be
+passed in.</p>
 <p><tt class="docutils literal"><span class="pre">fundamental_matrix</span></tt>: The computed fundamental matrix.</p>
 <p><tt class="docutils literal"><span class="pre">returns:</span></tt> true on success, false on failure.</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="GoldStandardEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP">
+bool <tt class="descname">GoldStandardEightPoint</tt><big>(</big>const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_1_points</em>, const std::vector&lt;Eigen::Vector3d&gt;&amp; <em>image_2_points</em>, Eigen::Matrix3d* <em>fundamental_matrix</em><big>)</big><a class="headerlink" href="#GoldStandardEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="GoldStandardEightPoint__iC.doubleCA.doubleCA.doubleA">
+bool <tt class="descname">GoldStandardEightPoint</tt><big>(</big>const int <em>num_points</em>, const double <em>image_1_points</em>[], const double <em>image_2_points</em>[], double <em>fundamental_matrix</em>[9]<big>)</big><a class="headerlink" href="#GoldStandardEightPoint__iC.doubleCA.doubleCA.doubleA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the <a class="reference external" href="http://en.wikipedia.org/wiki/Fundamental_matrix_(computer_vision)">fundamental matrix</a>
+relating image points between two images such that <span class="math">\(x' F x = 0\)</span> for
+all correspondences <span class="math">\(x\)</span> and <span class="math">\(x'\)</span> in images 1 and 2
+respectively. The gold standard algorithm computes an initial estimation of
+the fundmental matrix from the <a class="reference internal" href="#NormalizedEightPoint__std::vector:Eigen::Vector3d:CR.std::vector:Eigen::Vector3d:CR.Eigen::Matrix3dP" title="NormalizedEightPoint"><tt class="xref cpp cpp-func docutils literal"><span class="pre">NormalizedEightPoint()</span></tt></a> then uses
+Levenberg-Marquardt to minimize the geometric error (i.e., reprojection
+error) according to algorithm 11.3 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
+<p><tt class="docutils literal"><span class="pre">image_1_points</span></tt>: Image points from image 1. At least 8 points must be
+passed in.</p>
+<p><tt class="docutils literal"><span class="pre">image_2_points</span></tt>: Image points from image 2. At least 8 points must be
+passed in.</p>
+<p><tt class="docutils literal"><span class="pre">fundamental_matrix</span></tt>: The computed fundamental matrix.</p>
+<p><tt class="docutils literal"><span class="pre">returns:</span></tt> true on success, false on failure.</p>
+</dd></dl>
+
+</div></blockquote>
 </div>
 <div class="section" id="perspective-n-point">
 <span id="section-dls-pnp"></span><h2>Perspective N-Point<a class="headerlink" href="#perspective-n-point" title="Permalink to this headline">¶</a></h2>

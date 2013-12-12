@@ -276,8 +276,8 @@ void EfficientSVDDecomp(const Matrix3d& essential_mat,
 void DecomposeWithIdealCorrespondence(const Vector3d& image_point1,
                                       const Vector3d& image_point2,
                                       const Matrix3d& essential_mat,
-                                      double rotation[9 * 4],
-                                      double translation[3 * 4]) {
+                                      Matrix3d* rotation,
+                                      Vector3d* translation) {
   // Map the image points to vectors.
   Matrix3d candidate_rotation[4];
   Vector3d candidate_translation[4];
@@ -325,34 +325,57 @@ void DecomposeWithIdealCorrespondence(const Vector3d& image_point1,
     best_index = 3;
   }
 
-  Map<Matrix3d> best_rotation(rotation);
-  best_rotation = candidate_rotation[best_index];
-  Map<Vector3d> best_translation(translation);
-  best_translation = candidate_translation[best_index];
+  *rotation = candidate_rotation[best_index];
+  *translation = candidate_translation[best_index];
 }
 
 }  // namespace
 
-// Implementation of Nister from "An Efficient Solution to the Five-Point
-// Relative Pose Problem"
 int FivePointRelativePose(const double image1_points[3 * 5],
                           const double image2_points[3 * 5],
                           double rotation[9 * 40],
                           double translation[3 * 40]) {
+  Vector3d img1_pts[5];
+  Vector3d img2_pts[5];
+  for (int i = 0; i < 5; i++) {
+    img1_pts[i] = Map<const Vector3d>(image1_points + 3 * i);
+    img2_pts[i] = Map<const Vector3d>(image2_points + 3 * i);
+  }
+  std::vector<Matrix3d> rotation_eig;
+  std::vector<Vector3d> translation_eig;
+  FivePointRelativePose(img1_pts, img2_pts, &rotation_eig, &translation_eig);
+
+  const int num_solns = rotation_eig.size();
+  for (int i = 0; i < num_solns; i++) {
+    Map<Matrix3d> temp_rot(rotation + 9 * i);
+    temp_rot = rotation_eig[i];
+
+    Map<Vector3d> temp_trans(translation + 3 * i);
+    temp_trans = translation_eig[i];
+  }
+
+  return num_solns;
+}
+
+
+// Implementation of Nister from "An Efficient Solution to the Five-Point
+// Relative Pose Problem"
+bool FivePointRelativePose(const Vector3d image1_points[5],
+                           const Vector3d image2_points[5],
+                           std::vector<Matrix3d>* rotation,
+                           std::vector<Vector3d>* translation) {
   // Step 1. Create the 5x9 matrix containing epipolar constraints.
   //   Essential matrix is a linear combination of the 4 vectors spanning the
   //   null space of this matrix (found by SVD).
   Matrix<double, 5, 9> epipolar_constraint;
   for (int i = 0; i < 5; i++) {
-    // Make image points homogeneous.
-    const Map<const Vector3d> tmp_img1(image1_points + 3 * i);
-    const Map<const Vector3d> tmp_img2(image2_points + 3 * i);
     // Fill matrix with the epipolar constraint from q'_t*E*q = 0. Where q is
     // from the first image, and q' is from the second. Eq. 8 in the Nister
     // paper.
     for (int j = 0; j < 3; j++)
       for (int k = 0; k < 3; k++)
-        epipolar_constraint(i, 3 * j + k) = tmp_img1(k) * tmp_img2(j);
+        epipolar_constraint(i, 3 * j + k) =
+            image1_points[i](k) * image2_points[i](j);
   }
 
   // Solve for right null space of the 5x9 matrix. NOTE: We use a
@@ -429,6 +452,8 @@ int FivePointRelativePose(const double image1_points[3 * 5],
   // Step 5. Extract real roots of the 10th degree polynomial.
   Polynomial<10> determinant_poly(n.data());
   std::vector<double> roots = determinant_poly.RealRoots();
+  rotation->resize(roots.size());
+  translation->resize(roots.size());
   for (int i = 0; i < roots.size(); i++) {
     double x = EvaluatePoly(p1, roots[i]) / EvaluatePoly(p3, roots[i]);
     double y = EvaluatePoly(p2, roots[i]) / EvaluatePoly(p3, roots[i]);
@@ -442,14 +467,11 @@ int FivePointRelativePose(const double image1_points[3 * 5],
         temp_sum.segment(3, 3).transpose(), temp_sum.tail(3).transpose();
 
     // Decompose into R, t using the first point correspondence.
-    Map<const Vector3d> tmp_img1(image1_points + 3 * 0);
-    Map<const Vector3d> tmp_img2(image2_points + 3 * 0);
-
-    DecomposeWithIdealCorrespondence(tmp_img1, tmp_img2,
-                                     candidate_essential_mat, rotation + 9 * i,
-                                     translation + 3 * i);
+    DecomposeWithIdealCorrespondence(image1_points[0], image2_points[0],
+                                     candidate_essential_mat,
+                                     &(rotation->at(i)), &(translation->at(i)));
   }
-  return roots.size();
+  return (roots.size() > 0);
 }
 
 }  // namespace theia

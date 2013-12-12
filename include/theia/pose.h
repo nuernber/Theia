@@ -38,6 +38,7 @@
 #include "theia/vision/sfm/projection_matrix.h"
 #include "theia/vision/sfm/pose/dls_pnp.h"
 #include "theia/vision/sfm/pose/eight_point_fundamental_matrix.h"
+#include "theia/vision/sfm/pose/four_point_homography.h"
 #include "theia/vision/sfm/pose/five_point_relative_pose.h"
 #include "theia/vision/sfm/pose/perspective_three_point.h"
 

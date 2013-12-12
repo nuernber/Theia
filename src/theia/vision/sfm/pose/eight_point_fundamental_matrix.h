@@ -57,6 +57,19 @@ bool NormalizedEightPoint(const std::vector<Eigen::Vector3d>& image_1_points,
                           const std::vector<Eigen::Vector3d>& image_2_points,
                           Eigen::Matrix3d* fundamental_matrix);
 
+// Same as above, but with a generic interface:
+// Params:
+//   num_points: the number of image correspondences used.
+//   image_1_points: a 3xn array of homogeneous image points from one image (8
+//     or more points).
+//   image_2_points: a 3xn array of homogeneous image points from a second image
+//     (8 or more points).
+//   fundamental_matrix: the estimated fundamental matrix.
+bool NormalizedEightPoint(const int num_points,
+                          const double image_1_points[],
+                          const double image_2_points[],
+                          double fundamental_matrix[9]);
+
 // Eight point algorithm for computing the fundamental matrix via the Gold
 // Standard Algorithm (Alg 11.3 in Hartley and Zisserman). This minimizes the
 // geometric error using Levenberg Marquardt with initialization from the
@@ -64,6 +77,12 @@ bool NormalizedEightPoint(const std::vector<Eigen::Vector3d>& image_1_points,
 bool GoldStandardEightPoint(const std::vector<Eigen::Vector3d>& image_1_points,
                             const std::vector<Eigen::Vector3d>& image_2_points,
                             Eigen::Matrix3d* fundamental_matrix);
+
+// Same as above, but with a generic interface.
+bool GoldStandardEightPoint(const int num_points,
+                            const double image_1_points[],
+                            const double image_2_points[],
+                            double fundamental_matrix[9]);
 
 }  // namespace theia
 

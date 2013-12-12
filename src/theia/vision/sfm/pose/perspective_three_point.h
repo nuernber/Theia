@@ -35,6 +35,9 @@
 #ifndef THEIA_VISION_SFM_POSE_PERSPECTIVE_THREE_POINT_H_
 #define THEIA_VISION_SFM_POSE_PERSPECTIVE_THREE_POINT_H_
 
+#include <Eigen/Core>
+#include <vector>
+
 namespace theia {
 // Computes camera pose using the three point algorithm and returns all possible
 // solutions (up to 4). Follows steps from the paper "A Novel Parameterization
@@ -53,6 +56,12 @@ int PoseFromThreePoints(const double image_ray[3 * 3],
                         double solution_rotations[9 * 4],
                         double solution_translations[3 * 4]);
 
+// Same as above, but with Eigen interface.
+bool PoseFromThreePoints(const Eigen::Vector3d image_ray[3],
+                         const Eigen::Vector3d world_point[3],
+                         std::vector<Eigen::Matrix3d>* solution_rotations,
+                         std::vector<Eigen::Vector3d>* solution_translations);
+
 // Uses the method above for a calibrated camera setup.
 // Params:
 //   image_points: Location of features on the image plane (x[i][*] = i-th image
@@ -68,6 +77,6 @@ int PoseFromThreeCalibrated(const double image_points[2 * 3],
                             const double focal_length[2],
                             const double principal_point[2],
                             double solutions[12 * 4]);
-
 }  // namespace theia
+
 #endif  // THEIA_VISION_SFM_POSE_PERSPECTIVE_THREE_POINT_H_

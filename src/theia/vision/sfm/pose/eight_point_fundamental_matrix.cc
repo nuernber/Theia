@@ -47,6 +47,7 @@
 namespace theia {
 namespace {
 using Eigen::JacobiSVD;
+using Eigen::Map;
 using Eigen::Matrix3d;
 using Eigen::Matrix;
 using Eigen::Vector3d;
@@ -144,6 +145,23 @@ void NormalizedEightPointInternal(
 
 }  // namespace
 
+bool NormalizedEightPoint(const int num_points,
+                          const double image_1_points[],
+                          const double image_2_points[],
+                          double fundamental_matrix[9]) {
+  std::vector<Vector3d> img_1_pts(num_points);
+  std::vector<Vector3d> img_2_pts(num_points);
+  for (int i = 0; i < num_points; i++) {
+    img_1_pts[i] = Map<const Vector3d>(image_1_points + 3 * i);
+    img_2_pts[i] = Map<const Vector3d>(image_2_points + 3 * i);
+  }
+
+  Matrix3d fundamental_matrix_eig;
+  return NormalizedEightPoint(img_1_pts, img_2_pts, &fundamental_matrix_eig);
+  Map<Matrix3d> soln_map(fundamental_matrix);
+  soln_map = fundamental_matrix_eig;
+}
+
 bool NormalizedEightPoint(const std::vector<Vector3d>& image_1_points,
                           const std::vector<Vector3d>& image_2_points,
                           Matrix3d* fundamental_matrix) {
@@ -161,6 +179,23 @@ bool NormalizedEightPoint(const std::vector<Vector3d>& image_1_points,
       img2_norm_mat.transpose() * singular_fmatrix * img1_norm_mat;
 
   return true;
+}
+
+bool GoldStandardEightPoint(const int num_points,
+                            const double image_1_points[],
+                            const double image_2_points[],
+                            double fundamental_matrix[9]) {
+  std::vector<Vector3d> img_1_pts(num_points);
+  std::vector<Vector3d> img_2_pts(num_points);
+  for (int i = 0; i < num_points; i++) {
+    img_1_pts[i] = Map<const Vector3d>(image_1_points + 3 * i);
+    img_2_pts[i] = Map<const Vector3d>(image_2_points + 3 * i);
+  }
+
+  Matrix3d fundamental_matrix_eig;
+  return GoldStandardEightPoint(img_1_pts, img_2_pts, &fundamental_matrix_eig);
+  Map<Matrix3d> soln_map(fundamental_matrix);
+  soln_map = fundamental_matrix_eig;
 }
 
 bool GoldStandardEightPoint(const std::vector<Vector3d>& image_1_points,

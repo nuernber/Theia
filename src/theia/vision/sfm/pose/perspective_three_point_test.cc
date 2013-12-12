@@ -73,6 +73,7 @@ void PoseFromThreeCalibratedTest() {
                                               kFocalLength,
                                               kPrincipalPoint,
                                               solutions);
+  EXPECT_GT(num_solutions, 0);
 
   bool matched_transform = false;
   for (int i = 0; i < num_solutions; ++i) {
