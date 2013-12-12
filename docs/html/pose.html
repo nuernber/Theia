@@ -103,10 +103,7 @@ the Perspective-Three-Point Problem for a direct computation of Absolute
 Camera position and Orientation&#8221; by <a class="reference internal" href="bibliography.html#kneip">[Kneip]</a>. This algorithm has been proven
 to be up to an order of magnitude faster than other methods.</p>
 <p><tt class="docutils literal"><span class="pre">image_ray</span></tt>: Normalized image rays corresponding to model points.</p>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">world_point</span></tt>: 3D location of features. Must correspond to the image_ray of</dt>
-<dd>the same index (x[i][*] = i-th world point)</dd>
-</dl>
+<p><tt class="docutils literal"><span class="pre">world_point</span></tt>: 3D location of features.</p>
 <p><tt class="docutils literal"><span class="pre">solution_rotations</span></tt>: the rotation matrix of the candidate solutions</p>
 <p><tt class="docutils literal"><span class="pre">solution_translation</span></tt>: the translation of the candidate solutions</p>
 <p><tt class="docutils literal"><span class="pre">returns</span></tt>: The number of poses computed, along with the output parameters
@@ -118,10 +115,7 @@ to be up to an order of magnitude faster than other methods.</p>
 <dt id="PoseFromThreeCalibrated__doubleCA.doubleCA.doubleCA.doubleCA.doubleA">
 int <tt class="descname">PoseFromThreeCalibrated</tt><big>(</big>const double <em>image_points</em>[2 * 3], const double <em>world_points</em>[3 * 3], const double <em>focal_length</em>[2], const double <em>principal_point</em>[2], double <em>solutions</em>[12 * 4]<big>)</big><a class="headerlink" href="#PoseFromThreeCalibrated__doubleCA.doubleCA.doubleCA.doubleCA.doubleA" title="Permalink to this definition">¶</a></dt>
 <dd><p><tt class="docutils literal"><span class="pre">image_points</span></tt>: Location of features on the image plane</p>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">world_points</span></tt>: 3D location of features. Must correspond to the image_point</dt>
-<dd>of the same index (x[i][*] = i-th world point)</dd>
-</dl>
+<p><tt class="docutils literal"><span class="pre">world_points</span></tt>: 3D location of features.</p>
 <p><tt class="docutils literal"><span class="pre">focal_length</span></tt>: fx, and fy the focal length parameters</p>
 <p><tt class="docutils literal"><span class="pre">principle_point</span></tt>: the principle point of the image</p>
 <p><tt class="docutils literal"><span class="pre">solutions</span></tt>: the projection matrices for the candidate solutions</p>

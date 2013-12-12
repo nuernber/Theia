@@ -43,8 +43,7 @@ Perspective Three Point (P3P)
 
   ``image_ray``: Normalized image rays corresponding to model points.
 
-  ``world_point``: 3D location of features. Must correspond to the image_ray of
-     the same index (x[i][*] = i-th world point)
+  ``world_point``: 3D location of features.
 
   ``solution_rotations``: the rotation matrix of the candidate solutions
 
@@ -60,8 +59,7 @@ Perspective Three Point (P3P)
 
    ``image_points``: Location of features on the image plane
 
-   ``world_points``: 3D location of features. Must correspond to the image_point
-     of the same index (x[i][*] = i-th world point)
+   ``world_points``: 3D location of features.
 
    ``focal_length``: fx, and fy the focal length parameters
 
