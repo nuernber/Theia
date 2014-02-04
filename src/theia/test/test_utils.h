@@ -50,7 +50,7 @@ void ExpectMatricesNear(const Eigen::MatrixBase<Derived>& a,
   ASSERT_EQ(a.rows(), b.rows());
   ASSERT_EQ(a.cols(), b.cols());
   for (int i = 0; i < a.rows(); i++)
-    for (int j = 0; j < b.rows(); j++)
+    for (int j = 0; j < a.cols(); j++)
       ASSERT_NEAR(a(i, j), b(i, j), tolerance);
 }
 

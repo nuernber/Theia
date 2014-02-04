@@ -41,5 +41,6 @@
 #include "theia/vision/sfm/pose/four_point_homography.h"
 #include "theia/vision/sfm/pose/five_point_relative_pose.h"
 #include "theia/vision/sfm/pose/perspective_three_point.h"
+#include "theia/vision/sfm/pose/util.h"
 
 #endif  // THEIA_POSE_H_

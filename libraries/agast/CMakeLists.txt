@@ -20,3 +20,8 @@ SET (agast_sources
   agast/oast9_16.h)
 
 ADD_LIBRARY(agast ${agast_sources})
+INSTALL(TARGETS agast
+  EXPORT  TheiaExport
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib${LIB_SUFFIX}
+  ARCHIVE DESTINATION lib${LIB_SUFFIX})

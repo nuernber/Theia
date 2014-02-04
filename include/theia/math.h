@@ -40,5 +40,6 @@
 #include "theia/math/matrix/gauss_jordan.h"
 #include "theia/math/polynomial.h"
 #include "theia/math/probability/sequential_probability_ratio.h"
+#include "theia/math/util.h"
 
 #endif  // THEIA_MATH_H_
