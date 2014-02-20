@@ -98,7 +98,7 @@ template <class Datum, class Model> class Estimator {
                                double error_threshold) const {
     std::vector<bool> inliers;
     for (const Datum& data_point : data)
-      inliers.push_back(Error(data, model) < error_threshold);
+      inliers.push_back(Error(data_point, model) < error_threshold);
     return inliers;
   }
 
@@ -108,7 +108,7 @@ template <class Datum, class Model> class Estimator {
                     double error_threshold) const {
     int num_inliers = 0;
     for (const Datum& data_point : data)
-      if (Error(data, model) < error_threshold) num_inliers++;
+      if (Error(data_point, model) < error_threshold) num_inliers++;
     return num_inliers;
   }
 

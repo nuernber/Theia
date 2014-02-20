@@ -47,7 +47,8 @@ class InlierSupport : public QualityMeasurement {
   InlierSupport(double error_threshold, int min_num_inliers)
       : error_thresh_(error_threshold),
         min_num_inliers_(static_cast<double>(min_num_inliers)) {}
-
+  InlierSupport(double error_threshold)
+      : error_thresh_(error_threshold), min_num_inliers_(-1.0) {}
   ~InlierSupport() {}
 
   // Count the number of inliers in the data;
@@ -72,7 +73,7 @@ class InlierSupport : public QualityMeasurement {
   // Return true if the number of inliers is greater than our terminating
   // criterion.
   bool SufficientlyHighQuality(const double quality) {
-    return quality > min_num_inliers_;
+    return min_num_inliers_ > 0 && quality > min_num_inliers_;
   }
 
  private:

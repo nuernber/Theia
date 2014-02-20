@@ -69,9 +69,18 @@ class Prosac : public SampleConsensusEstimator<Datum, Model> {
       : SampleConsensusEstimator<Datum, Model>(
             new ProsacSampler<Datum>(min_sample_size),
             new InlierSupport(error_threshold, min_num_inliers),
-            max_iters_(MaxItersFromOutlierProb(min_sample_size,
-                                               outlier_probability,
-                                               no_fail_probability))) {}
+            std::min(min_num_inliers,
+                     MaxItersFromOutlierProb(min_sample_size,
+                                             outlier_probability,
+                                             no_fail_probability))) {}
+
+  Prosac(int min_sample_size, double error_threshold,
+         double outlier_probability, double no_fail_probability)
+      : SampleConsensusEstimator<Datum, Model>(
+            new ProsacSampler<Datum>(min_sample_size),
+            new InlierSupport(error_threshold),
+            MaxItersFromOutlierProb(min_sample_size, outlier_probability,
+                                    no_fail_probability)) {}
   ~Prosac() {}
 
  private:
@@ -82,8 +91,9 @@ class Prosac : public SampleConsensusEstimator<Datum, Model> {
   //     (typically set to .99)
   int MaxItersFromOutlierProb(int min_sample_size, double outlier_probability,
                               double no_fail_probability = 0.99) {
-    return ceil(log(1 - no_fail_probability) /
+    const double its =  ceil(log(1 - no_fail_probability) /
                 log(1.0 - pow(1.0 - outlier_probability, min_sample_size)));
+    return its;
   }
 };
 }  // namespace theia

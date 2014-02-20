@@ -52,11 +52,25 @@ namespace theia {
 // solution so it is very fast. Because of this, this is not a true
 // ICP method, but it achieves the same registration using a method suggested by
 // Besl-McKay.
-void AlignPointClouds(const double left[][3],
-                      const double right[][3],
-                      int num_points,
-                      double rotation[3][3],
-                      double translation[3]);
+void AlignPointCloudsICP(const int num_points,
+                         const double left[],
+                         const double right[],
+                         double rotation[3 * 3],
+                         double translation[3]);
+
+// Computes the orientation, position, and scale factor for the transformation
+// between two corresponding 3D point sets A and B such as they are related by:
+//
+//     B = s * R * A + t
+//
+// Implementation is based on the paper by Umeyama "Least-squares estimation of
+// transformation parameters between two point patterns"
+void AlignPointCloudsUmeyama(const int num_points,
+                             const double left[],
+                             const double right[],
+                             double rotation[3 * 3],
+                             double translation[3],
+                             double* scale);
 
 }  // namespace theia
 

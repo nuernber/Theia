@@ -39,10 +39,12 @@
 #include <random>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "theia/math/probability/sequential_probability_ratio.h"
 #include "theia/solvers/estimator.h"
+#include "theia/solvers/inlier_support.h"
 #include "theia/solvers/sample_consensus_estimator.h"
 #include "theia/solvers/random_sampler.h"
 #include "theia/solvers/prosac_sampler.h"
@@ -144,6 +146,10 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
 
   // Confidence that there exists at least one set with no outliers.
   double inlier_confidence_;
+
+  // Inliners from the recent data. Only valid if Estimate has been called!
+  std::vector<bool> inliers_;
+
 };
 
 // -------------------------- Implementation -------------------------- //
@@ -346,9 +352,33 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
     }
   }
 
-  // The best model should be at the beginning of the list since we only quit
-  // when n==1.
-  *best_model = hypotheses[0].data;
+  if (hypotheses.size() > 0) {
+    // The best model should be at the beginning of the list since we only quit
+    // when n==1.
+    *best_model = hypotheses[0].data;
+  } else {
+    return false;
+  }
+
+  // Grab inliers to refine the model.
+  InlierSupport quality_measurement(error_thresh_, 0);
+  std::vector<double> residuals = estimator.Residuals(data, *best_model);
+  std::vector<bool> temp_inlier_set(data.size());
+  quality_measurement.Calculate(residuals, &temp_inlier_set);
+  std::vector<Datum> temp_consensus_set;
+  for (int i = 0; i < temp_inlier_set.size(); i++) {
+    if (temp_inlier_set[i]) {
+      temp_consensus_set.push_back(data[i]);
+    }
+  }
+  // Refine the model based on all current inliers.
+  estimator.RefineModel(temp_consensus_set, best_model);
+
+  // Calculate the final inliers.
+  inliers_.resize(data.size());
+  std::vector<double> final_residuals = estimator.Residuals(data, *best_model);
+  quality_measurement.Calculate(final_residuals, &inliers_);
+
   return true;
 }
 

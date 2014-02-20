@@ -54,6 +54,7 @@ SET(THEIA_SRC
   util/random.cc
   vision/sfm/pose/dls_impl.cc
   vision/sfm/pose/dls_pnp.cc
+  vision/sfm/pose/dls_similarity_transform.cc
   vision/sfm/pose/eight_point_fundamental_matrix.cc
   vision/sfm/pose/five_point_relative_pose.cc
   vision/sfm/pose/four_point_homography.cc
@@ -130,6 +131,7 @@ IF (BUILD_TESTING)
   GTEST(solvers/ransac)
   GTEST(vision/matching/distance)
   GTEST(vision/sfm/pose/dls_pnp)
+  GTEST(vision/sfm/pose/dls_similarity_transform)
   GTEST(vision/sfm/pose/eight_point_fundamental_matrix)
   GTEST(vision/sfm/pose/five_point_relative_pose)
   GTEST(vision/sfm/pose/four_point_homography)

@@ -34,6 +34,7 @@
 
 #include "theia/vision/transformation/align_point_clouds.h"
 
+#include <glog/logging.h>
 #include <Eigen/Dense>
 
 // Use Besel-McKay registration to align point clouds to a model. We use SVD
@@ -42,30 +43,25 @@
 // guaranteed to find a local minima.
 namespace theia {
 
-void AlignPointClouds(const double left[][3],
-                      const double right[][3],
-                      int num_points,
-                      double rotation[3][3],
-                      double translation[3]) {
-  // Compute centroids.
-  Eigen::Vector3d left_centroid(0.0, 0.0, 0.0);
-  Eigen::RowVector3d right_centroid(0.0, 0.0, 0.0);
-  for (int i = 0; i < num_points; i++) {
-    left_centroid += Eigen::Vector3d(left[i][0], left[i][1], left[i][2]);
-    right_centroid += Eigen::RowVector3d(right[i][0], right[i][1], right[i][2]);
-  }
+void AlignPointCloudsICP(const int num_points,
+                         const double left[],
+                         const double right[],
+                         double rotation[3 * 3],
+                         double translation[3]) {
+  Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic> > left_points(
+      left, 3, num_points);
+  Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic> > right_points(
+      right, 3, num_points);
 
-  left_centroid /= static_cast<double>(num_points);
-  right_centroid /= static_cast<double>(num_points);
+  Eigen::Vector3d left_centroid = left_points.rowwise().mean();
+  Eigen::Vector3d right_centroid = right_points.rowwise().mean();
 
   // Calculate cross correlation matrix based on the points shifted about the
   // centroid.
   Eigen::Matrix3d cross_correlation = Eigen::Matrix3d::Zero();
   for (int i = 0; i < num_points; i++) {
-    Eigen::Vector3d left_vector(left[i][0], left[i][1], left[i][2]);
-    Eigen::RowVector3d right_vector(right[i][0], right[i][1], right[i][2]);
-    cross_correlation +=
-        (left_vector - left_centroid)*(right_vector - right_centroid);
+    cross_correlation += (left_points.col(i) - left_centroid) *
+                         (right_points.col(i) - right_centroid).transpose();
   }
 
   // Compute SVD decomposition of the cross correlation. This is excessive for 3
@@ -80,14 +76,44 @@ void AlignPointClouds(const double left[][3],
   // memory space for the rotation matrix calculated. This is both memory
   // efficient and prevents any memory scope errors (same concept used for
   // translation below).
-  Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor> >
-      rotation_mat(reinterpret_cast<double*>(&rotation[0]));
-  rotation_mat = svd.matrixV()*(svd.matrixU().transpose());
+  Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor> > rotation_mat(
+      rotation);
+  rotation_mat = svd.matrixV() * (svd.matrixU().transpose());
 
   // Rotation is solved for, but the optimal translation is the difference of
   // the right centroid and the rotated left centroid.
-  Eigen::Vector3d rotated_left_centroid = rotation_mat*left_centroid;
+  Eigen::Vector3d rotated_left_centroid = rotation_mat * left_centroid;
   Eigen::Map<Eigen::RowVector3d> translation_vec(translation);
-  translation_vec = right_centroid - rotated_left_centroid.transpose();
+  translation_vec = right_centroid - rotated_left_centroid;
 }
+
+void AlignPointCloudsUmeyama(const int num_points,
+                             const double left[],
+                             const double right[],
+                             double rotation[3 * 3],
+                             double translation[3],
+                             double* scale) {
+  // First, compute the centroids.
+  Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic> > left_points(
+      left, 3, num_points);
+  Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic> > right_points(
+      right, 3, num_points);
+
+  // Get the transformation via Umeyama's least squares algorithm. This returns
+  // a matrix of the form:
+  //    [ s * R  t]
+  //    [   0    1]
+  // from which we can extract the scale, rotation, and translation.
+  const Eigen::Matrix4d transformation_mat =
+      Eigen::umeyama(left_points, right_points, true);
+
+  Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor> > rotation_mat(
+      rotation);
+  rotation_mat = transformation_mat.topLeftCorner<3, 3>();
+  *scale = pow(rotation_mat.determinant(), 1.0 / 3.0);
+  rotation_mat /= *scale;
+  Eigen::Map<Eigen::Vector3d> translation_vec(translation);
+  translation_vec = transformation_mat.topRightCorner<3, 1>();
+}
+
 }  // namespace theia

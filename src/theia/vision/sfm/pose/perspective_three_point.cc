@@ -139,7 +139,6 @@ void Backsubstitute(const Matrix3d& intermediate_world_frame,
                     const double b,
                     Vector3d* translation,
                     Matrix3d* rotation) {
-  CHECK_LE(fabs(cos_theta), 1.0);
   const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
   const double sin_alpha = sqrt(1.0 / (cot_alpha * cot_alpha + 1.0));
   double cos_alpha = sqrt(1.0 - sin_alpha * sin_alpha);
