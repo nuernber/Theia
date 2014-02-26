@@ -33,9 +33,14 @@
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <glog/logging.h>
 #include <math.h>
 #include "gtest/gtest.h"
 
+#include "theia/math/util.h"
+#include "theia/vision/pose/util.h"
+#include "theia/vision/sfm/projection_matrix.h"
 #include "theia/test/benchmark.h"
 #include "theia/test/test_utils.h"
 #include "theia/util/random.h"
@@ -47,46 +52,54 @@ using Eigen::Map;
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
 
-void PoseFromThreeCalibratedTest() {
+void PoseFromThreeCalibratedTest(const double noise) {
   // Projection matrix.
-  const double kP[] = { 0.846169, -0.0901237, -0.525239,
-                       -0.130189, 0.920775, -0.367729,
-                       0.516768, 0.379541, 0.767398,
-                       -0.365021, -0.0120234, 4.66054};
+  const Matrix3d gt_rotation =
+      (Eigen::AngleAxisd(15.0, Vector3d(1.0, 0.0, 0.0)) *
+       Eigen::AngleAxisd(-10.0, Vector3d(0.0, 1.0, 0.0))).toRotationMatrix();
+  const Vector3d gt_translation(0.3, -1.7, 1.15);
+  const TransformationMatrix projection_mat =
+      TransformationMatrixFromRt(gt_rotation, gt_translation);
 
   // Points in the 3D scene.
-  const double kPoints3d[] = {-0.3001, -0.5840, -1.2271,
-                              -1.4487, 0.6965, -0.3889,
-                              -0.7815, 0.7642, -0.1257};
+  const Vector3d kPoints3d[3] = { Vector3d(-0.3001, -0.5840, 1.2271),
+                                  Vector3d(-1.4487, 0.6965, 0.3889),
+                                  Vector3d(-0.7815, 0.7642, 0.1257)};
 
   // Points in the camera view.
-  const double kPoints2d[] = {-0.2877, -0.2416,
-                              -0.3868, 0.1258,
-                              -0.2537, 0.1522};
+  Vector3d kPoints2d[3];
+  for (int i = 0; i < 3; i++) {
+    kPoints2d[i] = projection_mat * kPoints3d[i];
+    if (noise) {
+      AddNoiseToProjection(noise, &kPoints2d[i]);
+    }
+  }
 
-  const double kFocalLength[] = {1.0, 1.0};
-  const double kPrincipalPoint[] = {0.0, 0.0};
-
-  double solutions[4 * 12];
-  int num_solutions = PoseFromThreeCalibrated(kPoints2d,
-                                              kPoints3d,
-                                              kFocalLength,
-                                              kPrincipalPoint,
-                                              solutions);
-  EXPECT_GT(num_solutions, 0);
+  std::vector<Matrix3d> rotations;
+  std::vector<Vector3d> translations;
+  CHECK(
+      PoseFromThreePoints(kPoints2d, kPoints3d, &rotations, &translations));
 
   bool matched_transform = false;
-  for (int i = 0; i < num_solutions; ++i) {
-    if (test::ArraysEqualUpToScale(12, kP, solutions + i * 12, 1e-6)) {
+  for (int i = 0; i < rotations.size(); ++i) {
+    // Check that the rotation and translation are close.
+    double angular_diff = Degrees(Eigen::Quaterniond(
+        rotations[i]).angularDistance(Eigen::Quaterniond(gt_rotation)));
+    double trans_diff = ((-gt_rotation * gt_translation) -
+                         (-rotations[i] * translations[i])).norm();
+    bool rot_match = angular_diff < 1.0;
+    bool trans_match = trans_diff < 0.1;
+    if (rot_match && trans_match) {
       matched_transform = true;
-      for (int n = 0; n < 3; ++n) {
-        const Vector3d pt_3d =
-            Map<const Vector3d> (kPoints3d + n * 3);
-        const Vector3d proj_3d =
-            Map<const Matrix3d>(kP) * pt_3d + Map<const Vector3d>(kP + 9);
-        for (int d = 0; d < 2; ++d) {
-          EXPECT_NEAR(kPoints2d[d + n * 2], proj_3d[d] / proj_3d[2], 1e-4);
-        }
+
+      TransformationMatrix soln_proj =
+          TransformationMatrixFromRt(rotations[i], translations[i]);
+      // Check the reprojection error.
+      for (int j = 0; j < 3; j++) {
+        const Vector3d projected_pt = soln_proj * kPoints3d[j];
+        EXPECT_LT((kPoints2d[j].hnormalized() - projected_pt.hnormalized())
+                  .norm() * 800.0,
+                  2.0);
       }
     }
   }
@@ -94,11 +107,15 @@ void PoseFromThreeCalibratedTest() {
 }
 
 TEST(P3P, PoseFromThreeCalibrated) {
-  PoseFromThreeCalibratedTest();
+  PoseFromThreeCalibratedTest(0.0 / 800.0);
+}
+
+TEST(P3P, PoseFromThreeCalibratedNoise) {
+  PoseFromThreeCalibratedTest(1.0 / 800.0);
 }
 
 BENCHMARK(P3P, benchmark, 100, 1000) {
-  PoseFromThreeCalibratedTest();
+  PoseFromThreeCalibratedTest(0.0 / 800.0);
 }
 
 }  // namespace theia

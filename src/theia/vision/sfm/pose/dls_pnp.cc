@@ -66,7 +66,7 @@ void DlsPnp(const std::vector<Vector3d>& image_ray,
             const std::vector<Vector3d>& world_point,
             std::vector<Quaterniond>* solution_rotation,
             std::vector<Vector3d>* solution_translation) {
-  CHECK_GE(image_ray.size(), 4);
+  CHECK_GE(image_ray.size(), 3);
   CHECK_EQ(image_ray.size(), world_point.size());
 
   const int num_correspondences = image_ray.size();

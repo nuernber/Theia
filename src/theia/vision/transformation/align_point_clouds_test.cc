@@ -37,6 +37,7 @@
 #include "gtest/gtest.h"
 
 #include "theia/vision/transformation/align_point_clouds.h"
+#include "theia/test/benchmark.h"
 
 namespace theia {
 using Eigen::Matrix;
@@ -96,7 +97,7 @@ TEST(AlignPointCloudsICP, SimpleTransform) {
   }
 }
 
-TEST(AlignPointCloudsUmeyama, SimpleTransform) {
+void UmeyamaSimpleTest() {
   // Make the model a 3x3 grid.
   Matrix<double, 9, 3, RowMajor> left_mat;
   left_mat << 0.4, -3.105, 2.147,
@@ -147,5 +148,12 @@ TEST(AlignPointCloudsUmeyama, SimpleTransform) {
   ASSERT_LT(fabs(expected_scale - scale), kEpsilon);
 }
 
+TEST(AlignPointCloudsUmeyama, SimpleTransform) {
+  UmeyamaSimpleTest();
+}
+
+BENCHMARK(AlignPointCloudsUmeyama, benchmark, 100, 1000) {
+  UmeyamaSimpleTest();
+}
 
 }  // namespace theia

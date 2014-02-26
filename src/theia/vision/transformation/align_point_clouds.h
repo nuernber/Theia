@@ -63,8 +63,9 @@ void AlignPointCloudsICP(const int num_points,
 //
 //     B = s * R * A + t
 //
-// Implementation is based on the paper by Umeyama "Least-squares estimation of
-// transformation parameters between two point patterns"
+// where A is "left" and B is "right". Implementation is based on the paper by
+// Umeyama "Least-squares estimation of transformation parameters between two
+// point patterns".
 void AlignPointCloudsUmeyama(const int num_points,
                              const double left[],
                              const double right[],

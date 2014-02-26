@@ -64,11 +64,13 @@ int SolvePlaneRotation(const Vector3d normalized_image_points[3],
   // Calculate these parameters ahead of time for reuse and
   // readability. Notation for these variables is consistent with the notation
   // from the paper.
-  const double f_1 = intermediate_image_point[0] / intermediate_image_point[2];
-  const double f_2 = intermediate_image_point[1] / intermediate_image_point[2];
-  const double p_1 = intermediate_world_point[0];
-  const double p_2 = intermediate_world_point[1];
-  const double cos_beta =
+  const long double f_1 =
+      intermediate_image_point[0] / intermediate_image_point[2];
+  const long double f_2 =
+      intermediate_image_point[1] / intermediate_image_point[2];
+  const long double p_1 = intermediate_world_point[0];
+  const long double p_2 = intermediate_world_point[1];
+  const long double cos_beta =
       normalized_image_points[0].dot(normalized_image_points[1]);
   *b = 1.0 / (1.0 - cos_beta * cos_beta) - 1.0;
 
@@ -80,46 +82,48 @@ int SolvePlaneRotation(const Vector3d normalized_image_points[3],
 
   // Definition of temporary variables for readability in the coefficients
   // calculation.
-  const double f_1_pw2 = f_1 * f_1;
-  const double f_2_pw2 = f_2 * f_2;
-  const double p_1_pw2 = p_1 * p_1;
-  const double p_1_pw3 = p_1_pw2 * p_1;
-  const double p_1_pw4 = p_1_pw3 * p_1;
-  const double p_2_pw2 = p_2 * p_2;
-  const double p_2_pw3 = p_2_pw2 * p_2;
-  const double p_2_pw4 = p_2_pw3 * p_2;
-  const double d_12_pw2 = d_12 * d_12;
-  const double b_pw2 = (*b) * (*b);
+  const long double f_1_pw2 = f_1 * f_1;
+  const long double f_2_pw2 = f_2 * f_2;
+  const long double p_1_pw2 = p_1 * p_1;
+  const long double p_1_pw3 = p_1_pw2 * p_1;
+  const long double p_1_pw4 = p_1_pw3 * p_1;
+  const long double p_2_pw2 = p_2 * p_2;
+  const long double p_2_pw3 = p_2_pw2 * p_2;
+  const long double p_2_pw4 = p_2_pw3 * p_2;
+  const long double d_12_pw2 = d_12 * d_12;
+  const long double b_pw2 = (*b) * (*b);
 
   // Computation of coefficients of 4th degree polynomial.
-  double coefficients[5];
+  Eigen::Matrix<long double, 5, 1> coefficients;
   coefficients[0] = -f_2_pw2 * p_2_pw4 - p_2_pw4 * f_1_pw2 - p_2_pw4;
   coefficients[1] =
-      2 * p_2_pw3 * d_12 * (*b) + 2 * f_2_pw2 * p_2_pw3 * d_12 * (*b) -
-      2 * f_2 * p_2_pw3 * f_1 * d_12;
+      2.0 * p_2_pw3 * d_12 * (*b) + 2.0 * f_2_pw2 * p_2_pw3 * d_12 * (*b) -
+      2.0 * f_2 * p_2_pw3 * f_1 * d_12;
   coefficients[2] =
       -f_2_pw2 * p_2_pw2 * p_1_pw2 - f_2_pw2 * p_2_pw2 * d_12_pw2 * b_pw2 -
       f_2_pw2 * p_2_pw2 * d_12_pw2 + f_2_pw2 * p_2_pw4 + p_2_pw4 * f_1_pw2 +
-      2 * p_1 * p_2_pw2 * d_12 + 2 * f_1 * f_2 * p_1 * p_2_pw2 * d_12 * (*b) -
-      p_2_pw2 * p_1_pw2 * f_1_pw2 + 2 * p_1 * p_2_pw2 * f_2_pw2 * d_12 -
-      p_2_pw2 * d_12_pw2 * b_pw2 - 2 * p_1_pw2 * p_2_pw2;
+      2.0 * p_1 * p_2_pw2 * d_12 +
+      2.0 * f_1 * f_2 * p_1 * p_2_pw2 * d_12 * (*b) -
+      p_2_pw2 * p_1_pw2 * f_1_pw2 + 2.0 * p_1 * p_2_pw2 * f_2_pw2 * d_12 -
+      p_2_pw2 * d_12_pw2 * b_pw2 - 2.0 * p_1_pw2 * p_2_pw2;
   coefficients[3] =
-      2 * p_1_pw2 * p_2 * d_12 * (*b) + 2 * f_2 * p_2_pw3 * f_1 * d_12 -
-      2 * f_2_pw2 * p_2_pw3 * d_12 * (*b) - 2 * p_1 * p_2 * d_12_pw2 * (*b);
+      2.0 * p_1_pw2 * p_2 * d_12 * (*b) + 2.0 * f_2 * p_2_pw3 * f_1 * d_12 -
+      2.0 * f_2_pw2 * p_2_pw3 * d_12 * (*b) - 2.0 * p_1 * p_2 * d_12_pw2 * (*b);
   coefficients[4] =
       -2 * f_2 * p_2_pw2 * f_1 * p_1 * d_12 * (*b) +
-      f_2_pw2 * p_2_pw2 * d_12_pw2 + 2 * p_1_pw3 * d_12 - p_1_pw2 * d_12_pw2 +
+      f_2_pw2 * p_2_pw2 * d_12_pw2 + 2.0 * p_1_pw3 * d_12 - p_1_pw2 * d_12_pw2 +
       f_2_pw2 * p_2_pw2 * p_1_pw2 - p_1_pw4 -
-      2 * f_2_pw2 * p_2_pw2 * p_1 * d_12 + p_2_pw2 * f_1_pw2 * p_1_pw2 +
+      2.0 * f_2_pw2 * p_2_pw2 * p_1 * d_12 + p_2_pw2 * f_1_pw2 * p_1_pw2 +
       f_2_pw2 * p_2_pw2 * d_12_pw2 * b_pw2;
 
   // Computation of roots.
-  const double kTolerance = 1e-6;
+  const long double kEpsilon = 1e-6;
   const int num_solutions = SolveQuarticReals(
       coefficients[0], coefficients[1], coefficients[2], coefficients[3],
-      coefficients[4], kTolerance, cos_theta);
-      // Calculate cot(alpha) needed for back-substitution.
-      for (int i = 0; i < num_solutions; i++) {
+      coefficients[4], kEpsilon, cos_theta);
+
+  // Calculate cot(alpha) needed for back-substitution.
+  for (int i = 0; i < num_solutions; i++) {
     cot_alphas[i] = (-f_1 * p_1 / f_2 - cos_theta[i] * p_2 + d_12 * (*b)) /
                     (-f_1 * cos_theta[i] * p_2 / f_2 + p_1 - d_12);
   }
@@ -169,10 +173,10 @@ void Backsubstitute(const Matrix3d& intermediate_world_frame,
   // Construct the rotation matrix.
   *rotation = (intermediate_world_frame.transpose() *
               intermediate_world_to_camera_rotation.transpose() *
-              intermediate_camera_frame).transpose();
+               intermediate_camera_frame).transpose();
 
   // Adjust translation to account for rotation.
-  *translation = (*rotation) * -(*translation);
+  *translation = -(*rotation) * (*translation);
 }
 
 }  // namespace
@@ -217,12 +221,12 @@ bool PoseFromThreePoints(const Vector3d image_ray[3],
 
   // If the points are collinear, there are no possible solutions.
   double kTolerance = 1e-6;
-  const Vector3d world_1_0 = world_points[1] - world_points[0];
-  const Vector3d world_2_0 = world_points[2] - world_points[0];
+  Vector3d world_1_0 = world_points[1] - world_points[0];
+  Vector3d world_2_0 = world_points[2] - world_points[0];
   if (world_1_0.cross(world_2_0).squaredNorm() < kTolerance) {
     LOG(INFO) << "The 3 world points are collinear! No solution for absolute "
         "pose exits.";
-    return 0;
+    return false;
   }
 
   // Create intermediate camera frame such that the x axis is in the direction
@@ -257,6 +261,8 @@ bool PoseFromThreePoints(const Vector3d image_ray[3],
         intermediate_camera_frame * normalized_image_points[2];
 
     std::swap(world_points[0], world_points[1]);
+    world_1_0 = world_points[1] - world_points[0];
+    world_2_0 = world_points[2] - world_points[0];
   }
 
   // Create the intermediate world frame transformation that has the
@@ -302,6 +308,7 @@ bool PoseFromThreePoints(const Vector3d image_ray[3],
                    &solution_translations->at(i),
                    &solution_rotations->at(i));
   }
+
   return num_solutions > 0;
 }
 
