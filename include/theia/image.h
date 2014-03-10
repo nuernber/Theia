@@ -35,6 +35,27 @@
 #ifndef THEIA_IMAGE_H_
 #define THEIA_IMAGE_H_
 
+// Base image class.
 #include "theia/image/image.h"
+#include "theia/image/image.h"
+#include "theia/image/image_canvas.h"
+
+// Descriptors.
+#include "theia/image/descriptor/brisk_descriptor.h"
+#include "theia/image/descriptor/descriptor.h"
+#include "theia/image/descriptor/descriptor_extractor.h"
+#include "theia/image/descriptor/freak_descriptor.h"
+#include "theia/image/descriptor/patch_descriptor.h"
+#include "theia/image/descriptor/sift_descriptor.h"
+
+// Keypoint detectors.
+#include "theia/image/keypoint_detector/agast_detector.h"
+#include "theia/image/keypoint_detector/brisk_detector.h"
+#include "theia/image/keypoint_detector/brisk_impl.h"
+#include "theia/image/keypoint_detector/fast_detector.h"
+#include "theia/image/keypoint_detector/harris_detector.h"
+#include "theia/image/keypoint_detector/keypoint.h"
+#include "theia/image/keypoint_detector/keypoint_detector.h"
+#include "theia/image/keypoint_detector/sift_detector.h"
 
 #endif  // THEIA_IMAGE_H_

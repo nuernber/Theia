@@ -38,6 +38,7 @@
 #include "theia/math/closed_form_polynomial_solver.h"
 #include "theia/math/distribution.h"
 #include "theia/math/matrix/gauss_jordan.h"
+#include "theia/math/normalized_cross_correlation.h"
 #include "theia/math/polynomial.h"
 #include "theia/math/probability/sequential_probability_ratio.h"
 #include "theia/math/util.h"

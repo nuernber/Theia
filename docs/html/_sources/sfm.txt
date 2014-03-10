@@ -71,7 +71,7 @@ N-View Triangulation
 ICP
 ===
 
-.. function:: void AlignPointClouds(const double left[][3], const double right[][3], int num_points, double rotation[3][3], double translation[3]);
+.. function:: void AlignPointCloudsICP(const int num_points, const double left[], const double right[], double rotation[3 * 3], double translation[3]);
 
   We implement ICP for point clouds. We use Besl-McKay registration to align
   point clouds. We use SVD decomposition to find the rotation, as this is much
@@ -81,10 +81,8 @@ ICP
   the left and right models have the same number of points, and that the points
   are aligned by correspondence (i.e. left[i] corresponds to right[i]).
 
-  NOTE: SVD is indeed excessive for a 3 dimensional problem, as it leads to SVD
-  decomposition of a 3x3. However, after running multiple tests with traditional
-  ICP, it was noted that the local minimum achieved was often not
-  satisfactory. If runtime becomes an issue, then I may consider switching back
-  to an (improved) true ICP method, as it is an analytic and closed form
-  solution so it is very fast. Because of this, this is not a true ICP method,
-  but it achieves the same registration using a method suggested by Besl-McKay.
+.. function:: AlignPointCloudsUmeyama(const int num_points, const double left[], const doubel right[], double rotation[3 * 3], double translation[3], double* scale);
+
+  This function estimates the 3D similiarty transformation using the least
+  squares method of [Umeyeama]_. The returned rotation, translation, and scale
+  align the left points to the right such that :math:`Right = s * R * Left + t`.

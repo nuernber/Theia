@@ -64,3 +64,7 @@ Bibliography
 .. [Torr] P. H. S. Torr and A. Zisserman. 2000. **MLESAC: a new robust estimator
    with application to estimating image geometry**. *Comput. Vis. Image
    Underst*. 78, 1 (April 2000), 138-156.
+
+.. [Umeyama] Umeyama, S. **Least-squares estimation of transformation parameters
+   between two point patterns**. *IEEE Transactions on Pattern Analysis and Machine
+   Intelligence*, 1991.
