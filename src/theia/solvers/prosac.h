@@ -36,6 +36,7 @@
 #define THEIA_SOLVERS_PROSAC_H_
 
 #include <math.h>
+#include <algorithm>
 #include <cstdlib>
 #include <vector>
 

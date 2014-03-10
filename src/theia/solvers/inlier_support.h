@@ -47,7 +47,7 @@ class InlierSupport : public QualityMeasurement {
   InlierSupport(double error_threshold, int min_num_inliers)
       : error_thresh_(error_threshold),
         min_num_inliers_(static_cast<double>(min_num_inliers)) {}
-  InlierSupport(double error_threshold)
+  explicit InlierSupport(double error_threshold)
       : error_thresh_(error_threshold), min_num_inliers_(-1.0) {}
   ~InlierSupport() {}
 

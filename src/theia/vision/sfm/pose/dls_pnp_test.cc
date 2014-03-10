@@ -39,6 +39,7 @@
 #include <vector>
 #include "gtest/gtest.h"
 
+#include "theia/alignment/alignment.h"
 #include "theia/math/util.h"
 #include "theia/test/benchmark.h"
 #include "theia/util/random.h"

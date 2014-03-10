@@ -52,6 +52,7 @@ SET(THEIA_SRC
   math/closed_form_polynomial_solver.cc
   math/probability/sequential_probability_ratio.cc
   util/random.cc
+  util/stringprintf.cc
   vision/sfm/pose/dls_impl.cc
   vision/sfm/pose/dls_pnp.cc
   vision/sfm/pose/eight_point_fundamental_matrix.cc

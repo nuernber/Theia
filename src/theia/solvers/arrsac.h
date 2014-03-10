@@ -149,7 +149,6 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
 
   // Inliners from the recent data. Only valid if Estimate has been called!
   std::vector<bool> inliers_;
-
 };
 
 // -------------------------- Implementation -------------------------- //
