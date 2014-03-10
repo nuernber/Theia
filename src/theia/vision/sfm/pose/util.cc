@@ -103,8 +103,10 @@ void CreateRandomPointsInFrustum(const double near_plane_width,
 
 double SampsonDistance(const Matrix3d& F, const Vector3d& x,
                        const Vector3d& y) {
-  const Vector3d epiline_y = F * y;
-  const Vector3d epiline_x = F.transpose() * x;
+  Vector3d epiline_y = F * y;
+  epiline_y /= epiline_y.z();
+  Vector3d epiline_x = F.transpose() * x;
+  epiline_x /= epiline_x.z();
 
   const double numerator_sqrt = x.dot(epiline_y);
   const double denominator =

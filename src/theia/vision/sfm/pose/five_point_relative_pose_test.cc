@@ -100,6 +100,7 @@ void TestFivePointResultWithNoise(const Vector3d points_3d[5],
   const int num_solutions = FivePointRelativePose(
       view_one_rays[0].data(), view_two_rays[0].data(),
       soln_rotations[0].data(), soln_translations[0].data());
+  CHECK_GT(num_solutions, 0);
 
   // Among the returned solutions verify that at least one is close to the
   // expected translation and rotation.
@@ -110,7 +111,8 @@ void TestFivePointResultWithNoise(const Vector3d points_3d[5],
     for (int i = 0; i < 5; ++i) {
       const double sampson_dist =
           SampsonDistance(essential_matrix, view_two_rays[i], view_one_rays[i]);
-      EXPECT_NEAR(sampson_dist, 0.0, 1e-8) << "3d point = " << points_3d[i];
+      EXPECT_NEAR(sampson_dist, 0.0, 1e-8)
+          << "3d point = " << points_3d[i].transpose();
     }
 
     double rotation_difference =
@@ -143,13 +145,13 @@ void BasicTest() {
   // Ground truth essential matrix.
   const Vector3d points_3d[5] = { Vector3d(-1.0, 3.0, 3.0),
                                   Vector3d(1.0, -1.0, 2.0),
-                                  Vector3d(3.0, 1.0, 2.0),
+                                  Vector3d(3.0, 1.0, 2.5),
                                   Vector3d(-1.0, 1.0, 2.0),
                                   Vector3d(2.0, 1.0, 3.0) };
   const Matrix3d soln_rotation = Quaterniond(
       AngleAxisd(Radians(13.0), Vector3d(0.0, 0.0, 1.0))).toRotationMatrix();
   const Vector3d soln_translation(1.0, 1.0, 1.0);
-  const double kNoise = 0.0;
+  const double kNoise = 0.0 / 512.0;
   const double kMaxAllowedRotationDifference = 1e-5;
   const double kMaxAllowedAngleBetweenTranslations = 1e-5;
 
@@ -173,7 +175,7 @@ TEST(FivePointRelativePose, NoiseTest) {
   // Ground truth essential matrix.
   const Vector3d points_3d[5] = {Vector3d(-1.0, 3.0, 3.0),
                                  Vector3d(1.0, -1.0, 2.0),
-                                 Vector3d(3.0, 1.0, 2.0),
+                                 Vector3d(3.0, 1.0, 2.5),
                                  Vector3d(-1.0, 1.0, 2.0),
                                  Vector3d(2.0, 1.0, 3.0)};
   const Matrix3d soln_rotation = Quaterniond(

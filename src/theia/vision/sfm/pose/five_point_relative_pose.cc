@@ -35,6 +35,8 @@
 #include "theia/vision/sfm/pose/five_point_relative_pose.h"
 
 #include <Eigen/Dense>
+#include <glog/logging.h>
+
 #include <cmath>
 #include <ctime>
 #include <vector>
@@ -134,10 +136,10 @@ Matrix<double, 1, 20> MultiplyDegTwoDegOnePoly(const Matrix<double, 1, 10>& a,
 Matrix<double, 1, 10> EETranspose(
     const Matrix<double, 9, 4>& null_matrix, int i, int j) {
   return MultiplyDegOnePoly(null_matrix.row(3 * i), null_matrix.row(3 * j)) +
-         MultiplyDegOnePoly(null_matrix.row(3 * i + 1),
-                            null_matrix.row(3 * j + 1)) +
-         MultiplyDegOnePoly(null_matrix.row(3 * i + 2),
-                            null_matrix.row(3 * j + 2));
+      MultiplyDegOnePoly(null_matrix.row(3 * i + 1),
+                         null_matrix.row(3 * j + 1)) +
+      MultiplyDegOnePoly(null_matrix.row(3 * i + 2),
+                         null_matrix.row(3 * j + 2));
 }
 
 // Builds the 10x20 constraint matrix according to Section 3.2.2 of Nister
@@ -251,8 +253,10 @@ void EfficientSVDDecomp(const Matrix3d& essential_mat,
   u.col(2) = u.col(0).cross(u.col(1));
 
   // Possible rotation configurations.
-  const RowMatrix3d ra = u * d * v.transpose();
-  const RowMatrix3d rb = u * d.transpose() * v.transpose();
+  const RowMatrix3d ra =
+      Eigen::Quaterniond(u * d * v.transpose()).normalized().toRotationMatrix();
+  const RowMatrix3d rb = Eigen::Quaterniond(u * d.transpose() * v.transpose())
+      .normalized().toRotationMatrix();
 
   // Scale t to be proper magnitude. Scale factor is derived from the fact that
   // U*diag*V^t = E. We simply choose to scale it such that the last terms will
@@ -450,11 +454,14 @@ bool FivePointRelativePose(const Vector3d image1_points[5],
                             MultiplyPoly(p3, b33);
 
   // Step 5. Extract real roots of the 10th degree polynomial.
-  Polynomial<10> determinant_poly(n.data());
-  std::vector<double> roots = determinant_poly.RealRoots();
-  rotation->resize(roots.size());
-  translation->resize(roots.size());
+  std::vector<double> roots = GetRealPolynomialRoots(n.transpose());
+  rotation->reserve(roots.size());
+  translation->reserve(roots.size());
+  static const double kTolerance = 1e-12;
   for (int i = 0; i < roots.size(); i++) {
+    // We only want non-zero roots
+    if (fabs(roots[i]) < kTolerance )
+      continue;
     double x = EvaluatePoly(p1, roots[i]) / EvaluatePoly(p3, roots[i]);
     double y = EvaluatePoly(p2, roots[i]) / EvaluatePoly(p3, roots[i]);
     Matrix<double, 9, 1> temp_sum =
@@ -466,10 +473,14 @@ bool FivePointRelativePose(const Vector3d image1_points[5],
     candidate_essential_mat << temp_sum.head<3>().transpose(),
         temp_sum.segment(3, 3).transpose(), temp_sum.tail(3).transpose();
 
+    Matrix3d rotation_soln;
+    Vector3d translation_soln;
     // Decompose into R, t using the first point correspondence.
     DecomposeWithIdealCorrespondence(image1_points[0], image2_points[0],
-                                     candidate_essential_mat,
-                                     &(rotation->at(i)), &(translation->at(i)));
+                                     candidate_essential_mat, &rotation_soln,
+                                     &translation_soln);
+    rotation->push_back(rotation_soln);
+    translation->push_back(translation_soln);
   }
   return (roots.size() > 0);
 }

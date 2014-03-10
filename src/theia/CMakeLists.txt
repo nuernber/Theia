@@ -50,6 +50,7 @@ SET(THEIA_SRC
   image/keypoint_detector/harris_detector.cc
   image/keypoint_detector/sift_detector.cc
   math/closed_form_polynomial_solver.cc
+  math/polynomial.cc
   math/probability/sequential_probability_ratio.cc
   util/random.cc
   util/stringprintf.cc
