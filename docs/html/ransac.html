@@ -148,12 +148,11 @@ enhance the output of RANSAC.</p>
 <div class="section" id="using-the-ransac-classes">
 <h2>Using the RANSAC classes<a class="headerlink" href="#using-the-ransac-classes" title="Permalink to this headline">¶</a></h2>
 <p>In order to make our RANSAC classes consistent and extendible we specify an
-interface (via a pure virtual class) as a <tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensusEstimator</span></tt>
-class. All of the RANSAC variants in Theia are derived from this class, so they
-are all guaranteed to have the same interface. When using a RANSAC (or
-RANSAC-variant) class, you simply need to call the constructor (each class
-implements its own <a class="reference internal" href="#section-constructors"><em>constructor</em></a>) and then call the
-<a class="reference internal" href="#SampleConsensusEstimator::Estimate__std::vector:Datum:CR.Estimator:Datum.Model:CR.ModelP" title="SampleConsensusEstimator::Estimate"><tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate</span></tt></a> method.</p>
+interface as a <tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensusEstimator</span></tt> class. All of the RANSAC
+variants in Theia are derived from this class, so they are all guaranteed to
+have the same interface. When using a RANSAC (or RANSAC-variant) class, you
+simply need to create a ransac object, set up the parameters you want to use,
+and then call the <a class="reference internal" href="#SampleConsensusEstimator::Estimate__std::vector:Datum:CR.Estimator:Datum.Model:CR.ModelP" title="SampleConsensusEstimator::Estimate"><tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate</span></tt></a> method.</p>
 <dl class="function">
 <dt id="SampleConsensusEstimator::Estimate__std::vector:Datum:CR.Estimator:Datum.Model:CR.ModelP">
 bool <tt class="descclassname">SampleConsensusEstimator::</tt><tt class="descname">Estimate</tt><big>(</big>const std::vector&lt;Datum&gt;&amp; <em>data</em>, const Estimator&lt;Datum, Model&gt;&amp; <em>estimator</em>, Model* <em>best_model</em><big>)</big><a class="headerlink" href="#SampleConsensusEstimator::Estimate__std::vector:Datum:CR.Estimator:Datum.Model:CR.ModelP" title="Permalink to this definition">¶</a></dt>
@@ -162,6 +161,44 @@ bool <tt class="descclassname">SampleConsensusEstimator::</tt><tt class="descnam
 class that you have specified for your problem. It returns true (and sets the
 <tt class="docutils literal"><span class="pre">best_model</span></tt> parameter) upon success, and false (with <tt class="docutils literal"><span class="pre">best_model</span></tt> having
 undefined behavior) upon failure.</p>
+</dd></dl>
+
+<p>The other main component of using one of the RANSAC methods is to set up the
+<a class="reference internal" href="#RansacParameters" title="RansacParameters"><tt class="xref cpp cpp-class docutils literal"><span class="pre">RansacParameters</span></tt></a> used for the RANSAC scheme. <a class="reference internal" href="#RansacParameters" title="RansacParameters"><tt class="xref cpp cpp-class docutils literal"><span class="pre">RansacParameters</span></tt></a>
+is a struct that holds several crucial elements to deciding how the RANSAC
+scheme performs.</p>
+<dl class="class">
+<dt id="RansacParameters">
+<em class="property">class </em><tt class="descname">RansacParameters</tt><a class="headerlink" href="#RansacParameters" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">error_thresh</span></tt>: Error threshold to determin inliers for RANSAC (e.g.,</dt>
+<dd>squared reprojection error). This is what will be used by the estimator to
+determine inliers.</dd>
+<dt><tt class="docutils literal"><span class="pre">failure_probability</span></tt>: The failure probability of RANSAC. Set to 0.01 means</dt>
+<dd>that RANSAC has a 1% chance of missing the correct pose. The default value is
+0.01</dd>
+<dt><tt class="docutils literal"><span class="pre">min_inlier_ratio</span></tt>: The minimal assumed inlier ratio, i.e., it is assumed</dt>
+<dd>that the given set of correspondences has an inlier ratio of at least
+min_inlier_ratio. This is required to limit the number of RANSAC
+iteratios. The default ratio is 0.1</dd>
+<dt><tt class="docutils literal"><span class="pre">max_iterations</span></tt>: Another way to specify the maximal number of RANSAC</dt>
+<dd>iterations. In effect, the maximal number of iterations is set to
+min(max_ransac_iterations, T), where T is the number of iterations
+corresponding to min_inlier_ratio.  This variable is useful if RANSAC is
+to be applied iteratively, i.e., first applying RANSAC with an
+min_inlier_ratio of x, then with one of x-y and so on, and we want to
+avoid repeating RANSAC iterations.  However, the preferable way to limit
+the number of RANSAC iterations is to set min_inlier_ratio and leave
+max_ransac_iterations to its default value.  Per default, this variable is
+set to std::numeric_limits&lt;int&gt;::max().</dd>
+<dt><tt class="docutils literal"><span class="pre">use_Tdd_test</span></tt>: Whether to use the T_{d,d}, with d=1, test proposed in <a class="reference internal" href="bibliography.html#chumrandomizedransac">[ChumRandomizedRansac]</a></dt>
+<dd>After computing the model, RANSAC selects one match at random and evaluates all
+poses. If the point is an outlier to one pose, the corresponding pose is
+rejected. Notice that if the pose solver returns multiple poses, then at
+most one pose is correct. If the selected match is correct, then only the
+correct pose will pass the test. Per default, the test is disabled.
+NOTE: Not currently implemented!</dd>
+</dl>
 </dd></dl>
 
 <p>We will illustrate the use of the RANSAC class with a simple line estimation example.</p>
@@ -221,7 +258,14 @@ use a RANSAC method to use the <tt class="xref cpp cpp-class docutils literal"><
   <span class="c1">// Estimate the line with RANSAC.</span>
   <span class="n">LineEstimator</span> <span class="n">line_estimator</span><span class="p">;</span>
   <span class="n">Line</span> <span class="n">best_line</span><span class="p">;</span>
-  <span class="n">Ransac</span><span class="o">&lt;</span><span class="n">Point</span><span class="p">,</span> <span class="n">Line</span><span class="o">&gt;</span> <span class="n">ransac_estimator</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">error_threshold</span><span class="p">,</span> <span class="n">min_num_inliers</span><span class="p">,</span> <span class="n">max_iters</span><span class="p">);</span>
+  <span class="c1">// Create Ransac object, specifying the number of points to sample to</span>
+  <span class="c1">// generate a model estimation.</span>
+  <span class="n">Ransac</span><span class="o">&lt;</span><span class="n">Point</span><span class="p">,</span> <span class="n">Line</span><span class="o">&gt;</span> <span class="n">ransac_estimator</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+  <span class="c1">// Set the ransac parameters.</span>
+  <span class="n">RansacParameters</span> <span class="n">params</span><span class="p">;</span>
+  <span class="n">params</span><span class="p">.</span><span class="n">error_thresh</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span>
+  <span class="c1">// Initialize must always be called!</span>
+  <span class="n">ransac_estimator</span><span class="p">.</span><span class="n">Initialize</span><span class="p">(</span><span class="n">params</span><span class="p">);</span>
   <span class="n">ransac_estimator</span><span class="p">.</span><span class="n">Estimate</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">line_estimator</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">best_line</span><span class="p">);</span>
   <span class="n">LOG</span><span class="p">(</span><span class="n">INFO</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Line m = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">best_line</span><span class="p">.</span><span class="n">m</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;*x + &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">best_line</span><span class="p">.</span><span class="n">b</span><span class="p">;</span>
 
@@ -246,24 +290,9 @@ constructor. The constructors for each method are specified as follows</p>
 <em class="property">class </em><tt class="descname">Ransac</tt><a class="headerlink" href="#Ransac" title="Permalink to this definition">¶</a></dt>
 <dd><p>The standard <a class="reference external" href="http://en.wikipedia.org/wiki/RANSAC">RANSAC</a> implementation as originally proposed by Fischler et. al. <a class="reference internal" href="bibliography.html#fischler">[Fischler]</a></p>
 <dl class="function">
-<dt id="Ransac::Ransac__i.double.i.i">
- <tt class="descname">Ransac</tt><big>(</big>int <em>min_sample_size</em>, double <em>error_threshold</em>, int <em>min_num_inliers</em>, int <em>max_iters</em><big>)</big><a class="headerlink" href="#Ransac::Ransac__i.double.i.i" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
-<p><tt class="docutils literal"><span class="pre">error_threshold</span></tt>: Error threshold for determining if a data point is an inlier or not.</p>
-<p><tt class="docutils literal"><span class="pre">min_num_inliers</span></tt>: Minimum number of inliers needed to terminate.</p>
-<p><tt class="docutils literal"><span class="pre">max_iters</span></tt>: Maximum number of iterations to run RANSAC. To set the number of iterations based on the outlier probability, use SetMaxIters.</p>
-</dd></dl>
-
-<p>Alternatively, you can choose to have the algorithm calculate the maximum number of iterations by specifying the outlier probability and the probability of having an uncontaminated model according to eq 4.18 in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a></p>
-<dl class="function">
-<dt id="Ransac::Ransac__i.double.i.double.double">
- <tt class="descname">Ransac</tt><big>(</big>int <em>min_sample_size</em>, double <em>error_threshold</em>, int <em>min_num_inliers</em>, double <em>outlier_probability</em>, double <em>no_fail_probability</em><em>=0.99</em><big>)</big><a class="headerlink" href="#Ransac::Ransac__i.double.i.double.double" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
-<p><tt class="docutils literal"><span class="pre">error_threshold</span></tt>: Error threshold for determining if a data point is an inlier or not.</p>
-<p><tt class="docutils literal"><span class="pre">min_num_inliers</span></tt>: Minimum number of inliers needed to terminate.</p>
-<p><tt class="docutils literal"><span class="pre">outlier_probability</span></tt>: Probabiliy that a given data point is an outlier.</p>
-<p><tt class="docutils literal"><span class="pre">no_fail_probability</span></tt>: Probability that at least one sample has no outliers.</p>
-</dd></dl>
+<dt id="Ransac::Ransac__i">
+ <tt class="descname">Ransac</tt><big>(</big>int <em>min_sample_size</em><big>)</big><a class="headerlink" href="#Ransac::Ransac__i" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -277,15 +306,15 @@ sampling strategy by smartly sampling the high quality data points first,
 then progressively sampling the rest of the data set. In the worst case, this
 algorithm degenerates to RANSAC, but typically is significantly faster.</div></blockquote>
 <dl class="function">
-<dt id="Prosac::Prosac__i.double.i.i">
- <tt class="descname">Prosac</tt><big>(</big>int <em>min_sample_size</em>, double <em>error_threshold</em>, int <em>min_num_inliers</em>, int <em>max_iters</em><big>)</big><a class="headerlink" href="#Prosac::Prosac__i.double.i.i" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
-<p><tt class="docutils literal"><span class="pre">error_threshold</span></tt>: Error threshold for determining if a data point is an inlier or not.</p>
-<p><tt class="docutils literal"><span class="pre">min_num_inliers</span></tt>: Minimum number of inliers needed to terminate.</p>
-<p><tt class="docutils literal"><span class="pre">max_iters</span></tt>: Maximum number of iterations to run PROSAC. To set the number of iterations based on the outlier probability, use SetMaxIters.</p>
-</dd></dl>
+<dt id="Prosac::Prosac__i">
+ <tt class="descname">Prosac</tt><big>(</big>int <em>min_sample_size</em><big>)</big><a class="headerlink" href="#Prosac::Prosac__i" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
-<p><strong>NOTE:</strong> the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method for prosace assumes the data is sorted by quality! That is, that the highest quality data point is first, and the worst quality data point is last in the input vector.</p>
+<dl class="docutils">
+<dt><strong>NOTE:</strong> the <tt class="xref cpp cpp-func docutils literal"><span class="pre">Estimate()</span></tt> method for prosace assumes the data is sorted</dt>
+<dd>by quality! That is, that the highest quality data point is first, and the
+worst quality data point is last in the input vector.</dd>
+</dl>
 </dd></dl>
 
 <dl class="class">
@@ -293,15 +322,9 @@ algorithm degenerates to RANSAC, but typically is significantly faster.</div></b
 <em class="property">class </em><tt class="descname">Mlesac</tt><a class="headerlink" href="#Mlesac" title="Permalink to this definition">¶</a></dt>
 <dd><p>A generalization of RANSAC that chooses to maximize the likelihood of an estimation rather than the inlier count. Proposed by <a class="reference internal" href="bibliography.html#torr">[Torr]</a> et. al.</p>
 <dl class="function">
-<dt id="Mlesac::Mlesac__i.double.double.double.double.double.double">
- <tt class="descname">Mlesac</tt><big>(</big>int <em>min_sample_size</em>, double <em>inlier_mean</em>, double <em>inlier_sigma</em>, double <em>search_left</em>, double <em>search_right</em>, double <em>confidence_threshold</em>, double <em>inlier_probability</em><big>)</big><a class="headerlink" href="#Mlesac::Mlesac__i.double.double.double.double.double.double" title="Permalink to this definition">¶</a></dt>
+<dt id="Mlesac::Mlesac__i">
+ <tt class="descname">Mlesac</tt><big>(</big>int <em>min_sample_size</em><big>)</big><a class="headerlink" href="#Mlesac::Mlesac__i" title="Permalink to this definition">¶</a></dt>
 <dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model</p>
-<p><tt class="docutils literal"><span class="pre">inline_mean</span></tt>: Mean of inlier noise distribution.</p>
-<p><tt class="docutils literal"><span class="pre">inlier_sigma</span></tt>: Sigma of the inlier noise distribution.</p>
-<p><tt class="docutils literal"><span class="pre">search_left</span></tt>: Left bound of the search region. e.g. -100px for image correspondences</p>
-<p><tt class="docutils literal"><span class="pre">search_right</span></tt>: Right bound of the search region. e.g. 100px for image correspondences</p>
-<p><tt class="docutils literal"><span class="pre">confidence_threshold</span></tt>: Correspondances above this are considered inliers.</p>
-<p><tt class="docutils literal"><span class="pre">inlier_probability</span></tt>: An initial guess for the inlier probability (set to 0.5 by default).</p>
 </dd></dl>
 
 </dd></dl>
@@ -348,19 +371,22 @@ function will not change and can simply be inherited from the
 <tt class="xref cpp cpp-class docutils literal"><span class="pre">SampleConsensus</span></tt> class. In those cases, you can follow the model of the
 <a class="reference internal" href="#Ransac" title="Ransac"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Ransac</span></tt></a> class to specify your new RANSAC-variant class:</p>
 <blockquote>
-<div><div class="highlight-c++"><div class="highlight"><pre><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">Datum</span><span class="p">,</span> <span class="k">class</span> <span class="nc">Model</span><span class="o">&gt;</span>
+<div><div class="highlight-c++"><div class="highlight"><pre><span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Datum</span><span class="p">,</span> <span class="k">class</span> <span class="nc">Model</span><span class="o">&gt;</span>
 <span class="k">class</span> <span class="nc">Ransac</span> <span class="o">:</span> <span class="k">public</span> <span class="n">SampleConsensusEstimator</span><span class="o">&lt;</span><span class="n">Datum</span><span class="p">,</span> <span class="n">Model</span><span class="o">&gt;</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
+  <span class="k">explicit</span> <span class="n">Ransac</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">min_sample_size</span><span class="p">)</span>
+      <span class="o">:</span> <span class="n">SampleConsensusEstimator</span><span class="o">&lt;</span><span class="n">Datum</span><span class="p">,</span> <span class="n">Model</span><span class="o">&gt;</span><span class="p">(</span><span class="n">min_sample_size</span><span class="p">)</span> <span class="p">{}</span>
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">Ransac</span><span class="p">()</span> <span class="p">{}</span>
 
-  <span class="n">Ransac</span><span class="p">(</span><span class="kt">int</span> <span class="n">min_sample_size</span><span class="p">,</span>
-         <span class="kt">double</span> <span class="n">error_threshold</span><span class="p">,</span>
-         <span class="kt">int</span> <span class="n">min_num_inliers</span><span class="p">,</span>
-         <span class="kt">int</span> <span class="n">max_iters</span><span class="p">)</span>
-    <span class="o">:</span> <span class="n">SampleConsensusEstimator</span><span class="o">&lt;</span><span class="n">Datum</span><span class="p">,</span> <span class="n">Model</span><span class="o">&gt;</span><span class="p">(</span>
-        <span class="k">new</span> <span class="n">RandomSampler</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;</span><span class="p">(</span><span class="n">min_sample_size</span><span class="p">),</span>
-        <span class="k">new</span> <span class="n">InlierSupport</span><span class="p">(</span><span class="n">error_threshold</span><span class="p">,</span>
-                          <span class="n">min_num_inliers</span><span class="p">),</span>
-        <span class="n">max_iters</span><span class="p">)</span> <span class="p">{}</span>
+  <span class="c1">// Initializes the random sampler and inlier support measurement.</span>
+  <span class="kt">bool</span> <span class="n">Initialize</span><span class="p">(</span><span class="k">const</span> <span class="n">RansacParameters</span><span class="o">&amp;</span> <span class="n">ransac_params</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Sampler</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;*</span> <span class="n">random_sampler</span> <span class="o">=</span>
+        <span class="k">new</span> <span class="n">RandomSampler</span><span class="o">&lt;</span><span class="n">Datum</span><span class="o">&gt;</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">min_sample_size_</span><span class="p">);</span>
+    <span class="n">QualityMeasurement</span><span class="o">*</span> <span class="n">inlier_support</span> <span class="o">=</span>
+        <span class="k">new</span> <span class="n">InlierSupport</span><span class="p">(</span><span class="n">ransac_params</span><span class="p">.</span><span class="n">error_thresh</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">SampleConsensusEstimator</span><span class="o">&lt;</span><span class="n">Datum</span><span class="p">,</span> <span class="n">Model</span><span class="o">&gt;::</span><span class="n">Initialize</span><span class="p">(</span>
+        <span class="n">ransac_params</span><span class="p">,</span> <span class="n">random_sampler</span><span class="p">,</span> <span class="n">inlier_support</span><span class="p">);</span>
+  <span class="p">}</span>
 <span class="p">};</span>
 </pre></div>
 </div>

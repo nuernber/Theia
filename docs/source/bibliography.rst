@@ -14,6 +14,9 @@ Bibliography
    Volume 01 (CVPR '05), Vol. 1. IEEE Computer Society, Washington, DC, USA,
    220-226
 
+.. [ChumRandomizedRansac] Chum, O. and Matas, J. **Randomized RANSAC and T(d,d)
+   test**, *BMVC* 2002
+
 .. [Fischler] M. Fischler and R. Bolles. 1981. **Random sample consensus: a
    paradigm for model fitting with applications to image analysis and automated
    cartography**. *Commun. ACM* 24, 6 (June 1981), 381-395.

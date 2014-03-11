@@ -82,12 +82,11 @@ Using the RANSAC classes
 ========================
 
 In order to make our RANSAC classes consistent and extendible we specify an
-interface (via a pure virtual class) as a :class:`SampleConsensusEstimator`
-class. All of the RANSAC variants in Theia are derived from this class, so they
-are all guaranteed to have the same interface. When using a RANSAC (or
-RANSAC-variant) class, you simply need to call the constructor (each class
-implements its own :ref:`constructor <section-constructors>`) and then call the
-:func:`Estimate <SampleConsensusEstimator::Estimate>` method.
+interface as a :class:`SampleConsensusEstimator` class. All of the RANSAC
+variants in Theia are derived from this class, so they are all guaranteed to
+have the same interface. When using a RANSAC (or RANSAC-variant) class, you
+simply need to create a ransac object, set up the parameters you want to use,
+and then call the :func:`Estimate <SampleConsensusEstimator::Estimate>` method.
 
 .. function:: bool SampleConsensusEstimator::Estimate(const std::vector<Datum>& data, const Estimator<Datum, Model>& estimator, Model* best_model)
 
@@ -96,6 +95,46 @@ implements its own :ref:`constructor <section-constructors>`) and then call the
   class that you have specified for your problem. It returns true (and sets the
   ``best_model`` parameter) upon success, and false (with ``best_model`` having
   undefined behavior) upon failure.
+
+The other main component of using one of the RANSAC methods is to set up the
+:class:`RansacParameters` used for the RANSAC scheme. :class:`RansacParameters`
+is a struct that holds several crucial elements to deciding how the RANSAC
+scheme performs.
+
+.. class:: RansacParameters
+
+  ``error_thresh``: Error threshold to determin inliers for RANSAC (e.g.,
+     squared reprojection error). This is what will be used by the estimator to
+     determine inliers.
+
+  ``failure_probability``: The failure probability of RANSAC. Set to 0.01 means
+        that RANSAC has a 1% chance of missing the correct pose. The default value is
+        0.01
+
+  ``min_inlier_ratio``: The minimal assumed inlier ratio, i.e., it is assumed
+      that the given set of correspondences has an inlier ratio of at least
+      min_inlier_ratio. This is required to limit the number of RANSAC
+      iteratios. The default ratio is 0.1
+
+  ``max_iterations``: Another way to specify the maximal number of RANSAC
+      iterations. In effect, the maximal number of iterations is set to
+      min(max_ransac_iterations, T), where T is the number of iterations
+      corresponding to min_inlier_ratio.  This variable is useful if RANSAC is
+      to be applied iteratively, i.e., first applying RANSAC with an
+      min_inlier_ratio of x, then with one of x-y and so on, and we want to
+      avoid repeating RANSAC iterations.  However, the preferable way to limit
+      the number of RANSAC iterations is to set min_inlier_ratio and leave
+      max_ransac_iterations to its default value.  Per default, this variable is
+      set to std::numeric_limits<int>::max().
+
+  ``use_Tdd_test``: Whether to use the T_{d,d}, with d=1, test proposed in [ChumRandomizedRansac]_
+      After computing the model, RANSAC selects one match at random and evaluates all
+      poses. If the point is an outlier to one pose, the corresponding pose is
+      rejected. Notice that if the pose solver returns multiple poses, then at
+      most one pose is correct. If the selected match is correct, then only the
+      correct pose will pass the test. Per default, the test is disabled.
+      NOTE: Not currently implemented!
+
 
 We will illustrate the use of the RANSAC class with a simple line estimation example.
 
@@ -156,7 +195,14 @@ use a RANSAC method to use the :class:`LineEstimator`.
       // Estimate the line with RANSAC.
       LineEstimator line_estimator;
       Line best_line;
-      Ransac<Point, Line> ransac_estimator(2, error_threshold, min_num_inliers, max_iters);
+      // Create Ransac object, specifying the number of points to sample to
+      // generate a model estimation.
+      Ransac<Point, Line> ransac_estimator(2);
+      // Set the ransac parameters.
+      RansacParameters params;
+      params.error_thresh = 0.1;
+      // Initialize must always be called!
+      ransac_estimator.Initialize(params);
       ransac_estimator.Estimate(input_data, line_estimator, &best_line);
       LOG(INFO) << "Line m = " << best_line.m << "*x + " << best_line.b;
 
@@ -182,29 +228,7 @@ constructor. The constructors for each method are specified as follows
 
   The standard `RANSAC <http://en.wikipedia.org/wiki/RANSAC>`_ implementation as originally proposed by Fischler et. al. [Fischler]_
 
-  .. function:: Ransac(int min_sample_size, double error_threshold, int min_num_inliers, int max_iters)
-
-    ``min_sample_size``: The minimum number of samples needed to estimate a model
-
-    ``error_threshold``: Error threshold for determining if a data point is an inlier or not.
-
-    ``min_num_inliers``: Minimum number of inliers needed to terminate.
-
-    ``max_iters``: Maximum number of iterations to run RANSAC. To set the number of iterations based on the outlier probability, use SetMaxIters.
-
-  Alternatively, you can choose to have the algorithm calculate the maximum number of iterations by specifying the outlier probability and the probability of having an uncontaminated model according to eq 4.18 in [HartleyZisserman]_
-
-  .. function:: Ransac(int min_sample_size, double error_threshold, int min_num_inliers, double outlier_probability, double no_fail_probability = 0.99)
-
-    ``min_sample_size``: The minimum number of samples needed to estimate a model
-
-    ``error_threshold``: Error threshold for determining if a data point is an inlier or not.
-
-    ``min_num_inliers``: Minimum number of inliers needed to terminate.
-
-    ``outlier_probability``: Probabiliy that a given data point is an outlier.
-
-    ``no_fail_probability``: Probability that at least one sample has no outliers.
+  .. function:: Ransac(int min_sample_size)
 
 .. class:: Prosac
 
@@ -214,39 +238,20 @@ constructor. The constructors for each method are specified as follows
    then progressively sampling the rest of the data set. In the worst case, this
    algorithm degenerates to RANSAC, but typically is significantly faster.
 
-  .. function:: Prosac(int min_sample_size, double error_threshold, int min_num_inliers, int max_iters)
+  .. function:: Prosac(int min_sample_size)
 
-    ``min_sample_size``: The minimum number of samples needed to estimate a model
-
-    ``error_threshold``: Error threshold for determining if a data point is an inlier or not.
-
-    ``min_num_inliers``: Minimum number of inliers needed to terminate.
-
-    ``max_iters``: Maximum number of iterations to run PROSAC. To set the number of iterations based on the outlier probability, use SetMaxIters.
-
-  **NOTE:** the :func:`Estimate` method for prosace assumes the data is sorted by quality! That is, that the highest quality data point is first, and the worst quality data point is last in the input vector.
+  **NOTE:** the :func:`Estimate` method for prosace assumes the data is sorted
+    by quality! That is, that the highest quality data point is first, and the
+    worst quality data point is last in the input vector.
 
 
 .. class:: Mlesac
 
   A generalization of RANSAC that chooses to maximize the likelihood of an estimation rather than the inlier count. Proposed by [Torr]_ et. al.
 
-  .. function:: Mlesac(int min_sample_size, double inlier_mean, double inlier_sigma, double search_left, double search_right, double confidence_threshold, double inlier_probability)
+  .. function:: Mlesac(int min_sample_size)
 
     ``min_sample_size``: The minimum number of samples needed to estimate a model
-
-    ``inline_mean``: Mean of inlier noise distribution.
-
-    ``inlier_sigma``: Sigma of the inlier noise distribution.
-
-    ``search_left``: Left bound of the search region. e.g. -100px for image correspondences
-
-    ``search_right``: Right bound of the search region. e.g. 100px for image correspondences
-
-    ``confidence_threshold``: Correspondances above this are considered inliers.
-
-    ``inlier_probability``: An initial guess for the inlier probability (set to 0.5 by default).
-
 
 .. class:: Arrsac
 
@@ -295,20 +300,24 @@ function will not change and can simply be inherited from the
 
   .. code-block:: c++
 
-    template<class Datum, class Model>
+    template <class Datum, class Model>
     class Ransac : public SampleConsensusEstimator<Datum, Model> {
      public:
+      explicit Ransac(const int min_sample_size)
+	  : SampleConsensusEstimator<Datum, Model>(min_sample_size) {}
+      virtual ~Ransac() {}
 
-      Ransac(int min_sample_size,
-             double error_threshold,
-       	     int min_num_inliers,
-             int max_iters)
-        : SampleConsensusEstimator<Datum, Model>(
-            new RandomSampler<Datum>(min_sample_size),
-            new InlierSupport(error_threshold,
-                              min_num_inliers),
-            max_iters) {}
+      // Initializes the random sampler and inlier support measurement.
+      bool Initialize(const RansacParameters& ransac_params) {
+	Sampler<Datum>* random_sampler =
+	    new RandomSampler<Datum>(this->min_sample_size_);
+	QualityMeasurement* inlier_support =
+	    new InlierSupport(ransac_params.error_thresh);
+	return SampleConsensusEstimator<Datum, Model>::Initialize(
+	    ransac_params, random_sampler, inlier_support);
+      }
     };
+
 
 This is all that the :class:`Ransac` class needs to specify, and the
 :func:`Estimate` function implemented in the base class
