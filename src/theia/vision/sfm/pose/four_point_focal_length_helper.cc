@@ -137,7 +137,7 @@ bool FourPointFocalLengthHelper(
                ((a1 * a1) * glcd * (1.0 / 2.0)) / glad +
                ((a2 * a2) * glcd * (1.0 / 2.0)) / glad;
 
-  Matrix<double, 78, 88> coefficient_matrix;
+  Matrix<double, 78, 78> coefficient_matrix;
   coefficient_matrix.setZero();
   Matrix<double, 78, 10> b;
   b.setZero();
