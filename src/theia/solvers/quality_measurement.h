@@ -49,22 +49,29 @@ class QualityMeasurement {
     INVALID = -99999
   };
 
-  QualityMeasurement() {}
+  explicit QualityMeasurement(const double error_thresh)
+      : error_thresh_(error_thresh) {}
   virtual ~QualityMeasurement() {}
 
-  // Given the residuals, assess a quality metric for the data. Returns the
-  // quality assessment and outputs a vector of bools indicating the inliers.
-  virtual double Calculate(const std::vector<double>& residuals,
-                           std::vector<bool>* inliers) = 0;
+  // Initializes any non-trivial variables and sets up sampler if
+  // necessary. Must be called before Compare is called.
+  virtual bool Initialize() { return true; }
+
+  // Given the residuals, assess a quality metric for the data.
+  virtual double Calculate(const std::vector<double>& residuals) = 0;
 
   // Given two quality measurements, determine which is betters. Note that
   // larger is not always better! Returns true if quality1 is of higher quality
   // than quality2.
-  virtual bool Compare(const double quality1, const double quality2) = 0;
+  virtual bool Compare(const double quality1, const double quality2) const = 0;
 
-  // Return true if the quality passed in is high enough to terminate the
-  // sampling consensus.
-  virtual bool SufficientlyHighQuality(const double quality) = 0;
+  // Returns the maximum inlier ratio found thus far through the Compare
+  // call. This is used in SampleConsensusEstimator to recompute the necessary
+  // number of iterations.
+  virtual double GetInlierRatio() const = 0;
+
+ protected:
+  double error_thresh_;
 };
 
 }  // namespace theia

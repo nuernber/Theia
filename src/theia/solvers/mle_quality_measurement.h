@@ -36,7 +36,7 @@
 #define THEIA_SOLVERS_MLE_QUALITY_MEASUREMENT_H_
 
 #include <glog/logging.h>
-#include <cmath>
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -45,79 +45,51 @@
 #include "theia/solvers/quality_measurement.h"
 
 namespace theia {
-// Define the quality metric according to Guided MLE from "Guided sampling and
-// consensus for motion estimation" by Tordoff and Murray
+// Define the quality metric according to Guided MLE from "MLESAC: A new robust
+// estimator with application to estimating image geometry" by Torr.
 class MLEQualityMeasurement : public QualityMeasurement {
  public:
   // Params:
-  //  inlier_dist: Distribution of inlier noise. Typically a gaussian mixture.
-  //  outlier_dist: Distribution of outlier noise. Typically a uniform
-  //    distribution over the search radius (in pixels).
-  //  confidence_threshold: if the confidence of the data is greater then this
-  //    then MLESAC will terminate.
-  //  inlier_prob: An initial guess for the inlier probability (range 0 to 1).
-  MLEQualityMeasurement(double mean, double sigma, double uniform_prob,
-                        double confidence_threshold, double inlier_prob)
-      : inlier_dist_(new NormalDistribution(mean, sigma)),
-        outlier_prob_(uniform_prob),
-        confidence_threshold_(confidence_threshold),
-        inlier_probability_(inlier_prob) {}
+  explicit MLEQualityMeasurement(const double error_thresh)
+      : QualityMeasurement(error_thresh) {}
 
   ~MLEQualityMeasurement() {}
 
+  bool Initialize()  {
+    max_inlier_ratio_ = 0.0;
+    return true;
+  }
+
   // Given the residuals, assess a quality metric for the data. Returns the
   // quality assessment and outputs a vector of bools indicating the inliers.
-  double Calculate(const std::vector<double>& residuals,
-                   std::vector<bool>* inliers) {
-    inliers->resize(residuals.size(), false);
-
-    double estimated_inlier_prob = inlier_probability_;
-    const int kNumEMIterations = 5;
-    double arglog;
-    double gamma_sum;
-      for (int i = 0; i < kNumEMIterations; i++) {
-      arglog = 0.0;
-      gamma_sum = 0.0;
-      for (int i = 0; i < residuals.size(); i++) {
-        const double& r = residuals[i];
-        double pr_inlier = inlier_dist_->eval(r) * estimated_inlier_prob;
-        double pr_outlier = outlier_prob_ * (1.0 - estimated_inlier_prob);
-        arglog += log(pr_inlier + pr_outlier);
-        gamma_sum += pr_inlier / (pr_inlier + pr_outlier);
+  double Calculate(const std::vector<double>& residuals) {
+    double num_inliers = 0.0;
+    double mle_score = 0.0;
+    for (int i = 0; i < residuals.size(); i++) {
+      if (residuals[i] < error_thresh_) {
+        num_inliers += 1.0;
+        mle_score += residuals[i];
+      } else {
+        mle_score += error_thresh_;
       }
-      estimated_inlier_prob = gamma_sum / residuals.size();
     }
-    const double kSmallNumber = 1e-6;
-    if (arglog == 0.0)
-      arglog = kSmallNumber;
-    return -arglog;
+    const double inlier_ratio =
+        num_inliers / static_cast<double>(residuals.size());
+    max_inlier_ratio_ = std::max(inlier_ratio, max_inlier_ratio_);
+    return mle_score;
   }
 
   // Given two quality measurements, determine which is betters. Note that
   // larger is not always better! Returns true if quality1 is of higher
   // quality than quality2.
-  bool Compare(const double quality1, const double quality2) {
+  bool Compare(const double quality1, const double quality2) const {
     return quality1 < quality2;
   }
 
-  // Return true if the quality passed in is high enough to terminate the
-  // sampling consensus.
-  bool SufficientlyHighQuality(const double quality) {
-    return quality <= confidence_threshold_;
-  }
+  double GetInlierRatio() const { return max_inlier_ratio_; }
 
  private:
-  // Distribution of inlier data.
-  std::unique_ptr<Distribution> inlier_dist_;
-
-  // Distribution of outlier data.
-  const double outlier_prob_;
-
-  // Threshold for determining whether MLE estimate is good enough.
-  double confidence_threshold_;
-
-  // Estimated inlier probability of the data.
-  const double inlier_probability_;
+  double max_inlier_ratio_;
 };
 
 }  // namespace theia

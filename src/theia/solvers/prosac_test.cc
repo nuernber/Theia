@@ -110,7 +110,10 @@ TEST(ProsacTest, LineFitting) {
 
   LineEstimator line_estimator;
   Line line;
-  Prosac<Point, Line> prosac_line(2, 1.0, 600, 1000);
+  Prosac<Point, Line> prosac_line(2);
+  RansacParameters params;
+  params.error_thresh = 0.5;
+  prosac_line.Initialize(params);
   prosac_line.Estimate(input_points, line_estimator, &line);
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }

@@ -81,7 +81,8 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
   //     before preemptive ordering is used.
   Arrsac(int min_sample_size, double error_thresh, int max_candidate_hyps = 500,
          int block_size = 100)
-      : min_sample_size_(min_sample_size),
+      : SampleConsensusEstimator<Datum, Model>(min_sample_size),
+        min_sample_size_(min_sample_size),
         error_thresh_(error_thresh),
         max_candidate_hyps_(max_candidate_hyps),
         block_size_(block_size),
@@ -180,6 +181,9 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
   // RandomSampler and PROSAC Sampler.
   RandomSampler<Datum> random_sampler(min_sample_size_);
   ProsacSampler<Datum> prosac_sampler(min_sample_size_);
+  random_sampler.Initialize();
+  prosac_sampler.Initialize();
+
   while (k <= m_prime) {
     std::vector<Model> hypotheses;
     if (!inner_ransac) {
@@ -279,6 +283,7 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
   }
 
   RandomSampler<Datum> random_sampler(min_sample_size_);
+  random_sampler.Initialize();
 
   // Preemptive Evaluation
   for (int i = block_size_ + 1; i < data.size(); i++) {
@@ -360,23 +365,11 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
   }
 
   // Grab inliers to refine the model.
-  InlierSupport quality_measurement(error_thresh_, 0);
+  InlierSupport quality_measurement(error_thresh_);
+  quality_measurement.Initialize();
   std::vector<double> residuals = estimator.Residuals(data, *best_model);
   std::vector<bool> temp_inlier_set(data.size());
-  quality_measurement.Calculate(residuals, &temp_inlier_set);
-  std::vector<Datum> temp_consensus_set;
-  for (int i = 0; i < temp_inlier_set.size(); i++) {
-    if (temp_inlier_set[i]) {
-      temp_consensus_set.push_back(data[i]);
-    }
-  }
-  // Refine the model based on all current inliers.
-  estimator.RefineModel(temp_consensus_set, best_model);
-
-  // Calculate the final inliers.
-  inliers_.resize(data.size());
-  std::vector<double> final_residuals = estimator.Residuals(data, *best_model);
-  quality_measurement.Calculate(final_residuals, &inliers_);
+  quality_measurement.Calculate(residuals);
 
   return true;
 }

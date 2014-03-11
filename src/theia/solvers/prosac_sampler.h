@@ -43,23 +43,23 @@
 #include <vector>
 
 #include "theia/solvers/sampler.h"
+#include "theia/util/random.h"
 
 namespace theia {
 // Prosac sampler used for PROSAC implemented according to "Matching with PROSAC
 // - Progressive Sampling Consensus" by Chum and Matas.
 template <class Datum> class ProsacSampler : public Sampler<Datum> {
  public:
-  // num_samples: the number of samples needed. Typically this corresponds to
-  //   the minumum number of samples needed to estimate a model.
-  explicit ProsacSampler(int num_samples,
-                         int ransac_convergence_iterations = 200000)
-      : num_samples_(num_samples),
-        ransac_convergence_iterations_(ransac_convergence_iterations),
-        kth_sample_number_(1),
-        generator(std::chrono::system_clock::now().time_since_epoch().count()) {
-  }
-
+  explicit ProsacSampler(const int min_num_samples)
+      : Sampler<Datum>(min_num_samples) {}
   ~ProsacSampler() {}
+
+  bool Initialize() {
+    ransac_convergence_iterations_ = 20000;
+    kth_sample_number_ = 1;
+    InitRandomGenerator();
+    return true;
+  }
 
   // Set the sample such that you are sampling the kth prosac sample (Eq. 6).
   void SetSampleNumber(int k) { kth_sample_number_ = k; }
@@ -71,9 +71,9 @@ template <class Datum> class ProsacSampler : public Sampler<Datum> {
   bool Sample(const std::vector<Datum>& data, std::vector<Datum>* subset) {
     // Set t_n according to the PROSAC paper's recommendation.
     double t_n = ransac_convergence_iterations_;
-    int n = num_samples_;
+    int n = this->min_num_samples_;
     // From Equations leading up to Eq 3 in Chum et al.
-    for (int i = 0; i < num_samples_; i++) {
+    for (int i = 0; i < this->min_num_samples_; i++) {
       t_n *= static_cast<double>(n - i) / (data.size() - i);
     }
 
@@ -81,23 +81,24 @@ template <class Datum> class ProsacSampler : public Sampler<Datum> {
     // Choose min n such that T_n_prime >= t (Eq. 5).
     for (int t = 1; t <= kth_sample_number_; t++) {
       if (t > t_n_prime && n < data.size()) {
-        double t_n_plus1 = (t_n * (n + 1.0)) / (n + 1.0 - num_samples_);
+        double t_n_plus1 =
+            (t_n * (n + 1.0)) / (n + 1.0 - this->min_num_samples_);
         t_n_prime += ceil(t_n_plus1 - t_n);
         t_n = t_n_plus1;
         n++;
       }
     }
-    subset->reserve(num_samples_);
+    subset->reserve(this->min_num_samples_);
     if (t_n_prime < kth_sample_number_) {
       // Randomly sample m data points from the top n data points.
-      std::uniform_int_distribution<int> distribution(0, n - 1);
       std::vector<int> random_numbers;
-      for (int i = 0; i < num_samples_; i++) {
+      for (int i = 0; i < this->min_num_samples_; i++) {
         // Generate a random number that has not already been used.
         int rand_number;
         while (std::find(random_numbers.begin(), random_numbers.end(),
-                         (rand_number = distribution(generator))) !=
-               random_numbers.end()) {}
+                         (rand_number = RandInt(0, n - 1))) !=
+               random_numbers.end()) {
+        }
 
         random_numbers.push_back(rand_number);
 
@@ -105,15 +106,15 @@ template <class Datum> class ProsacSampler : public Sampler<Datum> {
         subset->push_back(data[rand_number]);
       }
     } else {
-      std::uniform_int_distribution<int> distribution(0, n - 2);
       std::vector<int> random_numbers;
       // Randomly sample m-1 data points from the top n-1 data points.
-      for (int i = 0; i < num_samples_ - 1; i++) {
+      for (int i = 0; i < this->min_num_samples_ - 1; i++) {
         // Generate a random number that has not already been used.
         int rand_number;
         while (std::find(random_numbers.begin(), random_numbers.end(),
-                         (rand_number = distribution(generator))) !=
-               random_numbers.end()) {}
+                         (rand_number = RandInt(0, n - 2))) !=
+               random_numbers.end()) {
+        }
         random_numbers.push_back(rand_number);
 
         // Push the *unique* random index back.
@@ -122,24 +123,19 @@ template <class Datum> class ProsacSampler : public Sampler<Datum> {
       // Make the last point from the nth position.
       subset->push_back(data[n]);
     }
-    CHECK_EQ(subset->size(), num_samples_) << "Prosac subset is incorrect "
-                                           << "size!";
+    CHECK_EQ(subset->size(), this->min_num_samples_)
+        << "Prosac subset is incorrect "
+        << "size!";
     kth_sample_number_++;
     return true;
   }
 
  private:
-  // Number of samples to return.
-  int num_samples_;
-
   // Number of iterations of PROSAC before it just acts like ransac.
   int ransac_convergence_iterations_;
 
   // The kth sample of prosac sampling.
   int kth_sample_number_;
-
-  // Random number generator seed
-  std::default_random_engine generator;
 };
 
 }  // namespace theia

@@ -52,49 +52,17 @@ namespace theia {
 template <class Datum, class Model>
 class Prosac : public SampleConsensusEstimator<Datum, Model> {
  public:
-  // min_sample_size: the minimum number of samples needed to estimate a model
-  // error_threshold: error threshold for determining if a data point is an
-  //   inlier or not.
-  // min_num_inliers: Minimum number of inliers needed to terminate.
-  // max_iters: Maximum number of iterations to run PROSAC. To set the number
-  //   of iterations based on the outlier probability, use SetMaxIters.
-  Prosac(int min_sample_size, double error_threshold, int min_num_inliers,
-         int max_iters)
-      : SampleConsensusEstimator<Datum, Model>(
-            new ProsacSampler<Datum>(min_sample_size),
-            new InlierSupport(error_threshold, min_num_inliers), max_iters) {}
-
-  // See MaxItersFromOutlierProb for parameters.
-  Prosac(int min_sample_size, double error_threshold, int min_num_inliers,
-         double outlier_probability, double no_fail_probability)
-      : SampleConsensusEstimator<Datum, Model>(
-            new ProsacSampler<Datum>(min_sample_size),
-            new InlierSupport(error_threshold, min_num_inliers),
-            std::min(min_num_inliers,
-                     MaxItersFromOutlierProb(min_sample_size,
-                                             outlier_probability,
-                                             no_fail_probability))) {}
-
-  Prosac(int min_sample_size, double error_threshold,
-         double outlier_probability, double no_fail_probability)
-      : SampleConsensusEstimator<Datum, Model>(
-            new ProsacSampler<Datum>(min_sample_size),
-            new InlierSupport(error_threshold),
-            MaxItersFromOutlierProb(min_sample_size, outlier_probability,
-                                    no_fail_probability)) {}
+  explicit Prosac(const int min_sample_size)
+      : SampleConsensusEstimator<Datum, Model>(min_sample_size) {}
   ~Prosac() {}
 
- private:
-  // Set the max iterations based on Eq. 4.18 in Hartley & Zisserman.
-  //   min_sample_size: the min number of samples required to estimate a model.
-  //   outlier_probability: prob that a given data point is an outlier
-  //   no_fail_probability: prob that at least one sample has no outliers
-  //     (typically set to .99)
-  int MaxItersFromOutlierProb(int min_sample_size, double outlier_probability,
-                              double no_fail_probability = 0.99) {
-    const double its =  ceil(log(1 - no_fail_probability) /
-                log(1.0 - pow(1.0 - outlier_probability, min_sample_size)));
-    return its;
+  bool Initialize(const RansacParameters& ransac_params) {
+    Sampler<Datum>* prosac_sampler =
+        new ProsacSampler<Datum>(this->min_sample_size_);
+    QualityMeasurement* inlier_support =
+        new InlierSupport(ransac_params.error_thresh);
+    return SampleConsensusEstimator<Datum, Model>::Initialize(
+        ransac_params, prosac_sampler, inlier_support);
   }
 };
 }  // namespace theia

@@ -46,19 +46,21 @@ namespace theia {
 // Random sampler used for RANSAC.
 template <class Datum> class RandomSampler : public Sampler<Datum> {
  public:
-  // num_samples: the number of samples needed. Typically this corresponds to
-  //   the minumum number of samples needed to estimate a model.
-  explicit RandomSampler(int num_samples) : num_samples_(num_samples) {
+  explicit RandomSampler(const int min_num_samples)
+      : Sampler<Datum>(min_num_samples) {}
+  ~RandomSampler() {}
+
+  bool Initialize() {
     InitRandomGenerator();
+    return true;
   }
 
-  ~RandomSampler() {}
   // Samples the input variable data and fills the vector subset with the
   // random samples.
   bool Sample(const std::vector<Datum>& data, std::vector<Datum>* subset) {
-    subset->resize(num_samples_);
+    subset->resize(this->min_num_samples_);
     std::vector<int> random_numbers;
-    for (int i = 0; i < num_samples_; i++) {
+    for (int i = 0; i < this->min_num_samples_; i++) {
       int rand_number;
       // Generate a random number that has not already been used.
       while (std::find(random_numbers.begin(), random_numbers.end(),
@@ -70,10 +72,6 @@ template <class Datum> class RandomSampler : public Sampler<Datum> {
     }
     return true;
   }
-
- private:
-  // Number of samples to obtain.
-  int num_samples_;
 };
 
 }  // namespace theia

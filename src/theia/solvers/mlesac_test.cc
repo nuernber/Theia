@@ -104,7 +104,10 @@ TEST(MlesacTest, LineFitting) {
   }
   LineEstimator line_estimator;
   Line line;
-  Mlesac<Point, Line> mlesac_line(2, 0.0, 0.1, -1, 1, -8000);
+  Mlesac<Point, Line> mlesac_line(2);
+  RansacParameters params;
+  params.error_thresh = 0.1;
+  mlesac_line.Initialize(params);
   mlesac_line.Estimate(input_points, line_estimator, &line);
   ASSERT_LT(fabs(line.m - 1.0), 0.1);
 }

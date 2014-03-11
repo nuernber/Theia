@@ -35,6 +35,7 @@
 #ifndef THEIA_SOLVERS_MLESAC_H_
 #define THEIA_SOLVERS_MLESAC_H_
 
+#include <glog/logging.h>
 #include <vector>
 
 #include "theia/math/distribution.h"
@@ -47,41 +48,19 @@ namespace theia {
 template <class Datum, class Model>
 class Mlesac : public SampleConsensusEstimator<Datum, Model> {
  public:
-  // Params:
-  //  min_sample_size: the minimum number of samples needed to estimate a model
-  //  inline_mean: Mean of inlier noise distribution.
-  //  inlier_sigma: Sigma of the inlier noise distribution.
-  //  search_left: Left bound of the search region of image correspondances.
-  //    e.g. -100px
-  //  search_right: Right bound of the search region of image correspondances.
-  //    e.g. 100px
-  //  confidence: Model termination criterion.
-  //  inlier_probability: Probability of inliers in the data.
-  Mlesac(int min_sample_size, double inlier_mean, double inlier_sigma,
-         double search_left, double search_right, double confidence_threshold,
-         double inlier_probability)
-      : SampleConsensusEstimator<Datum, Model>(
-            new RandomSampler<Datum>(min_sample_size),
-            new MLEQualityMeasurement(inlier_mean, inlier_sigma,
-                                      (1.0 / (search_right - search_left)),
-                                      confidence_threshold,
-                                      inlier_probability)) {}
-
-  // Params:
-  //  min_sample_size: the minimum number of samples needed to estimate a model
-  //  inline_mean: Mean of inlier noise distribution.
-  //  inlier_sigma: Sigma of the inlier noise distribution.
-  //  search_left: Left bound of the search region of image correspondances.
-  //    e.g. -100px
-  //  search_right: Right bound of the search region of image correspondances.
-  //    e.g. 100px
-  //  confidence: Model termination criterion.
-  Mlesac(int min_sample_size, double inlier_mean, double inlier_sigma,
-         double search_left, double search_right, double confidence_threshold)
-      : Mlesac(min_sample_size, inlier_mean, inlier_sigma, search_left,
-               search_right, confidence_threshold, 0.5) {}
-
+  explicit Mlesac(const int min_sample_size)
+      : SampleConsensusEstimator<Datum, Model>(min_sample_size) {}
   ~Mlesac() {}
+
+  // Initializes the random sampler and mle support measurement.
+  bool Initialize(const RansacParameters& ransac_params) {
+    Sampler<Datum>* random_sampler =
+        new RandomSampler<Datum>(this->min_sample_size_);
+    QualityMeasurement* mle_support =
+        new MLEQualityMeasurement(ransac_params.error_thresh);
+    return SampleConsensusEstimator<Datum, Model>::Initialize(
+        ransac_params, random_sampler, mle_support);
+  }
 };
 
 }  // namespace theia

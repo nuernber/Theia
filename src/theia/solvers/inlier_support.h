@@ -35,6 +35,7 @@
 #ifndef THEIA_SOLVERS_INLIER_SUPPORT_H_
 #define THEIA_SOLVERS_INLIER_SUPPORT_H_
 
+#include <algorithm>
 #include <vector>
 
 #include "theia/solvers/quality_measurement.h"
@@ -44,45 +45,38 @@ namespace theia {
 // threshold. If it is below the threshold, it is considered an inlier.
 class InlierSupport : public QualityMeasurement {
  public:
-  InlierSupport(double error_threshold, int min_num_inliers)
-      : error_thresh_(error_threshold),
-        min_num_inliers_(static_cast<double>(min_num_inliers)) {}
-  explicit InlierSupport(double error_threshold)
-      : error_thresh_(error_threshold), min_num_inliers_(-1.0) {}
+  explicit InlierSupport(const double error_thresh)
+      : QualityMeasurement(error_thresh) {}
   ~InlierSupport() {}
 
+  bool Initialize()  {
+    max_inlier_ratio_ = 0.0;
+    return true;
+  }
+
   // Count the number of inliers in the data;
-  double Calculate(const std::vector<double>& residuals,
-                   std::vector<bool>* inliers) {
-    inliers->resize(residuals.size(), false);
+  double Calculate(const std::vector<double>& residuals) {
     double num_inliers = 0.0;
     for (int i = 0; i < residuals.size(); i++) {
-      if (residuals[i] < error_thresh_) {
+      if (residuals[i] < this->error_thresh_) {
         num_inliers += 1.0;
-        inliers->at(i) = true;
       }
     }
-    return num_inliers;
+    const double inlier_ratio =
+        num_inliers / static_cast<double>(residuals.size());
+    max_inlier_ratio_ = std::max(inlier_ratio, max_inlier_ratio_);
+    return inlier_ratio;
   }
 
   // Return true if quality1 > quality2 i.e. there are more inliers in quality1.
-  bool Compare(const double quality1, const double quality2) {
+  bool Compare(const double quality1, const double quality2) const {
     return quality1 > quality2;
   }
 
-  // Return true if the number of inliers is greater than our terminating
-  // criterion.
-  bool SufficientlyHighQuality(const double quality) {
-    return min_num_inliers_ > 0 && quality > min_num_inliers_;
-  }
+  double GetInlierRatio() const { return max_inlier_ratio_; }
 
  private:
-  // Threshold for determining if a data point is an inlier.
-  double error_thresh_;
-
-  // Model is high quality when the number of inliers is greater than this
-  // number.
-  double min_num_inliers_;
+  double max_inlier_ratio_;
 };
 
 }  // namespace theia
