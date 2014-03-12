@@ -119,8 +119,6 @@ ENDIF (EIGEN_FOUND)
 LIST(APPEND THEIA_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
 
 # Glog.
-# Flag set during configuration and build of Theia.
-SET(THEIA_USES_MINIGLOG @MINIGLOG@)
 # Append the locations of glog when Theia was built to the search path hints.
 LIST(APPEND GLOG_INCLUDE_DIR_HINTS @GLOG_INCLUDE_DIR@)
 GET_FILENAME_COMPONENT(THEIA_BUILD_GLOG_LIBRARY_DIR @GLOG_LIBRARY@ PATH)
@@ -142,6 +140,19 @@ IF (NOT TARGET theia AND NOT Theia_BINARY_DIR)
 ENDIF (NOT TARGET theia AND NOT Theia_BINARY_DIR)
 # Set the expected XX_LIBRARIES variable for FindPackage().
 SET(THEIA_LIBRARIES theia)
+
+# Add the libraries included with the distribution.
+SET(THEIA_INTERNAL_LIB_PREFIX ${THEIA_INCLUDE_DIR}/theia/libraries)
+SET(THEIA_INTERNAL_LIBS_INCLUDES
+  ${THEIA_INTERNAL_LIB_PREFIX}/libraries
+  ${THEIA_INTERNAL_LIB_PREFIX}/flann/src/cpp
+  ${THEIA_INTERNAL_LIB_PREFIX}/gtest/include
+  ${THEIA_INTERNAL_LIB_PREFIX}/gtest
+  ${THEIA_INTERNAL_LIB_PREFIX}/hayai
+  ${THEIA_INTERNAL_LIB_PREFIX}/vlfeat
+  ${THEIA_INTERNAL_LIB_PREFIX}/agast)
+
+LIST(APPEND THEIA_INCLUDE_DIRS ${THEIA_INTERNAL_LIBS_INCLUDES})
 
 # Set legacy include directories variable for backwards compatibility.
 SET(THEIA_INCLUDES ${THEIA_INCLUDE_DIRS})
