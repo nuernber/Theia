@@ -38,6 +38,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
+#include <initializer_list>
 #include <memory>
 #include <vector>
 
