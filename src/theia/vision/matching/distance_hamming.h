@@ -76,14 +76,14 @@ inline uint32_t HammingSSE(const uchar* a, const uchar*b,
   const __m128i* signature2 = reinterpret_cast<const __m128i*>(b);
   const int number_of_128_bit_words = size / 128;
 
-  register __m128i xmm0;
-  register __m128i xmm1;
-  register __m128i xmm2;
-  register __m128i xmm3;
-  register __m128i xmm4;
-  register __m128i xmm5;
-  register __m128i xmm6;
-  register __m128i xmm7;
+  __m128i xmm0;
+  __m128i xmm1;
+  __m128i xmm2;
+  __m128i xmm3;
+  __m128i xmm4;
+  __m128i xmm5;
+  __m128i xmm6;
+  __m128i xmm7;
 
   xmm7 = _mm_load_si128(reinterpret_cast<const __m128i*>(POPCOUNT_4bit));
   xmm6 = _mm_load_si128(reinterpret_cast<const __m128i*>(MASK_4bit));

@@ -128,15 +128,15 @@ void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
 
       // let's do the subpixel and float scale refinement:
       BriskLayer& l = pyramid_[0];
-      register int s_0_0 = l.getAgastScore(point.x - 1, point.y - 1, 1);
-      register int s_1_0 = l.getAgastScore(point.x, point.y - 1, 1);
-      register int s_2_0 = l.getAgastScore(point.x + 1, point.y - 1, 1);
-      register int s_2_1 = l.getAgastScore(point.x + 1, point.y, 1);
-      register int s_1_1 = l.getAgastScore(point.x, point.y, 1);
-      register int s_0_1 = l.getAgastScore(point.x - 1, point.y, 1);
-      register int s_0_2 = l.getAgastScore(point.x - 1, point.y + 1, 1);
-      register int s_1_2 = l.getAgastScore(point.x, point.y + 1, 1);
-      register int s_2_2 = l.getAgastScore(point.x + 1, point.y + 1, 1);
+      int s_0_0 = l.getAgastScore(point.x - 1, point.y - 1, 1);
+      int s_1_0 = l.getAgastScore(point.x, point.y - 1, 1);
+      int s_2_0 = l.getAgastScore(point.x + 1, point.y - 1, 1);
+      int s_2_1 = l.getAgastScore(point.x + 1, point.y, 1);
+      int s_1_1 = l.getAgastScore(point.x, point.y, 1);
+      int s_0_1 = l.getAgastScore(point.x - 1, point.y, 1);
+      int s_0_2 = l.getAgastScore(point.x - 1, point.y + 1, 1);
+      int s_1_2 = l.getAgastScore(point.x, point.y + 1, 1);
+      int s_2_2 = l.getAgastScore(point.x + 1, point.y + 1, 1);
       float delta_x, delta_y;
       float max = subpixel2D(s_0_0, s_0_1, s_0_2, s_1_0, s_1_1, s_1_2, s_2_0,
                              s_2_1, s_2_2, delta_x, delta_y);
@@ -177,15 +177,15 @@ void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
         if (!ismax) continue;
 
         // get the patch on this layer:
-        register int s_0_0 = l.getAgastScore(point.x - 1, point.y - 1, 1);
-        register int s_1_0 = l.getAgastScore(point.x, point.y - 1, 1);
-        register int s_2_0 = l.getAgastScore(point.x + 1, point.y - 1, 1);
-        register int s_2_1 = l.getAgastScore(point.x + 1, point.y, 1);
-        register int s_1_1 = l.getAgastScore(point.x, point.y, 1);
-        register int s_0_1 = l.getAgastScore(point.x - 1, point.y, 1);
-        register int s_0_2 = l.getAgastScore(point.x - 1, point.y + 1, 1);
-        register int s_1_2 = l.getAgastScore(point.x, point.y + 1, 1);
-        register int s_2_2 = l.getAgastScore(point.x + 1, point.y + 1, 1);
+        int s_0_0 = l.getAgastScore(point.x - 1, point.y - 1, 1);
+        int s_1_0 = l.getAgastScore(point.x, point.y - 1, 1);
+        int s_2_0 = l.getAgastScore(point.x + 1, point.y - 1, 1);
+        int s_2_1 = l.getAgastScore(point.x + 1, point.y, 1);
+        int s_1_1 = l.getAgastScore(point.x, point.y, 1);
+        int s_0_1 = l.getAgastScore(point.x - 1, point.y, 1);
+        int s_0_2 = l.getAgastScore(point.x - 1, point.y + 1, 1);
+        int s_1_2 = l.getAgastScore(point.x, point.y + 1, 1);
+        int s_2_2 = l.getAgastScore(point.x + 1, point.y + 1, 1);
         float delta_x, delta_y;
         float max = subpixel2D(s_0_0, s_0_1, s_0_2, s_1_0, s_1_1, s_1_2, s_2_0,
                                s_2_1, s_2_2, delta_x, delta_y);
@@ -501,23 +501,23 @@ inline float BriskScaleSpace::refine3D(const uint8_t layer, const int x_layer,
     if (layer == 0) {
       // guess the lower intra octave...
       BriskLayer& l = pyramid_[0];
-      register int s_0_0 = l.getAgastScore_5_8(x_layer - 1, y_layer - 1, 1);
+      int s_0_0 = l.getAgastScore_5_8(x_layer - 1, y_layer - 1, 1);
       max_below_uchar = s_0_0;
-      register int s_1_0 = l.getAgastScore_5_8(x_layer, y_layer - 1, 1);
+      int s_1_0 = l.getAgastScore_5_8(x_layer, y_layer - 1, 1);
       if (s_1_0 > max_below_uchar) max_below_uchar = s_1_0;
-      register int s_2_0 = l.getAgastScore_5_8(x_layer + 1, y_layer - 1, 1);
+      int s_2_0 = l.getAgastScore_5_8(x_layer + 1, y_layer - 1, 1);
       if (s_2_0 > max_below_uchar) max_below_uchar = s_2_0;
-      register int s_2_1 = l.getAgastScore_5_8(x_layer + 1, y_layer, 1);
+      int s_2_1 = l.getAgastScore_5_8(x_layer + 1, y_layer, 1);
       if (s_2_1 > max_below_uchar) max_below_uchar = s_2_1;
-      register int s_1_1 = l.getAgastScore_5_8(x_layer, y_layer, 1);
+      int s_1_1 = l.getAgastScore_5_8(x_layer, y_layer, 1);
       if (s_1_1 > max_below_uchar) max_below_uchar = s_1_1;
-      register int s_0_1 = l.getAgastScore_5_8(x_layer - 1, y_layer, 1);
+      int s_0_1 = l.getAgastScore_5_8(x_layer - 1, y_layer, 1);
       if (s_0_1 > max_below_uchar) max_below_uchar = s_0_1;
-      register int s_0_2 = l.getAgastScore_5_8(x_layer - 1, y_layer + 1, 1);
+      int s_0_2 = l.getAgastScore_5_8(x_layer - 1, y_layer + 1, 1);
       if (s_0_2 > max_below_uchar) max_below_uchar = s_0_2;
-      register int s_1_2 = l.getAgastScore_5_8(x_layer, y_layer + 1, 1);
+      int s_1_2 = l.getAgastScore_5_8(x_layer, y_layer + 1, 1);
       if (s_1_2 > max_below_uchar) max_below_uchar = s_1_2;
-      register int s_2_2 = l.getAgastScore_5_8(x_layer + 1, y_layer + 1, 1);
+      int s_2_2 = l.getAgastScore_5_8(x_layer + 1, y_layer + 1, 1);
       if (s_2_2 > max_below_uchar) max_below_uchar = s_2_2;
 
       max_below_float =
@@ -531,15 +531,15 @@ inline float BriskScaleSpace::refine3D(const uint8_t layer, const int x_layer,
     }
 
     // get the patch on this layer:
-    register int s_0_0 = thisLayer.getAgastScore(x_layer - 1, y_layer - 1, 1);
-    register int s_1_0 = thisLayer.getAgastScore(x_layer, y_layer - 1, 1);
-    register int s_2_0 = thisLayer.getAgastScore(x_layer + 1, y_layer - 1, 1);
-    register int s_2_1 = thisLayer.getAgastScore(x_layer + 1, y_layer, 1);
-    register int s_1_1 = thisLayer.getAgastScore(x_layer, y_layer, 1);
-    register int s_0_1 = thisLayer.getAgastScore(x_layer - 1, y_layer, 1);
-    register int s_0_2 = thisLayer.getAgastScore(x_layer - 1, y_layer + 1, 1);
-    register int s_1_2 = thisLayer.getAgastScore(x_layer, y_layer + 1, 1);
-    register int s_2_2 = thisLayer.getAgastScore(x_layer + 1, y_layer + 1, 1);
+    int s_0_0 = thisLayer.getAgastScore(x_layer - 1, y_layer - 1, 1);
+    int s_1_0 = thisLayer.getAgastScore(x_layer, y_layer - 1, 1);
+    int s_2_0 = thisLayer.getAgastScore(x_layer + 1, y_layer - 1, 1);
+    int s_2_1 = thisLayer.getAgastScore(x_layer + 1, y_layer, 1);
+    int s_1_1 = thisLayer.getAgastScore(x_layer, y_layer, 1);
+    int s_0_1 = thisLayer.getAgastScore(x_layer - 1, y_layer, 1);
+    int s_0_2 = thisLayer.getAgastScore(x_layer - 1, y_layer + 1, 1);
+    int s_1_2 = thisLayer.getAgastScore(x_layer, y_layer + 1, 1);
+    int s_2_2 = thisLayer.getAgastScore(x_layer + 1, y_layer + 1, 1);
     float delta_x_layer, delta_y_layer;
     float max_layer =
         subpixel2D(s_0_0, s_0_1, s_0_2, s_1_0, s_1_1, s_1_2, s_2_0, s_2_1,
@@ -596,15 +596,15 @@ inline float BriskScaleSpace::refine3D(const uint8_t layer, const int x_layer,
     if (!ismax) return 0.0;
 
     // get the patch on this layer:
-    register int s_0_0 = thisLayer.getAgastScore(x_layer - 1, y_layer - 1, 1);
-    register int s_1_0 = thisLayer.getAgastScore(x_layer, y_layer - 1, 1);
-    register int s_2_0 = thisLayer.getAgastScore(x_layer + 1, y_layer - 1, 1);
-    register int s_2_1 = thisLayer.getAgastScore(x_layer + 1, y_layer, 1);
-    register int s_1_1 = thisLayer.getAgastScore(x_layer, y_layer, 1);
-    register int s_0_1 = thisLayer.getAgastScore(x_layer - 1, y_layer, 1);
-    register int s_0_2 = thisLayer.getAgastScore(x_layer - 1, y_layer + 1, 1);
-    register int s_1_2 = thisLayer.getAgastScore(x_layer, y_layer + 1, 1);
-    register int s_2_2 = thisLayer.getAgastScore(x_layer + 1, y_layer + 1, 1);
+    int s_0_0 = thisLayer.getAgastScore(x_layer - 1, y_layer - 1, 1);
+    int s_1_0 = thisLayer.getAgastScore(x_layer, y_layer - 1, 1);
+    int s_2_0 = thisLayer.getAgastScore(x_layer + 1, y_layer - 1, 1);
+    int s_2_1 = thisLayer.getAgastScore(x_layer + 1, y_layer, 1);
+    int s_1_1 = thisLayer.getAgastScore(x_layer, y_layer, 1);
+    int s_0_1 = thisLayer.getAgastScore(x_layer - 1, y_layer, 1);
+    int s_0_2 = thisLayer.getAgastScore(x_layer - 1, y_layer + 1, 1);
+    int s_1_2 = thisLayer.getAgastScore(x_layer, y_layer + 1, 1);
+    int s_2_2 = thisLayer.getAgastScore(x_layer + 1, y_layer + 1, 1);
     float delta_x_layer, delta_y_layer;
     float max_layer =
         subpixel2D(s_0_0, s_0_1, s_0_2, s_1_0, s_1_1, s_1_2, s_2_0, s_2_1,
@@ -746,15 +746,15 @@ inline float BriskScaleSpace::getScoreMaxAbove(const uint8_t layer,
   }
 
   // find dx/dy:
-  register int s_0_0 = layerAbove.getAgastScore(max_x - 1, max_y - 1, 1);
-  register int s_1_0 = layerAbove.getAgastScore(max_x, max_y - 1, 1);
-  register int s_2_0 = layerAbove.getAgastScore(max_x + 1, max_y - 1, 1);
-  register int s_2_1 = layerAbove.getAgastScore(max_x + 1, max_y, 1);
-  register int s_1_1 = layerAbove.getAgastScore(max_x, max_y, 1);
-  register int s_0_1 = layerAbove.getAgastScore(max_x - 1, max_y, 1);
-  register int s_0_2 = layerAbove.getAgastScore(max_x - 1, max_y + 1, 1);
-  register int s_1_2 = layerAbove.getAgastScore(max_x, max_y + 1, 1);
-  register int s_2_2 = layerAbove.getAgastScore(max_x + 1, max_y + 1, 1);
+  int s_0_0 = layerAbove.getAgastScore(max_x - 1, max_y - 1, 1);
+  int s_1_0 = layerAbove.getAgastScore(max_x, max_y - 1, 1);
+  int s_2_0 = layerAbove.getAgastScore(max_x + 1, max_y - 1, 1);
+  int s_2_1 = layerAbove.getAgastScore(max_x + 1, max_y, 1);
+  int s_1_1 = layerAbove.getAgastScore(max_x, max_y, 1);
+  int s_0_1 = layerAbove.getAgastScore(max_x - 1, max_y, 1);
+  int s_0_2 = layerAbove.getAgastScore(max_x - 1, max_y + 1, 1);
+  int s_1_2 = layerAbove.getAgastScore(max_x, max_y + 1, 1);
+  int s_2_2 = layerAbove.getAgastScore(max_x + 1, max_y + 1, 1);
   float dx_1, dy_1;
   float refined_max = subpixel2D(s_0_0, s_0_1, s_0_2, s_1_0, s_1_1, s_1_2,
                                  s_2_0, s_2_1, s_2_2, dx_1, dy_1);
@@ -920,15 +920,15 @@ inline float BriskScaleSpace::getScoreMaxBelow(const uint8_t layer,
   }
 
   // find dx/dy:
-  register int s_0_0 = layerBelow.getAgastScore(max_x - 1, max_y - 1, 1);
-  register int s_1_0 = layerBelow.getAgastScore(max_x, max_y - 1, 1);
-  register int s_2_0 = layerBelow.getAgastScore(max_x + 1, max_y - 1, 1);
-  register int s_2_1 = layerBelow.getAgastScore(max_x + 1, max_y, 1);
-  register int s_1_1 = layerBelow.getAgastScore(max_x, max_y, 1);
-  register int s_0_1 = layerBelow.getAgastScore(max_x - 1, max_y, 1);
-  register int s_0_2 = layerBelow.getAgastScore(max_x - 1, max_y + 1, 1);
-  register int s_1_2 = layerBelow.getAgastScore(max_x, max_y + 1, 1);
-  register int s_2_2 = layerBelow.getAgastScore(max_x + 1, max_y + 1, 1);
+  int s_0_0 = layerBelow.getAgastScore(max_x - 1, max_y - 1, 1);
+  int s_1_0 = layerBelow.getAgastScore(max_x, max_y - 1, 1);
+  int s_2_0 = layerBelow.getAgastScore(max_x + 1, max_y - 1, 1);
+  int s_2_1 = layerBelow.getAgastScore(max_x + 1, max_y, 1);
+  int s_1_1 = layerBelow.getAgastScore(max_x, max_y, 1);
+  int s_0_1 = layerBelow.getAgastScore(max_x - 1, max_y, 1);
+  int s_0_2 = layerBelow.getAgastScore(max_x - 1, max_y + 1, 1);
+  int s_1_2 = layerBelow.getAgastScore(max_x, max_y + 1, 1);
+  int s_2_2 = layerBelow.getAgastScore(max_x + 1, max_y + 1, 1);
   float dx_1, dy_1;
   float refined_max = subpixel2D(s_0_0, s_0_1, s_0_2, s_1_0, s_1_1, s_1_2,
                                  s_2_0, s_2_1, s_2_2, dx_1, dy_1);
@@ -1107,21 +1107,21 @@ inline float BriskScaleSpace::subpixel2D(const int s_0_0, const int s_0_1,
                                          const int s_2_2, float& delta_x,
                                          float& delta_y) {
   // the coefficients of the 2d quadratic function least-squares fit:
-  register int tmp1 = s_0_0 + s_0_2 - 2 * s_1_1 + s_2_0 + s_2_2;
-  register int coeff1 = 3 * (tmp1 + s_0_1 - ((s_1_0 + s_1_2) << 1) + s_2_1);
-  register int coeff2 = 3 * (tmp1 - ((s_0_1 + s_2_1) << 1) + s_1_0 + s_1_2);
-  register int tmp2 = s_0_2 - s_2_0;
-  register int tmp3 = (s_0_0 + tmp2 - s_2_2);
-  register int tmp4 = tmp3 - 2 * tmp2;
-  register int coeff3 = -3 * (tmp3 + s_0_1 - s_2_1);
-  register int coeff4 = -3 * (tmp4 + s_1_0 - s_1_2);
-  register int coeff5 = (s_0_0 - s_0_2 - s_2_0 + s_2_2) << 2;
-  register int coeff6 =
+  int tmp1 = s_0_0 + s_0_2 - 2 * s_1_1 + s_2_0 + s_2_2;
+  int coeff1 = 3 * (tmp1 + s_0_1 - ((s_1_0 + s_1_2) << 1) + s_2_1);
+  int coeff2 = 3 * (tmp1 - ((s_0_1 + s_2_1) << 1) + s_1_0 + s_1_2);
+  int tmp2 = s_0_2 - s_2_0;
+  int tmp3 = (s_0_0 + tmp2 - s_2_2);
+  int tmp4 = tmp3 - 2 * tmp2;
+  int coeff3 = -3 * (tmp3 + s_0_1 - s_2_1);
+  int coeff4 = -3 * (tmp4 + s_1_0 - s_1_2);
+  int coeff5 = (s_0_0 - s_0_2 - s_2_0 + s_2_2) << 2;
+  int coeff6 =
       -(s_0_0 + s_0_2 - ((s_1_0 + s_0_1 + s_1_2 + s_2_1) << 1) - 5 * s_1_1 +
         s_2_0 + s_2_2) << 1;
 
   // 2nd derivative test:
-  register int H_det = 4 * coeff1 * coeff2 - coeff5 * coeff5;
+  int H_det = 4 * coeff1 * coeff2 - coeff5 * coeff5;
 
   if (H_det == 0) {
     delta_x = 0.0;
@@ -1460,10 +1460,10 @@ inline void BriskLayer::halfsample(const Image<unsigned char>& srcimg,
       0;  // note: leftoverCols can be zero but this still false...
 
   // mask needed later:
-  register __m128i mask =
+  __m128i mask =
       _mm_set_epi32(0x00FF00FF, 0x00FF00FF, 0x00FF00FF, 0x00FF00FF);
   // to be added in order to make successive averaging correct:
-  register __m128i ones =
+  __m128i ones =
       _mm_set_epi32(0x11111111, 0x11111111, 0x11111111, 0x11111111);
 
   // data pointers:
@@ -1599,15 +1599,15 @@ inline void BriskLayer::twothirdsample(const Image<unsigned char>& srcimg,
       ((srcimg.Cols() / 3) * 3) % 15;  // take care with border...
 
   // masks:
-  register __m128i mask1 =
+  __m128i mask1 =
       _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 12, 0x80, 10, 0x80,
                    7, 0x80, 4, 0x80, 1);
-  register __m128i mask2 =
+  __m128i mask2 =
       _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 12, 0x80, 10, 0x80, 7,
                    0x80, 4, 0x80, 1, 0x80);
-  register __m128i mask = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 14,
+  __m128i mask = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 14,
                                        12, 11, 9, 8, 6, 5, 3, 2, 0);
-  register __m128i store_mask =
+  __m128i store_mask =
       _mm_set_epi8(0, 0, 0, 0, 0, 0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
                    0x80, 0x80, 0x80);
 

@@ -62,8 +62,6 @@ static const __m128i binMask =
     _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
                  0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
 #endif
-static const double kSqrt2 = 1.4142135623731;
-static const double kInvSqrt2 = 1.0 / kSqrt2;
 static const double kLog2 = 0.693147180559945;
 static const int kNumOrientation = 256;
 static const int kNumPoints = 43;
