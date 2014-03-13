@@ -38,7 +38,7 @@
 # version string are exactly the same and it sets PACKAGE_VERSION_COMPATIBLE
 # if the current version is >= requested version.
 
-SET(PACKAGE_VERSION @CERES_VERSION@)
+SET(PACKAGE_VERSION @THEIA_VERSION@)
 
 IF ("${PACKAGE_VERSION}" VERSION_LESS "${PACKAGE_FIND_VERSION}")
    SET(PACKAGE_VERSION_COMPATIBLE FALSE)
