@@ -90,4 +90,10 @@ EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION_CUSTOM(Eigen::Vector2d)
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION_CUSTOM(Eigen::Vector4d)
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION_CUSTOM(Eigen::Vector4f)
 
+namespace Eigen {
+// Template a dynamic-size boolean vector for binary descriptors. We put it in
+// the Eigen namespace for consistency.
+typedef Eigen::Matrix<bool, Eigen::Dynamic, 1> VectorXb;
+}  // namespace Eigen
+
 #endif  // THEIA_ALIGNMENT_ALIGNMENT_H_
