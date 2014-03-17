@@ -34,16 +34,18 @@
 
 #include "theia/image/descriptor/descriptor_extractor.h"
 
+#include "theia/image/keypoint_detector/keypoint.h"
+
 namespace theia {
 // Compute the descriptor for multiple keypoints in a given image.
 bool DescriptorExtractor::ComputeDescriptors(
     const GrayImage& image,
-    const std::vector<Keypoint*>& keypoints,
+    const std::vector<Keypoint>& keypoints,
     std::vector<Descriptor*>* descriptors) {
   VLOG(0) << "calling base version... bad!";
   descriptors->reserve(keypoints.size());
-  for (const Keypoint* img_keypoint : keypoints) {
-    Descriptor* descriptor = ComputeDescriptor(image, *img_keypoint);
+  for (const Keypoint& img_keypoint : keypoints) {
+    Descriptor* descriptor = ComputeDescriptor(image, img_keypoint);
     descriptors->push_back(descriptor);
   }
   return true;
@@ -51,7 +53,7 @@ bool DescriptorExtractor::ComputeDescriptors(
 
 bool DescriptorExtractor::ComputeDescriptorsPruned(
     const GrayImage& image,
-    const std::vector<Keypoint*>& keypoints,
+    const std::vector<Keypoint>& keypoints,
     std::vector<Descriptor*>* descriptors) {
   if (ComputeDescriptors(image, keypoints, descriptors)) {
     VLOG(0) << "calling pruned version!";

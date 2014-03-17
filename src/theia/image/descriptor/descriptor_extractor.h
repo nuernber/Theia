@@ -73,7 +73,7 @@ class DescriptorExtractor {
   // descriptor cannot be computed at that keypoint). This can happen for
   // various reasons, including being too close to the border.
   virtual bool ComputeDescriptors(const GrayImage& image,
-                                  const std::vector<Keypoint*>& keypoints,
+                                  const std::vector<Keypoint>& keypoints,
                                   std::vector<Descriptor*>* descriptors);
 
   // Computes all descriptors possible and returns a vector of descriptors will
@@ -81,7 +81,7 @@ class DescriptorExtractor {
   // descriptors and keypoints are not guaranteed to match! If you want them to
   // match, use ComptuDescriptors instead.
   virtual bool ComputeDescriptorsPruned(const GrayImage& image,
-                                        const std::vector<Keypoint*>& keypoints,
+                                        const std::vector<Keypoint>& keypoints,
                                         std::vector<Descriptor*>* descriptors);
 
  private:

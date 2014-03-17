@@ -55,7 +55,7 @@ TEST(FreakDescriptor, Sanity) {
 
   // Get keypoints.
   BriskDetector brisk_detector;
-  std::vector<Keypoint*> brisk_keypoints;
+  std::vector<Keypoint> brisk_keypoints;
   brisk_detector.DetectKeypoints(input_img, &brisk_keypoints);
 
   // For each keypoint, extract the freak descriptors.
@@ -63,7 +63,7 @@ TEST(FreakDescriptor, Sanity) {
   EXPECT_TRUE(freak_extractor.Initialize());
   std::vector<Descriptor*> freak_descriptors;
   CHECK_NOTNULL(freak_extractor.ComputeDescriptor(input_img,
-                                                  *brisk_keypoints[0]));
+                                                  brisk_keypoints[0]));
   EXPECT_TRUE(freak_extractor.ComputeDescriptorsPruned(input_img,
                                                        brisk_keypoints,
                                                        &freak_descriptors));

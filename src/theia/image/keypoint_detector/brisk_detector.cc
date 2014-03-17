@@ -37,14 +37,17 @@
 #include <vector>
 
 #include "theia/image/image.h"
+#include "theia/image/keypoint_detector/brisk_impl.h"
 #include "theia/image/keypoint_detector/keypoint.h"
 
 namespace theia {
+
 bool BriskDetector::DetectKeypoints(const GrayImage& image,
-                                    std::vector<Keypoint*>* keypoints) {
+                                    std::vector<Keypoint>* keypoints) {
   Image<unsigned char> uchar_image = image.ConvertTo<unsigned char>();
   brisk_scale_space_.constructPyramid(uchar_image);
   brisk_scale_space_.getKeypoints(threshold_, keypoints);
   return true;
 }
+
 }  // namespace theia

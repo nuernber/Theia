@@ -122,7 +122,7 @@ class BriskScaleSpace {
 
   // get Keypoints
   void getKeypoints(const uint8_t _threshold,
-                    std::vector<Keypoint*>* keypoints);
+                    std::vector<Keypoint>* keypoints);
 
  private:
   // nonmax suppression:

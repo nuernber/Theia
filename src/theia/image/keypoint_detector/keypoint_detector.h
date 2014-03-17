@@ -59,7 +59,7 @@ class KeypointDetector {
   // Keypoint pointers in the vector with new, but the caller owns the data
   // returned (and must delete the pointers).
   virtual bool DetectKeypoints(const GrayImage& image,
-                               std::vector<Keypoint*>* keypoints) = 0;
+                               std::vector<Keypoint>* keypoints) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeypointDetector);

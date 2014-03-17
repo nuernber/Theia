@@ -262,11 +262,8 @@ bool FreakDescriptorExtractor::Initialize() {
 Descriptor* FreakDescriptorExtractor::ComputeDescriptor(
     const GrayImage& image, const Keypoint& keypoint) {
   Descriptor* descriptor = new FreakDescriptor;
-  std::vector<Keypoint*> keypoints;
-  // TODO(cmsweeney): Is there a better way to pass the address of the keypoint
-  // passed in? This is sort of a lazy hack.
-  Keypoint keypoint_copy = keypoint;
-  keypoints.push_back(&keypoint_copy);
+  std::vector<Keypoint> keypoints;
+  keypoints.push_back(keypoint);
   std::vector<Descriptor*> descriptors;
   descriptors.push_back(descriptor);
   CHECK(ComputeDescriptors(image, keypoints, &descriptors));
@@ -275,7 +272,7 @@ Descriptor* FreakDescriptorExtractor::ComputeDescriptor(
 
 // Compute multiple descriptors for keypoints from a single image.
 bool FreakDescriptorExtractor::ComputeDescriptors(
-    const GrayImage& image, const std::vector<Keypoint*>& keypoints,
+    const GrayImage& image, const std::vector<Keypoint>& keypoints,
     std::vector<Descriptor*>* descriptors) {
   Image<uchar> uchar_image = image.ConvertTo<uchar>();
   Image<uchar> img_integral = uchar_image.Integrate();
@@ -296,21 +293,21 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
     for (size_t k = keypoints.size(); k--;) {
       // Is k non-zero? If so, decrement it and continue.
       kp_scale_idx[k] = std::max(
-          static_cast<int>(std::log(keypoints[k]->scale() /
+          static_cast<int>(std::log(keypoints[k].scale() /
                                     kSmallestKeypointSize) * size_cst + 0.5),
           0);
       if (kp_scale_idx[k] >= kNumScales_) kp_scale_idx[k] = kNumScales_ - 1;
 
       // Check if the description at this specific position and scale fits
       // inside the image.
-      if (keypoints[k]->x() <= pattern_sizes_[kp_scale_idx[k]] ||
-          keypoints[k]->y() <= pattern_sizes_[kp_scale_idx[k]] ||
-          keypoints[k]->x() >= image.Cols() - pattern_sizes_[kp_scale_idx[k]] ||
-          keypoints[k]->y() >= image.Rows() - pattern_sizes_[kp_scale_idx[k]]) {
+      if (keypoints[k].x() <= pattern_sizes_[kp_scale_idx[k]] ||
+          keypoints[k].y() <= pattern_sizes_[kp_scale_idx[k]] ||
+          keypoints[k].x() >= image.Cols() - pattern_sizes_[kp_scale_idx[k]] ||
+          keypoints[k].y() >= image.Rows() - pattern_sizes_[kp_scale_idx[k]]) {
         (*descriptors)[k] = nullptr;
       } else {
         (*descriptors)[k] = new FreakDescriptor;
-        (*descriptors)[k]->SetKeypoint(*keypoints[k]);
+        (*descriptors)[k]->SetKeypoint(keypoints[k]);
       }
     }
   } else {
@@ -322,14 +319,14 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
     }
     for (size_t k = keypoints.size(); k--;) {
       kp_scale_idx[k] = scIdx;
-      if (keypoints[k]->x() <= pattern_sizes_[kp_scale_idx[k]] ||
-          keypoints[k]->y() <= pattern_sizes_[kp_scale_idx[k]] ||
-          keypoints[k]->x() >= image.Cols() - pattern_sizes_[kp_scale_idx[k]] ||
-          keypoints[k]->y() >= image.Rows() - pattern_sizes_[kp_scale_idx[k]]) {
+      if (keypoints[k].x() <= pattern_sizes_[kp_scale_idx[k]] ||
+          keypoints[k].y() <= pattern_sizes_[kp_scale_idx[k]] ||
+          keypoints[k].x() >= image.Cols() - pattern_sizes_[kp_scale_idx[k]] ||
+          keypoints[k].y() >= image.Rows() - pattern_sizes_[kp_scale_idx[k]]) {
         (*descriptors)[k] = nullptr;
       } else {
         (*descriptors)[k] = new FreakDescriptor;
-        (*descriptors)[k]->SetKeypoint(*keypoints[k]);
+        (*descriptors)[k]->SetKeypoint(keypoints[k]);
       }
     }
   }
@@ -350,8 +347,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       // get the points intensity value in the un-rotated pattern
       for (int i = kNumPoints; i--;) {
         points_value[i] =
-            MeanIntensity(uchar_image, img_integral, keypoints[k]->x(),
-                          keypoints[k]->y(), kp_scale_idx[k], 0, i);
+            MeanIntensity(uchar_image, img_integral, keypoints[k].x(),
+                          keypoints[k].y(), kp_scale_idx[k], 0, i);
       }
       direction0 = 0;
       direction1 = 0;
@@ -376,8 +373,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
     // extract descriptor at the computed orientation
     for (int i = kNumPoints; i--;) {
       points_value[i] =
-          MeanIntensity(uchar_image, img_integral, keypoints[k]->x(),
-                        keypoints[k]->y(), kp_scale_idx[k], theta_idx, i);
+          MeanIntensity(uchar_image, img_integral, keypoints[k].x(),
+                        keypoints[k].y(), kp_scale_idx[k], theta_idx, i);
     }
 
 #ifdef THEIA_USE_SSE

@@ -386,11 +386,8 @@ bool RoiPredicate(const float minX, const float minY, const float maxX,
 Descriptor* BriskDescriptorExtractor::ComputeDescriptor(
     const GrayImage& image, const Keypoint& keypoint) {
   Descriptor* descriptor = new BriskDescriptor;
-  std::vector<Keypoint*> keypoints;
-  // TODO(cmsweeney): Is there a better way to pass the address of the keypoint
-  // passed in? This is sort of a lazy hack.
-  Keypoint keypoint_copy = keypoint;
-  keypoints.push_back(&keypoint_copy);
+  std::vector<Keypoint> keypoints;
+  keypoints.push_back(keypoint);
   std::vector<Descriptor*> descriptors;
   descriptors.push_back(descriptor);
   CHECK(ComputeDescriptors(image, keypoints, &descriptors));
@@ -399,7 +396,7 @@ Descriptor* BriskDescriptorExtractor::ComputeDescriptor(
 
 // computes the descriptor
 bool BriskDescriptorExtractor::ComputeDescriptors(
-    const GrayImage& image, const std::vector<Keypoint*>& keypoints,
+    const GrayImage& image, const std::vector<Keypoint>& keypoints,
     std::vector<Descriptor*>* descriptors) {
 
   // Remove keypoints very close to the border
@@ -421,7 +418,7 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
     unsigned int scale;
     if (scale_invariance_) {
       scale = std::max(static_cast<int>(scales_ / lb_scalerange *
-                                            (log(12.0 * keypoints[k]->scale() /
+                                            (log(12.0 * keypoints[k].scale() /
                                                  (basicSize06)) / log2) + 0.5),
                        0);
       // saturate
@@ -434,7 +431,7 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
     const int border = size_list_[scale];
     const int border_x = image.Cols() - border - 1;
     const int border_y = image.Rows() - border - 1;
-    if (RoiPredicate(border, border, border_x, border_y, *keypoints[k])) {
+    if (RoiPredicate(border, border, border_x, border_y, keypoints[k])) {
       valid_keypoint[k] = false;
     }
   }
@@ -462,7 +459,7 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
       continue;
     }
     int theta;
-    Keypoint& kp = *keypoints[k];
+    const Keypoint& kp = keypoints[k];
     const int& scale = kscales[k];
     int shifter = 0;
     int* pvalues = _values;
@@ -473,7 +470,7 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
     std::bitset<BriskDescriptor::const_dimensions_>* descriptor_bits =
         reinterpret_cast<std::bitset<BriskDescriptor::const_dimensions_>*>(
             brisk_descriptor->CharData());
-    brisk_descriptor->SetKeypoint(*keypoints[k]);
+    brisk_descriptor->SetKeypoint(keypoints[k]);
 
     if (!rotation_invariance_) {
       // don't compute the gradient direction, just assign a rotation of 0°

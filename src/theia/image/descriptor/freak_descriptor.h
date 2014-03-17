@@ -85,7 +85,7 @@ class FreakDescriptorExtractor : public DescriptorExtractor {
   // may return null for some of the descriptors if they cannot be computed!
   // Typically this only happens when it is too close to the border.
   bool ComputeDescriptors(const GrayImage& image,
-                          const std::vector<Keypoint*>& keypoints,
+                          const std::vector<Keypoint>& keypoints,
                           std::vector<Descriptor*>* descriptors);
 
   enum {

@@ -56,7 +56,7 @@ TEST(BriskDetector, Sanity) {
   // Get the keypoints our way.
   BriskDetector brisk_detector;
   ASSERT_TRUE(brisk_detector.Initialize());
-  std::vector<Keypoint*> brisk_keypoints;
+  std::vector<Keypoint> brisk_keypoints;
   ASSERT_TRUE(brisk_detector.DetectKeypoints(input_img, &brisk_keypoints));
 }
 

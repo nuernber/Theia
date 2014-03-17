@@ -44,7 +44,7 @@
 
 namespace theia {
 bool HarrisDetector::DetectKeypoints(const GrayImage& image,
-                                     std::vector<Keypoint*>* keypoints) {
+                                     std::vector<Keypoint>* keypoints) {
   std::vector<std::pair<float, CVD::ImageRef> > harris_corners;
   const CVD::Image<float>& cvd_img = image.GetCVDImage();
   CVD::Image<float> xx(cvd_img.size()), xy(cvd_img.size()), yy(cvd_img.size());
@@ -56,10 +56,9 @@ bool HarrisDetector::DetectKeypoints(const GrayImage& image,
                                                            sigma_,
                                                            xx, xy, yy);
   for (const std::pair<float, CVD::ImageRef>& harris_corner : harris_corners) {
-    Keypoint* harris_keypoint = new Keypoint(harris_corner.second.x,
-                                             harris_corner.second.y,
-                                             Keypoint::HARRIS);
-    harris_keypoint->set_strength(harris_corner.first);
+    Keypoint harris_keypoint(harris_corner.second.x, harris_corner.second.y,
+                             Keypoint::HARRIS);
+    harris_keypoint.set_strength(harris_corner.first);
     keypoints->push_back(harris_keypoint);
   }
   return true;

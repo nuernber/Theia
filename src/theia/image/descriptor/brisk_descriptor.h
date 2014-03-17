@@ -78,7 +78,7 @@ class BriskDescriptorExtractor : public DescriptorExtractor {
 
   // Compute multiple descriptors for keypoints from a single image.
   bool ComputeDescriptors(const GrayImage& image,
-                          const std::vector<Keypoint*>& keypoints,
+                          const std::vector<Keypoint>& keypoints,
                           std::vector<Descriptor*>* descriptors);
 
   bool DetectAndExtractDescriptors(const GrayImage& image,

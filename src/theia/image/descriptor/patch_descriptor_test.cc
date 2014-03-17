@@ -55,7 +55,7 @@ TEST(PatchDescriptor, CompWithSubImage) {
 
   // Get keypoints.
   FastDetector fast_detector(20, true, false);
-  std::vector<Keypoint*> fast_keypoints;
+  std::vector<Keypoint> fast_keypoints;
   fast_detector.DetectKeypoints(input_img, &fast_keypoints);
 
   // For each keypoint, extract the patch descriptors.
@@ -67,8 +67,8 @@ TEST(PatchDescriptor, CompWithSubImage) {
 
   // Compare to SubImage.
   for (int i = 0; i < patch_descriptors.size(); i++) {
-    GraySubImage sub_img = input_img.GetSubImage((*fast_keypoints[i]).y() - 3,
-                                                 (*fast_keypoints[i]).x() - 3,
+    GraySubImage sub_img = input_img.GetSubImage((fast_keypoints[i]).y() - 3,
+                                                 (fast_keypoints[i]).x() - 3,
                                                  7,
                                                  7);
     int j = 0;

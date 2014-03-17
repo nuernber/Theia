@@ -59,7 +59,7 @@ TEST(HarrisDetector, BasicTest) {
 
   // Get the keypoints our way.
   HarrisDetector harris_detector(500);
-  std::vector<Keypoint*> harris_keypoints;
+  std::vector<Keypoint> harris_keypoints;
   harris_detector.DetectKeypoints(input_img, &harris_keypoints);
 
   // Get the keypoints through CVD.
@@ -77,10 +77,10 @@ TEST(HarrisDetector, BasicTest) {
   ASSERT_EQ(harris_keypoints.size(), 500);
   ASSERT_EQ(harris_keypoints.size(), cvd_corners.size());
   for (int i = 0; i < harris_keypoints.size(); i++) {
-    ASSERT_EQ(harris_keypoints[i]->keypoint_type(), Keypoint::HARRIS);
-    ASSERT_EQ(harris_keypoints[i]->x(), cvd_corners[i].second.x);
-    ASSERT_EQ(harris_keypoints[i]->y(), cvd_corners[i].second.y);
-    ASSERT_EQ(harris_keypoints[i]->strength(), cvd_corners[i].first);
+    ASSERT_EQ(harris_keypoints[i].keypoint_type(), Keypoint::HARRIS);
+    ASSERT_EQ(harris_keypoints[i].x(), cvd_corners[i].second.x);
+    ASSERT_EQ(harris_keypoints[i].y(), cvd_corners[i].second.y);
+    ASSERT_EQ(harris_keypoints[i].strength(), cvd_corners[i].first);
   }
 }
 
