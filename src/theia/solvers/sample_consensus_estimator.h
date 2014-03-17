@@ -118,10 +118,10 @@ template <class Datum, class Model> class SampleConsensusEstimator {
                         Model* best_model);
 
   // Return the number of inliers from the most recent call to Estimate.
-  int GetNumInliers() { return num_inliers_; }
+  int GetNumInliers() const { return num_inliers_; }
 
   // Return the number of iterations used from the most recent call to Estimate.
-  int GetNumIterations() { return num_iters_; }
+  int GetNumIterations() const { return num_iters_; }
 
  protected:
   // This method is called from derived classes to set up the sampling scheme
@@ -220,6 +220,8 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
     Model* best_model) {
   CHECK_GT(data.size(), 0)
       << "Cannot perform estimation with 0 data measurements!";
+  CHECK_NOTNULL(sampler_.get());
+  CHECK_NOTNULL(quality_measurement_.get());
 
   double best_quality = static_cast<double>(QualityMeasurement::INVALID);
   int max_iterations = ransac_params_.max_iterations;

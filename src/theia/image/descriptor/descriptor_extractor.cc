@@ -34,36 +34,52 @@
 
 #include "theia/image/descriptor/descriptor_extractor.h"
 
+#include <Eigen/Core>
+
+#include "theia/alignment/alignment.h"
+
 namespace theia {
 // Compute the descriptor for multiple keypoints in a given image.
 bool DescriptorExtractor::ComputeDescriptors(
     const GrayImage& image,
     const std::vector<Keypoint*>& keypoints,
-    std::vector<Descriptor*>* descriptors) {
+    std::vector<Eigen::Vector2d>* feature_positions,
+    std::vector<Eigen::VectorXf>* descriptors) {
   VLOG(0) << "calling base version... bad!";
   descriptors->reserve(keypoints.size());
   for (const Keypoint* img_keypoint : keypoints) {
-    Descriptor* descriptor = ComputeDescriptor(image, *img_keypoint);
-    descriptors->push_back(descriptor);
+    Eigen::VectorXf descriptor;
+    Eigen::Vector2d feature_position;
+    if (ComputeDescriptor(image, *img_keypoint, &feature_position,
+                          &descriptor)) {
+      feature_positions->push_back(feature_position);
+      descriptors->push_back(descriptor);
+    } else {
+      return false;
+    }
   }
   return true;
 }
 
-bool DescriptorExtractor::ComputeDescriptorsPruned(
+bool DescriptorExtractor::ComputeDescriptors(
     const GrayImage& image,
     const std::vector<Keypoint*>& keypoints,
-    std::vector<Descriptor*>* descriptors) {
-  if (ComputeDescriptors(image, keypoints, descriptors)) {
-    VLOG(0) << "calling pruned version!";
-    // Erase all elements of descriptors that were set to nullptr.
-    descriptors->erase(
-        std::remove_if(descriptors->begin(), descriptors->end(),
-                       [](Descriptor* x) { return x == nullptr; }),
-        descriptors->end());
-    return true;
-  } else {
-    return false;
+    std::vector<Eigen::Vector2d>* feature_positions,
+    std::vector<Eigen::VectorXb>* descriptors) {
+  VLOG(0) << "calling base version... bad!";
+  descriptors->reserve(keypoints.size());
+  for (const Keypoint* img_keypoint : keypoints) {
+    Eigen::VectorXb descriptor;
+    Eigen::Vector2d feature_position;
+    if (ComputeDescriptor(image, *img_keypoint, &feature_position,
+                          &descriptor)) {
+      feature_positions->push_back(feature_position);
+      descriptors->push_back(descriptor);
+    } else {
+      return false;
+    }
   }
+  return true;
 }
 
 }  // namespace theia

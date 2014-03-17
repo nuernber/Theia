@@ -41,7 +41,6 @@ extern "C" {
 #include <vector>
 
 #include "theia/image/image.h"
-#include "theia/image/descriptor/descriptor.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
 #include "theia/image/keypoint_detector/keypoint.h"
 
@@ -50,9 +49,9 @@ SiftDescriptorExtractor::~SiftDescriptorExtractor() {
   if (sift_filter_ != nullptr) vl_sift_delete(sift_filter_);
 }
 
-Descriptor* SiftDescriptorExtractor::ComputeDescriptor(
-    const GrayImage& image, const Keypoint& keypoint) {
-  Descriptor* descriptor = new SiftDescriptor;
+bool SiftDescriptorExtractor::ComputeDescriptor(
+    const GrayImage& image, const Keypoint& keypoint,
+    Eigen::Vector2d* feature_position, Eigen::VectorXf* descriptor) {
   CHECK(keypoint.has_scale() && keypoint.has_orientation())
       << "Keypoint must have scale and orientation to compute a SIFT "
       << "descriptor.";
@@ -92,15 +91,16 @@ Descriptor* SiftDescriptorExtractor::ComputeDescriptor(
 
   // Calculate the sift feature. Note that we are passing in a direct pointer to
   // the descriptor's underlying data.
-  descriptor->SetKeypoint(keypoint);
-  vl_sift_calc_keypoint_descriptor(sift_filter_, descriptor->FloatData(),
+  *feature_position = Eigen::Vector2d(keypoint.x(), keypoint.y());
+  vl_sift_calc_keypoint_descriptor(sift_filter_, descriptor->data(),
                                    &sift_keypoint, keypoint.orientation());
-  return descriptor;
+  return true;
 }
 
 bool SiftDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image, const std::vector<Keypoint*>& keypoints,
-    std::vector<Descriptor*>* descriptors) {
+    std::vector<Eigen::VectorXd>* feature_positions,
+    std::vector<Eigen::VectorXf>* descriptors) {
   // If the filter has been set, but is not usable for the input image (i.e. the
   // width and height are different) then we must make a new filter. Adding this
   // statement will save the function from regenerating the filter for
@@ -136,15 +136,16 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
   // Proceed through the octaves we reach the same one as the keypoint.  We
   // first resize the descriptors vector so that the keypoint indicies will be
   // properly matched to the descriptors.
-  descriptors->resize(keypoints.size(), nullptr);
+  descriptors->resize(keypoints.size());
+  feature_positions->resize(keypoints.size());
   while (vl_status != VL_ERR_EOF) {
     // Go through each keypoint to see if it came from this octave.
     for (int i = 0; i < sift_keypoints.size(); i++) {
       if (sift_keypoints[i].o != sift_filter_->o_cur) continue;
-      (*descriptors)[i] = new SiftDescriptor;
-      (*descriptors)[i]->SetKeypoint(*keypoints[i]);
+      keypoints->at(i) =
+          Eigen::Vector2d(keypoints->at(i).x(), keypoints->at(i).y());
       vl_sift_calc_keypoint_descriptor(
-          sift_filter_, (*descriptors)[i]->FloatData(), &sift_keypoints[i],
+          sift_filter_, (*descriptors)[i]->data(), &sift_keypoints[i],
           keypoints[i]->orientation());
     }
     vl_status = vl_sift_process_next_octave(sift_filter_);
@@ -153,7 +154,8 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
 }
 
 bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
-    const GrayImage& image, std::vector<Descriptor*>* descriptors) {
+    const GrayImage& image, std::vector<Eigen::Vector2d>* feature_positions,
+    std::vector<Eigen::VectorXf>* descriptors) {
   // If the filter has been set, but is not usable for the input image (i.e. the
   // width and height are different) then we must make a new filter. Adding this
   // statement will save the function from regenerating the filter for
@@ -191,14 +193,12 @@ bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
       int num_angles = vl_sift_calc_keypoint_orientations(sift_filter_, angles,
                                                           &vl_keypoints[i]);
       for (int j = 0; j < num_angles; j++) {
-        SiftDescriptor* sift_descriptor = new SiftDescriptor;
+        Eigen::VectorXf sift_descriptor(128);
         vl_sift_calc_keypoint_descriptor(
-            sift_filter_, sift_descriptor->FloatData(), &vl_keypoints[i],
+            sift_filter_, sift_descriptor.data(), &vl_keypoints[i],
             angles[j]);
-        sift_descriptor->set_x(vl_keypoints[i].x);
-        sift_descriptor->set_y(vl_keypoints[i].y);
-        sift_descriptor->set_scale(vl_keypoints[i].sigma);
-        sift_descriptor->set_orientation(angles[j]);
+        feature_positions->push_back(
+            Eigen::Vector2d(vl_keypoints[i].x, vl_keypoints[i].y));
         descriptors->push_back(sift_descriptor);
       }
     }

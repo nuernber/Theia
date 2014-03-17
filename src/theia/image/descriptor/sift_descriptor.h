@@ -40,7 +40,6 @@ extern "C" {
 #include <vl/sift.h>
 }
 #include <vector>
-#include "theia/image/descriptor/descriptor.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
 #include "theia/util/util.h"
 
@@ -48,11 +47,6 @@ namespace theia {
 template<class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
-
-class SiftDescriptor : public FloatDescriptor {
- public:
-  SiftDescriptor() : FloatDescriptor(128, DescriptorType::SIFT) {}
-};
 
 class SiftDescriptorExtractor : public DescriptorExtractor {
  public:
@@ -68,16 +62,21 @@ class SiftDescriptorExtractor : public DescriptorExtractor {
   ~SiftDescriptorExtractor();
 
   // Computes a descriptor at a single keypoint.
-  Descriptor* ComputeDescriptor(const GrayImage& image,
-                                const Keypoint& keypoint);
+  bool ComputeDescriptor(const GrayImage& image,
+                         const Keypoint& keypoint,
+                         Eigen::Vector2d* feature_position,
+                         Eigen::VectorXf* descriptor);
 
   // Compute multiple descriptors for keypoints from a single image.
   bool ComputeDescriptors(const GrayImage& image,
                           const std::vector<Keypoint*>& keypoints,
-                          std::vector<Descriptor*>* descriptors);
+                          std::vector<Eigen::Vector2d>* feature_position,
+                          std::vector<Eigen::VectorXf>* descriptors);
 
-  bool DetectAndExtractDescriptors(const GrayImage& image,
-                                   std::vector<Descriptor*>* descriptors);
+  bool DetectAndExtractDescriptors(
+      const GrayImage& image,
+      std::vector<Eigen::Vector2d>* feature_position,
+      std::vector<Eigen::VectorXf>* descriptors);
 
  private:
   VlSiftFilt* sift_filter_;
