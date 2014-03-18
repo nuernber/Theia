@@ -69,7 +69,7 @@ class SiftDescriptorExtractor : public DescriptorExtractor {
 
   // Compute multiple descriptors for keypoints from a single image.
   bool ComputeDescriptors(const GrayImage& image,
-                          const std::vector<Keypoint*>& keypoints,
+                          const std::vector<Keypoint>& keypoints,
                           std::vector<Eigen::Vector2d>* feature_position,
                           std::vector<Eigen::VectorXf>* descriptors);
 

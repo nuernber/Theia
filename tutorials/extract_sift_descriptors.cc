@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
   SiftDetector keypoint_detector;
-  std::vector<Keypoint*> sift_keypoints;
+  std::vector<Keypoint> sift_keypoints;
   keypoint_detector.DetectKeypoints(image, &sift_keypoints);
   VLOG(0) << "detected " << sift_keypoints.size() << " keypoints.";
 

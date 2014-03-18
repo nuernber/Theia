@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
   BriskDetector brisk_detector(70, 4);
-  std::vector<Keypoint*> keypoints;
+  std::vector<Keypoint> keypoints;
   brisk_detector.DetectKeypoints(image, &keypoints);
   VLOG(0) << "detected " << keypoints.size()
           << " keypoints in left image.";

@@ -98,7 +98,7 @@ bool SiftDescriptorExtractor::ComputeDescriptor(
 }
 
 bool SiftDescriptorExtractor::ComputeDescriptors(
-    const GrayImage& image, const std::vector<Keypoint*>& keypoints,
+    const GrayImage& image, const std::vector<Keypoint>& keypoints,
     std::vector<Eigen::VectorXd>* feature_positions,
     std::vector<Eigen::VectorXf>* descriptors) {
   // If the filter has been set, but is not usable for the input image (i.e. the
@@ -118,11 +118,11 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
   // Create the vl sift keypoint from the one passed in.
   std::vector<VlSiftKeypoint> sift_keypoints(keypoints.size());
   for (int i = 0; i < keypoints.size(); i++) {
-    CHECK(keypoints[i]->has_scale() && keypoints[i]->has_orientation())
+    CHECK(keypoints[i].has_scale() && keypoints[i].has_orientation())
         << "Keypoint must have scale and orientation to compute a SIFT "
         << "descriptor.";
-    vl_sift_keypoint_init(sift_filter_, &sift_keypoints[i], keypoints[i]->x(),
-                          keypoints[i]->y(), keypoints[i]->scale());
+    vl_sift_keypoint_init(sift_filter_, &sift_keypoints[i], keypoints[i].x(),
+                          keypoints[i].y(), keypoints[i].scale());
   }
   // The VLFeat functions take in a non-const image pointer so that it can
   // calculate gaussian pyramids. Obviously, we do not want to break our const
@@ -142,11 +142,11 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
     // Go through each keypoint to see if it came from this octave.
     for (int i = 0; i < sift_keypoints.size(); i++) {
       if (sift_keypoints[i].o != sift_filter_->o_cur) continue;
-      keypoints->at(i) =
-          Eigen::Vector2d(keypoints->at(i).x(), keypoints->at(i).y());
+      feature_positions->at(i) =
+          Eigen::Vector2d(keypoints[i].x(), keypoints[i].y());
       vl_sift_calc_keypoint_descriptor(
           sift_filter_, (*descriptors)[i]->data(), &sift_keypoints[i],
-          keypoints[i]->orientation());
+          keypoints[i].orientation());
     }
     vl_status = vl_sift_process_next_octave(sift_filter_);
   }

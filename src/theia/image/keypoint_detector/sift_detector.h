@@ -66,7 +66,7 @@ class SiftDetector : public KeypointDetector {
 
   // Given an image, detect keypoints using the sift descriptor.
   bool DetectKeypoints(const GrayImage& image,
-                       std::vector<Keypoint*>* keypoints);
+                       std::vector<Keypoint>* keypoints);
  private:
   int num_octaves_;
   int num_levels_;

@@ -74,7 +74,7 @@ void AgastDetector::SetThreshold(int threshold) {
 }
 
 bool AgastDetector::DetectKeypoints(const GrayImage& image,
-                                    std::vector<Keypoint*>* keypoints) {
+                                    std::vector<Keypoint>* keypoints) {
   ast_detector_->set_imageSize(image.Cols(), image.Rows());
   // Convert to uchar for algorithm.
   Image<unsigned char> uchar_image = image.ConvertTo<unsigned char>();
@@ -102,10 +102,8 @@ bool AgastDetector::DetectKeypoints(const GrayImage& image,
 
   keypoints->reserve(ast_keypoints.size());
   for (struct CvPoint ast_point : ast_keypoints) {
-    Keypoint* new_keypoint = new Keypoint(ast_point.x,
-                                          ast_point.y,
-                                          Keypoint::AGAST);
-    new_keypoint->set_strength(ast_detector_->cornerScore(
+    Keypoint new_keypoint(ast_point.x, ast_point.y, Keypoint::AGAST);
+    new_keypoint.set_strength(ast_detector_->cornerScore(
         uchar_image.Data() + ast_point.x + ast_point.y*uchar_image.Cols()));
 
     keypoints->push_back(new_keypoint);

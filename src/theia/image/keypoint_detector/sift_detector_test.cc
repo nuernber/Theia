@@ -55,7 +55,7 @@ TEST(SiftDetector, Sanity) {
   // Get the keypoints our way.
   SiftDetector sift_detector;
   ASSERT_TRUE(sift_detector.Initialize());
-  std::vector<Keypoint*> sift_keypoints;
+  std::vector<Keypoint> sift_keypoints;
   ASSERT_TRUE(sift_detector.DetectKeypoints(input_img, &sift_keypoints));
 }
 

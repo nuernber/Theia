@@ -76,7 +76,7 @@ class AgastDetector : public KeypointDetector {
 
   // Detect the AGAST keypoints in the image.
   bool DetectKeypoints(const GrayImage& image,
-                       std::vector<Keypoint*>* keypoints);
+                       std::vector<Keypoint>* keypoints);
 
  private:
   std::unique_ptr<agast::AstDetector> ast_detector_;

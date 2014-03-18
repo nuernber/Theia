@@ -102,7 +102,7 @@ void BriskScaleSpace::constructPyramid(const Image<unsigned char>& image) {
 }
 
 void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
-                                   std::vector<Keypoint*>* keypoints) {
+                                   std::vector<Keypoint>* keypoints) {
   keypoints->reserve(2000);
 
   // assign thresholds
@@ -142,10 +142,10 @@ void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
                              s_2_1, s_2_2, delta_x, delta_y);
 
       // store:
-      Keypoint* new_keypoint =
-          new Keypoint(point.x + delta_x, point.y + delta_y, Keypoint::BRISK);
-      new_keypoint->set_strength(max);
-      new_keypoint->set_scale(0);
+      Keypoint new_keypoint(point.x + delta_x, point.y + delta_y,
+                            Keypoint::BRISK);
+      new_keypoint.set_strength(max);
+      new_keypoint.set_scale(0);
       keypoints->push_back(new_keypoint);
       /*
         keypoints->push_back(cv::KeyPostatic_cast<int>(float(point.x)+delta_x,
@@ -191,11 +191,11 @@ void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
                                s_2_1, s_2_2, delta_x, delta_y);
 
         // store:
-        Keypoint* new_keypoint = new Keypoint(
-            (point.x + delta_x) * l.scale() + l.offset(),
-            (point.y + delta_y) * l.scale() + l.offset(), Keypoint::BRISK);
-        new_keypoint->set_strength(max);
-        new_keypoint->set_scale(l.scale());
+        Keypoint new_keypoint((point.x + delta_x) * l.scale() + l.offset(),
+                              (point.y + delta_y) * l.scale() + l.offset(),
+                              Keypoint::BRISK);
+        new_keypoint.set_strength(max);
+        new_keypoint.set_scale(l.scale());
         keypoints->push_back(new_keypoint);
         /*
           keypoints->push_back(
@@ -221,9 +221,9 @@ void BriskScaleSpace::getKeypoints(const uint8_t _threshold,
 
         // finally store the detected keypoint:
         if (score > static_cast<float>(threshold_)) {
-          Keypoint* new_keypoint = new Keypoint(x, y, Keypoint::BRISK);
-          new_keypoint->set_strength(score);
-          new_keypoint->set_scale(scale);
+          Keypoint new_keypoint(x, y, Keypoint::BRISK);
+          new_keypoint.set_strength(score);
+          new_keypoint.set_scale(scale);
           keypoints->push_back(new_keypoint);
 
           // keypoints->push_back(cv::KeyPostatic_cast<int>(x, y,

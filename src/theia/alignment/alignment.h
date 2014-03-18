@@ -91,9 +91,13 @@ EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION_CUSTOM(Eigen::Vector4d)
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION_CUSTOM(Eigen::Vector4f)
 
 namespace Eigen {
-// Template a dynamic-size boolean vector for binary descriptors. We put it in
-// the Eigen namespace for consistency.
-typedef Eigen::Matrix<bool, Eigen::Dynamic, 1> VectorXb;
+
+// Template a dynamic-size vector for binary descriptors. We put it in the Eigen
+// namespace for consistency. The size of this vector is 8 * descriptor
+// dimensions, as each bit is a dimension of the descriptor and each entry is a
+// uint_8 (i.e., 8 bits).
+typedef Eigen::Matrix<uint8_t, Eigen::Dynamic, 1> BinaryVectorX;
+
 }  // namespace Eigen
 
 #endif  // THEIA_ALIGNMENT_ALIGNMENT_H_

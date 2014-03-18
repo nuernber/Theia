@@ -55,7 +55,7 @@ class HarrisDetector : public KeypointDetector {
   ~HarrisDetector() {}
 
   bool DetectKeypoints(const GrayImage& image,
-                       std::vector<Keypoint*>* keypoints);
+                       std::vector<Keypoint>* keypoints);
 
  private:
   // Number of corners to find.

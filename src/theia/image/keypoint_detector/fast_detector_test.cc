@@ -57,7 +57,7 @@ TEST(FastDetector, BasicTest) {
 
   // Get the keypoints our way.
   FastDetector fast_detector(20, false, false);
-  std::vector<Keypoint*> fast_keypoints;
+  std::vector<Keypoint> fast_keypoints;
   fast_detector.DetectKeypoints(input_img, &fast_keypoints);
 
   // Get the keypoints through CVD.
@@ -67,10 +67,10 @@ TEST(FastDetector, BasicTest) {
   // Compare to ensure that they are equal!
   ASSERT_EQ(fast_keypoints.size(), cvd_corners.size());
   for (int i = 0; i < fast_keypoints.size(); i++) {
-    ASSERT_EQ(fast_keypoints[i]->keypoint_type(), Keypoint::FAST);
-    ASSERT_EQ(fast_keypoints[i]->x(), cvd_corners[i].x);
-    ASSERT_EQ(fast_keypoints[i]->y(), cvd_corners[i].y);
-    ASSERT_FALSE(fast_keypoints[i]->has_strength());
+    ASSERT_EQ(fast_keypoints[i].keypoint_type(), Keypoint::FAST);
+    ASSERT_EQ(fast_keypoints[i].x(), cvd_corners[i].x);
+    ASSERT_EQ(fast_keypoints[i].y(), cvd_corners[i].y);
+    ASSERT_FALSE(fast_keypoints[i].has_strength());
   }
 }
 
@@ -80,7 +80,7 @@ TEST(FastDetector, NonmaxSuppression) {
 
   // Get the keypoints our way.
   FastDetector fast_detector(20, true, false);
-  std::vector<Keypoint*> fast_keypoints;
+  std::vector<Keypoint> fast_keypoints;
   fast_detector.DetectKeypoints(input_img, &fast_keypoints);
 
   // Get the keypoints through CVD.
@@ -90,10 +90,10 @@ TEST(FastDetector, NonmaxSuppression) {
   // Compare to ensure that they are equal!
   ASSERT_EQ(fast_keypoints.size(), cvd_corners.size());
   for (int i = 0; i < fast_keypoints.size(); i++) {
-    ASSERT_EQ(fast_keypoints[i]->keypoint_type(), Keypoint::FAST);
-    ASSERT_EQ(fast_keypoints[i]->x(), cvd_corners[i].x);
-    ASSERT_EQ(fast_keypoints[i]->y(), cvd_corners[i].y);
-    ASSERT_FALSE(fast_keypoints[i]->has_strength());
+    ASSERT_EQ(fast_keypoints[i].keypoint_type(), Keypoint::FAST);
+    ASSERT_EQ(fast_keypoints[i].x(), cvd_corners[i].x);
+    ASSERT_EQ(fast_keypoints[i].y(), cvd_corners[i].y);
+    ASSERT_FALSE(fast_keypoints[i].has_strength());
   }
 }
 
@@ -103,7 +103,7 @@ TEST(FastDetector, Score) {
 
   // Get the keypoints our way.
   FastDetector fast_detector(20, true, true);
-  std::vector<Keypoint*> fast_keypoints;
+  std::vector<Keypoint> fast_keypoints;
   fast_detector.DetectKeypoints(input_img, &fast_keypoints);
 
   // Get the keypoints through CVD.
@@ -115,10 +115,10 @@ TEST(FastDetector, Score) {
   // Compare to ensure that they are equal!
   ASSERT_EQ(fast_keypoints.size(), cvd_corners.size());
   for (int i = 0; i < fast_keypoints.size(); i++) {
-    ASSERT_EQ(fast_keypoints[i]->keypoint_type(), Keypoint::FAST);
-    ASSERT_EQ(fast_keypoints[i]->x(), cvd_corners[i].x);
-    ASSERT_EQ(fast_keypoints[i]->y(), cvd_corners[i].y);
-    ASSERT_EQ(fast_keypoints[i]->strength(), cvd_scores[i]);
+    ASSERT_EQ(fast_keypoints[i].keypoint_type(), Keypoint::FAST);
+    ASSERT_EQ(fast_keypoints[i].x(), cvd_corners[i].x);
+    ASSERT_EQ(fast_keypoints[i].y(), cvd_corners[i].y);
+    ASSERT_EQ(fast_keypoints[i].strength(), cvd_scores[i]);
   }
 }
 

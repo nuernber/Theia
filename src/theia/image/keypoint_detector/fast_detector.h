@@ -59,7 +59,7 @@ class FastDetector : public KeypointDetector {
   ~FastDetector() {}
 
   bool DetectKeypoints(const GrayImage& image,
-                       std::vector<Keypoint*>* keypoints);
+                       std::vector<Keypoint>* keypoints);
 
  private:
   // Threshold for the minimum corner score allowed.

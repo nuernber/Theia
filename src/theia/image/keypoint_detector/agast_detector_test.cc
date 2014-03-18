@@ -55,7 +55,7 @@ TEST(AgastDetector, Sanity) {
   // Get the keypoints our way.
   AgastDetector agast_detector;
   ASSERT_TRUE(agast_detector.Initialize());
-  std::vector<Keypoint*> agast_keypoints;
+  std::vector<Keypoint> agast_keypoints;
   ASSERT_TRUE(agast_detector.DetectKeypoints(input_img, &agast_keypoints));
 }
 

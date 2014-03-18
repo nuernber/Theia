@@ -37,6 +37,7 @@
 #include <string>
 #include "gtest/gtest.h"
 
+#include "theia/alignment/alignment.h"
 #include "theia/image/image.h"
 #include "theia/image/keypoint_detector/brisk_detector.h"
 #include "theia/image/descriptor/brisk_descriptor.h"
@@ -56,14 +57,14 @@ TEST(BriskDescriptor, Sanity) {
 
   // Get keypoints.
   BriskDetector brisk_detector;
-  std::vector<Keypoint*> brisk_keypoints;
+  std::vector<Keypoint> brisk_keypoints;
   brisk_detector.DetectKeypoints(input_img, &brisk_keypoints);
 
   // For each keypoint, extract the brisk descriptors.
   BriskDescriptorExtractor brisk_extractor;
-  std::vector<Descriptor*> brisk_descriptors;
+  std::vector<Eigen::BinaryVectorX> brisk_descriptors;
   CHECK_NOTNULL(brisk_extractor.ComputeDescriptor(input_img,
-                                                  *brisk_keypoints[0]));
+                                                  brisk_keypoints[0]));
   EXPECT_TRUE(brisk_extractor.ComputeDescriptorsPruned(input_img,
                                                        brisk_keypoints,
                                                        &brisk_descriptors));

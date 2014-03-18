@@ -60,7 +60,7 @@ class BriskDetector : public KeypointDetector {
   ~BriskDetector() {}
 
   bool DetectKeypoints(const GrayImage& image,
-                       std::vector<Keypoint*>* keypoints);
+                       std::vector<Keypoint>* keypoints);
 
  private:
   int threshold_;

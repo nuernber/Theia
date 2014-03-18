@@ -50,7 +50,7 @@ SiftDetector::~SiftDetector() {
 }
 
 bool SiftDetector::DetectKeypoints(const GrayImage& image,
-                                   std::vector<Keypoint*>* keypoints) {
+                                   std::vector<Keypoint>* keypoints) {
   // If the filter has been set, but is not usable for the input image (i.e. the
   // width and height are different) then we must make a new filter. Adding this
   // statement will save the function from regenerating the filter for
@@ -94,11 +94,9 @@ bool SiftDetector::DetectKeypoints(const GrayImage& image,
                                                           angles,
                                                           &vl_keypoints[i]);
       for (int j = 0; j < num_angles; j++) {
-        Keypoint* keypoint = new Keypoint(vl_keypoints[i].x,
-                                          vl_keypoints[i].y,
-                                          Keypoint::SIFT);
-        keypoint->set_scale(vl_keypoints[i].sigma);
-        keypoint->set_orientation(angles[j]);
+        Keypoint keypoint(vl_keypoints[i].x, vl_keypoints[i].y, Keypoint::SIFT);
+        keypoint.set_scale(vl_keypoints[i].sigma);
+        keypoint.set_orientation(angles[j]);
         keypoints->push_back(keypoint);
       }
     }

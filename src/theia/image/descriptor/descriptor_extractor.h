@@ -55,7 +55,7 @@ class Keypoint;
 // defines methods for both types, though only one type may be implemented per
 // class.
 //
-// NOTE: VectorXb is a boolean-type vector and is defined as a typedef in
+// NOTE: BinaryVectorX is a binary-type vector and is defined as a typedef in
 // alingment.h
 class DescriptorExtractor {
  public:
@@ -81,23 +81,23 @@ class DescriptorExtractor {
                                  Eigen::VectorXf* descriptor) = 0;
 
   // Compute the descriptors for multiple keypoints in a given image. This
-  // method will populate teh feature_position and descriptors vectors
+  // method will populate the feature_position and descriptors vectors
   // accordingly. Only the features that could extract a valid descriptor are in
   // these containers, so it is not guaranteed that all keypoints will extract a
   // features (e.g., keypoints near the edge of an image). Returns true on
   // success, false on failure.
   virtual bool ComputeDescriptors(
       const GrayImage& image,
-      const std::vector<Keypoint*>& keypoints,
-      std::vector<Eigen::Vector2d>* feature_position,
+      const std::vector<Keypoint>& keypoints,
+      std::vector<Eigen::Vector2d>* feature_positions,
       std::vector<Eigen::VectorXf>* descriptors);
 
   // Same as above, but for binary descriptors.
   virtual bool ComputeDescriptors(
       const GrayImage& image,
-      const std::vector<Keypoint*>& keypoints,
-      std::vector<Eigen::Vector2d>* feature_position,
-      std::vector<Eigen::VectorXb>* descriptors);
+      const std::vector<Keypoint>& keypoints,
+      std::vector<Eigen::Vector2d>* feature_positions,
+      std::vector<Eigen::BinaryVectorX>* descriptors);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DescriptorExtractor);
@@ -132,15 +132,15 @@ class FloatDescriptorExtractor {
   virtual bool ComputeDescriptors(
       const GrayImage& image,
       const std::vector<Keypoint*>& keypoints,
-      std::vector<Eigen::Vector2d>* feature_position,
+      std::vector<Eigen::Vector2d>* feature_positions,
       std::vector<Eigen::VectorXf>* descriptors);
 
   // Same as above, but for binary descriptors.
   virtual bool ComputeDescriptors(
       const GrayImage& image,
       const std::vector<Keypoint*>& keypoints,
-      std::vector<Eigen::Vector2d>* feature_position,
-      std::vector<Eigen::VectorXb>* descriptors) {
+      std::vector<Eigen::Vector2d>* feature_positions,
+      std::vector<Eigen::BinaryVectorX>* descriptors) {
 #pragma message("YOU ARE ATTEMPTING TO EXTRACT A BINARY DESCRIPTOR WITH A " \
                 "FLOAT DESCRIPTOR EXTRACTOR");
   }
@@ -177,17 +177,17 @@ class BinaryDescriptorExtractor {
   virtual bool ComputeDescriptors(
       const GrayImage& image,
       const std::vector<Keypoint*>& keypoints,
-      std::vector<Eigen::Vector2d>* feature_position,
       std::vector<Eigen::VectorXf>* descriptors) {
 #pragma message("YOU ARE ATTEMPTING TO EXTRACT A FLOAT DESCRIPTOR WITH A " \
                 "BINARY DESCRIPTOR EXTRACTOR");
   }
+
   // Same as above, but for binary descriptors.
   virtual bool ComputeDescriptors(
       const GrayImage& image,
       const std::vector<Keypoint*>& keypoints,
-      std::vector<Eigen::Vector2d>* feature_position,
-      std::vector<Eigen::VectorXb>* descriptors);
+      std::vector<Eigen::Vector2d>* feature_positions,
+      std::vector<Eigen::BinaryVectorX>* descriptors);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BinaryDescriptorExtractor);

@@ -44,7 +44,7 @@
 
 namespace theia {
 bool FastDetector::DetectKeypoints(const GrayImage& image,
-                                   std::vector<Keypoint*>* keypoints) {
+                                   std::vector<Keypoint>* keypoints) {
   CVD::Image<CVD::byte> cvd_img = CVD::convert_image(image.GetCVDImage());
 
   std::vector<CVD::ImageRef> fast_corners;
@@ -57,10 +57,9 @@ bool FastDetector::DetectKeypoints(const GrayImage& image,
   // Insert the keypoints into the vector.
   keypoints->reserve(fast_corners.size());
   for (int i = 0; i < fast_corners.size(); i++) {
-    Keypoint* fast_keypoint =
-        new Keypoint(static_cast<double>(fast_corners[i].x),
-                     static_cast<double>(fast_corners[i].y),
-                     Keypoint::FAST);
+    Keypoint fast_keypoint(static_cast<double>(fast_corners[i].x),
+                           static_cast<double>(fast_corners[i].y),
+                           Keypoint::FAST);
     keypoints->push_back(fast_keypoint);
   }
 
@@ -70,7 +69,7 @@ bool FastDetector::DetectKeypoints(const GrayImage& image,
     std::vector<int> fast_scores;
     CVD::fast_corner_score_9(cvd_img, fast_corners, threshold_, fast_scores);
     for (int i = 0; i < keypoints->size(); i++)
-      (*keypoints)[i]->set_strength(static_cast<double>(fast_scores[i]));
+      (*keypoints)[i].set_strength(static_cast<double>(fast_scores[i]));
   }
 
   return true;
