@@ -383,21 +383,24 @@ bool RoiPredicate(const float minX, const float minY, const float maxX,
 }
 
 // Computes a descriptor at a single keypoint.
-Descriptor* BriskDescriptorExtractor::ComputeDescriptor(
-    const GrayImage& image, const Keypoint& keypoint) {
+bool BriskDescriptorExtractor::ComputeDescriptor(
+    const GrayImage& image, const Keypoint& keypoint,
+    Eigen::Vector2d* feature_position, Eigen::BinaryVectorX* descriptor) {
   Descriptor* descriptor = new BriskDescriptor;
   std::vector<Keypoint> keypoints;
   keypoints.push_back(keypoint);
-  std::vector<Descriptor*> descriptors;
-  descriptors.push_back(descriptor);
-  CHECK(ComputeDescriptors(image, keypoints, &descriptors));
-  return descriptor;
+  std::vector<Eigen::Vector2d> feature_positions;
+  std::vector<Eigen::BinaryVectorX> descriptors;
+  CHECK(ComputeDescriptors(image, keypoints, &feature_positions, &descriptors));
+  feature_position = feature_positions[0];
+  descriptor = descriptors[0];
 }
 
 // computes the descriptor
 bool BriskDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image, const std::vector<Keypoint>& keypoints,
-    std::vector<Descriptor*>* descriptors) {
+    std::vector<Eigen::Vector2d>* feature_positions,
+    std::vector<Eigen::BinaryVectorX>* descriptors) {
 
   // Remove keypoints very close to the border
   size_t ksize = keypoints.size();
@@ -443,7 +446,7 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
   int* _values = new int[points_];  // for temporary use
 
   // resize the descriptors:
-  descriptors->resize(keypoints.size(), nullptr);
+  descriptors->reserve(keypoints.size());
 
   // now do the extraction for all keypoints:
 
@@ -466,11 +469,11 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
     const float& x = kp.x();
     const float& y = kp.y();
 
-    BriskDescriptor* brisk_descriptor = new BriskDescriptor;
-    std::bitset<BriskDescriptor::const_dimensions_>* descriptor_bits =
-        reinterpret_cast<std::bitset<BriskDescriptor::const_dimensions_>*>(
-            brisk_descriptor->CharData());
-    brisk_descriptor->SetKeypoint(keypoints[k]);
+    Eigen::BinaryVectorX binary_descriptor(512 / (8 * sizeof(uint_8)));
+    std::bitset<512>* descriptor_bits =
+        reinterpret_cast<std::bitset<512>*>(binary_descriptor.data());
+
+    feature_position = Eigen::Vector2d(x, y);
 
     if (!rotation_invariance_) {
       // don't compute the gradient direction, just assign a rotation of 0°
@@ -496,9 +499,9 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
         direction0 += tmp0;
         direction1 += tmp1;
       }
-      brisk_descriptor->set_orientation(atan2(static_cast<float>(direction1),
-                                              static_cast<float>(direction0)));
-      double kp_angle = brisk_descriptor->orientation() / M_PI * 180.0;
+      const double orientation = atan2(static_cast<float>(direction1),
+                                       static_cast<float>(direction0));
+      double kp_angle = orientation / M_PI * 180.0;
       theta = static_cast<int>((n_rot_ * kp_angle) / (360.0) + 0.5);
       if (theta < 0) theta += n_rot_;
       if (theta >= static_cast<int>(n_rot_)) theta -= n_rot_;
@@ -524,7 +527,7 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
       (*descriptor_bits)[shifter] = t1 > t2;
       ++shifter;
     }
-    (*descriptors)[k] = brisk_descriptor;
+    descriptors->push_back(binary_descriptor);
   }
 
   // clean-up

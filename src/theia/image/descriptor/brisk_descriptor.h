@@ -35,9 +35,10 @@
 #ifndef THEIA_IMAGE_DESCRIPTOR_BRISK_DESCRIPTOR_H_
 #define THEIA_IMAGE_DESCRIPTOR_BRISK_DESCRIPTOR_H_
 
+#include <Eigen/Core>
 #include <vector>
 
-#include "theia/image/descriptor/descriptor.h"
+#include "theia/alignment/alignment.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
 #include "theia/util/util.h"
 
@@ -45,18 +46,6 @@ namespace theia {
 template <class T> class Image;
 typedef Image<float> GrayImage;
 class Keypoint;
-
-class BriskDescriptor : public BinaryDescriptor {
- public:
-  BriskDescriptor()
-      : BinaryDescriptor(const_dimensions_, DescriptorType::BRISK) {}
-
- private:
-  friend class BriskDescriptorExtractor;
-  // This is technically equal to dimensions_, however, dimensions_ cannot be a
-  // constexpr.
-  static constexpr int const_dimensions_ = 512;
-};
 
 // BRISK Descriptor ported from reference code of Stefan Leutenegger, Margarita
 // Chli and Roland Siegwart, "BRISK: Binary Robust Invariant Scalable
@@ -73,16 +62,21 @@ class BriskDescriptorExtractor : public DescriptorExtractor {
   ~BriskDescriptorExtractor();
 
   // Computes a descriptor at a single keypoint.
-  Descriptor* ComputeDescriptor(const GrayImage& image,
-                                const Keypoint& keypoint);
+  virtual bool ComputeDescriptor(const GrayImage& image,
+                                 const Keypoint& keypoint,
+                                 Eigen::Vector2d* feature_position,
+                                 Eigen::VectorXf* descriptor);
 
   // Compute multiple descriptors for keypoints from a single image.
-  bool ComputeDescriptors(const GrayImage& image,
-                          const std::vector<Keypoint>& keypoints,
-                          std::vector<Descriptor*>* descriptors);
+  virtual bool ComputeDescriptors(
+      const GrayImage& image,
+      const std::vector<Keypoint*>& keypoints,
+      std::vector<Eigen::Vector2d>* feature_positions,
+      std::vector<Eigen::BinaryVectorX>* descriptors);
 
-  bool DetectAndExtractDescriptors(const GrayImage& image,
-                                   std::vector<Descriptor*>* descriptors);
+  bool DetectAndExtractDescriptors(
+      const GrayImage& image, std::vector<Eigen::Vector2d>* feature_positions,
+      std::vector<Eigen::BinaryVectorX>* descriptors);
 
  private:
   // Call this to generate the kernel:

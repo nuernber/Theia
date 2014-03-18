@@ -42,10 +42,10 @@
 namespace theia {
 // Compute the descriptor for multiple keypoints in a given image.
 bool DescriptorExtractor::ComputeDescriptors(
-const GrayImage& image,
-      const std::vector<Keypoint>& keypoints,
-      std::vector<Eigen::Vector2d>* feature_positions,
-      std::vector<Eigen::VectorXf>* descriptors) {
+    const GrayImage& image,
+    const std::vector<Keypoint>& keypoints,
+    std::vector<Eigen::Vector2d>* feature_positions,
+    std::vector<Eigen::VectorXf>* descriptors) {
   VLOG(0) << "calling base version... bad!";
   descriptors->reserve(keypoints.size());
   for (const Keypoint& img_keypoint : keypoints) {
@@ -66,11 +66,11 @@ bool DescriptorExtractor::ComputeDescriptors(
     const GrayImage& image,
     const std::vector<Keypoint>& keypoints,
     std::vector<Eigen::Vector2d>* feature_positions,
-    std::vector<Eigen::VectorXb>* descriptors) {
+    std::vector<Eigen::BinaryVectorX>* descriptors) {
   VLOG(0) << "calling base version... bad!";
   descriptors->reserve(keypoints.size());
   for (const Keypoint& img_keypoint : keypoints) {
-    Eigen::VectorXb descriptor;
+    Eigen::BinaryVectorX descriptor;
     Eigen::Vector2d feature_position;
     if (ComputeDescriptor(image, img_keypoint, &feature_position,
                           &descriptor)) {
