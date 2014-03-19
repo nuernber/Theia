@@ -42,20 +42,16 @@
 #include "theia/test/test_utils.h"
 #include "theia/vision/sfm/pose/five_point_focal_length_radial_distortion.h"
 
+namespace theia {
+
+namespace {
+
 using Eigen::Array;
 using Eigen::Map;
 using Eigen::Matrix;
 using Eigen::Matrix3d;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
-
-inline Matrix3d CrossProductMatrix(const double a, const double b,
-                                   const double c) {
-  Matrix3d cross;
-  cross << 0.0, -c, b,
-      c, 0.0, -a,
-      -b, a, 0.0;
-  return cross;
-}
 
 void P5pfrTestWithNoise(const Matrix3d& gt_rotation,
                         const Vector3d& gt_translation,
@@ -89,11 +85,11 @@ void P5pfrTestWithNoise(const Matrix3d& gt_rotation,
   Array<double, 1, 5> distortion_vec = radius_distorted / radius_undistorted;
 
   // Apply radial distortion.
-  std::vector<Vector3d> distorted_image_points_vector(5);
-  Map<Matrix<double, 3, 5> > distorted_image_point(
+  std::vector<Vector2d> distorted_image_points_vector(5);
+  Map<Matrix<double, 2, 5> > distorted_image_point(
       distorted_image_points_vector[0].data());
-  distorted_image_point = (undistorted_image_point.cwiseProduct(
-      distortion_vec.matrix().replicate<2, 1>())).colwise().homogeneous();
+  distorted_image_point = undistorted_image_point.cwiseProduct(
+      distortion_vec.matrix().replicate<2, 1>());
 
   // Add noise to distorted image points.
   if (noise) {
@@ -118,10 +114,9 @@ void P5pfrTestWithNoise(const Matrix3d& gt_rotation,
     // Check the reprojection error.
     for (int n = 0; n < 5; n++) {
       const double distortion_w =
-          1.0 + soln_distortion[i][0] *
-                    (distorted_image_point.col(n).squaredNorm() - 1.0);
-      Eigen::Vector2d undist_pt =
-          distorted_image_point.col(n).hnormalized() / distortion_w;
+          1.0 +
+          soln_distortion[i][0] * distorted_image_point.col(n).squaredNorm();
+      Eigen::Vector2d undist_pt = distorted_image_point.col(n) / distortion_w;
       Eigen::Vector3d reproj_pt =
           soln_projection[i] * world_points.col(n).homogeneous();
       const double reproj_error =
@@ -235,7 +230,7 @@ TEST(P5Pfr, BasicTest) {
 }
 
 TEST(P5Pfr, BasicNoiseTest) {
-  BasicTest(0.5 / 800.0, 10 / 800.0);
+  BasicTest(0.5 / 800.0, 5 / 800.0);
 }
 
 TEST(P5Pfr, RandomTest) {
@@ -243,9 +238,12 @@ TEST(P5Pfr, RandomTest) {
 }
 
 TEST(P5Pfr, RandomNoiseTest) {
-  RandomTestWithNoise(0.5 / 800.0, 10 / 800.0);
+  RandomTestWithNoise(0.5 / 800.0, 5 / 800.0);
 }
 
 BENCHMARK(P5Pfr, benchmark, 100, 1000) {
   BasicTest(0.0, 1e-12);
 }
+
+}  // namespace
+}  // namespace theia

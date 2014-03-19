@@ -44,6 +44,7 @@
 namespace theia {
 using Eigen::Matrix;
 using Eigen::Map;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 
@@ -164,7 +165,7 @@ void SetupAndSolveSylvesterMatrix(const Matrix<double, 8, 3>& n,
 }  // namespace
 
 bool FivePointFocalLengthRadialDistortion(
-    const std::vector<Vector3d>& feature_vectors,
+    const std::vector<Vector2d>& feature_vectors,
     const std::vector<Vector3d>& world_points,
     const int num_radial_distortion_params,
     std::vector<Matrix<double, 3, 4> >* projection_matrices,
@@ -220,7 +221,7 @@ bool FivePointFocalLengthRadialDistortion(
     Matrix<double, 5, 1> row12_constraint_soln;
     for (int j = 0; j < 5; j++) {
       // Precompute some of the coefficients.
-      const double r_sq = feature_vectors[j].squaredNorm() - 1.0;
+      const double r_sq = feature_vectors[j].squaredNorm();
       const double z_projection =
           candidate_proj.row(2).head<3>().dot(world_points[j]);
 
