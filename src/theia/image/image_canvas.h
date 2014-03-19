@@ -35,18 +35,20 @@
 #ifndef THEIA_IMAGE_IMAGE_CANVAS_H_
 #define THEIA_IMAGE_IMAGE_CANVAS_H_
 
+#include <Eigen/Core>
+
 #include <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
 
 #include "theia/image/image.h"
+#include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/util/random.h"
 #include "theia/util/util.h"
 #include "theia/vision/matching/image_matcher.h"
 
 namespace theia {
-class Keypoint;
 
 // This class allows for drawing on top of one or many images for visualization
 // without modifying the underlying image. This is useful for feature detection,
@@ -99,9 +101,11 @@ class ImageCanvas {
 
   // Draw feature in the image at image_index. We template these methods so that
   // you can use Keypoint or Descriptor types.
-  template<class Feature>
+  // Draw feature in the image at image_index.
+  template <class Feature>
   void DrawFeature(int image_index, const Feature& feature,
-                   const RGBPixel& color, double scale = 10.0);
+                   const RGBPixel& color, double scale);
+
   // Draw the feature onto the image canvas.
   template<class Feature>
   void DrawFeature(const Feature& feature, const RGBPixel& color,
@@ -154,24 +158,23 @@ class ImageCanvas {
 };
 
 // ------------------ Implementation of template funcs ------------------ //
-// Draw feature in the image at image_index.
+
 template <>
 void ImageCanvas::DrawFeature<Keypoint>(int image_index,
                                         const Keypoint& feature,
-                                        const RGBPixel& color,
-                                        double scale) {
-  double radius = feature.has_strength() ? feature.strength() * scale : scale;
-  double angle = feature.has_orientation() ? feature.orientation() : 0.0;
-  DrawFeature(image_index, feature.x(), feature.y(), radius, angle, color);
-}
+                                        const RGBPixel& color, double scale);
 
 template <>
 void ImageCanvas::DrawFeature<Eigen::Vector2d>(int image_index,
                                                const Eigen::Vector2d& feature,
                                                const RGBPixel& color,
-                                               double scale) {
-  double radius = scale;
-  double angle = 0.0;
+                                               double scale);
+
+template <class Feature>
+void ImageCanvas::DrawFeature(int image_index, const Feature& feature,
+                              const RGBPixel& color, double scale) {
+  double radius = feature.has_strength() ? feature.strength() * scale : scale;
+  double angle = feature.has_orientation() ? feature.orientation() : 0.0;
   DrawFeature(image_index, feature.x(), feature.y(), radius, angle, color);
 }
 

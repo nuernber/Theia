@@ -135,5 +135,6 @@ bool Matcher<Metric>::KNearestNeighbors(
   return true;
 }
 
-}       // namespace theia
+}  // namespace theia
+
 #endif  // THEIA_VISION_MATCHING_MATCHER_H_

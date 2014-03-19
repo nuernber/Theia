@@ -37,7 +37,6 @@
 
 // Base image class.
 #include "theia/image/image.h"
-#include "theia/image/image.h"
 #include "theia/image/image_canvas.h"
 
 // Descriptors.

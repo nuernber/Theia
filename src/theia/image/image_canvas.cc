@@ -150,4 +150,23 @@ void ImageCanvas::DrawFeature(int image_index,
 void ImageCanvas::Write(const std::string& output_name) {
   CVD::img_save(image_, output_name);
 }
+
+template <>
+void ImageCanvas::DrawFeature(int image_index, const Keypoint& feature,
+                              const RGBPixel& color, double scale) {
+  double radius = feature.has_strength() ? feature.strength() * scale : scale;
+  double angle = feature.has_orientation() ? feature.orientation() : 0.0;
+  DrawFeature(image_index, feature.x(), feature.y(), radius, angle, color);
+}
+
+template <>
+void ImageCanvas::DrawFeature<Eigen::Vector2d>(int image_index,
+                                               const Eigen::Vector2d& feature,
+                                               const RGBPixel& color,
+                                               double scale) {
+  double radius = scale;
+  double angle = 0.0;
+  DrawFeature(image_index, feature.x(), feature.y(), radius, angle, color);
+}
+
 }  // namespace theia
