@@ -37,28 +37,17 @@
 
 #include <vector>
 
+#include "theia/alignment/alignment.h"
 #include "theia/image/descriptor/descriptor.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
+#include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/util/util.h"
 
 namespace theia {
 template <class T> class Image;
 typedef Image<float> GrayImage;
-class Keypoint;
 
-// The FREAK descriptor as described in "FREAK: Fast Retina Keypoint" by Alahi
-// et. al (CVPR 2012).
-class FreakDescriptor : public BinaryDescriptor {
- public:
-  FreakDescriptor()
-      : BinaryDescriptor(const_dimensions_, DescriptorType::FREAK) {}
-
- private:
-  friend class FreakDescriptorExtractor;
-  static constexpr int const_dimensions_ = 512;
-};
-
-class FreakDescriptorExtractor : public DescriptorExtractor {
+class FreakDescriptorExtractor : public BinaryDescriptorExtractor {
  public:
   // Params:
   //  rotation_invariant: Enable orientation normalization.
@@ -78,15 +67,18 @@ class FreakDescriptorExtractor : public DescriptorExtractor {
   bool Initialize();
 
   // Computes a descriptor at a single keypoint.
-  Descriptor* ComputeDescriptor(const GrayImage& image,
-                                const Keypoint& keypoint);
+  bool ComputeDescriptor(const GrayImage& image,
+                         const Keypoint& keypoint,
+                         Eigen::Vector2d* feature_position,
+                         Eigen::BinaryVectorX* descriptor);
 
   // Compute multiple descriptors for keypoints from a single image. Note this
   // may return null for some of the descriptors if they cannot be computed!
   // Typically this only happens when it is too close to the border.
   bool ComputeDescriptors(const GrayImage& image,
                           const std::vector<Keypoint>& keypoints,
-                          std::vector<Descriptor*>* descriptors);
+                          std::vector<Eigen::Vector2d>* feature_positions,
+                          std::vector<Eigen::BinaryVectorX>* descriptors);
 
   enum {
     kNumScales_ = 64,

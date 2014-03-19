@@ -35,17 +35,10 @@
 #include <glog/logging.h>
 #include <gflags/gflags.h>
 #include <time.h>
+#include <theia/theia.h>
+
 #include <string>
 #include <vector>
-
-#include "theia/image/image.h"
-#include "theia/image/image_canvas.h"
-#include "theia/image/descriptor/freak_descriptor.h"
-#include "theia/image/keypoint_detector/keypoint.h"
-#include "theia/image/keypoint_detector/brisk_detector.h"
-#include "theia/vision/matching/distance.h"
-#include "theia/vision/matching/brute_force_matcher.h"
-#include "theia/vision/matching/image_matcher.h"
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
@@ -70,6 +63,8 @@ int main(int argc, char *argv[]) {
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
   BriskDetector brisk_detector(70, 4);
+  CHECK(brisk_detector.Initialize());
+
   std::vector<Keypoint> left_keypoints;
   brisk_detector.DetectKeypoints(left_image, &left_keypoints);
   VLOG(0) << "detected " << left_keypoints.size()
@@ -84,42 +79,36 @@ int main(int argc, char *argv[]) {
   // Extract descriptors.
   VLOG(0) << "extracting descriptors.";
   FreakDescriptorExtractor freak_extractor;
-  freak_extractor.Initialize();
+  CHECK(freak_extractor.Initialize());
 
-  std::vector<Descriptor*> left_pruned_descriptors;
-  freak_extractor.ComputeDescriptorsPruned(left_image,
-                                           left_keypoints,
-                                           &left_pruned_descriptors);
-  VLOG(0) << "pruned descriptors size = " << left_pruned_descriptors.size();
+  std::vector<Eigen::Vector2d> left_positions;
+  std::vector<Eigen::BinaryVectorX> left_descriptors;
+  freak_extractor.ComputeDescriptors(left_image, left_keypoints,
+                                     &left_positions, &left_descriptors);
+  VLOG(0) << "left descriptors size = " << left_descriptors.size();
 
-  std::vector<Descriptor*> right_pruned_descriptors;
-  freak_extractor.ComputeDescriptorsPruned(right_image,
-                                           right_keypoints,
-                                           &right_pruned_descriptors);
-  VLOG(0) << "pruned descriptors size = " << right_pruned_descriptors.size();
+  std::vector<Eigen::Vector2d> right_positions;
+  std::vector<Eigen::BinaryVectorX> right_descriptors;
+  freak_extractor.ComputeDescriptors(right_image, right_keypoints,
+                                     &right_positions, &right_descriptors);
+  VLOG(0) << "right descriptors size = " << right_descriptors.size();
 
   // Match descriptors!
   BruteForceImageMatcher<Hamming> brute_force_image_matcher;
   std::vector<theia::FeatureMatch<int> > matches;
   clock_t t = clock();
   brute_force_image_matcher.MatchSymmetricAndDistanceRatio(
-      left_pruned_descriptors,
-      right_pruned_descriptors,
-      &matches,
-      0.8,
-      128);
+      left_descriptors, right_descriptors, &matches, 0.8, 128);
   t = clock() - t;
-  VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
+  VLOG(0) << "It took " << (static_cast<float>(t) / CLOCKS_PER_SEC)
           << " to match FREAK descriptors";
 
   // Get an image canvas to draw the features on.
   ImageCanvas image_canvas;
   image_canvas.AddImage(left_image);
   image_canvas.AddImage(right_image);
-  image_canvas.DrawMatchedFeatures(0, left_pruned_descriptors,
-                                   1, right_pruned_descriptors,
-                                   matches,
-                                   0.1);
+  image_canvas.DrawMatchedFeatures(0, left_positions, 1, right_positions,
+                                   matches, 0.1);
 
   image_canvas.Write(FLAGS_img_output_dir +
                      std::string("/freak_descriptors.png"));

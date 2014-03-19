@@ -37,6 +37,7 @@
 #include <string>
 #include "gtest/gtest.h"
 
+#include "theia/alignment/alignment.h"
 #include "theia/image/image.h"
 #include "theia/image/keypoint_detector/fast_detector.h"
 #include "theia/image/descriptor/patch_descriptor.h"
@@ -60,9 +61,11 @@ TEST(PatchDescriptor, CompWithSubImage) {
 
   // For each keypoint, extract the patch descriptors.
   PatchDescriptorExtractor patch_extractor(7, 7);
-  std::vector<Descriptor*> patch_descriptors;
+  std::vector<Eigen::Vector2d> feature_positions;
+  std::vector<Eigen::VectorXf> patch_descriptors;
   patch_extractor.ComputeDescriptors(input_img,
                                      fast_keypoints,
+                                     &feature_positions,
                                      &patch_descriptors);
 
   // Compare to SubImage.
@@ -74,7 +77,8 @@ TEST(PatchDescriptor, CompWithSubImage) {
     int j = 0;
     for (int r = 0; r < 7; r++) {
       for (int c = 0; c < 7; c++) {
-        ASSERT_EQ(patch_descriptors[i]->FloatData()[j++], sub_img[r][c]);
+        ASSERT_EQ(patch_descriptors[i][j], sub_img[r][c]);
+        j++;
       }
     }
   }

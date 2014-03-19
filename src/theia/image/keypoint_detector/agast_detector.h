@@ -39,13 +39,13 @@
 #include <memory>
 #include <vector>
 
+#include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/image/keypoint_detector/keypoint_detector.h"
 #include "theia/util/util.h"
 
 namespace theia {
 template<class T> class Image;
 typedef Image<float> GrayImage;
-class Keypoint;
 
 // Detect keypoints using the AGAST method from "Adaptive and Generic Corner
 // Detection Based on the Accelerated Segment Test" by Mair et. al.

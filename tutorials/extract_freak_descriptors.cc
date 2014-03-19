@@ -35,18 +35,13 @@
 #include <glog/logging.h>
 #include <gflags/gflags.h>
 #include <time.h>
+#include <theia/theia.h>
 
 #include <string>
 #include <vector>
 
-#include "theia/image/image.h"
-#include "theia/image/image_canvas.h"
-#include "theia/image/descriptor/freak_descriptor.h"
-#include "theia/image/keypoint_detector/keypoint.h"
-#include "theia/image/keypoint_detector/brisk_detector.h"
-
-DEFINE_string(img_input_dir, "input", "Directory of two input images.");
-DEFINE_string(img_output_dir, ".", "Name of output image dir.");
+DEFINE_string(input_image, "input", "Directory of two input images.");
+DEFINE_string(output_dir, ".", "Name of output image dir.");
 
 using theia::BriskDetector;
 using theia::Descriptor;
@@ -59,11 +54,12 @@ int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
-  GrayImage image(FLAGS_img_input_dir + std::string("/img3.png"));
+  GrayImage image(FLAGS_input_image);
 
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
   BriskDetector brisk_detector(70, 4);
+  CHECK(brisk_detector.Initialize());
   std::vector<Keypoint> keypoints;
   brisk_detector.DetectKeypoints(image, &keypoints);
   VLOG(0) << "detected " << keypoints.size()
@@ -72,13 +68,15 @@ int main(int argc, char *argv[]) {
   // Extract descriptors.
   VLOG(0) << "extracting descriptors.";
   FreakDescriptorExtractor freak_extractor(true, true, 1);
-  freak_extractor.Initialize();
-  std::vector<Descriptor*> pruned_descriptors;
+  CHECK(freak_extractor.Initialize());
+  std::vector<Eigen::Vector2d> feature_positions;
+  std::vector<Eigen::BinaryVectorX> pruned_descriptors;
   clock_t t;
   t = clock();
-  freak_extractor.ComputeDescriptorsPruned(image,
-                                           keypoints,
-                                           &pruned_descriptors);
+  freak_extractor.ComputeDescriptors(image,
+                                     keypoints,
+                                     &feature_positions,
+                                     &pruned_descriptors);
   t = clock() - t;
   VLOG(0) << "It took " << (static_cast<float>(t)/CLOCKS_PER_SEC)
           << " to extract FREAK descriptors";
@@ -90,6 +88,6 @@ int main(int argc, char *argv[]) {
   ImageCanvas image_canvas;
   image_canvas.AddImage(image);
   image_canvas.DrawFeatures(keypoints, theia::RGBPixel(1.0, 0, 0), 0.1);
-  image_canvas.Write(FLAGS_img_output_dir +
+  image_canvas.Write(FLAGS_output_dir +
                      std::string("/freak_descriptors.png"));
 }

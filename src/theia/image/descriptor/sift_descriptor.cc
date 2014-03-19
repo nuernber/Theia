@@ -92,6 +92,7 @@ bool SiftDescriptorExtractor::ComputeDescriptor(
   // Calculate the sift feature. Note that we are passing in a direct pointer to
   // the descriptor's underlying data.
   *feature_position = Eigen::Vector2d(keypoint.x(), keypoint.y());
+  *descriptor = Eigen::VectorXf(128);
   vl_sift_calc_keypoint_descriptor(sift_filter_, descriptor->data(),
                                    &sift_keypoint, keypoint.orientation());
   return true;
@@ -99,7 +100,7 @@ bool SiftDescriptorExtractor::ComputeDescriptor(
 
 bool SiftDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image, const std::vector<Keypoint>& keypoints,
-    std::vector<Eigen::VectorXd>* feature_positions,
+    std::vector<Eigen::Vector2d>* feature_positions,
     std::vector<Eigen::VectorXf>* descriptors) {
   // If the filter has been set, but is not usable for the input image (i.e. the
   // width and height are different) then we must make a new filter. Adding this
@@ -136,7 +137,7 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
   // Proceed through the octaves we reach the same one as the keypoint.  We
   // first resize the descriptors vector so that the keypoint indicies will be
   // properly matched to the descriptors.
-  descriptors->resize(keypoints.size());
+  descriptors->resize(keypoints.size(), Eigen::VectorXf(128));
   feature_positions->resize(keypoints.size());
   while (vl_status != VL_ERR_EOF) {
     // Go through each keypoint to see if it came from this octave.
@@ -145,7 +146,7 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
       feature_positions->at(i) =
           Eigen::Vector2d(keypoints[i].x(), keypoints[i].y());
       vl_sift_calc_keypoint_descriptor(
-          sift_filter_, (*descriptors)[i]->data(), &sift_keypoints[i],
+          sift_filter_, (*descriptors)[i].data(), &sift_keypoints[i],
           keypoints[i].orientation());
     }
     vl_status = vl_sift_process_next_octave(sift_filter_);

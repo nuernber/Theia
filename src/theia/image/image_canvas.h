@@ -155,11 +155,23 @@ class ImageCanvas {
 
 // ------------------ Implementation of template funcs ------------------ //
 // Draw feature in the image at image_index.
-template<class Feature>
-void ImageCanvas::DrawFeature(int image_index, const Feature& feature,
-                              const RGBPixel& color, double scale) {
+template <>
+void ImageCanvas::DrawFeature<Keypoint>(int image_index,
+                                        const Keypoint& feature,
+                                        const RGBPixel& color,
+                                        double scale) {
   double radius = feature.has_strength() ? feature.strength() * scale : scale;
   double angle = feature.has_orientation() ? feature.orientation() : 0.0;
+  DrawFeature(image_index, feature.x(), feature.y(), radius, angle, color);
+}
+
+template <>
+void ImageCanvas::DrawFeature<Eigen::Vector2d>(int image_index,
+                                               const Eigen::Vector2d& feature,
+                                               const RGBPixel& color,
+                                               double scale) {
+  double radius = scale;
+  double angle = 0.0;
   DrawFeature(image_index, feature.x(), feature.y(), radius, angle, color);
 }
 
@@ -219,8 +231,8 @@ void ImageCanvas::DrawMatchedFeatures(
   CHECK_GT(pixel_offsets_.size(), std::max(image_index1, image_index2));
   InitRandomGenerator();
   for (int i = 0; i < matches.size(); i++) {
-    Feature& base = features1[matches[i].feature1_ind];
-    Feature& match = features2[matches[i].feature2_ind];
+    const Feature& base = features1[matches[i].feature1_ind];
+    const Feature& match = features2[matches[i].feature2_ind];
     RGBPixel color(RandDouble(0, 1.0),
                    RandDouble(0, 1.0),
                    RandDouble(0, 1.0));

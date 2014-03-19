@@ -39,6 +39,7 @@
 #include <bitset>
 
 #include "theia/image/image.h"
+#include "theia/image/keypoint_detector/keypoint.h"
 
 namespace theia {
 namespace {
@@ -386,14 +387,18 @@ bool RoiPredicate(const float minX, const float minY, const float maxX,
 bool BriskDescriptorExtractor::ComputeDescriptor(
     const GrayImage& image, const Keypoint& keypoint,
     Eigen::Vector2d* feature_position, Eigen::BinaryVectorX* descriptor) {
-  Descriptor* descriptor = new BriskDescriptor;
   std::vector<Keypoint> keypoints;
   keypoints.push_back(keypoint);
   std::vector<Eigen::Vector2d> feature_positions;
   std::vector<Eigen::BinaryVectorX> descriptors;
-  CHECK(ComputeDescriptors(image, keypoints, &feature_positions, &descriptors));
-  feature_position = feature_positions[0];
-  descriptor = descriptors[0];
+  bool success = ComputeDescriptors(image, keypoints, &feature_positions, &descriptors);
+  if (success) {
+    *feature_position = feature_positions[0];
+    *descriptor = descriptors[0];
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // computes the descriptor
@@ -447,7 +452,7 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
 
   // resize the descriptors:
   descriptors->reserve(keypoints.size());
-
+  feature_positions->reserve(keypoints.size());
   // now do the extraction for all keypoints:
 
   // temporary variables containing gray values at sample points:
@@ -469,11 +474,11 @@ bool BriskDescriptorExtractor::ComputeDescriptors(
     const float& x = kp.x();
     const float& y = kp.y();
 
-    Eigen::BinaryVectorX binary_descriptor(512 / (8 * sizeof(uint_8)));
+    Eigen::BinaryVectorX binary_descriptor(512 / (8 * sizeof(uint8_t)));
     std::bitset<512>* descriptor_bits =
         reinterpret_cast<std::bitset<512>*>(binary_descriptor.data());
 
-    feature_position = Eigen::Vector2d(x, y);
+    feature_positions->push_back(Eigen::Vector2d(x, y));
 
     if (!rotation_invariance_) {
       // don't compute the gradient direction, just assign a rotation of 0°

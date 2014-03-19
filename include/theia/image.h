@@ -41,6 +41,7 @@
 #include "theia/image/image_canvas.h"
 
 // Descriptors.
+#include "theia/alignment/alignment.h"
 #include "theia/image/descriptor/brisk_descriptor.h"
 #include "theia/image/descriptor/descriptor.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
@@ -57,5 +58,11 @@
 #include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/image/keypoint_detector/keypoint_detector.h"
 #include "theia/image/keypoint_detector/sift_detector.h"
+
+// Matching
+#include "theia/vision/matching/distance.h"
+#include "theia/vision/matching/matcher.h"
+#include "theia/vision/matching/image_matcher.h"
+#include "theia/vision/matching/brute_force_matcher.h"
 
 #endif  // THEIA_IMAGE_H_

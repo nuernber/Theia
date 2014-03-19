@@ -36,12 +36,13 @@
 #define THEIA_IMAGE_KEYPOINT_DETECTOR_KEYPOINT_DETECTOR_H_
 
 #include <vector>
+
+#include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/util/util.h"
 
 namespace theia {
 template<class T> class Image;
 typedef Image<float> GrayImage;
-class Keypoint;
 
 // A pure virtual class for keypoint detectors. We assume that the keypoint
 // detectors only use grayimages for now.

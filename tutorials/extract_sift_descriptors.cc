@@ -32,16 +32,13 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
+#include <Eigen/Core>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
+#include <theia/theia.h>
+
 #include <string>
 #include <vector>
-
-#include "theia/image/image.h"
-#include "theia/image/image_canvas.h"
-#include "theia/image/descriptor/sift_descriptor.h"
-#include "theia/image/keypoint_detector/keypoint.h"
-#include "theia/image/keypoint_detector/sift_detector.h"
 
 DEFINE_string(input_image, "image.png",
               "Image to extract SIFT keypoints and descriptors from.");
@@ -63,6 +60,7 @@ int main(int argc, char *argv[]) {
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
   SiftDetector keypoint_detector;
+  keypoint_detector.Initialize();
   std::vector<Keypoint> sift_keypoints;
   keypoint_detector.DetectKeypoints(image, &sift_keypoints);
   VLOG(0) << "detected " << sift_keypoints.size() << " keypoints.";
@@ -70,8 +68,11 @@ int main(int argc, char *argv[]) {
   // Extract descriptors.
   VLOG(0) << "extracting descriptors.";
   SiftDescriptorExtractor sift_extractor;
-  std::vector<Descriptor*> sift_descriptors;
-  sift_extractor.ComputeDescriptors(image, sift_keypoints, &sift_descriptors);
+  sift_extractor.Initialize();
+  std::vector<Eigen::Vector2d> feature_positions;
+  std::vector<Eigen::VectorXf> sift_descriptors;
+  sift_extractor.ComputeDescriptors(image, sift_keypoints, &feature_positions,
+                                    &sift_descriptors);
   VLOG(0) << "extracted " << sift_descriptors.size() << " descriptors.";
 
   // Get an image canvas to draw the features on.
@@ -83,13 +84,16 @@ int main(int argc, char *argv[]) {
 
   // Detect and Extract in one shot!
   VLOG(0) << "detect and extract together.";
-  std::vector<Descriptor*> sift_features;
+  std::vector<Eigen::Vector2d> feature_positions2;
+  std::vector<Eigen::VectorXf> sift_features;
   SiftDescriptorExtractor feature_extractor;
-  feature_extractor.DetectAndExtractDescriptors(image, &sift_features);
+  feature_extractor.Initialize();
+  feature_extractor.DetectAndExtractDescriptors(image, &feature_positions2,
+                                                &sift_features);
 
   ImageCanvas image_canvas2;
   image_canvas2.AddImage(image);
-  image_canvas2.DrawFeatures(sift_features, theia::RGBPixel(0, 0, 1));
+  image_canvas2.DrawFeatures(feature_positions, theia::RGBPixel(0, 0, 1));
   image_canvas2.Write(FLAGS_output_dir +
                       std::string("/detect_and_extract.png"));
 }

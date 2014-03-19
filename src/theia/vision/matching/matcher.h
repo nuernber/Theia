@@ -36,53 +36,67 @@
 #define THEIA_VISION_MATCHING_MATCHER_H_
 
 #include <vector>
-#include "theia/image/descriptor/descriptor.h"
+
+#include "theia/alignment/alignment.h"
 #include "theia/util/util.h"
+#include "theia/vision/matching/distance.h"
 
 namespace theia {
 
+// Template pattern that deduces the descriptor type (i.e., float or binary)
+// from the metric used to define distance.
+template <typename Metric> struct DescriptorTypeFromMetric {
+  typedef Eigen::VectorXf DescriptorType;
+};
+
+template <> struct DescriptorTypeFromMetric<L2> {
+  typedef Eigen::VectorXf DescriptorType;
+};
+
+template <> struct DescriptorTypeFromMetric<Hamming> {
+  typedef Eigen::BinaryVectorX DescriptorType;
+};
+
 // Descriptor can be any type of descriptor, and Metric can be any of the
-// distance metrics defined in distance.h (e.g. L2, hamming, etc.).
-template <class Metric>
-class Matcher {
+// distance metrics defined in distance.h (e.g. L2, hamming, etc.). The
+// descriptor type, though, is deduced from the metric.
+template <class Metric> class Matcher {
  public:
   typedef typename Metric::ResultType DistanceType;
+  typedef typename DescriptorTypeFromMetric<Metric>::DescriptorType
+      DescriptorType;
 
   Matcher() {}
   virtual ~Matcher() {}
 
   // Build an index or other data structures needed to perform the search.
-  virtual bool Build(const std::vector<Descriptor*>& descriptors) = 0;
+  virtual bool Build(const std::vector<DescriptorType>& descriptors) = 0;
 
   // Search for the sole nearest neighbor for a single query. Returns true if
   // the match is less than the threshold, false if not.
-  virtual bool NearestNeighbor(const Descriptor& query,
-                               int* neighbor_index,
+  virtual bool NearestNeighbor(const DescriptorType& query, int* neighbor_index,
                                DistanceType* distance,
                                DistanceType threshold) = 0;
 
-  virtual bool NearestNeighbor(const Descriptor& query,
-                               int* neighbor_index,
+  virtual bool NearestNeighbor(const DescriptorType& query, int* neighbor_index,
                                DistanceType* distance) {
     return NearestNeighbor(query, neighbor_index, distance, 0);
   }
 
   // Search for the sole nearest neighbor for a multiple queries.
-  virtual bool NearestNeighbor(const std::vector<Descriptor*>& queries,
+  virtual bool NearestNeighbor(const std::vector<DescriptorType>& queries,
                                std::vector<int>* neighbor_indices,
                                std::vector<DistanceType>* distances,
                                DistanceType threshold);
 
   // Search for the k nearest neighbors of a single queries.
-  virtual bool KNearestNeighbors(const Descriptor& query,
-                                 int k_nn,
+  virtual bool KNearestNeighbors(const DescriptorType& query, int k_nn,
                                  std::vector<int>* knn_index,
                                  std::vector<DistanceType>* knn_distance) = 0;
 
   // Search for the k nearest neighbors of a multiple queries.
   virtual bool KNearestNeighbors(
-      const std::vector<Descriptor*>& queries,
-      int k_nn,
+      const std::vector<DescriptorType>& queries, int k_nn,
       std::vector<std::vector<int> >* knn_indices,
       std::vector<std::vector<DistanceType> >* knn_distances);
 
@@ -92,23 +106,22 @@ class Matcher {
 
 // ------------------------ IMPLEMENTATION ------------------------ //
 template <class Metric>
-bool Matcher<Metric>::NearestNeighbor(const std::vector<Descriptor*>& queries,
-                                      std::vector<int>* neighbor_indices,
-                                      std::vector<DistanceType>* distances,
-                                      DistanceType threshold) {
+bool Matcher<Metric>::NearestNeighbor(
+    const std::vector<DescriptorType>& queries,
+    std::vector<int>* neighbor_indices, std::vector<DistanceType>* distances,
+    DistanceType threshold) {
   neighbor_indices->resize(queries.size());
   distances->resize(queries.size());
   for (int i = 0; i < queries.size(); i++) {
-    NearestNeighbor(*queries[i], &((*neighbor_indices)[i]),
-                    &((*distances)[i]), threshold);
+    NearestNeighbor(queries[i], &(neighbor_indices->at(i)), &(distances->at(i)),
+                    threshold);
   }
   return true;
 }
 
 template <class Metric>
 bool Matcher<Metric>::KNearestNeighbors(
-    const std::vector<Descriptor*>& queries,
-    int k_nn,
+    const std::vector<DescriptorType>& queries, int k_nn,
     std::vector<std::vector<int> >* knn_indices,
     std::vector<std::vector<DistanceType> >* knn_distances) {
   knn_indices->resize(queries.size());
@@ -116,13 +129,11 @@ bool Matcher<Metric>::KNearestNeighbors(
   for (int i = 0; i < queries.size(); i++) {
     (*knn_indices)[i].resize(k_nn);
     (*knn_distances)[i].resize(k_nn);
-    KNearestNeighbors(*queries[i],
-                      k_nn,
-                      &(*knn_indices)[i],
-                      &(*knn_distances)[i]);
+    KNearestNeighbors(queries[i], k_nn, &(knn_indices->at(i)),
+                      &(knn_distances->at(i)));
   }
   return true;
 }
 
-}  // namespace theia
+}       // namespace theia
 #endif  // THEIA_VISION_MATCHING_MATCHER_H_

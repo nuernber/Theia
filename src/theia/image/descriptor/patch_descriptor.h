@@ -37,31 +37,26 @@
 
 #include <vector>
 
+#include "theia/alignment/alignment.h"
 #include "theia/image/descriptor/descriptor.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
+#include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/image/image.h"
 #include "theia/util/util.h"
 
 namespace theia {
-class Keypoint;
 
-// R should be the number of rows, c should be the number of columns in the
-// patch e.g. a 7x7 patch would be PatchDescriptor<7,7>.
-class PatchDescriptor : public FloatDescriptor {
- public:
-  PatchDescriptor(int rows, int cols)
-      : FloatDescriptor(rows * cols, DescriptorType::PATCH) {}
-};
-
-class PatchDescriptorExtractor : public DescriptorExtractor {
+class PatchDescriptorExtractor : public FloatDescriptorExtractor {
  public:
   PatchDescriptorExtractor(int patch_rows, int patch_cols)
       : patch_rows_(patch_rows), patch_cols_(patch_cols) {}
   ~PatchDescriptorExtractor() {}
 
   // Computes a descriptor at a single keypoint.
-  Descriptor* ComputeDescriptor(const GrayImage& image,
-                                const Keypoint& keypoint);
+  bool ComputeDescriptor(const GrayImage& image,
+                         const Keypoint& keypoint,
+                         Eigen::Vector2d* feature_position,
+                         Eigen::VectorXf* descriptor);
 
  private:
   int patch_rows_;

@@ -50,29 +50,28 @@ template <class Metric>
 class BruteForceMatcher : public Matcher<Metric> {
  public:
   typedef typename Metric::ResultType DistanceType;
+  typedef typename DescriptorTypeFromMetric<Metric>::DescriptorType
+      DescriptorType;
 
   BruteForceMatcher() {}
   ~BruteForceMatcher() {}
 
   // Build an index or other data structures needed to perform the search.
-  bool Build(const std::vector<Descriptor*>& descriptors) {
+  bool Build(const std::vector<DescriptorType>& descriptors) {
     descriptors_ = descriptors;
     return true;
   }
 
   // Search for the sole nearest neighbor for a single query.
-  bool NearestNeighbor(const Descriptor& query,
-                       int* neighbor_index,
-                       DistanceType* distance,
-                       DistanceType threshold);
+  bool NearestNeighbor(const DescriptorType& query, int* neighbor_index,
+                       DistanceType* distance, DistanceType threshold);
 
   // This allows us to use the overloaded function in the base class (passing in
   // a vector of queries instead of just one).
   using Matcher<Metric>::NearestNeighbor;
 
   // Search for the k nearest neighbors of a single queries.
-  bool KNearestNeighbors(const Descriptor& query,
-                         int k_nn,
+  bool KNearestNeighbors(const DescriptorType& query, int k_nn,
                          std::vector<int>* knn_index,
                          std::vector<DistanceType>* knn_distance);
 
@@ -88,31 +87,27 @@ class BruteForceMatcher : public Matcher<Metric> {
     }
   };
 
-  std::vector<Descriptor*> descriptors_;
+  std::vector<DescriptorType> descriptors_;
   DISALLOW_COPY_AND_ASSIGN(BruteForceMatcher);
 };
 
 // --------------------------- IMPLEMENTATION --------------------------- //
+
 template <class Metric>
-bool BruteForceMatcher<Metric>::NearestNeighbor(const Descriptor& query,
-                                                int* neighbor_index,
-                                                DistanceType* distance,
-                                                DistanceType threshold) {
+bool BruteForceMatcher<Metric>::NearestNeighbor(
+    const DescriptorType& query, int* neighbor_index, DistanceType* distance,
+    DistanceType threshold) {
   Metric metric;
   *neighbor_index = 0;
-  *distance = metric(query,
-                     *descriptors_[0]);
+  *distance = metric(query, descriptors_[0]);
   bool found_nn = false;
   // Set a threshold if there isn't one already set.
-  if (threshold <= 0)
-    threshold = *distance;
+  if (threshold <= 0) threshold = *distance;
 
-  if (*distance <= threshold)
-    found_nn = true;
+  if (*distance <= threshold) found_nn = true;
 
   for (int i = 1; i < descriptors_.size(); i++) {
-    DistanceType new_dist = metric(query,
-                                   *descriptors_[i]);
+    DistanceType new_dist = metric(query, descriptors_[i]);
     if (new_dist < *distance && new_dist < threshold) {
       *neighbor_index = i;
       *distance = new_dist;
@@ -124,9 +119,7 @@ bool BruteForceMatcher<Metric>::NearestNeighbor(const Descriptor& query,
 
 template <class Metric>
 bool BruteForceMatcher<Metric>::KNearestNeighbors(
-    const Descriptor& query,
-    int k_nn,
-    std::vector<int>* knn_index,
+    const DescriptorType& query, int k_nn, std::vector<int>* knn_index,
     std::vector<DistanceType>* knn_distance) {
   CHECK_GT(descriptors_.size(), k_nn) << "requesting more nearest neighbors "
                                       << "than elements in the search space!";
@@ -136,16 +129,14 @@ bool BruteForceMatcher<Metric>::KNearestNeighbors(
                       OrderByDistance> min_heap;
   // Load up the first k elements as default values.
   for (int i = 0; i < k_nn; i++) {
-    DistanceType distance = metric(query,
-                                   *descriptors_[i]);
+    DistanceType distance = metric(query, descriptors_[i]);
     min_heap.push(std::make_pair(i, distance));
   }
 
   // Search the rest of the descriptors, keeping at most k_nn elements in the
   // min heap.
   for (int i = k_nn; i < descriptors_.size(); i++) {
-    DistanceType distance = metric(query,
-                                   *descriptors_[i]);
+    DistanceType distance = metric(query, descriptors_[i]);
     if (distance < min_heap.top().second) {
       min_heap.pop();
       min_heap.push(std::make_pair(i, distance));
@@ -166,5 +157,5 @@ bool BruteForceMatcher<Metric>::KNearestNeighbors(
   return true;
 }
 
-}  // namespace theia
+}       // namespace theia
 #endif  // THEIA_VISION_MATCHING_BRUTE_FORCE_MATCHER_H_

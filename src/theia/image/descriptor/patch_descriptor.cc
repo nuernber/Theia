@@ -36,6 +36,7 @@
 
 #include <vector>
 
+#include "theia/alignment/alignment.h"
 #include "theia/image/descriptor/descriptor.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
 #include "theia/image/image.h"
@@ -43,11 +44,16 @@
 #include "theia/util/util.h"
 
 namespace theia {
+
 // Computes a descriptor at a single keypoint.
-Descriptor* PatchDescriptorExtractor::ComputeDescriptor(
+bool PatchDescriptorExtractor::ComputeDescriptor(
     const GrayImage& image,
-    const Keypoint& keypoint) {
-  PatchDescriptor* descriptor = new PatchDescriptor(patch_rows_, patch_cols_);
+    const Keypoint& keypoint,
+    Eigen::Vector2d* feature_position,
+    Eigen::VectorXf* descriptor) {
+  *descriptor = Eigen::VectorXf(patch_rows_ * patch_cols_);
+  *feature_position = Eigen::Vector2d(keypoint.x(), keypoint.y());
+
   int patch_r_begin = keypoint.y() - patch_rows_/2;
   int patch_c_begin = keypoint.x() - patch_cols_/2;
   int patch_r_end = patch_r_begin + patch_rows_;
@@ -64,8 +70,7 @@ Descriptor* PatchDescriptorExtractor::ComputeDescriptor(
       (*descriptor)[i++] = image[r][c];
     }
   }
-  descriptor->SetKeypoint(keypoint);
-  return descriptor;
+  return true;
 }
 
 }  // namespace theia

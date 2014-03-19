@@ -37,6 +37,7 @@
 #include <string>
 #include "gtest/gtest.h"
 
+#include "theia/alignment/alignment.h"
 #include "theia/image/image.h"
 #include "theia/image/keypoint_detector/brisk_detector.h"
 #include "theia/image/descriptor/freak_descriptor.h"
@@ -61,12 +62,20 @@ TEST(FreakDescriptor, Sanity) {
   // For each keypoint, extract the freak descriptors.
   FreakDescriptorExtractor freak_extractor;
   EXPECT_TRUE(freak_extractor.Initialize());
-  std::vector<Descriptor*> freak_descriptors;
-  CHECK_NOTNULL(freak_extractor.ComputeDescriptor(input_img,
-                                                  brisk_keypoints[0]));
-  EXPECT_TRUE(freak_extractor.ComputeDescriptorsPruned(input_img,
-                                                       brisk_keypoints,
-                                                       &freak_descriptors));
+  Eigen::Vector2d position;
+  Eigen::BinaryVectorX descriptor;
+  // We need to make sure we pick a point away from the border so that a
+  // descriptor can actually be extracted.
+  CHECK_GT(brisk_keypoints.size(), 100);
+  EXPECT_TRUE(freak_extractor.ComputeDescriptor(input_img, brisk_keypoints[100],
+                                                &position, &descriptor));
+
+  std::vector<Eigen::Vector2d> feature_positions;
+  std::vector<Eigen::BinaryVectorX> freak_descriptors;
+  EXPECT_TRUE(freak_extractor.ComputeDescriptors(input_img,
+                                                 brisk_keypoints,
+                                                 &feature_positions,
+                                                 &freak_descriptors));
 }
 
 }  // namespace theia

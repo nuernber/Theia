@@ -61,11 +61,17 @@ TEST(SiftDescriptor, Sanity) {
 
   // For each keypoint, extract the sift descriptors.
   SiftDescriptorExtractor sift_extractor;
-  std::vector<Descriptor*> sift_descriptors;
-  CHECK_NOTNULL(
-      sift_extractor.ComputeDescriptor(input_img, sift_keypoints[0]));
-  CHECK(sift_extractor.ComputeDescriptorsPruned(input_img,
+
+  Eigen::Vector2d position;
+  Eigen::VectorXf descriptor;
+  EXPECT_TRUE(sift_extractor.ComputeDescriptor(input_img, sift_keypoints[0],
+                                               &position, &descriptor));
+
+  std::vector<Eigen::Vector2d> positions;
+  std::vector<Eigen::VectorXf> sift_descriptors;
+  EXPECT_TRUE(sift_extractor.ComputeDescriptors(input_img,
                                                 sift_keypoints,
+                                                &positions,
                                                 &sift_descriptors));
 }
 

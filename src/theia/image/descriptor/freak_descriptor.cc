@@ -40,12 +40,14 @@
 #include <tmmintrin.h>
 #endif
 #include <glog/logging.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <bitset>
 #include <cmath>
 #include <vector>
 
+#include "theia/alignment/alignment.h"
 #include "theia/image/image.h"
 #include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/util/util.h"
@@ -259,21 +261,29 @@ bool FreakDescriptorExtractor::Initialize() {
 }
 
 // Computes a descriptor at a single keypoint.
-Descriptor* FreakDescriptorExtractor::ComputeDescriptor(
-    const GrayImage& image, const Keypoint& keypoint) {
-  Descriptor* descriptor = new FreakDescriptor;
+bool FreakDescriptorExtractor::ComputeDescriptor(
+    const GrayImage& image, const Keypoint& keypoint,
+    Eigen::Vector2d* feature_position, Eigen::BinaryVectorX* descriptor) {
   std::vector<Keypoint> keypoints;
   keypoints.push_back(keypoint);
-  std::vector<Descriptor*> descriptors;
-  descriptors.push_back(descriptor);
-  CHECK(ComputeDescriptors(image, keypoints, &descriptors));
-  return descriptor;
+  std::vector<Eigen::Vector2d> feature_positions;
+  std::vector<Eigen::BinaryVectorX> descriptors;
+  bool success =
+      ComputeDescriptors(image, keypoints, &feature_positions, &descriptors);
+  if (success) {
+    *feature_position = feature_positions[0];
+    *descriptor = descriptors[0];
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // Compute multiple descriptors for keypoints from a single image.
 bool FreakDescriptorExtractor::ComputeDescriptors(
     const GrayImage& image, const std::vector<Keypoint>& keypoints,
-    std::vector<Descriptor*>* descriptors) {
+    std::vector<Eigen::Vector2d>* feature_positions,
+    std::vector<Eigen::BinaryVectorX>* descriptors) {
   Image<uchar> uchar_image = image.ConvertTo<uchar>();
   Image<uchar> img_integral = uchar_image.Integrate();
 
@@ -288,7 +298,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
 
   // compute the scale index corresponding to the keypoint size and remove
   // keypoints close to the border.
-  descriptors->resize(keypoints.size());
+  descriptors->reserve(keypoints.size());
+  feature_positions->reserve(keypoints.size());
   if (scale_invariant_) {
     for (size_t k = keypoints.size(); k--;) {
       // Is k non-zero? If so, decrement it and continue.
@@ -304,10 +315,10 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
           keypoints[k].y() <= pattern_sizes_[kp_scale_idx[k]] ||
           keypoints[k].x() >= image.Cols() - pattern_sizes_[kp_scale_idx[k]] ||
           keypoints[k].y() >= image.Rows() - pattern_sizes_[kp_scale_idx[k]]) {
-        (*descriptors)[k] = nullptr;
+        continue;
       } else {
-        (*descriptors)[k] = new FreakDescriptor;
-        (*descriptors)[k]->SetKeypoint(keypoints[k]);
+        feature_positions->push_back(
+            Eigen::Vector2d(keypoints[k].x(), keypoints[k].y()));
       }
     }
   } else {
@@ -323,32 +334,28 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
           keypoints[k].y() <= pattern_sizes_[kp_scale_idx[k]] ||
           keypoints[k].x() >= image.Cols() - pattern_sizes_[kp_scale_idx[k]] ||
           keypoints[k].y() >= image.Rows() - pattern_sizes_[kp_scale_idx[k]]) {
-        (*descriptors)[k] = nullptr;
+        continue;
       } else {
-        (*descriptors)[k] = new FreakDescriptor;
-        (*descriptors)[k]->SetKeypoint(keypoints[k]);
+        feature_positions->push_back(
+            Eigen::Vector2d(keypoints[k].x(), keypoints[k].y()));
       }
     }
   }
 
   // Estimate orientations, extract descriptors, extract the best comparisons
   // only.
-  for (size_t k = keypoints.size(); k--;) {
-    Descriptor* freak_descriptor = (*descriptors)[k];
-    if (freak_descriptor == nullptr) {
-      continue;
-    }
+  for (size_t k = feature_positions->size(); k--;) {
+    Eigen::BinaryVectorX freak_descriptor(512 / (8 * sizeof(uint8_t)));
     // estimate orientation (gradient)
     if (!rotation_invariant_) {
       // assign 0° to all keypoints
       theta_idx = 0;
-      freak_descriptor->set_orientation(0.0);
     } else {
       // get the points intensity value in the un-rotated pattern
       for (int i = kNumPoints; i--;) {
-        points_value[i] =
-            MeanIntensity(uchar_image, img_integral, keypoints[k].x(),
-                          keypoints[k].y(), kp_scale_idx[k], 0, i);
+        points_value[i] = MeanIntensity(
+            uchar_image, img_integral, feature_positions->at(k).x(),
+            feature_positions->at(k).y(), kp_scale_idx[k], 0, i);
       }
       direction0 = 0;
       direction1 = 0;
@@ -360,25 +367,24 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
         direction1 += delta * (orientation_pairs_[m].weight_dy) / 2048;
       }
       // estimate orientation
-      freak_descriptor->set_orientation(static_cast<float>(
+      const float orientation = static_cast<float>(
           atan2(static_cast<float>(direction1),
-                static_cast<float>(direction0) * (180.0 / M_PI))));
+                static_cast<float>(direction0) * (180.0 / M_PI)));
       theta_idx =
-          static_cast<int>(kNumOrientation * freak_descriptor->orientation() *
-                               (1 / 360.0) + 0.5);
+          static_cast<int>(kNumOrientation * orientation * (1 / 360.0) + 0.5);
       if (theta_idx < 0) theta_idx += kNumOrientation;
 
       if (theta_idx >= kNumOrientation) theta_idx -= kNumOrientation;
     }
     // extract descriptor at the computed orientation
     for (int i = kNumPoints; i--;) {
-      points_value[i] =
-          MeanIntensity(uchar_image, img_integral, keypoints[k].x(),
-                        keypoints[k].y(), kp_scale_idx[k], theta_idx, i);
+      points_value[i] = MeanIntensity(
+          uchar_image, img_integral, feature_positions->at(k).x(),
+          feature_positions->at(k).y(), kp_scale_idx[k], theta_idx, i);
     }
 
 #ifdef THEIA_USE_SSE
-    __m128i* ptr = reinterpret_cast<__m128i*>(freak_descriptor->CharData());
+    __m128i* ptr = reinterpret_cast<__m128i*>(freak_descriptor.data());
     // NOTE: the comparisons order is modified in each block (but first
     // 128 comparisons remain globally the same-->does not affect the
     // 128,384 bits segmanted matching strategy)
@@ -434,9 +440,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       ++ptr;
     }
 #else
-    std::bitset<FreakDescriptor::const_dimensions_>* freak_bitset =
-        reinterpret_cast<std::bitset<FreakDescriptor::const_dimensions_>*>(
-            freak_descriptor->CharData());
+    std::bitset<512>* freak_bitset =
+        reinterpret_cast<std::bitset<512>*>(freak_descriptor.data());
     // Extracting descriptor preserving the order of SSE version.
     int cnt = 0;
     for (int n = 7; n < kNumPairs; n += 128) {
@@ -449,6 +454,8 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
       }
     }
 #endif  // THEIA_USE_SSE
+
+    descriptors->push_back(freak_descriptor);
   }
   return true;
 }

@@ -37,13 +37,13 @@
 
 #include <vector>
 
+#include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/image/keypoint_detector/keypoint_detector.h"
 #include "theia/util/util.h"
 
 namespace theia {
 template<class T> class Image;
 typedef Image<float> GrayImage;
-class Keypoint;
 
 class HarrisDetector : public KeypointDetector {
  public:

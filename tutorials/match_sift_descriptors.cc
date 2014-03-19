@@ -35,17 +35,9 @@
 #include <glog/logging.h>
 #include <gflags/gflags.h>
 #include <time.h>
+#include <theia/theia.h>
 #include <string>
 #include <vector>
-
-#include "theia/image/image.h"
-#include "theia/image/image_canvas.h"
-#include "theia/image/descriptor/sift_descriptor.h"
-#include "theia/image/keypoint_detector/keypoint.h"
-#include "theia/image/keypoint_detector/sift_detector.h"
-#include "theia/vision/matching/distance.h"
-#include "theia/vision/matching/brute_force_matcher.h"
-#include "theia/vision/matching/image_matcher.h"
 
 DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
@@ -68,14 +60,19 @@ int main(int argc, char *argv[]) {
   // Detect keypoints.
   VLOG(0) << "detecting keypoints";
   SiftDescriptorExtractor sift_detector;
-  std::vector<Descriptor*> left_descriptors;
-  sift_detector.DetectAndExtractDescriptors(left_image, &left_descriptors);
+  CHECK(sift_detector.Initialize());
+  std::vector<Eigen::Vector2d> left_positions;
+  std::vector<Eigen::VectorXf> left_descriptors;
+  sift_detector.DetectAndExtractDescriptors(left_image, &left_positions,
+                                            &left_descriptors);
   VLOG(0) << "detected " << left_descriptors.size()
           << " descriptors in left image.";
 
   VLOG(0) << "detecting keypoints";
-  std::vector<Descriptor*> right_descriptors;
-  sift_detector.DetectAndExtractDescriptors(right_image, &right_descriptors);
+  std::vector<Eigen::Vector2d> right_positions;
+  std::vector<Eigen::VectorXf> right_descriptors;
+  sift_detector.DetectAndExtractDescriptors(right_image, &right_positions,
+                                            &right_descriptors);
   VLOG(0) << "detected " << right_descriptors.size()
           << " descriptors in right image.";
 
@@ -97,8 +94,8 @@ int main(int argc, char *argv[]) {
   ImageCanvas image_canvas;
   image_canvas.AddImage(left_image);
   image_canvas.AddImage(right_image);
-  image_canvas.DrawMatchedFeatures(0, left_descriptors,
-                                   1, right_descriptors,
+  image_canvas.DrawMatchedFeatures(0, left_positions,
+                                   1, right_positions,
                                    matches,
                                    0.1);
 

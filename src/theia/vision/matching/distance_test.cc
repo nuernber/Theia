@@ -38,52 +38,22 @@
 #include <string>
 #include "gtest/gtest.h"
 
+#include "theia/test/benchmark.h"
 #include "theia/util/random.h"
 #include "theia/vision/matching/distance.h"
 
 namespace theia {
+
 namespace {
+
 int kNumTrials = 100;
-
-void SetFloatValues(const float* float_values, FloatDescriptor* descriptor) {
-  for (int i = 0; i < descriptor->Dimensions(); i++) {
-    (*descriptor)[i] = float_values[i];
-  }
-}
-
-template <std::size_t N>
-void SetBinaryValues(const std::bitset<N>& bits, BinaryDescriptor* descriptor) {
-  std::bitset<N>* binary_descriptor =
-      reinterpret_cast<std::bitset<N>*>(descriptor->CharData());
-  *binary_descriptor = bits;
-}
-
-class TestBinaryDescriptor : public BinaryDescriptor {
- public:
-  TestBinaryDescriptor()
-      : BinaryDescriptor(const_dimensions_, DescriptorType::OTHER) {}
-
-  int HammingDistance(const BinaryDescriptor& descriptor) const {
-    const std::bitset<const_dimensions_>* first_bitset =
-        reinterpret_cast<const std::bitset<const_dimensions_>*>(
-            this->CharData());
-    const std::bitset<const_dimensions_>* second_bitset =
-        reinterpret_cast<const std::bitset<const_dimensions_>*>(
-            descriptor.CharData());
-    return (*first_bitset ^ *second_bitset).count();
-  }
-
- private:
-  static constexpr int const_dimensions_ = 512;
-};
 
 // Zero distance.
 TEST(L2Distance, ZeroDistance) {
-  float zeros[4] = { 0.0, 0.0, 0.0, 0.0 };
-  FloatDescriptor descriptor1(4, DescriptorType::OTHER);
-  SetFloatValues(zeros, &descriptor1);
-  FloatDescriptor descriptor2(4, DescriptorType::OTHER);
-  SetFloatValues(zeros, &descriptor2);
+  Eigen::VectorXf descriptor1(4);
+  descriptor1.setZero();
+  Eigen::VectorXf descriptor2(4);
+  descriptor2.setZero();
   L2 l2_dist;
   ASSERT_EQ(l2_dist(descriptor1, descriptor2), 0);
 }
@@ -91,47 +61,43 @@ TEST(L2Distance, ZeroDistance) {
 // Known distance.
 TEST(L2Distance, KnownDistance) {
   InitRandomGenerator();
-  float zeros[4] = { 0.0, 0.0, 0.0, 0.0 };
-  FloatDescriptor descriptor1(4, DescriptorType::OTHER);
-  SetFloatValues(zeros, &descriptor1);
-  for (int i = 0; i < kNumTrials; i++) {
-    FloatDescriptor descriptor2(4, DescriptorType::OTHER);
-    float rand_floats[4];
-    float l2_sum = 0.0;
-    for (int i = 0; i < 4; i++) {
-      float rand_val = RandDouble(-100, 100);
-      rand_floats[i] = rand_val;
-      l2_sum += rand_val * rand_val;
+  const int num_dimensions = 4;
+  Eigen::VectorXf descriptor1(num_dimensions);
+  Eigen::VectorXf descriptor2(num_dimensions);
+  for (int n = 0; n < kNumTrials; n++) {
+    descriptor1.setZero();
+    descriptor2.setZero();
+    for (int i = 0; i < num_dimensions; i++) {
+      float rand_val1 = static_cast<float>(RandDouble(-100, 100));
+      float rand_val2 = static_cast<float>(RandDouble(-100, 100));
+      descriptor1[i] = rand_val1;
+      descriptor2[i] = rand_val2;
     }
-    SetFloatValues(rand_floats, &descriptor2);
     L2 l2_dist;
-    ASSERT_EQ(l2_dist(descriptor1, descriptor2), l2_sum);
+    ASSERT_DOUBLE_EQ(l2_dist(descriptor1, descriptor2),
+                     (descriptor2 - descriptor1).squaredNorm());
   }
 }
 
 // Zero distance.
 TEST(HammingDistance, ZeroDistance) {
-  std::bitset<512> zeros;
-  zeros.reset();
-
-  TestBinaryDescriptor descriptor1;
-  SetBinaryValues(zeros, &descriptor1);
-  TestBinaryDescriptor descriptor2;
-  SetBinaryValues(zeros, &descriptor2);
+  Eigen::BinaryVectorX descriptor1(512);
+  descriptor1.setZero();
+  Eigen::BinaryVectorX descriptor2(512);
+  descriptor2.setZero();
   Hamming hamming_distance;
   ASSERT_EQ(hamming_distance(descriptor1, descriptor2), 0);
 }
 
 // Max distance.
 TEST(HammingDistance, MaxDistance) {
-  std::bitset<512> zeros;
-  zeros.reset();
-  TestBinaryDescriptor descriptor1;
-  SetBinaryValues(zeros, &descriptor1);
+  Eigen::BinaryVectorX descriptor1(512);
+  descriptor1.setZero();
+  Eigen::BinaryVectorX descriptor2(512);
+  std::bitset<512>* ones =
+      reinterpret_cast<std::bitset<512>*>(descriptor2.data());
+  ones->reset().flip();
 
-  std::bitset<512> ones = zeros.flip();
-  TestBinaryDescriptor descriptor2;
-  SetBinaryValues(ones, &descriptor2);
   Hamming hamming_distance;
   ASSERT_EQ(hamming_distance(descriptor1, descriptor2), 512);
 }
@@ -142,25 +108,36 @@ TEST(HammingDistance, KnownDistance) {
 
   std::bitset<512> zeros;
   zeros.reset();
-  TestBinaryDescriptor descriptor1;
-  SetBinaryValues(zeros, &descriptor1);
+
+  Eigen::BinaryVectorX descriptor1(512);
+  descriptor1.setZero();
 
   for (int i = 0; i < kNumTrials; i++) {
-    std::bitset<512> rand_bitset = zeros;
-    TestBinaryDescriptor descriptor2;
+    Eigen::BinaryVectorX descriptor2(512);
+    descriptor2.setZero();
+    std::bitset<512>* rand_bitset =
+        reinterpret_cast<std::bitset<512>*>(descriptor2.data());
 
     int hamming_dist = 0;
     for (int j = 0; j < 512; j++) {
       if (RandDouble(0.0, 1.0) > 0.7) {
-        rand_bitset.set(j);
+        rand_bitset->set(j);
         hamming_dist++;
       }
     }
 
-    SetBinaryValues(rand_bitset, &descriptor2);
     Hamming hamming_distance;
     ASSERT_EQ(hamming_distance(descriptor1, descriptor2), hamming_dist);
   }
+}
+
+BENCHMARK(HammingDistanceSpeed, SpeedTest, 100, 100) {
+  Eigen::BinaryVectorX descriptor1(512);
+  Eigen::BinaryVectorX descriptor2(512);
+  descriptor1.setZero();
+  descriptor2.setRandom();
+  Hamming hamming_distance;
+  hamming_distance(descriptor1, descriptor2);
 }
 
 }  // namespace

@@ -40,15 +40,17 @@ extern "C" {
 #include <vl/sift.h>
 }
 #include <vector>
+
 #include "theia/image/descriptor/descriptor_extractor.h"
+#include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/util/util.h"
 
 namespace theia {
+
 template<class T> class Image;
 typedef Image<float> GrayImage;
-class Keypoint;
 
-class SiftDescriptorExtractor : public DescriptorExtractor {
+class SiftDescriptorExtractor : public FloatDescriptorExtractor {
  public:
   //  We only implement the standard 128-dimension descriptor. Specify the
   //  number of image octaves, number of scale levels per octave, and where the

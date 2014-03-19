@@ -40,13 +40,13 @@
 #include <algorithm>
 #include <vector>
 
-#include "theia/util/util.h"
 #include "theia/alignment/alignment.h"
+#include "theia/image/keypoint_detector/keypoint.h"
+#include "theia/util/util.h"
 
 namespace theia {
 template<class T> class Image;
 typedef Image<float> GrayImage;
-class Keypoint;
 
 // This interface class is meant to define all descriptor extractors. From a
 // high level, there are two types of descriptors (and extractors): float and
@@ -78,7 +78,7 @@ class DescriptorExtractor {
   virtual bool ComputeDescriptor(const GrayImage& image,
                                  const Keypoint& keypoint,
                                  Eigen::Vector2d* feature_position,
-                                 Eigen::VectorXf* descriptor) = 0;
+                                 Eigen::BinaryVectorX* descriptor) = 0;
 
   // Compute the descriptors for multiple keypoints in a given image. This
   // method will populate the feature_position and descriptors vectors
@@ -107,7 +107,8 @@ class DescriptorExtractor {
 
 // Class for float descriptor extractors. All classes that extract float
 // descriptors should be derived from this class.
-class FloatDescriptorExtractor {
+class FloatDescriptorExtractor : public DescriptorExtractor {
+ public:
   FloatDescriptorExtractor() {}
   virtual ~FloatDescriptorExtractor() {}
 
@@ -120,29 +121,34 @@ class FloatDescriptorExtractor {
                                  Eigen::VectorXf* descriptor) = 0;
 
   // Computes a binary descriptor at a single keypoint.
-  virtual bool ComputeDescriptor(const GrayImage& image,
-                                 const Keypoint& keypoint,
-                                 Eigen::Vector2d* feature_position,
-                                 Eigen::VectorXf* descriptor) {
-#pragma message("YOU ARE ATTEMPTING TO EXTRACT A BINARY DESCRIPTOR WITH A " \
-                "FLOAT DESCRIPTOR EXTRACTOR");
+  bool ComputeDescriptor(const GrayImage& image,
+                         const Keypoint& keypoint,
+                         Eigen::Vector2d* feature_position,
+                         Eigen::BinaryVectorX* descriptor) {
+    LOG(FATAL) << "YOU ARE ATTEMPTING TO EXTRACT A BINARY DESCRIPTOR WITH A "
+                  "FLOAT DESCRIPTOR EXTRACTOR";
+    return false;
   }
 
   // Compute the descriptors for multiple keypoints in a given image.
   virtual bool ComputeDescriptors(
       const GrayImage& image,
-      const std::vector<Keypoint*>& keypoints,
+      const std::vector<Keypoint>& keypoints,
       std::vector<Eigen::Vector2d>* feature_positions,
-      std::vector<Eigen::VectorXf>* descriptors);
+      std::vector<Eigen::VectorXf>* descriptors) {
+    return DescriptorExtractor::ComputeDescriptors(
+        image, keypoints, feature_positions, descriptors);
+  }
 
   // Same as above, but for binary descriptors.
-  virtual bool ComputeDescriptors(
+  bool ComputeDescriptors(
       const GrayImage& image,
-      const std::vector<Keypoint*>& keypoints,
+      const std::vector<Keypoint>& keypoints,
       std::vector<Eigen::Vector2d>* feature_positions,
       std::vector<Eigen::BinaryVectorX>* descriptors) {
-#pragma message("YOU ARE ATTEMPTING TO EXTRACT A BINARY DESCRIPTOR WITH A " \
-                "FLOAT DESCRIPTOR EXTRACTOR");
+    LOG(FATAL) << "YOU ARE ATTEMPTING TO EXTRACT A BINARY DESCRIPTOR WITH A "
+                  "FLOAT DESCRIPTOR EXTRACTOR";
+    return false;
   }
 
  private:
@@ -151,43 +157,50 @@ class FloatDescriptorExtractor {
 
 // Class for binary descriptor extractors. All classes that extract binary
 // descriptors should be derived from this class.
-class BinaryDescriptorExtractor {
+class BinaryDescriptorExtractor : public DescriptorExtractor {
+ public:
   BinaryDescriptorExtractor() {}
   virtual ~BinaryDescriptorExtractor() {}
 
   virtual bool Initialize() { return true; }
 
   // Computes a floatdescriptor at a single keypoint.
-  virtual bool ComputeDescriptor(const GrayImage& image,
-                                 const Keypoint& keypoint,
-                                 Eigen::Vector2d* feature_position,
-                                 Eigen::VectorXf* descriptor) {
-#pragma message("YOU ARE ATTEMPTING TO EXTRACT A FLOAT DESCRIPTOR WITH A " \
-                "BINARY DESCRIPTOR EXTRACTOR");
+  bool ComputeDescriptor(const GrayImage& image,
+                         const Keypoint& keypoint,
+                         Eigen::Vector2d* feature_position,
+                         Eigen::VectorXf* descriptor) {
+    LOG(FATAL) << "YOU ARE ATTEMPTING TO EXTRACT A FLOAT DESCRIPTOR WITH A " \
+        "BINARY DESCRIPTOR EXTRACTOR";
+    return false;
   }
 
   // Computes a binary descriptor at a single keypoint.
   virtual bool ComputeDescriptor(const GrayImage& image,
                                  const Keypoint& keypoint,
                                  Eigen::Vector2d* feature_position,
-                                 Eigen::VectorXf* descriptor) = 0;
+                                 Eigen::BinaryVectorX* descriptor) = 0;
 
 
   // Compute the descriptors for multiple keypoints in a given image.
-  virtual bool ComputeDescriptors(
+  bool ComputeDescriptors(
       const GrayImage& image,
-      const std::vector<Keypoint*>& keypoints,
+      const std::vector<Keypoint>& keypoints,
+      std::vector<Eigen::Vector2d>* feature_positions,
       std::vector<Eigen::VectorXf>* descriptors) {
-#pragma message("YOU ARE ATTEMPTING TO EXTRACT A FLOAT DESCRIPTOR WITH A " \
-                "BINARY DESCRIPTOR EXTRACTOR");
+    LOG(FATAL) << "YOU ARE ATTEMPTING TO EXTRACT A FLOAT DESCRIPTOR WITH A "
+                  "BINARY DESCRIPTOR EXTRACTOR";
+    return false;
   }
 
   // Same as above, but for binary descriptors.
   virtual bool ComputeDescriptors(
       const GrayImage& image,
-      const std::vector<Keypoint*>& keypoints,
+      const std::vector<Keypoint>& keypoints,
       std::vector<Eigen::Vector2d>* feature_positions,
-      std::vector<Eigen::BinaryVectorX>* descriptors);
+      std::vector<Eigen::BinaryVectorX>* descriptors) {
+    return DescriptorExtractor::ComputeDescriptors(
+        image, keypoints, feature_positions, descriptors);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BinaryDescriptorExtractor);

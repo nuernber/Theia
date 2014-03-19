@@ -62,11 +62,22 @@ TEST(BriskDescriptor, Sanity) {
 
   // For each keypoint, extract the brisk descriptors.
   BriskDescriptorExtractor brisk_extractor;
+  brisk_extractor.Initialize();
+  Eigen::Vector2d feature_position;
+  Eigen::BinaryVectorX descriptor;
+  // We need to make sure we pick a point away from the border so that a
+  // descriptor can actually be extracted.
+  CHECK_GT(brisk_keypoints.size(), 100);
+  EXPECT_TRUE(brisk_extractor.ComputeDescriptor(input_img,
+                                                brisk_keypoints[100],
+                                                &feature_position,
+                                                &descriptor));
+
+  std::vector<Eigen::Vector2d> feature_positions;
   std::vector<Eigen::BinaryVectorX> brisk_descriptors;
-  CHECK_NOTNULL(brisk_extractor.ComputeDescriptor(input_img,
-                                                  brisk_keypoints[0]));
-  EXPECT_TRUE(brisk_extractor.ComputeDescriptorsPruned(input_img,
-                                                       brisk_keypoints,
-                                                       &brisk_descriptors));
+  EXPECT_TRUE(brisk_extractor.ComputeDescriptors(input_img,
+                                                 brisk_keypoints,
+                                                 &feature_positions,
+                                                 &brisk_descriptors));
 }
 }  // namespace theia

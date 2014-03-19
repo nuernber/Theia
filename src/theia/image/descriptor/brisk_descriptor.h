@@ -40,19 +40,19 @@
 
 #include "theia/alignment/alignment.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
+#include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/util/util.h"
 
 namespace theia {
 template <class T> class Image;
 typedef Image<float> GrayImage;
-class Keypoint;
 
 // BRISK Descriptor ported from reference code of Stefan Leutenegger, Margarita
 // Chli and Roland Siegwart, "BRISK: Binary Robust Invariant Scalable
 // Keypoints", in Proceedings of the IEEE International Conference on Computer
 // Vision (ICCV 2011). NOTE: because this code is ported, it does not adhere to
 // the same style guides as the rest of the code.
-class BriskDescriptorExtractor : public DescriptorExtractor {
+class BriskDescriptorExtractor : public BinaryDescriptorExtractor {
  public:
   // Set rotation_invariant and scale_invariant to true to calculate descriptors
   // that are invariant to under those shifts.
@@ -62,15 +62,15 @@ class BriskDescriptorExtractor : public DescriptorExtractor {
   ~BriskDescriptorExtractor();
 
   // Computes a descriptor at a single keypoint.
-  virtual bool ComputeDescriptor(const GrayImage& image,
-                                 const Keypoint& keypoint,
-                                 Eigen::Vector2d* feature_position,
-                                 Eigen::VectorXf* descriptor);
+  bool ComputeDescriptor(const GrayImage& image,
+                         const Keypoint& keypoint,
+                         Eigen::Vector2d* feature_position,
+                         Eigen::BinaryVectorX* descriptor);
 
   // Compute multiple descriptors for keypoints from a single image.
-  virtual bool ComputeDescriptors(
+  bool ComputeDescriptors(
       const GrayImage& image,
-      const std::vector<Keypoint*>& keypoints,
+      const std::vector<Keypoint>& keypoints,
       std::vector<Eigen::Vector2d>* feature_positions,
       std::vector<Eigen::BinaryVectorX>* descriptors);
 

@@ -35,99 +35,64 @@
 #ifndef THEIA_VISION_MATCHING_DISTANCE_H_
 #define THEIA_VISION_MATCHING_DISTANCE_H_
 
+#include <Eigen/Core>
 #include <glog/logging.h>
-#ifdef THEIA_USE_SSE
-#include <xmmintrin.h>
-#endif
 
-#include "theia/image/descriptor/descriptor.h"
+#include "theia/alignment/alignment.h"
 
 namespace theia {
 // This file includes all of the distance metrics that are used:
 // L2 distance for euclidean features.
-// Vectorized L2 distance for SSE optimizations.
 // Hamming distance for binary vectors.
-// Hamming distance for FREAK (checks the first 128 bits, then checks the rest).
-// NOTE: Hamming distance functions are included at the bottom of this file, but
-// are in a separate file for cleanliness.
+// TODO(cmsweeney): Could implement Hamming distance for FREAK (checks the first
+// 128 bits, then checks the rest).
 
-#ifndef THEIA_USE_SSE
-// Squared Euclidean distance functor (vectorized version to help the compiler
-// translate it into SIMD operations).
+// Squared Euclidean distance functor. We let Eigen handle the SSE optimization.
 struct L2 {
   typedef float ResultType;
 
-  ResultType operator()(const Descriptor& descriptor_a,
-                        const Descriptor& descriptor_b) const {
-    CHECK_EQ(descriptor_a.Dimensions(), descriptor_b.Dimensions());
-    CHECK_EQ(descriptor_a.descriptor_type(), descriptor_b.descriptor_type());
-    ResultType result = ResultType();
-    ResultType diff0, diff1, diff2, diff3;
-    const float* a = descriptor_a.FloatData();
-    const float* b = descriptor_b.FloatData();
-    const float* last = a + descriptor_a.Dimensions();
-    const float* lastgroup = last - 3;
+  ResultType operator()(const Eigen::VectorXf& descriptor_a,
+                        const Eigen::VectorXf& descriptor_b) const {
+    DCHECK_EQ(descriptor_a.size(), descriptor_b.size());
+    Eigen::VectorXf temp = descriptor_b - descriptor_a;
+    ResultType dist = temp.squaredNorm();
+    return dist;
+  }
+};
 
-    // Process 4 items with each loop for efficiency.
-    while (a < lastgroup) {
-      diff0 = a[0] - b[0];
-      diff1 = a[1] - b[1];
-      diff2 = a[2] - b[2];
-      diff3 = a[3] - b[3];
-      result += diff0 * diff0 + diff1 * diff1 + diff2 * diff2 + diff3 * diff3;
-      a += 4;
-      b += 4;
-    }
-    // Process last 0-3 dimensions.  Not needed for standard vector lengths.
-    while (a < last) {
-      diff0 = *a++ - *b++;
-      result += diff0 * diff0;
+// Haming distance functor. We break the binary descriptor down into bytes and
+// use a lookup table to make the xor really fast.
+struct Hamming {
+  typedef int ResultType;
+
+  ResultType operator()(const Eigen::BinaryVectorX& descriptor_a,
+                        const Eigen::BinaryVectorX& descriptor_b) const {
+    DCHECK_EQ(descriptor_a.size(), descriptor_b.size());
+    static constexpr unsigned char pop_count_table[] = {
+      0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 1, 2, 2, 3, 2, 3, 3, 4, 2,
+      3, 3, 4, 3, 4, 4, 5, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3,
+      3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3,
+      4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 2, 3, 3, 4,
+      3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5,
+      6, 6, 7, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4,
+      4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5,
+      6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 2, 3, 3, 4, 3, 4, 4, 5,
+      3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 3,
+      4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 4, 5, 5, 6, 5, 6, 6, 7, 5, 6,
+      6, 7, 6, 7, 7, 8
+    };
+
+    int result = 0;
+    const unsigned char* char_a = descriptor_a.data();
+    const unsigned char* char_b = descriptor_b.data();
+    for (size_t i = 0;
+         i < descriptor_a.size() / (8 * sizeof(unsigned char)); i++) {
+      result += pop_count_table[char_a[i] ^ char_b[i]];
     }
     return result;
   }
 };
 
-#else
-/// Union to switch between SSE and float array.
-union sseRegisterHelper {
-  __m128 m;
-  float f[4];
-};
-
-// Euclidian distance (SSE method) (squared result)
-float L2SSE(const float* b1, const float* b2, int size) {
-  CHECK_EQ(size % 4, 0) << "Size must be a multiple of 4 for SSE optimization!";
-  __m128 srcA, srcB, temp, cumSum;
-  float zeros[4] = { 0.f, 0.f, 0.f, 0.f };
-  cumSum = _mm_load_ps(zeros);
-  for (int i = 0; i < size; i += 4) {
-    srcA = _mm_load_ps(b1 + i);
-    srcB = _mm_load_ps(b2 + i);
-    // Substract
-    temp = _mm_sub_ps(srcA, srcB);
-    // Multiply
-    temp = _mm_mul_ps(temp, temp);
-    // sum
-    cumSum = _mm_add_ps(cumSum, temp);
-  }
-  sseRegisterHelper res;
-  res.m = cumSum;
-  return (res.f[0] + res.f[1] + res.f[2] + res.f[3]);
-}
-// Version to run SSE L2 squared distance on float vector.
-struct L2 {
-  typedef float ResultType;
-
-  ResultType operator()(const Descriptor& a, const Descriptor& b) const {
-    CHECK_EQ(a.Dimensions(), b.Dimensions());
-    CHECK_EQ(a.descriptor_type(), b.descriptor_type());
-    return L2SSE(a.FloatData(), b.FloatData(), a.Dimensions());
-  }
-};
-#endif  // THEIA_USE_SSE
-}       // namespace theia
-
-// Include the hamming distance functions in a separate file for cleanliness.
-#include "theia/vision/matching/distance_hamming.h"
+}  // namespace theia
 
 #endif  // THEIA_VISION_MATCHING_DISTANCE_H_
