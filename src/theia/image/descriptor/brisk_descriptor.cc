@@ -391,7 +391,8 @@ bool BriskDescriptorExtractor::ComputeDescriptor(
   keypoints.push_back(keypoint);
   std::vector<Eigen::Vector2d> feature_positions;
   std::vector<Eigen::BinaryVectorX> descriptors;
-  bool success = ComputeDescriptors(image, keypoints, &feature_positions, &descriptors);
+  bool success =
+      ComputeDescriptors(image, keypoints, &feature_positions, &descriptors);
   if (success) {
     *feature_position = feature_positions[0];
     *descriptor = descriptors[0];
