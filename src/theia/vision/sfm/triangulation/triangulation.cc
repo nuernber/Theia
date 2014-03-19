@@ -43,58 +43,78 @@
 namespace theia {
 using Eigen::MatrixXd;
 using Eigen::Matrix4d;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
-using Eigen::Vector4d;
 
 // Triangulates 2 posed views
-Vector4d Triangulate(const ProjectionMatrix& pose_left,
-                     const ProjectionMatrix& pose_right,
-                     const Vector3d& point_left, const Vector3d& point_right) {
+bool Triangulate(const ProjectionMatrix& pose_left,
+                 const ProjectionMatrix& pose_right,
+                 const Vector2d& point_left, const Vector2d& point_right,
+                 Vector3d* triangulated_point) {
   Matrix4d design_matrix;
-  design_matrix.row(0) =
-      (point_left[0] / point_left[2]) * pose_left.row(2) - pose_left.row(0);
-  design_matrix.row(1) =
-      (point_left[1] / point_left[2]) * pose_left.row(2) - pose_left.row(1);
-  design_matrix.row(2) =
-      (point_right[0] / point_right[2]) * pose_right.row(2) - pose_right.row(0);
-  design_matrix.row(3) =
-      (point_right[1] / point_right[2]) * pose_right.row(2) - pose_right.row(1);
+  design_matrix.row(0) = point_left[0] * pose_left.row(2) - pose_left.row(0);
+  design_matrix.row(1) = point_left[1] * pose_left.row(2) - pose_left.row(1);
+  design_matrix.row(2) = point_right[0] * pose_right.row(2) - pose_right.row(0);
+  design_matrix.row(3) = point_right[1] * pose_right.row(2) - pose_right.row(1);
 
   // Extract nullspace.
-  return design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>();
+  Eigen::Vector4d homog_triangulated_point =
+      design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>();
+  if (homog_triangulated_point[3] != 0) {
+    *triangulated_point = homog_triangulated_point.hnormalized();
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // Triangulates N views by computing SVD that minimizes the error.
-Vector4d TriangulateNViewSVD(const std::vector<ProjectionMatrix>& poses,
-                             const std::vector<Vector3d>& points) {
+bool TriangulateNViewSVD(const std::vector<ProjectionMatrix>& poses,
+                         const std::vector<Vector2d>& points,
+                         Vector3d* triangulated_point) {
   CHECK_EQ(poses.size(), points.size());
 
   MatrixXd design_matrix(3 * points.size(), 4 + points.size());
 
   for (int i = 0; i < points.size(); i++) {
     design_matrix.block<3, 4>(3 * i, 0) = -poses[i].matrix();
-    design_matrix.block<3, 1>(3 * i, 4 + i) = (points[i] / points[i].z());
+    design_matrix.block<3, 1>(3 * i, 4 + i) = points[i].homogeneous();
   }
 
   // Computing SVD on A'A is more efficient and gives the same null-space.
-  return (design_matrix.transpose() * design_matrix)
-      .jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>().head(4);
+  Eigen::Vector4d homog_triangulated_point =
+      (design_matrix.transpose() * design_matrix).jacobiSvd(Eigen::ComputeFullV)
+          .matrixV().rightCols<1>().head(4);
+  if (homog_triangulated_point[3] != 0) {
+    *triangulated_point = homog_triangulated_point.hnormalized();
+    return true;
+  } else {
+    return false;
+  }
 }
 
-Vector4d TriangulateNView(const std::vector<ProjectionMatrix>& poses,
-                          const std::vector<Vector3d>& points) {
+bool TriangulateNView(const std::vector<ProjectionMatrix>& poses,
+                      const std::vector<Vector2d>& points,
+                      Vector3d* triangulated_point) {
   CHECK_EQ(poses.size(), points.size());
 
   Matrix4d design_matrix = Matrix4d::Zero();
   for (int i = 0; i < points.size(); i++) {
+    const Vector3d norm_point = points[i].homogeneous().normalized();
     const Eigen::Matrix<double, 3, 4> cost_term =
         poses[i].matrix() -
-        points[i] * points[i].transpose() * poses[i].matrix();
+        norm_point * norm_point.transpose() * poses[i].matrix();
     design_matrix = design_matrix + cost_term.transpose() * cost_term;
   }
 
   Eigen::SelfAdjointEigenSolver<Matrix4d> eigen_solver(design_matrix);
-  return eigen_solver.eigenvectors().col(0);
+  Eigen::Vector4d homog_triangulated_point = eigen_solver.eigenvectors().col(0);
+  if (homog_triangulated_point[3] != 0) {
+    *triangulated_point = homog_triangulated_point.hnormalized();
+    return true;
+  } else {
+    return false;
+  }
 }
 
 }  // namespace theia

@@ -44,6 +44,7 @@ namespace theia {
 using Eigen::Map;
 using Eigen::Matrix;
 using Eigen::Matrix3d;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 
 void ComposeProjectionMatrix(const double focal_length[2],
@@ -69,19 +70,17 @@ void AddNoiseToPoint(const double noise_factor, Vector3d* point) {
 }
 
 // Adds noise to the ray i.e. the projection of the point.
-void AddNoiseToProjection(const double noise_factor, Vector3d* ray) {
+void AddNoiseToProjection(const double noise_factor, Vector2d* ray) {
   const double noise_x = (-0.5 + RandDouble(0.0, 1.0)) * 2.0 * noise_factor;
   const double noise_y = (-0.5 + RandDouble(0.0, 1.0)) * 2.0 * noise_factor;
 
-  *ray = Vector3d(ray->x() / ray->z() + noise_x,
-                  ray->y() / ray->z() + noise_y, 1.0).normalized();
+  *ray = Vector2d(ray->x() + noise_x, ray->y() + noise_y);
 }
 
-void AddGaussianNoise(const double noise_factor, Vector3d* ray) {
+void AddGaussianNoise(const double noise_factor, Vector2d* ray) {
   const double noise_x = RandGaussian(0.0, noise_factor);
   const double noise_y = RandGaussian(0.0, noise_factor);
-  *ray = Vector3d(ray->x() / ray->z() + noise_x,
-                  ray->y() / ray->z() + noise_y, 1.0).normalized();
+  *ray = Vector2d(ray->x() + noise_x, ray->y() + noise_y);
 }
 
 void CreateRandomPointsInFrustum(const double near_plane_width,
@@ -101,17 +100,15 @@ void CreateRandomPointsInFrustum(const double near_plane_width,
   }
 }
 
-double SampsonDistance(const Matrix3d& F, const Vector3d& x,
-                       const Vector3d& y) {
-  Vector3d epiline_y = F * y;
-  epiline_y /= epiline_y.z();
-  Vector3d epiline_x = F.transpose() * x;
-  epiline_x /= epiline_x.z();
+// For an E or F that is defined such that y^t * E * x = 0
+double SampsonDistance(const Matrix3d& F, const Vector2d& x,
+                       const Vector2d& y) {
+  const Vector3d epiline_x = F * x.homogeneous();
+  const Vector3d epiline_y = F.transpose() * y.homogeneous();
 
-  const double numerator_sqrt = x.dot(epiline_y);
-  const double denominator =
-      epiline_x[0] * epiline_x[0] + epiline_x[1] * epiline_x[1] +
-      epiline_y[0] * epiline_y[0] + epiline_y[1] * epiline_y[1];
+  const double numerator_sqrt = y.homogeneous().dot(epiline_x);
+  const double denominator = epiline_x.hnormalized().squaredNorm() +
+                             epiline_y.hnormalized().squaredNorm();
 
   // Finally, return the complete Sampson distance.
   return numerator_sqrt * numerator_sqrt / denominator;
@@ -130,30 +127,22 @@ Eigen::Matrix3d CrossProductMatrix(const Vector3d& cross_vec) {
 // Returns the transformation matrix and the transformed points. This assumes
 // that no points are at infinity.
 bool NormalizeImagePoints(
-    const std::vector<Vector3d>& image_points,
-    std::vector<Vector3d>* normalized_image_points,
+    const std::vector<Vector2d>& image_points,
+    std::vector<Vector2d>* normalized_image_points,
     Matrix3d* normalization_matrix) {
-  Eigen::Map<const Matrix<double, 3, Eigen::Dynamic> > temp_image_points_mat(
-      image_points[0].data(), 3, image_points.size());
-
-  // Divide the image points by the homogeneous coordinate so that they are all
-  // on teh same image plane at z = 1.
-  Matrix<double, 3, Eigen::Dynamic> image_points_mat =
-      temp_image_points_mat;
-  image_points_mat.row(0).array() /= image_points_mat.row(2).array();
-  image_points_mat.row(1).array() /= image_points_mat.row(2).array();
-  image_points_mat.row(2).setConstant(1);
+  Eigen::Map<const Matrix<double, 2, Eigen::Dynamic> > image_points_mat(
+      image_points[0].data(), 2, image_points.size());
 
   // Allocate the output vector and map an Eigen object to the underlying data
   // for efficient calculations.
   normalized_image_points->clear();
   normalized_image_points->resize(image_points.size());
-  Eigen::Map<Matrix<double, 3, Eigen::Dynamic> >
-      normalized_image_points_mat((*normalized_image_points)[0].data(), 3,
+  Eigen::Map<Matrix<double, 2, Eigen::Dynamic> >
+      normalized_image_points_mat((*normalized_image_points)[0].data(), 2,
                                   image_points.size());
 
   // Compute centroid.
-  const Vector3d centroid(image_points_mat.rowwise().mean());
+  const Vector2d centroid(image_points_mat.rowwise().mean());
 
   // Calculate average distance to centroid.
   const double mean_dist = (image_points_mat.colwise() - centroid).norm();
@@ -165,8 +154,10 @@ bool NormalizeImagePoints(
       0, 0, 1;
 
   // Normalize image points.
-  normalized_image_points_mat =
-      (*normalization_matrix) * image_points_mat;
+  const Matrix<double, 3, Eigen::Dynamic> normalized_homog_points =
+      (*normalization_matrix) * image_points_mat.colwise().homogeneous();
+  normalized_image_points_mat = normalized_homog_points.colwise().hnormalized();
+
   return true;
 }
 

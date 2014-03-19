@@ -45,38 +45,19 @@ namespace theia {
 // Camera position and Orientation" by Kneip et. al.
 //
 // Params:
-//   image_rays: Normalized image rays corresponding to model points.
+//   feature_point: Feature points corresponding to model points. NOTE: these
+//     points should be calibrated with the camera intrinsics as opposed to raw
+//     pixel coordinates.
 //   points_3d: 3D location of features. Must correspond to the image_ray
 //     of the same index.
 //   solution_rotations: the rotation matrix of the candidate solutions
 //   solution_translation: the translation of the candidate solutions
 // Return: the number of poses computed.
-int PoseFromThreePoints(const double image_ray[3 * 3],
-                        const double world_point[3 * 3],
-                        double solution_rotations[9 * 4],
-                        double solution_translations[3 * 4]);
-
-// Same as above, but with Eigen interface.
-bool PoseFromThreePoints(const Eigen::Vector3d image_ray[3],
+bool PoseFromThreePoints(const Eigen::Vector2d feature_point[3],
                          const Eigen::Vector3d world_point[3],
                          std::vector<Eigen::Matrix3d>* solution_rotations,
                          std::vector<Eigen::Vector3d>* solution_translations);
 
-// Uses the method above for a calibrated camera setup.
-// Params:
-//   image_points: Location of features on the image plane (x[i][*] = i-th image
-//     point). Location must be normalized
-//   world_points: 3D location of features. Must correspond to the image_point
-//     of the same index (x[i][*] = i-th world point)
-//   focal_length: fx, and fy the focal length parameters
-//   principle_point: the principle point of the image
-//   solutions: the projection matrices for the candidate solutions
-// Return: the number of poses computed.
-int PoseFromThreeCalibrated(const double image_points[2 * 3],
-                            const double world_points[3 * 3],
-                            const double focal_length[2],
-                            const double principal_point[2],
-                            double solutions[12 * 4]);
 }  // namespace theia
 
 #endif  // THEIA_VISION_SFM_POSE_PERSPECTIVE_THREE_POINT_H_

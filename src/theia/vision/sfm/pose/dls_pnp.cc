@@ -49,6 +49,7 @@ namespace theia {
 using Eigen::Matrix3d;
 using Eigen::Matrix;
 using Eigen::Quaterniond;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 using dls_impl::CreateMacaulayMatrix;
 using dls_impl::ExtractJacobianCoefficients;
@@ -62,19 +63,32 @@ using dls_impl::LeftMultiplyMatrix;
 // system of equations from the jacobian of the cost function, and solve these
 // equations via a Macaulay matrix to obtain the roots (i.e., the 3 parameters
 // of rotation). The translation can then be obtained through back-substitution.
-void DlsPnp(const std::vector<Vector3d>& image_ray,
+void DlsPnp(const std::vector<Vector2d>& feature_position,
             const std::vector<Vector3d>& world_point,
             std::vector<Quaterniond>* solution_rotation,
             std::vector<Vector3d>* solution_translation) {
-  CHECK_GE(image_ray.size(), 3);
-  CHECK_EQ(image_ray.size(), world_point.size());
+  CHECK_GE(feature_position.size(), 3);
+  CHECK_EQ(feature_position.size(), world_point.size());
 
-  const int num_correspondences = image_ray.size();
+  const int num_correspondences = feature_position.size();
+
+  // Holds the normalized feature positions cross multiplied with itself
+  // i.e. n * n^t. This value is used multiple times so it is efficient to
+  // pre-compute it.
+  std::vector<Matrix3d> normalized_feature_cross;
+  normalized_feature_cross.reserve(num_correspondences);
+  for (int i = 0; i < num_correspondences; i++) {
+    const Vector3d normalized_feature_pos =
+        feature_position[i].homogeneous().normalized();
+    normalized_feature_cross.push_back(normalized_feature_pos *
+                                       normalized_feature_pos.transpose());
+  }
+
   // The bottom-right symmetric block matrix of inverse(A^T * A). Matrix H from
   // Eq. 25 in the Appendix of the DLS paper.
   Matrix3d h_inverse = num_correspondences * Matrix3d::Identity();
   for (int i = 0; i < num_correspondences; i++) {
-    h_inverse = h_inverse  - (image_ray[i] * image_ray[i].transpose());
+    h_inverse = h_inverse - normalized_feature_cross[i];
   }
   const Matrix3d h_matrix = h_inverse.inverse();
 
@@ -82,10 +96,9 @@ void DlsPnp(const std::vector<Vector3d>& image_ray,
   // translation parameterized by the 9 entries of the rotation matrix.
   Matrix<double, 3, 9> translation_factor = Matrix<double, 3, 9>::Zero();
   for (int i = 0; i < num_correspondences; i++) {
-    translation_factor =
-        translation_factor +
-        (image_ray[i] * image_ray[i].transpose() - Matrix3d::Identity()) *
-            LeftMultiplyMatrix(world_point[i]);
+    translation_factor = translation_factor +
+                         (normalized_feature_cross[i] - Matrix3d::Identity()) *
+                             LeftMultiplyMatrix(world_point[i]);
   }
 
   translation_factor = h_matrix * translation_factor;
@@ -99,8 +112,8 @@ void DlsPnp(const std::vector<Vector3d>& image_ray,
     ls_cost_coefficients =
         ls_cost_coefficients +
         (LeftMultiplyMatrix(world_point[i]) + translation_factor).transpose() *
-        (Matrix3d::Identity() - image_ray[i] * image_ray[i].transpose()) *
-        (LeftMultiplyMatrix(world_point[i]) + translation_factor);
+            (Matrix3d::Identity() - normalized_feature_cross[i]) *
+            (LeftMultiplyMatrix(world_point[i]) + translation_factor);
   }
 
   // Extract the coefficients of the jacobian (Eq. 18) from the

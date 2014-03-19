@@ -35,6 +35,7 @@
 #include "theia/vision/sfm/pose/four_point_homography.h"
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <Eigen/LU>
 #include <Eigen/SVD>
 #include <glog/logging.h>
@@ -46,16 +47,19 @@ namespace theia {
 using Eigen::Map;
 using Eigen::Matrix;
 using Eigen::Matrix3d;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 
 namespace {
 
-inline Matrix<double, 2, 9> CreateActionConstraint(const Vector3d& img1_point,
-                                                   const Vector3d& img2_point) {
+inline Matrix<double, 2, 9> CreateActionConstraint(const Vector2d& img1_point,
+                                                   const Vector2d& img2_point) {
   Matrix<double, 2, 9> constraint;
-  constraint << Eigen::RowVector3d::Zero(), -img1_point.transpose(),
-      img1_point.transpose() * img2_point.y(), img1_point.transpose(),
-      Eigen::RowVector3d::Zero(), -img1_point.transpose() * img2_point.x();
+  constraint << Eigen::RowVector3d::Zero(), -img1_point.transpose(), -1.0,
+      img1_point.transpose() * img2_point.y(), img2_point.y(),
+      img1_point.transpose(), 1.0, Eigen::RowVector3d::Zero(),
+      -img1_point.transpose() * img2_point.x(), -img2_point.x();
+
   return constraint;
 }
 
@@ -65,14 +69,14 @@ inline Matrix<double, 2, 9> CreateActionConstraint(const Vector3d& img1_point,
 // image_1 to image_2 via x' = Hx (where x is in image 1 and x' is in image
 // 2). The DLT algorithm implemented is from Algorithm 4.2 in Hartley and
 // Zisserman (page 109).
-bool FourPointHomography(const std::vector<Vector3d>& image_1_points,
-                         const std::vector<Vector3d>& image_2_points,
+bool FourPointHomography(const std::vector<Vector2d>& image_1_points,
+                         const std::vector<Vector2d>& image_2_points,
                          Matrix3d* homography) {
   CHECK_GE(image_1_points.size(), 4);
   CHECK_EQ(image_1_points.size(), image_2_points.size());
 
   // Normalize the image points.
-  std::vector<Vector3d> norm_image_1_points, norm_image_2_points;
+  std::vector<Vector2d> norm_image_1_points, norm_image_2_points;
   Matrix3d norm_image_1_mat, norm_image_2_mat;
   NormalizeImagePoints(image_1_points, &norm_image_1_points, &norm_image_1_mat);
   NormalizeImagePoints(image_2_points, &norm_image_2_points, &norm_image_2_mat);
@@ -94,23 +98,6 @@ bool FourPointHomography(const std::vector<Vector3d>& image_1_points,
                 Eigen::Map<const Matrix3d>(null_vector.data()).transpose() *
                 norm_image_1_mat;
   return true;
-}
-
-bool FourPointHomography(const int num_points,
-                         const double image_1_points[],
-                         const double image_2_points[],
-                         double homography[9]) {
-  std::vector<Vector3d> img_1_pts(num_points);
-  std::vector<Vector3d> img_2_pts(num_points);
-  for (int i = 0; i < num_points; i++) {
-    img_1_pts[i] = Map<const Vector3d>(image_1_points + 3 * i);
-    img_2_pts[i] = Map<const Vector3d>(image_2_points + 3 * i);
-  }
-
-  Matrix3d homography_eig;
-  return FourPointHomography(img_1_pts, img_2_pts, &homography_eig);
-  Map<Matrix3d> soln_map(homography);
-  soln_map = homography;
 }
 
 }  // namespace theia

@@ -46,6 +46,7 @@
 namespace theia {
 using Eigen::Map;
 using Eigen::Matrix3d;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 
 namespace {
@@ -181,32 +182,7 @@ void Backsubstitute(const Matrix3d& intermediate_world_frame,
 
 }  // namespace
 
-int PoseFromThreePoints(const double image_ray[3 * 3],
-                        const double points_3d[3 * 3],
-                        double solution_rotations[9 * 4],
-                        double solution_translations[3 * 4]) {
-  Vector3d image_ray_eig[3];
-  Vector3d world_point_eig[3];
-  for (int i = 0; i < 3; i++) {
-    image_ray_eig[i] = Map<const Vector3d>(image_ray + 3 * i);
-    world_point_eig[i] = Map<const Vector3d>(points_3d + 3 * i);
-  }
-
-  std::vector<Matrix3d> eig_rotations;
-  std::vector<Vector3d> eig_translations;
-  PoseFromThreePoints(image_ray_eig, world_point_eig, &eig_rotations,
-                      &eig_translations);
-  const int num_solns = eig_rotations.size();
-  for (int i = 0; i < num_solns; i++) {
-    Map<Matrix3d> soln_rotation(solution_rotations + 9 * i);
-    soln_rotation = eig_rotations[i];
-    Map<Vector3d> soln_translation(solution_translations + 3 * i);
-    soln_translation = eig_translations[i];
-  }
-  return num_solns;
-}
-
-bool PoseFromThreePoints(const Vector3d image_ray[3],
+bool PoseFromThreePoints(const Vector2d feature_point[3],
                          const Vector3d points_3d[3],
                          std::vector<Matrix3d>* solution_rotations,
                          std::vector<Vector3d>* solution_translations) {
@@ -215,7 +191,7 @@ bool PoseFromThreePoints(const Vector3d image_ray[3],
   // const ref or a Map because the world_points entries may be swapped later.
   Vector3d world_points[3];
   for (int i = 0; i < 3; ++i) {
-    normalized_image_points[i] = image_ray[i].normalized();
+    normalized_image_points[i] = feature_point[i].homogeneous().normalized();
     world_points[i] = points_3d[i];
   }
 
@@ -310,95 +286,6 @@ bool PoseFromThreePoints(const Vector3d image_ray[3],
   }
 
   return num_solutions > 0;
-}
-
-int PoseFromThreeCalibrated(const double points_2d[2 * 3],
-                            const double points_3d[3 * 3],
-                            const double focal_length[2],
-                            const double principal_point[2],
-                            double solutions[12 * 4]) {
-  double rotation_solutions[9 * 4];
-  double translation_solutions[3 * 4];
-
-  CHECK_GT(focal_length[0], 0.0);
-  CHECK_GT(focal_length[1], 0.0);
-
-  // Compute the 3D unit length vectors from camera center to each
-  // image point. First undo the calibration matrix transformation:
-  // x = (pt[0] - c_x) / f_x
-  // y = (pt[1] - c_y) / f_y
-  // z = 1.0
-  // Then normalize those vectors to length 1.
-  double image_rays[3 * 3];
-  for (int i = 0; i < 3; ++i) {
-    Map<Vector3d> normalized_image_ray(image_rays + i * 3);
-    normalized_image_ray[0] =
-        (points_2d[2 * i + 0] - principal_point[0]) / focal_length[0];
-    normalized_image_ray[1] =
-        (points_2d[2 * i + 1] - principal_point[1]) / focal_length[1];
-    normalized_image_ray[2] = 1.0;
-    normalized_image_ray.normalize();
-  }
-
-  int n = PoseFromThreePoints(image_rays,
-                              points_3d,
-                              rotation_solutions,
-                              translation_solutions);
-
-  // Convert the output to projection matrices: P = K*[R(q)  t].
-  for (int k = 0; k < n; ++k) {
-    // Compose the projection matrix.
-    ComposeProjectionMatrix(focal_length,
-                            principal_point,
-                            rotation_solutions + 9 * k,
-                            translation_solutions + 3 * k,
-                            solutions + 12 * k);
-  }
-
-  return n;
-}
-
-// Computes pose using three point algorithm. The fourth correspondence is used
-// to determine the best solution of the (up to 4) candidate solutions.
-bool PoseFourPointsCalibrated(const double image_points[2 * 4],
-                              const double world_points[3 * 4],
-                              const double focal_length[2],
-                              const double principle_point[2],
-                              double solution[12]) {
-  double candidate_solutions[12 * 4];
-  int num_valid_poses =
-      PoseFromThreeCalibrated(image_points, world_points, focal_length,
-                              principle_point, candidate_solutions);
-
-  // For each candidate pose, measure the reprojection error of the 4th point
-  // and pick the best candidate pose.
-  double min_reprojection_error = 1e9;
-  int best_pose_index = 0;
-  if (num_valid_poses == 0) return false;
-
-  Map<const Vector3d> pt_3d(world_points + 3 * 3);
-  const Vector3d image_pt(image_points[0 + 2 * 3], image_points[1 + 2 * 3],
-                          1.0);
-  for (int i = 0; i < num_valid_poses; i++) {
-    // Project the 3d point into the image.
-    Vector3d proj_3d =
-        Map<const Matrix3d>(candidate_solutions + 12 * i) * pt_3d +
-        Map<const Vector3d>(candidate_solutions + 12 * i + 9);
-    // Normalize.
-    proj_3d /= proj_3d[2];
-
-    // Calculate the reprojection error.
-    double reprojection_error = (proj_3d - image_pt).squaredNorm();
-    if (min_reprojection_error > reprojection_error) {
-      min_reprojection_error = reprojection_error;
-      best_pose_index = i;
-    }
-  }
-
-  // Copy solution to output variables.
-  std::copy(candidate_solutions + best_pose_index * 12,
-            candidate_solutions + best_pose_index * 12 + 12, solution);
-  return true;
 }
 
 }  // namespace theia

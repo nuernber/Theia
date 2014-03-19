@@ -51,15 +51,16 @@ namespace theia {
 using Eigen::MatrixXd;
 using Eigen::Matrix3d;
 using Eigen::Quaterniond;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 
-double ReprojectionError(const ProjectionMatrix& pose,
-                         const Vector4d& world_point,
-                         const Vector3d& image_point) {
-  const Vector3d reprojected_point = pose * world_point;
-  const double sq_reproj_error = (reprojected_point / reprojected_point.z() -
-          image_point / image_point.z()).squaredNorm();
+double ReprojectionError(const TransformationMatrix& pose,
+                         const Vector3d& world_point,
+                         const Vector2d& image_point) {
+  const Vector2d reprojected_point = (pose * world_point).hnormalized();
+  const double sq_reproj_error =
+      (reprojected_point - image_point).squaredNorm();
   return sq_reproj_error;
 }
 
@@ -70,10 +71,14 @@ void TestTriangulationBasic(const Vector3d& point_3d,
                             const double max_reprojection_error) {
   InitRandomGenerator();
 
+  TransformationMatrix pose_left = TransformationMatrix::Identity();
+  TransformationMatrix pose_right = TransformationMatrixFromRt(
+      rel_rotation.toRotationMatrix(), rel_translation);
+
   // Reproject point into both image 2, assume image 1 is identity rotation at
   // the origin.
-  Vector3d image_point_1 = point_3d;
-  Vector3d image_point_2 = rel_rotation * point_3d + rel_translation;
+  Vector2d image_point_1 = (pose_left * point_3d).hnormalized();
+  Vector2d image_point_2 = (pose_right * point_3d).hnormalized();
 
   // Add projection noise if required.
   if (projection_noise) {
@@ -82,19 +87,16 @@ void TestTriangulationBasic(const Vector3d& point_3d,
   }
 
   // Triangulate.
-  TransformationMatrix pose_left = TransformationMatrix::Identity();
-  TransformationMatrix pose_right = TransformationMatrixFromRt(
-      rel_rotation.toRotationMatrix(), rel_translation);
-
-  const Vector4d triangulated_point = Triangulate(
-      pose_left.matrix(), pose_right.matrix(), image_point_1, image_point_2);
+  Vector3d triangulated_point;
+  EXPECT_TRUE(Triangulate(pose_left.matrix(), pose_right.matrix(),
+                          image_point_1, image_point_2, &triangulated_point));
 
   // Check the reprojection error.
-  CHECK_LE(
-      ReprojectionError(pose_left.matrix(), triangulated_point, image_point_1),
+  EXPECT_LE(
+      ReprojectionError(pose_left, triangulated_point, image_point_1),
       max_reprojection_error);
-  CHECK_LE(
-      ReprojectionError(pose_right.matrix(), triangulated_point, image_point_2),
+  EXPECT_LE(
+      ReprojectionError(pose_right, triangulated_point, image_point_2),
       max_reprojection_error);
 }
 
@@ -153,12 +155,12 @@ void TestTriangulationManyPoints(const double projection_noise,
 
   for (int j = 0; j < ARRAYSIZE(kTestPoints); j++) {
     // Reproject model point into the images.
-    std::vector<Vector3d> image_points(num_views);
+    std::vector<Vector2d> image_points(num_views);
     const Vector3d model_point(kTestPoints[j][0], kTestPoints[j][1],
                                kTestPoints[j][2]);
     for (int i = 0; i < num_views; i++) {
-      image_points[i] = kRotations[i] * model_point + kTranslations[i];
-      image_points[i].normalize();
+      image_points[i] =
+          (poses[i] * model_point.homogeneous()).eval().hnormalized();
     }
 
     // Add projection noise if required.
@@ -168,13 +170,14 @@ void TestTriangulationManyPoints(const double projection_noise,
       }
     }
 
-    const Vector4d triangulated_point =
-        TriangulateNView(poses, image_points);
+    Vector3d triangulated_point;
+    ASSERT_TRUE(TriangulateNView(poses, image_points, &triangulated_point));
 
     // Check the reprojection error.
     for (int i = 0; i < num_views; i++) {
-    CHECK_LE(ReprojectionError(poses[i], triangulated_point, image_points[i]),
-             max_reprojection_error);
+      EXPECT_LE(ReprojectionError(TransformationMatrix(poses[i]),
+                                  triangulated_point, image_points[i]),
+                max_reprojection_error);
     }
   }
 }

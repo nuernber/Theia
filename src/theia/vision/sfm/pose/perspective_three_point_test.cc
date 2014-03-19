@@ -50,6 +50,7 @@ namespace theia {
 
 using Eigen::Map;
 using Eigen::Matrix3d;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 
 void PoseFromThreeCalibratedTest(const double noise) {
@@ -67,9 +68,9 @@ void PoseFromThreeCalibratedTest(const double noise) {
                                   Vector3d(-0.7815, 0.7642, 0.1257)};
 
   // Points in the camera view.
-  Vector3d kPoints2d[3];
+  Vector2d kPoints2d[3];
   for (int i = 0; i < 3; i++) {
-    kPoints2d[i] = projection_mat * kPoints3d[i];
+    kPoints2d[i] = (projection_mat * kPoints3d[i]).hnormalized();
     if (noise) {
       AddNoiseToProjection(noise, &kPoints2d[i]);
     }
@@ -97,8 +98,7 @@ void PoseFromThreeCalibratedTest(const double noise) {
       // Check the reprojection error.
       for (int j = 0; j < 3; j++) {
         const Vector3d projected_pt = soln_proj * kPoints3d[j];
-        EXPECT_LT((kPoints2d[j].hnormalized() - projected_pt.hnormalized())
-                  .norm() * 800.0,
+        EXPECT_LT((kPoints2d[j] - projected_pt.hnormalized()).norm() * 800.0,
                   2.0);
       }
     }

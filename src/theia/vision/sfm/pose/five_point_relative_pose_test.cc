@@ -51,6 +51,7 @@ using Eigen::AngleAxisd;
 using Eigen::Map;
 using Eigen::Matrix3d;
 using Eigen::Quaterniond;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 
 double RotationAngularDistance(const Matrix3d& rot1, const Matrix3d& rot2) {
@@ -74,43 +75,42 @@ void TestFivePointResultWithNoise(const Vector3d points_3d[5],
                                   const double max_angle_between_translation) {
   InitRandomGenerator();
 
-  // Calculates the image rays in both views.
-  Vector3d view_one_rays[5];
-  Vector3d view_two_rays[5];
+  // Calculates the image points in both views.
+  Vector2d view_one_points[5];
+  Vector2d view_two_points[5];
   for (int i = 0; i < 5; ++i) {
     const Vector3d proj_3d =
         expected_rotation * points_3d[i] + expected_translation;
-    view_one_rays[i] = points_3d[i].normalized();
-    view_two_rays[i] = proj_3d.normalized();
+    view_one_points[i] = points_3d[i].hnormalized();
+    view_two_points[i] = proj_3d.hnormalized();
   }
 
   if (projection_noise_std_dev) {
-    // Adds noise to both of the rays.
+    // Adds noise to both of the points.
     for (int i = 0; i < 5; ++i) {
       AddNoiseToProjection(projection_noise_std_dev,
-                           &view_one_rays[i]);
+                           &view_one_points[i]);
       AddNoiseToProjection(projection_noise_std_dev,
-                           &view_two_rays[i]);
+                           &view_two_points[i]);
     }
   }
 
   // Calculates the essential matrix, this may return multiple solutions.
-  Matrix3d soln_rotations[10];
-  Vector3d soln_translations[10];
-  const int num_solutions = FivePointRelativePose(
-      view_one_rays[0].data(), view_two_rays[0].data(),
-      soln_rotations[0].data(), soln_translations[0].data());
-  CHECK_GT(num_solutions, 0);
+  std::vector<Matrix3d> soln_rotations;
+  std::vector<Vector3d> soln_translations;
+  EXPECT_TRUE(FivePointRelativePose(view_one_points, view_two_points,
+                                    &soln_rotations, &soln_translations));
+  CHECK_GT(soln_rotations.size(), 0);
 
   // Among the returned solutions verify that at least one is close to the
   // expected translation and rotation.
   bool matched_transform = false;
-  for (int n = 0; n < num_solutions; ++n) {
+  for (int n = 0; n < soln_rotations.size(); ++n) {
     Matrix3d essential_matrix = CrossProductMatrix(soln_translations[n]) *
                                 soln_rotations[n];
     for (int i = 0; i < 5; ++i) {
-      const double sampson_dist =
-          SampsonDistance(essential_matrix, view_two_rays[i], view_one_rays[i]);
+      const double sampson_dist = SampsonDistance(
+          essential_matrix, view_one_points[i], view_two_points[i]);
       EXPECT_NEAR(sampson_dist, 0.0, 1e-8)
           << "3d point = " << points_3d[i].transpose();
     }

@@ -45,20 +45,11 @@ namespace theia {
 // Five-Point Relative Pose Problem" by Nister.
 //
 // Params:
-//   image1_points: Location of features on the image plane (x[i * 5] = i-th
-//     image point)
-//   image2_points: Location of features on the image plane of image 2
-//     (x[i * 5] = i-th image point)
-// Return: essential_matrix: Output all solutions of the 5 point algorithm.
-int FivePointRelativePose(const double image1_points[3 * 5],
-                          const double image2_points[3 * 5],
-                          double rotation[9 * 10],
-                          double translation[3 * 10]);
-
-// Same as above, but with the Eigen interface. Returns true if more than one
-// solution was found.
-bool FivePointRelativePose(const Eigen::Vector3d image1_points[5],
-                           const Eigen::Vector3d image2_points[5],
+//   image1_points: Location of features on the image plane of image 1.
+//   image2_points: Location of features on the image plane of image 2.
+// Return: true if a valid solution was found.
+bool FivePointRelativePose(const Eigen::Vector2d image1_points[5],
+                           const Eigen::Vector2d image2_points[5],
                            std::vector<Eigen::Matrix3d>* rotation,
                            std::vector<Eigen::Vector3d>* translation);
 }  // namespace theia

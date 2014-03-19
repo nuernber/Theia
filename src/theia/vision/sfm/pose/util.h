@@ -52,7 +52,7 @@ void ComposeProjectionMatrix(const double focal_length[2],
 void AddNoiseToPoint(const double noise_factor, Eigen::Vector3d* point);
 
 // Adds noise to the ray i.e. the projection of the point.
-void AddNoiseToProjection(const double noise_factor, Eigen::Vector3d* ray);
+void AddNoiseToProjection(const double noise_factor, Eigen::Vector2d* point);
 
 void AddGaussianNoise(const double noise_factor, Eigen::Vector3d* ray);
 
@@ -65,9 +65,10 @@ void CreateRandomPointsInFrustum(const double near_plane_width,
                                  std::vector<Eigen::Vector3d>* random_points);
 
 // Calculates Sampson distance for two correspondances and an essential or
-// fundamental matrix by eq. 11.9 in Hartley and Zisserman.
-double SampsonDistance(const Eigen::Matrix3d& F, const Eigen::Vector3d& x,
-                       const Eigen::Vector3d& y);
+// fundamental matrix by eq. 11.9 in Hartley and Zisserman. // For an E or F
+// that is defined such that y^t * E * x = 0
+double SampsonDistance(const Eigen::Matrix3d& F, const Eigen::Vector2d& x,
+                       const Eigen::Vector2d& y);
 
 // Returns the cross product matrix of a vector: if cross_vec = [x y z] then
 //                        [ 0  -z   y]
@@ -75,13 +76,13 @@ double SampsonDistance(const Eigen::Matrix3d& F, const Eigen::Vector3d& x,
 //                        [-y   x   0]
 Eigen::Matrix3d CrossProductMatrix(const Eigen::Vector3d& cross_vec);
 
-// Given a 3xN matrix of image points (of the form [x, y, 1]), this method
+// Given a 2xN matrix of image points (of the form [x, y]), this method
 // calculates the matrix that will shift the points so that the centroid is at
 // the origin and the average distance from the centroid is sqrt(2). Returns the
 // transformation matrix and the transformed points.
 bool NormalizeImagePoints(
-    const std::vector<Eigen::Vector3d>& image_points,
-    std::vector<Eigen::Vector3d>* normalized_image_points,
+    const std::vector<Eigen::Vector2d>& image_points,
+    std::vector<Eigen::Vector2d>* normalized_image_points,
     Eigen::Matrix3d* normalization_matrix);
 
 }  // namespace theia

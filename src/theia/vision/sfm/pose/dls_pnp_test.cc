@@ -44,6 +44,7 @@
 #include "theia/test/benchmark.h"
 #include "theia/util/random.h"
 #include "theia/util/util.h"
+#include "theia/vision/sfm/projection_matrix.h"
 #include "theia/vision/sfm/pose/dls_pnp.h"
 #include "theia/vision/sfm/pose/util.h"
 
@@ -53,6 +54,7 @@ using Eigen::AngleAxisd;
 using Eigen::Map;
 using Eigen::Matrix3d;
 using Eigen::Quaterniond;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 
 void TestDlsPnpWithNoise(const std::vector<Vector3d>& world_points,
@@ -66,26 +68,28 @@ void TestDlsPnpWithNoise(const std::vector<Vector3d>& world_points,
 
   const int num_points = world_points.size();
 
-  std::vector<Vector3d> camera_rays;
-  camera_rays.reserve(num_points);
+  const TransformationMatrix expected_transform = TransformationMatrixFromRt(
+      expected_rotation.toRotationMatrix(), expected_translation);
+
+  std::vector<Vector2d> feature_points;
+  feature_points.reserve(num_points);
   for (int i = 0; i < num_points; i++) {
     // Reproject 3D points into camera frame.
-    camera_rays.push_back((expected_rotation * world_points[i] +
-                           expected_translation).normalized());
+    feature_points.push_back((expected_transform * world_points[i])
+                                 .hnormalized());
   }
 
   if (projection_noise_std_dev) {
     // Adds noise to both of the rays.
     for (int i = 0; i < num_points; i++) {
-      AddNoiseToProjection(projection_noise_std_dev,
-                           &camera_rays[i]);
+      AddNoiseToProjection(projection_noise_std_dev, &feature_points[i]);
     }
   }
 
   // Run DLS PnP.
   std::vector<Quaterniond> soln_rotation;
   std::vector<Vector3d> soln_translation;
-  DlsPnp(camera_rays, world_points, &soln_rotation, &soln_translation);
+  DlsPnp(feature_points, world_points, &soln_rotation, &soln_translation);
 
   // Check solutions and verify at least one is close to the actual solution.
   const int num_solutions = soln_rotation.size();
@@ -93,13 +97,15 @@ void TestDlsPnpWithNoise(const std::vector<Vector3d>& world_points,
   bool matched_transform = false;
   for (int i = 0; i < num_solutions; i++) {
     // Check that reprojection errors are small.
+    const TransformationMatrix soln_transform = TransformationMatrixFromRt(
+        soln_rotation[i].toRotationMatrix(), soln_translation[i]);
+
     for (int j = 0; j < num_points; j++) {
-      const Vector3d reprojected_point =
-          soln_rotation[i] * world_points[j] + soln_translation[i];
+      const Vector2d reprojected_point =
+          (soln_transform * world_points[j]).hnormalized();
       const double reprojection_error =
-          ((camera_rays[j] / camera_rays[j].z()) -
-           (reprojected_point / reprojected_point.z())).norm();
-      EXPECT_LE(reprojection_error, max_reprojection_error);
+          (feature_points[j] - reprojected_point).squaredNorm();
+      ASSERT_LE(reprojection_error, max_reprojection_error);
     }
 
     // Check that the solution is accurate.

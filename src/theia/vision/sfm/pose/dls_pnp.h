@@ -52,14 +52,14 @@ namespace theia {
 // places the observed points in front of the camera.
 //
 // Params:
-//   image_ray: Normalized image rays corresponding to model points. Must
+//   feature_position: Feature positions corresponding to model points. Must
 //     contain at least 3 points.
 //   points_3d: 3D location of features. Must correspond to the image_ray
 //     of the same index. Must contain the same number of points as image_ray,
 //     and at least 3.
 //   solution_rotation: the rotation quaternion of the candidate solutions
 //   solution_translation: the translation of the candidate solutions
-void DlsPnp(const std::vector<Eigen::Vector3d>& image_ray,
+void DlsPnp(const std::vector<Eigen::Vector2d>& feature_positions,
             const std::vector<Eigen::Vector3d>& world_point,
             std::vector<Eigen::Quaterniond>* solution_rotation,
             std::vector<Eigen::Vector3d>* solution_translation);

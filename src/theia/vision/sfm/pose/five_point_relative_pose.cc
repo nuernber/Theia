@@ -53,6 +53,7 @@ using Eigen::Matrix4d;
 using Eigen::Matrix;
 using Eigen::RowVector3d;
 using Eigen::RowVector4d;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 
@@ -277,11 +278,14 @@ void EfficientSVDDecomp(const Matrix3d& essential_mat,
   *null_space = v.col(2);
 }
 
-void DecomposeWithIdealCorrespondence(const Vector3d& image_point1,
-                                      const Vector3d& image_point2,
+void DecomposeWithIdealCorrespondence(const Vector2d& image_point1,
+                                      const Vector2d& image_point2,
                                       const Matrix3d& essential_mat,
                                       Matrix3d* rotation,
                                       Vector3d* translation) {
+  const Vector3d image_point1_homog = image_point1.homogeneous();
+  const Vector3d image_point2_homog = image_point2.homogeneous();
+
   // Map the image points to vectors.
   Matrix3d candidate_rotation[4];
   Vector3d candidate_translation[4];
@@ -297,14 +301,14 @@ void DecomposeWithIdealCorrespondence(const Vector3d& image_point1,
   Matrix3d temp_diag = Matrix3d::Identity();
   temp_diag(2, 2) = 0.0;
   const Vector3d c =
-      image_point2.cross(temp_diag * essential_mat * image_point1);
+      image_point2_homog.cross(temp_diag * essential_mat * image_point1_homog);
 
   // Compute C.
   const Vector4d C = projection_mat.transpose() * c;
-  const Vector4d Q(image_point1(0) * C(3),
-                   image_point1(1) * C(3),
-                   image_point1(2) * C(3),
-                   -(image_point1.dot(C.head<3>())));
+  const Vector4d Q(image_point1_homog(0) * C(3),
+                   image_point1_homog(1) * C(3),
+                   image_point1_homog(2) * C(3),
+                   -(image_point1_homog.dot(C.head<3>())));
   // We only care about the sign of the depth because it informs us of the
   // direction of the point (i.e. if it is in front of the camera). Use a
   // multiply instead of divide for speed.
@@ -335,37 +339,10 @@ void DecomposeWithIdealCorrespondence(const Vector3d& image_point1,
 
 }  // namespace
 
-int FivePointRelativePose(const double image1_points[3 * 5],
-                          const double image2_points[3 * 5],
-                          double rotation[9 * 40],
-                          double translation[3 * 40]) {
-  Vector3d img1_pts[5];
-  Vector3d img2_pts[5];
-  for (int i = 0; i < 5; i++) {
-    img1_pts[i] = Map<const Vector3d>(image1_points + 3 * i);
-    img2_pts[i] = Map<const Vector3d>(image2_points + 3 * i);
-  }
-  std::vector<Matrix3d> rotation_eig;
-  std::vector<Vector3d> translation_eig;
-  FivePointRelativePose(img1_pts, img2_pts, &rotation_eig, &translation_eig);
-
-  const int num_solns = rotation_eig.size();
-  for (int i = 0; i < num_solns; i++) {
-    Map<Matrix3d> temp_rot(rotation + 9 * i);
-    temp_rot = rotation_eig[i];
-
-    Map<Vector3d> temp_trans(translation + 3 * i);
-    temp_trans = translation_eig[i];
-  }
-
-  return num_solns;
-}
-
-
 // Implementation of Nister from "An Efficient Solution to the Five-Point
 // Relative Pose Problem"
-bool FivePointRelativePose(const Vector3d image1_points[5],
-                           const Vector3d image2_points[5],
+bool FivePointRelativePose(const Vector2d image1_points[5],
+                           const Vector2d image2_points[5],
                            std::vector<Matrix3d>* rotation,
                            std::vector<Vector3d>* translation) {
   // Step 1. Create the 5x9 matrix containing epipolar constraints.
@@ -376,10 +353,16 @@ bool FivePointRelativePose(const Vector3d image1_points[5],
     // Fill matrix with the epipolar constraint from q'_t*E*q = 0. Where q is
     // from the first image, and q' is from the second. Eq. 8 in the Nister
     // paper.
-    for (int j = 0; j < 3; j++)
-      for (int k = 0; k < 3; k++)
-        epipolar_constraint(i, 3 * j + k) =
-            image1_points[i](k) * image2_points[i](j);
+    epipolar_constraint.row(i) <<
+        image1_points[i].x() * image2_points[i].x(),
+        image1_points[i].y() * image2_points[i].x(),
+        image2_points[i].x(),
+        image1_points[i].x() * image2_points[i].y(),
+        image1_points[i].y() * image2_points[i].y(),
+        image2_points[i].y(),
+        image1_points[i].x(),
+        image1_points[i].y(),
+        1.0;
   }
 
   // Solve for right null space of the 5x9 matrix. NOTE: We use a

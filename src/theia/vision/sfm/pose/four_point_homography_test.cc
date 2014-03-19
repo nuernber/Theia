@@ -48,6 +48,7 @@ namespace {
 using Eigen::AngleAxisd;
 using Eigen::Matrix3d;
 using Eigen::Quaterniond;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 
 // Creates a test scenario from ground truth 3D points and ground truth rotation
@@ -58,14 +59,14 @@ void GenerateImagePoints(const std::vector<Vector3d>& points_3d,
                          const double projection_noise_std_dev,
                          const Quaterniond& expected_rotation,
                          const Vector3d& expected_translation,
-                         std::vector<Vector3d>* image_1_points,
-                         std::vector<Vector3d>* image_2_points) {
+                         std::vector<Vector2d>* image_1_points,
+                         std::vector<Vector2d>* image_2_points) {
   image_1_points->reserve(points_3d.size());
   image_2_points->reserve(points_3d.size());
   for (int i = 0; i < points_3d.size(); i++) {
-    image_1_points->push_back(points_3d[i].normalized());
-    image_2_points->push_back(
-        (expected_rotation * points_3d[i] + expected_translation).normalized());
+    image_1_points->push_back(points_3d[i].hnormalized());
+    image_2_points->push_back((expected_rotation * points_3d[i] +
+                               expected_translation).hnormalized());
   }
 
   if (projection_noise_std_dev) {
@@ -78,22 +79,24 @@ void GenerateImagePoints(const std::vector<Vector3d>& points_3d,
 
 // Check that the symmetric error is small. NOTE: this is a different error than
 // the reprojection error.
-void CheckSymmetricError(const std::vector<Vector3d>& image_1_points,
-                         const std::vector<Vector3d>& image_2_points,
+void CheckSymmetricError(const std::vector<Vector2d>& image_1_points,
+                         const std::vector<Vector2d>& image_2_points,
                          const Matrix3d& homography_matrix,
                          const double max_symmetric_error) {
+  LOG(INFO) << "homography = \n" << homography_matrix;
   const Matrix3d inv_homography = homography_matrix.inverse();
   for (int i = 0; i < image_1_points.size(); i++) {
     const Vector3d image_1_hat =
-        inv_homography * (image_2_points[i] / image_2_points[i].z());
+        inv_homography * image_2_points[i].homogeneous();
     const Vector3d image_2_hat =
-        homography_matrix * (image_1_points[i] / image_1_points[i].z());
+        homography_matrix * image_1_points[i].homogeneous();
     // Compute reprojection error.
-    const double img_1_error = (image_1_points[i] / image_1_points[i].z() -
-                                image_1_hat / image_1_hat.z()).squaredNorm();
-    const double img_2_error = (image_2_points[i] / image_2_points[i].z() -
-                                image_2_hat / image_2_hat.z()).squaredNorm();
-
+    const double img_1_error =
+        (image_1_points[i] - image_1_hat.hnormalized()).squaredNorm();
+    const double img_2_error =
+        (image_2_points[i] - image_2_hat.hnormalized()).squaredNorm();
+    LOG(INFO) << "img pt 1 = " << image_1_points[i].transpose() << " vs "
+              << image_1_hat.hnormalized().transpose();
     EXPECT_LT(img_1_error, max_symmetric_error);
     EXPECT_LT(img_2_error, max_symmetric_error);
   }
@@ -101,13 +104,13 @@ void CheckSymmetricError(const std::vector<Vector3d>& image_1_points,
 
 // Run a test for the homography with at least 4 points.
 void FourPointHomographyWithNoiseTest(const std::vector<Vector3d>& points_3d,
-                                       const double projection_noise_std_dev,
-                                       const Quaterniond& expected_rotation,
-                                       const Vector3d& expected_translation,
-                                       const double kMaxSymmetricError) {
+                                      const double projection_noise_std_dev,
+                                      const Quaterniond& expected_rotation,
+                                      const Vector3d& expected_translation,
+                                      const double kMaxSymmetricError) {
   InitRandomGenerator();
-  std::vector<Vector3d> image_1_points;
-  std::vector<Vector3d> image_2_points;
+  std::vector<Vector2d> image_1_points;
+  std::vector<Vector2d> image_2_points;
   GenerateImagePoints(points_3d, projection_noise_std_dev, expected_rotation,
                       expected_translation, &image_1_points, &image_2_points);
   // Compute homography matrix.

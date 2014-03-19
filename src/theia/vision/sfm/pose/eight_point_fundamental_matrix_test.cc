@@ -51,6 +51,7 @@ namespace {
 using Eigen::AngleAxisd;
 using Eigen::Matrix3d;
 using Eigen::Quaterniond;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 
 // Creates a test scenario from ground truth 3D points and ground truth rotation
@@ -61,14 +62,14 @@ void GenerateImagePoints(const std::vector<Vector3d>& points_3d,
                          const double projection_noise_std_dev,
                          const Quaterniond& expected_rotation,
                          const Vector3d& expected_translation,
-                         std::vector<Vector3d>* image_1_points,
-                         std::vector<Vector3d>* image_2_points) {
+                         std::vector<Vector2d>* image_1_points,
+                         std::vector<Vector2d>* image_2_points) {
   image_1_points->reserve(points_3d.size());
   image_2_points->reserve(points_3d.size());
   for (int i = 0; i < points_3d.size(); i++) {
-    image_1_points->push_back(points_3d[i].normalized());
-    image_2_points->push_back(
-        (expected_rotation * points_3d[i] + expected_translation).normalized());
+    image_1_points->push_back(points_3d[i].hnormalized());
+    image_2_points->push_back((expected_rotation * points_3d[i] +
+                               expected_translation).hnormalized());
   }
 
   if (projection_noise_std_dev) {
@@ -80,8 +81,8 @@ void GenerateImagePoints(const std::vector<Vector3d>& points_3d,
 }
 
 // Check that the reprojection error is small.
-void CheckReprojectionError(const std::vector<Vector3d>& image_1_points,
-                            const std::vector<Vector3d>& image_2_points,
+void CheckReprojectionError(const std::vector<Vector2d>& image_1_points,
+                            const std::vector<Vector2d>& image_2_points,
                             const Matrix3d& fundamental_matrix,
                             const double max_reprojection_error) {
   // Compute the right projection matrix.
@@ -98,18 +99,19 @@ void CheckReprojectionError(const std::vector<Vector3d>& image_1_points,
 
   for (int i = 0; i < image_1_points.size(); i++) {
     // Triangulate the world point.
-    const Eigen::Vector4d world_homog_point =
+    Vector3d triangulated_point;
+    CHECK(
         Triangulate(identity_transformation, right_projection,
-                    image_1_points[i], image_2_points[i]);
-    const Vector3d left_point =
-        world_homog_point.head<3>() / world_homog_point[3];
-    const Vector3d right_point = right_projection * world_homog_point;
+                    image_1_points[i], image_2_points[i], &triangulated_point));
+    const Vector3d left_point = triangulated_point;
+    const Vector3d right_point =
+        right_projection * triangulated_point.homogeneous();
 
     // Compute reprojection error.
-    const double img_1_error = (image_1_points[i] / image_1_points[i].z() -
-                                left_point / left_point.z()).squaredNorm();
-    const double img_2_error = (image_2_points[i] / image_2_points[i].z() -
-                                right_point / right_point.z()).squaredNorm();
+    const double img_1_error =
+        (image_1_points[i] - left_point.hnormalized()).squaredNorm();
+    const double img_2_error =
+        (image_2_points[i] - right_point.hnormalized()).squaredNorm();
 
     EXPECT_LT(img_1_error, max_reprojection_error);
     EXPECT_LT(img_2_error, max_reprojection_error);
@@ -122,8 +124,8 @@ void EightPointNormalizedWithNoiseTest(const std::vector<Vector3d>& points_3d,
                                        const Vector3d& expected_translation,
                                        const double kMaxReprojectionError) {
   InitRandomGenerator();
-  std::vector<Vector3d> image_1_points;
-  std::vector<Vector3d> image_2_points;
+  std::vector<Vector2d> image_1_points;
+  std::vector<Vector2d> image_2_points;
   GenerateImagePoints(points_3d, projection_noise_std_dev, expected_rotation,
                       expected_translation, &image_1_points, &image_2_points);
   // Compute fundamental matrix.
@@ -192,8 +194,8 @@ void EightPointGoldStandardWithNoiseTest(const std::vector<Vector3d>& points_3d,
                                        const Vector3d& expected_translation,
                                        const double kMaxReprojectionError) {
   InitRandomGenerator();
-  std::vector<Vector3d> image_1_points;
-  std::vector<Vector3d> image_2_points;
+  std::vector<Vector2d> image_1_points;
+  std::vector<Vector2d> image_2_points;
   GenerateImagePoints(points_3d, projection_noise_std_dev, expected_rotation,
                       expected_translation, &image_1_points, &image_2_points);
   // Compute fundamental matrix.
