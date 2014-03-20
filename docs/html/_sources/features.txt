@@ -83,12 +83,12 @@ Detecting keypoints with Theia is very simple, and we have implemented a number 
     :func:`Initialize()` function must be called before using the keypoint
     detector.
 
-  .. function:: bool DetectKeypoints(const GrayImage& input_image, std::vector<Keypoint*>* output_keypoints)
+  .. function:: bool DetectKeypoints(const GrayImage& input_image, std::vector<Keypoint>* output_keypoints)
 
     ``input_image``: The image that you want to detect keypoints on.
 
-    ``ouput_keypoints``: A pointer to a vector that will hold pointers to the
-    keypoints detected. Note that the vector should be empty when passed to this
+    ``ouput_keypoints``: A pointer to a vector that will hold the keypoints
+    detected. Note that the vector should be empty when passed to this
     function. The caller is responsible for deleting the keypoints.
 
   .. code-block:: c++
@@ -99,7 +99,7 @@ Detecting keypoints with Theia is very simple, and we have implemented a number 
     const bool initialization_success = keypoint_detector.Initialize();
 
     // Container for the detected keypoints.
-    std::vector<Keypoint*> detected_keypoint;
+    std::vector<Keypoint> detected_keypoint;
     const bool detection_success =
         keypoint_detector.DetectKeypoints(input_image, &detected_keypoints);
 
@@ -151,17 +151,10 @@ The following keypoint detectors have been implemented in Theia (class construct
   Specify the threshold for keypoint scores (default is 30) and the number of
   octaves to downsample the image (default is 3).
 
-:class:`Descriptor`
-===================
+Descriptors
+===========
 
-.. class:: Descriptor
-
-Theia uses a generic :class:`Descriptor` class as the interface for all descriptor types. This includes floating point and binary descriptors. Like :class:`Keypoints`, descriptors have requried variables ``x``, ``y``, and ``descriptor_type``, as well as optional variables ``strength``, ``scale``, and ``orientation``. All access and "set" methods are the same as for the :class:`Keypoint` class.
-
-Theia has implemented descriptors as one of two subclasses of the :class:`Descriptor` class: :class:`FloatDescriptor` or :class:`BinaryDescriptor`.   All binary descriptors (and extractors) have been implemented very efficiently with SSE and/or ``std::bitset`` instructions. The Theia build system will automatically detect if SSE instructions are available and will use the optimal strategy.
-
-:class:`FloatDescriptor` provides accessors via ``operator []`` to access individual dimensions of the descriptor. :class:`BinaryDescriptor` does not provide such an interface since getting and setting individual bits can be quite messy and dangerous. However, both classes implement accessors to the pointers of the underlying data via calls to :func:`FloatData()` and :func:`CharData()` (the latter can be used with a ``std::bitset`` type to access binary data when the descriptor size is known).
-
+Theia uses a semi-generic interface for all descriptor types, namely, floating point and binary descriptors. For floating point descriptors (e.g., SIFT) we use Eigen::VectorXf and set the number of entries to equal the dimension of the descriptor. This way, we can utilize Eigen's speed and optimizations to get the most efficient and accurate representation of the descriptors. For binary descriptors, we define a new type in the Eigen namespace: ``Eigen::BinaryVectorX``. This vector is a custom type (defined in theia/alignment/alignment.h) that holds binary descriptors such that each bit corresponds to the descriptor dimension. This allows for the same interface between float and binary descriptors, while still utilizing the efficiency of SSE instructions when available.
 
 :class:`DescriptorExtractor`
 ============================
@@ -178,29 +171,47 @@ Theia has implemented descriptors as one of two subclasses of the :class:`Descri
 
     This method initializes any internal parameters that must be generated,
     precalculated, or otherwise are independent of the image. The
-    :func:`Initialize()` function must be called before using the keypoint
-    detector.
+    :func:`Initialize()` function must be called before using the descriptor
+    extractor.
 
-  .. function:: Descriptor* ComputeDescriptor(const GrayImage& input_image, const Keypoint& keypoints)
+  .. function:: bool DescriptorExtractor::ComputeDescriptor(const GrayImage& input_image, const Keypoint& keypoint, Eigen::Vector2d* feature_position, Eigen::VectorXf* float_descriptor)
+  .. function:: bool DescriptorExtractor::ComputeDescriptor(const GrayImage& input_image, const Keypoint& keypoint, Eigen::Vector2d* feature_position, Eigen::BinaryVectorXf* binary_descriptor)
+
+    This method computes the descriptor of a single keypoint.
 
     ``input_image``: The image that you want to detect keypoints on.
 
     ``keypoint``: The keypoint that the descriptor will be computed from.
 
-    ``returns Descriptor*``: returns a :class:`Descriptor` that has been created
-    from the keypoint passed to the function. Caller is responsible for deleting
-    the descriptor.
+    ``feature_position``: The 2D position of the feature. This position may be
+    refined from the position that the keypoint was detected at.
 
-  .. function:: bool ComputeDescriptors(const GrayImage& input_image, const std::vector<Keypoint*>& keypoints, std::vector<Descriptor*>* output_descriptors)
+    ``float_descriptors or binary_descriptors``: A container for the descriptor
+    that has been created based on the type of descriptor that is being
+    extracted. EigeN::VectorXf is used for extracting float descriptors (e.g.,
+    SIFT) while Eigen::BinaryVectorX is used for float descriptors.
+
+    ``returns``: True on success, false on failure.
+
+  .. function:: bool DescriptorExtractor::ComputeDescriptors(const GrayImage& input_image, const std::vector<Keypoint>& keypoints, std::vector<Eigen::Vector2d>* feature_positions, std::vector<Eigen::VectorXf>* float_descriptors)
+  .. function:: bool DescriptorExtractor::ComputeDescriptors(const GrayImage& input_image, const std::vector<Keypoint>& keypoints, std::vector<Eigen::Vector2d>* feature_positions, std::vector<Eigen::BinaryVectorXf>* binary_descriptors)
+
+    Compute many descriptors simultaneous from the input keypoints. Note that
+    note all keypoints are guaranteed to result in a descriptor. Only valid
+    descriptors (and feature positions) are returned in the output parameters.
 
     ``input_image``: The image that you want to detect keypoints on.
 
     ``keypoints``: A vector of the keypoint pointers that will have descriptors
     extracted.
 
-    ``ouput_descriptors``: A pointer to a vector that will hold pointers to the
-    descriptors computed. Note that the vector should be empty when passed to this
-    function. The caller is responsible for deleting the keypoints.
+    ``feature_position``: The 2D position of the feature. This position may be
+    refined from the position that the keypoint was detected at.
+
+    ``float_descriptors or binary_descriptors``: A container for the descriptors
+    that have been created based on the type of descriptor that is being
+    extracted. EigeN::VectorXf is used for extracting float descriptors (e.g.,
+    SIFT) while Eigen::BinaryVectorX is used for float descriptors.
 
   .. code-block:: c++
 
@@ -209,6 +220,7 @@ Theia has implemented descriptors as one of two subclasses of the :class:`Descri
 
     // Detect keypoints.
     SiftDetector sift_keypoint_detector;
+    bool keypoint_detector_init = sift_keypoint_detector.Initialize();
     const bool keypoint_init_success = sift_keypoint_detector.Initialize();
     std::vector<Keypoint> sift_keypoints;
     const bool detection_success =
@@ -219,13 +231,16 @@ Theia has implemented descriptors as one of two subclasses of the :class:`Descri
     const bool descriptor_init_succes = sift_extractor.Initialize();
 
     // E.g., compute a single descriptor
-    Descriptor* sift_descriptor =
-      sift_extractor.ComputeDescriptor(input_image, *keypoint[0]);
+    Eigen::Vector2d feature_pos;
+    Eigen::VectorXf sift_descriptor;
+    bool sift_success =
+      sift_extractor.ComputeDescriptor(input_image, keypoint[0], &feature_pos, &sift_descriptor);
 
     // E.g., compute many descriptors.
-    std::vector<Descriptor*> sift_descriptors;
+    std::vector<Eigen::Vector2d> feature_positions;
+    std::vector<Eigen::VectorXf> sift_descriptors;
     const bool extraction_success =
-      sift_extractor.ComputeDescriptors(image, sift_keypoints, &sift_descriptors)
+      sift_extractor.ComputeDescriptors(image, sift_keypoints, &feature_positions, &sift_descriptors)
 
 We implement the following descriptor extractors (and corresponding descriptors) in Theia (constructors are given).
 
@@ -247,7 +262,7 @@ We implement the following descriptor extractors (and corresponding descriptors)
 
 .. function:: FreakDescriptorExtractor::FreakDescriptorExtractor(bool rotation_invariant, bool scale_invariant, int num_octaves)
 
-  The "Fast Retina Keypoint" algorithm proposed by [Alahi]_ et al.
+  The "Fast Retina Keypoint" algorithm for binary descriptors proposed by [Alahi]_ et al.
 
   ``rotation_invariant``: Set to true if you want to normalize the orientation of the keypoints before computing the descriptor.
 
@@ -260,7 +275,7 @@ We implement the following descriptor extractors (and corresponding descriptors)
 
 .. function:: BriskDescriptorExtractor::BriskDescriptorExtractor(bool rotation_invariant, bool scale_invariant, float pattern_scale)
 
-  The "Binary Robust Invariant Scalable Keypoints" algorithm of [Leutenegger]_
+  The "Binary Robust Invariant Scalable Keypoints" algorithm for binary descriptors of [Leutenegger]_
   et al.
 
   ``rotation_invariant``: Set to true if you want to normalize the orientation of the keypoints before computing the descriptor.

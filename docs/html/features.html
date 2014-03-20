@@ -153,11 +153,11 @@ detector.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="KeypointDetector::DetectKeypoints__GrayImageCR.std::vector:KeypointP:P">
-bool <tt class="descname">DetectKeypoints</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, std::vector&lt;Keypoint*&gt;* <em>output_keypoints</em><big>)</big><a class="headerlink" href="#KeypointDetector::DetectKeypoints__GrayImageCR.std::vector:KeypointP:P" title="Permalink to this definition">¶</a></dt>
+<dt id="KeypointDetector::DetectKeypoints__GrayImageCR.std::vector:Keypoint:P">
+bool <tt class="descname">DetectKeypoints</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, std::vector&lt;Keypoint&gt;* <em>output_keypoints</em><big>)</big><a class="headerlink" href="#KeypointDetector::DetectKeypoints__GrayImageCR.std::vector:Keypoint:P" title="Permalink to this definition">¶</a></dt>
 <dd><p><tt class="docutils literal"><span class="pre">input_image</span></tt>: The image that you want to detect keypoints on.</p>
-<p><tt class="docutils literal"><span class="pre">ouput_keypoints</span></tt>: A pointer to a vector that will hold pointers to the
-keypoints detected. Note that the vector should be empty when passed to this
+<p><tt class="docutils literal"><span class="pre">ouput_keypoints</span></tt>: A pointer to a vector that will hold the keypoints
+detected. Note that the vector should be empty when passed to this
 function. The caller is responsible for deleting the keypoints.</p>
 </dd></dl>
 
@@ -167,7 +167,7 @@ function. The caller is responsible for deleting the keypoints.</p>
 <span class="k">const</span> <span class="kt">bool</span> <span class="n">initialization_success</span> <span class="o">=</span> <span class="n">keypoint_detector</span><span class="p">.</span><span class="n">Initialize</span><span class="p">();</span>
 
 <span class="c1">// Container for the detected keypoints.</span>
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Keypoint</span><span class="o">*&gt;</span> <span class="n">detected_keypoint</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Keypoint</span><span class="o">&gt;</span> <span class="n">detected_keypoint</span><span class="p">;</span>
 <span class="k">const</span> <span class="kt">bool</span> <span class="n">detection_success</span> <span class="o">=</span>
     <span class="n">keypoint_detector</span><span class="p">.</span><span class="n">DetectKeypoints</span><span class="p">(</span><span class="n">input_image</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">detected_keypoints</span><span class="p">);</span>
 </pre></div>
@@ -226,16 +226,9 @@ octaves to downsample the image (default is 3).</p>
 </dd></dl>
 
 </div>
-<div class="section" id="descriptor">
-<h2><a class="reference internal" href="#Descriptor" title="Descriptor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Descriptor</span></tt></a><a class="headerlink" href="#descriptor" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="Descriptor">
-<em class="property">class </em><tt class="descname">Descriptor</tt><a class="headerlink" href="#Descriptor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Theia uses a generic <a class="reference internal" href="#Descriptor" title="Descriptor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Descriptor</span></tt></a> class as the interface for all descriptor types. This includes floating point and binary descriptors. Like <tt class="xref cpp cpp-class docutils literal"><span class="pre">Keypoints</span></tt>, descriptors have requried variables <tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, and <tt class="docutils literal"><span class="pre">descriptor_type</span></tt>, as well as optional variables <tt class="docutils literal"><span class="pre">strength</span></tt>, <tt class="docutils literal"><span class="pre">scale</span></tt>, and <tt class="docutils literal"><span class="pre">orientation</span></tt>. All access and &#8220;set&#8221; methods are the same as for the <a class="reference internal" href="#Keypoint" title="Keypoint"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Keypoint</span></tt></a> class.</p>
-<p>Theia has implemented descriptors as one of two subclasses of the <a class="reference internal" href="#Descriptor" title="Descriptor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Descriptor</span></tt></a> class: <tt class="xref cpp cpp-class docutils literal"><span class="pre">FloatDescriptor</span></tt> or <tt class="xref cpp cpp-class docutils literal"><span class="pre">BinaryDescriptor</span></tt>.   All binary descriptors (and extractors) have been implemented very efficiently with SSE and/or <tt class="docutils literal"><span class="pre">std::bitset</span></tt> instructions. The Theia build system will automatically detect if SSE instructions are available and will use the optimal strategy.</p>
-<p><tt class="xref cpp cpp-class docutils literal"><span class="pre">FloatDescriptor</span></tt> provides accessors via <tt class="docutils literal"><span class="pre">operator</span> <span class="pre">[]</span></tt> to access individual dimensions of the descriptor. <tt class="xref cpp cpp-class docutils literal"><span class="pre">BinaryDescriptor</span></tt> does not provide such an interface since getting and setting individual bits can be quite messy and dangerous. However, both classes implement accessors to the pointers of the underlying data via calls to <tt class="xref cpp cpp-func docutils literal"><span class="pre">FloatData()</span></tt> and <tt class="xref cpp cpp-func docutils literal"><span class="pre">CharData()</span></tt> (the latter can be used with a <tt class="docutils literal"><span class="pre">std::bitset</span></tt> type to access binary data when the descriptor size is known).</p>
+<div class="section" id="descriptors">
+<h2>Descriptors<a class="headerlink" href="#descriptors" title="Permalink to this headline">¶</a></h2>
+<p>Theia uses a semi-generic interface for all descriptor types, namely, floating point and binary descriptors. For floating point descriptors (e.g., SIFT) we use Eigen::VectorXf and set the number of entries to equal the dimension of the descriptor. This way, we can utilize Eigen&#8217;s speed and optimizations to get the most efficient and accurate representation of the descriptors. For binary descriptors, we define a new type in the Eigen namespace: <tt class="docutils literal"><span class="pre">Eigen::BinaryVectorX</span></tt>. This vector is a custom type (defined in theia/alignment/alignment.h) that holds binary descriptors such that each bit corresponds to the descriptor dimension. This allows for the same interface between float and binary descriptors, while still utilizing the efficiency of SSE instructions when available.</p>
 </div>
 <div class="section" id="descriptorextractor">
 <h2><a class="reference internal" href="#DescriptorExtractor" title="DescriptorExtractor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">DescriptorExtractor</span></tt></a><a class="headerlink" href="#descriptorextractor" title="Permalink to this headline">¶</a></h2>
@@ -252,29 +245,50 @@ method before computing descriptors.</p>
 bool <tt class="descname">Initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#DescriptorExtractor::Initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method initializes any internal parameters that must be generated,
 precalculated, or otherwise are independent of the image. The
-<a class="reference internal" href="#DescriptorExtractor::Initialize" title="DescriptorExtractor::Initialize"><tt class="xref cpp cpp-func docutils literal"><span class="pre">Initialize()</span></tt></a> function must be called before using the keypoint
-detector.</p>
+<a class="reference internal" href="#DescriptorExtractor::Initialize" title="DescriptorExtractor::Initialize"><tt class="xref cpp cpp-func docutils literal"><span class="pre">Initialize()</span></tt></a> function must be called before using the descriptor
+extractor.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="DescriptorExtractor::ComputeDescriptor__GrayImageCR.KeypointCR">
-Descriptor* <tt class="descname">ComputeDescriptor</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, const Keypoint&amp; <em>keypoints</em><big>)</big><a class="headerlink" href="#DescriptorExtractor::ComputeDescriptor__GrayImageCR.KeypointCR" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">input_image</span></tt>: The image that you want to detect keypoints on.</p>
+<dt id="DescriptorExtractor::DescriptorExtractor::ComputeDescriptor__GrayImageCR.KeypointCR.Eigen::Vector2dP.Eigen::VectorXfP">
+bool <tt class="descclassname">DescriptorExtractor::</tt><tt class="descname">ComputeDescriptor</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, const Keypoint&amp; <em>keypoint</em>, Eigen::Vector2d* <em>feature_position</em>, Eigen::VectorXf* <em>float_descriptor</em><big>)</big><a class="headerlink" href="#DescriptorExtractor::DescriptorExtractor::ComputeDescriptor__GrayImageCR.KeypointCR.Eigen::Vector2dP.Eigen::VectorXfP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="DescriptorExtractor::DescriptorExtractor::ComputeDescriptor__GrayImageCR.KeypointCR.Eigen::Vector2dP.Eigen::BinaryVectorXfP">
+bool <tt class="descclassname">DescriptorExtractor::</tt><tt class="descname">ComputeDescriptor</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, const Keypoint&amp; <em>keypoint</em>, Eigen::Vector2d* <em>feature_position</em>, Eigen::BinaryVectorXf* <em>binary_descriptor</em><big>)</big><a class="headerlink" href="#DescriptorExtractor::DescriptorExtractor::ComputeDescriptor__GrayImageCR.KeypointCR.Eigen::Vector2dP.Eigen::BinaryVectorXfP" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method computes the descriptor of a single keypoint.</p>
+<p><tt class="docutils literal"><span class="pre">input_image</span></tt>: The image that you want to detect keypoints on.</p>
 <p><tt class="docutils literal"><span class="pre">keypoint</span></tt>: The keypoint that the descriptor will be computed from.</p>
-<p><tt class="docutils literal"><span class="pre">returns</span> <span class="pre">Descriptor*</span></tt>: returns a <a class="reference internal" href="#Descriptor" title="Descriptor"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Descriptor</span></tt></a> that has been created
-from the keypoint passed to the function. Caller is responsible for deleting
-the descriptor.</p>
+<p><tt class="docutils literal"><span class="pre">feature_position</span></tt>: The 2D position of the feature. This position may be
+refined from the position that the keypoint was detected at.</p>
+<p><tt class="docutils literal"><span class="pre">float_descriptors</span> <span class="pre">or</span> <span class="pre">binary_descriptors</span></tt>: A container for the descriptor
+that has been created based on the type of descriptor that is being
+extracted. EigeN::VectorXf is used for extracting float descriptors (e.g.,
+SIFT) while Eigen::BinaryVectorX is used for float descriptors.</p>
+<p><tt class="docutils literal"><span class="pre">returns</span></tt>: True on success, false on failure.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="DescriptorExtractor::ComputeDescriptors__GrayImageCR.std::vector:KeypointP:CR.std::vector:DescriptorP:P">
-bool <tt class="descname">ComputeDescriptors</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, const std::vector&lt;Keypoint*&gt;&amp; <em>keypoints</em>, std::vector&lt;Descriptor*&gt;* <em>output_descriptors</em><big>)</big><a class="headerlink" href="#DescriptorExtractor::ComputeDescriptors__GrayImageCR.std::vector:KeypointP:CR.std::vector:DescriptorP:P" title="Permalink to this definition">¶</a></dt>
-<dd><p><tt class="docutils literal"><span class="pre">input_image</span></tt>: The image that you want to detect keypoints on.</p>
+<dt id="DescriptorExtractor::DescriptorExtractor::ComputeDescriptors__GrayImageCR.std::vector:Keypoint:CR.std::vector:Eigen::Vector2d:P.std::vector:Eigen::VectorXf:P">
+bool <tt class="descclassname">DescriptorExtractor::</tt><tt class="descname">ComputeDescriptors</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, const std::vector&lt;Keypoint&gt;&amp; <em>keypoints</em>, std::vector&lt;Eigen::Vector2d&gt;* <em>feature_positions</em>, std::vector&lt;Eigen::VectorXf&gt;* <em>float_descriptors</em><big>)</big><a class="headerlink" href="#DescriptorExtractor::DescriptorExtractor::ComputeDescriptors__GrayImageCR.std::vector:Keypoint:CR.std::vector:Eigen::Vector2d:P.std::vector:Eigen::VectorXf:P" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="DescriptorExtractor::DescriptorExtractor::ComputeDescriptors__GrayImageCR.std::vector:Keypoint:CR.std::vector:Eigen::Vector2d:P.std::vector:Eigen::BinaryVectorXf:P">
+bool <tt class="descclassname">DescriptorExtractor::</tt><tt class="descname">ComputeDescriptors</tt><big>(</big>const GrayImage&amp; <em>input_image</em>, const std::vector&lt;Keypoint&gt;&amp; <em>keypoints</em>, std::vector&lt;Eigen::Vector2d&gt;* <em>feature_positions</em>, std::vector&lt;Eigen::BinaryVectorXf&gt;* <em>binary_descriptors</em><big>)</big><a class="headerlink" href="#DescriptorExtractor::DescriptorExtractor::ComputeDescriptors__GrayImageCR.std::vector:Keypoint:CR.std::vector:Eigen::Vector2d:P.std::vector:Eigen::BinaryVectorXf:P" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute many descriptors simultaneous from the input keypoints. Note that
+note all keypoints are guaranteed to result in a descriptor. Only valid
+descriptors (and feature positions) are returned in the output parameters.</p>
+<p><tt class="docutils literal"><span class="pre">input_image</span></tt>: The image that you want to detect keypoints on.</p>
 <p><tt class="docutils literal"><span class="pre">keypoints</span></tt>: A vector of the keypoint pointers that will have descriptors
 extracted.</p>
-<p><tt class="docutils literal"><span class="pre">ouput_descriptors</span></tt>: A pointer to a vector that will hold pointers to the
-descriptors computed. Note that the vector should be empty when passed to this
-function. The caller is responsible for deleting the keypoints.</p>
+<p><tt class="docutils literal"><span class="pre">feature_position</span></tt>: The 2D position of the feature. This position may be
+refined from the position that the keypoint was detected at.</p>
+<p><tt class="docutils literal"><span class="pre">float_descriptors</span> <span class="pre">or</span> <span class="pre">binary_descriptors</span></tt>: A container for the descriptors
+that have been created based on the type of descriptor that is being
+extracted. EigeN::VectorXf is used for extracting float descriptors (e.g.,
+SIFT) while Eigen::BinaryVectorX is used for float descriptors.</p>
 </dd></dl>
 
 <div class="highlight-c++"><div class="highlight"><pre><span class="c1">// Open image we want to extract features from.</span>
@@ -282,6 +296,7 @@ function. The caller is responsible for deleting the keypoints.</p>
 
 <span class="c1">// Detect keypoints.</span>
 <span class="n">SiftDetector</span> <span class="n">sift_keypoint_detector</span><span class="p">;</span>
+<span class="kt">bool</span> <span class="n">keypoint_detector_init</span> <span class="o">=</span> <span class="n">sift_keypoint_detector</span><span class="p">.</span><span class="n">Initialize</span><span class="p">();</span>
 <span class="k">const</span> <span class="kt">bool</span> <span class="n">keypoint_init_success</span> <span class="o">=</span> <span class="n">sift_keypoint_detector</span><span class="p">.</span><span class="n">Initialize</span><span class="p">();</span>
 <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Keypoint</span><span class="o">&gt;</span> <span class="n">sift_keypoints</span><span class="p">;</span>
 <span class="k">const</span> <span class="kt">bool</span> <span class="n">detection_success</span> <span class="o">=</span>
@@ -292,13 +307,16 @@ function. The caller is responsible for deleting the keypoints.</p>
 <span class="k">const</span> <span class="kt">bool</span> <span class="n">descriptor_init_succes</span> <span class="o">=</span> <span class="n">sift_extractor</span><span class="p">.</span><span class="n">Initialize</span><span class="p">();</span>
 
 <span class="c1">// E.g., compute a single descriptor</span>
-<span class="n">Descriptor</span><span class="o">*</span> <span class="n">sift_descriptor</span> <span class="o">=</span>
-  <span class="n">sift_extractor</span><span class="p">.</span><span class="n">ComputeDescriptor</span><span class="p">(</span><span class="n">input_image</span><span class="p">,</span> <span class="o">*</span><span class="n">keypoint</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span> <span class="n">feature_pos</span><span class="p">;</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="n">sift_descriptor</span><span class="p">;</span>
+<span class="kt">bool</span> <span class="n">sift_success</span> <span class="o">=</span>
+  <span class="n">sift_extractor</span><span class="p">.</span><span class="n">ComputeDescriptor</span><span class="p">(</span><span class="n">input_image</span><span class="p">,</span> <span class="n">keypoint</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">feature_pos</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sift_descriptor</span><span class="p">);</span>
 
 <span class="c1">// E.g., compute many descriptors.</span>
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Descriptor</span><span class="o">*&gt;</span> <span class="n">sift_descriptors</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&gt;</span> <span class="n">feature_positions</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span><span class="o">&gt;</span> <span class="n">sift_descriptors</span><span class="p">;</span>
 <span class="k">const</span> <span class="kt">bool</span> <span class="n">extraction_success</span> <span class="o">=</span>
-  <span class="n">sift_extractor</span><span class="p">.</span><span class="n">ComputeDescriptors</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">sift_keypoints</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sift_descriptors</span><span class="p">)</span>
+  <span class="n">sift_extractor</span><span class="p">.</span><span class="n">ComputeDescriptors</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">sift_keypoints</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">feature_positions</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sift_descriptors</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -325,7 +343,7 @@ parameters.</p>
 <dl class="function">
 <dt id="FreakDescriptorExtractor::FreakDescriptorExtractor__b.b.i">
  <tt class="descclassname">FreakDescriptorExtractor::</tt><tt class="descname">FreakDescriptorExtractor</tt><big>(</big>bool <em>rotation_invariant</em>, bool <em>scale_invariant</em>, int <em>num_octaves</em><big>)</big><a class="headerlink" href="#FreakDescriptorExtractor::FreakDescriptorExtractor__b.b.i" title="Permalink to this definition">¶</a></dt>
-<dd><p>The &#8220;Fast Retina Keypoint&#8221; algorithm proposed by <a class="reference internal" href="bibliography.html#alahi">[Alahi]</a> et al.</p>
+<dd><p>The &#8220;Fast Retina Keypoint&#8221; algorithm for binary descriptors proposed by <a class="reference internal" href="bibliography.html#alahi">[Alahi]</a> et al.</p>
 <p><tt class="docutils literal"><span class="pre">rotation_invariant</span></tt>: Set to true if you want to normalize the orientation of the keypoints before computing the descriptor.</p>
 <p><tt class="docutils literal"><span class="pre">scale_invariant</span></tt>: Set to true if you want to normalize the scale of keypoints before computing the descriptor.</p>
 <p><tt class="docutils literal"><span class="pre">num_octaves</span></tt>: The number of octaves that the keypoints span.</p>
@@ -336,7 +354,7 @@ parameters.</p>
 <dl class="function">
 <dt id="BriskDescriptorExtractor::BriskDescriptorExtractor__b.b.float">
  <tt class="descclassname">BriskDescriptorExtractor::</tt><tt class="descname">BriskDescriptorExtractor</tt><big>(</big>bool <em>rotation_invariant</em>, bool <em>scale_invariant</em>, float <em>pattern_scale</em><big>)</big><a class="headerlink" href="#BriskDescriptorExtractor::BriskDescriptorExtractor__b.b.float" title="Permalink to this definition">¶</a></dt>
-<dd><p>The &#8220;Binary Robust Invariant Scalable Keypoints&#8221; algorithm of <a class="reference internal" href="bibliography.html#leutenegger">[Leutenegger]</a>
+<dd><p>The &#8220;Binary Robust Invariant Scalable Keypoints&#8221; algorithm for binary descriptors of <a class="reference internal" href="bibliography.html#leutenegger">[Leutenegger]</a>
 et al.</p>
 <p><tt class="docutils literal"><span class="pre">rotation_invariant</span></tt>: Set to true if you want to normalize the orientation of the keypoints before computing the descriptor.</p>
 <p><tt class="docutils literal"><span class="pre">scale_invariant</span></tt>: Set to true if you want to normalize the scale of keypoints before computing the descriptor.</p>
@@ -415,7 +433,7 @@ et al.</p>
       </ul>
     </div>
 <div class="footer">
-    &copy; Copyright 2013, Chris Sweeney.
+    &copy; Copyright 2014, Chris Sweeney.
 </div>
 
 

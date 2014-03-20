@@ -8,6 +8,10 @@ Bibliography
    Keypoint**. *In IEEE Conference on Computer Vision and Pattern Recognition,
    CVPR 2012*
 
+.. [Bujnak] M. Bujnak, Z. Kukelova, and T. Pajdla. **A General Solution to the
+   P4P Problem for Camera with Unknown Focal Length**. *Computer Vision and Pattern
+   Recognition*, 2008. IEEE Conference on.
+
 .. [Chum] O. Chum and J. Matas. 2005. **Matching with PROSAC - Progressive
    Sample Consensus**. *In Proceedings of the 2005 IEEE Computer Society
    Conference on Computer Vision and Pattern Recognition (CVPR'05)* - Volume 1 -
@@ -31,6 +35,10 @@ Bibliography
    Perspective-Three-Point Problem for a Direct Computation of Absolute Camera
    Position and Orientation**, *In Proceedings of The IEEE Conference on Computer Vision
    and Pattern Recognition (CVPR)*. Colorado Springs, USA. June 2011.
+
+.. [Kukelova] Z. Kukelova, M. Bujnak, T. Pajdla. **Real-time Solution to the
+   Absolute Pose Problem with Unknown Radial Distortion and Focal Length**. *In
+   Proceedings of the International Conference on Computer Vision (ICCV) 2013*
 
 .. [Leutenegger] S. Leutenegger, M. Chli and R. Siegwart, **BRISK: Binary Robust
    Invariant Scalable Keypoints**, *In Proceedings of the IEEE International

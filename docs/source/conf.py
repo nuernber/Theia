@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Theia'
-copyright = u'2013, Chris Sweeney'
+copyright = u'2014, Chris Sweeney'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -141,13 +141,13 @@ html_use_smartypants = True
 #html_additional_pages = {}
 
 # If false, no module index is generated.
-#html_domain_indices = True
+html_domain_indices = True
 
 # If false, no index is generated.
-#html_use_index = True
+html_use_index = True
 
 # If true, the index is split into individual pages for each letter.
-#html_split_index = False
+html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False

@@ -9,17 +9,21 @@ Pose and Resectioning
 =====================
 
 Theia contains efficient and robust implementations of the following pose and
-resectioning algorithms. We attempted to make each method as general as possible so that users were not tied to Theia data structures to use the methods. As such, we implemented two interfaces for each pose algorithm: a generic interface that uses primary expressions (e.g., double arrays) and an interface that utilizes the Eigen library vectors and matrices. If a pose algorithm does not have a generic interface, you can request an interface on the `mailing list <http://groups.google.com/group/theia-vision-library>`_
+resectioning algorithms. We attempted to make each method as general as possible so that users were not tied to Theia data structures to use the methods. The interface for all pose methods uses Eigen types for feature positions, 3D positions, and pose rotations and translations.
 
 * :ref:`section-p3p`
 
-* :ref:`section-five_point`
+* :ref:`section-five_point_essential_matrix`
 
-* :ref:`section-four_point`
+* :ref:`section-four_point_homography`
 
 * :ref:`section-eight_point`
 
 * :ref:`section-dls_pnp`
+
+* :ref:`section-four_point_focal_length`
+
+* :ref:`section-five_point_focal_length_radial_distortion`
 
 You can include the Pose module in your code with the following line:
 
@@ -32,17 +36,18 @@ You can include the Pose module in your code with the following line:
 Perspective Three Point (P3P)
 =============================
 
-  .. function:: int PoseFromThreePoints(const double image_ray[3 * 3], const double points_3d[3 * 3], double solution_rotations[9 * 4], double solution_translations[3 * 4])
+  .. function:: bool PoseFromThreePoints(const Eigen::Vector2d feature_position[3], const Eigen::Vector3d world_point[3], std::vector<Eigen::Matrix3d>* solution_rotations, std::vector<Eigen::Vector3d>* solution_translations)
 
-  .. function:: bool PoseFromThreePoints(const Eigen::Vector3d image_ray[3], const Eigen::Vector3d world_point[3], std::vector<Eigen::Matrix3d>* solution_rotations, std::vector<Eigen::Vector3d>* solution_translations)
+    Computes camera pose using the three point algorithm and returns all
+    possible solutions (up to 4). Follows steps from the paper "A Novel
+    Parameterization of the Perspective-Three-Point Problem for a direct
+    computation of Absolute Camera position and Orientation" by [Kneip]_\. This
+    algorithm has been proven to be up to an order of magnitude faster than
+    other methods. The output rotation and translation define world-to-camera
+    transformation.
 
-    Computes camera pose using the three point algorithm and returns all possible
-    solutions (up to 4). Follows steps from the paper "A Novel Parameterization of
-    the Perspective-Three-Point Problem for a direct computation of Absolute
-    Camera position and Orientation" by [Kneip]_\. This algorithm has been proven
-    to be up to an order of magnitude faster than other methods.
-
-    ``image_ray``: Normalized image rays corresponding to model points.
+    ``feature_position``: Image points corresponding to model points. These should be
+    calibrated image points as opposed to pixel values.
 
     ``world_point``: 3D location of features.
 
@@ -50,39 +55,22 @@ Perspective Three Point (P3P)
 
     ``solution_translation``: the translation of the candidate solutions
 
-    ``returns``: The number of poses computed, along with the output parameters
-    ``rotation`` and ``translation`` filled with the valid poses.
+    ``returns``: Whether the pose was computed successfully, along with the
+    output parameters ``rotation`` and ``translation`` filled with the valid
+    poses.
 
-    **NOTE**: P3P returns up to 4 poses, so the rotation and translation arrays are indeed arrays of 3x3 and 3x1 arrays respectively.
-
-
-  .. function:: int PoseFromThreeCalibrated(const double image_points[2 * 3], const double world_points[3 * 3], const double focal_length[2], const double principal_point[2], double solutions[12 * 4])
-
-     ``image_points``: Location of features on the image plane
-
-     ``world_points``: 3D location of features.
-
-     ``focal_length``: fx, and fy the focal length parameters
-
-     ``principle_point``: the principle point of the image
-
-     ``solutions``: the projection matrices for the candidate solutions
-
-     ``returns``: the number of poses computed.
-
-
-.. _section-five_point:
+.. _section-five_point_essential_matrix:
 
 Five Point Relative Pose
 ========================
 
-  .. function:: int FivePointRelativePose(const double image1_points[3 * 5], const double image2_points[3 * 5], double rotation[9 * 10], double translation[3 * 10])
-
-  .. function:: bool FivePointRelativePose(const Eigen::Vector3d image1_points[5], const Eigen::Vector3d image2_points[5], std::vector<Eigen::Matrix3d>* rotation, std::vector<Eigen::Vector3d>* translation)
+  .. function:: bool FivePointRelativePose(const Eigen::Vector2d image1_points[5], const Eigen::Vector2d image2_points[5], std::vector<Eigen::Matrix3d>* rotation, std::vector<Eigen::Vector3d>* translation)
 
     Computes the relative pose between two cameras using 5 corresponding
     points. Algorithm is implemented based on "An Efficient Solution to the
-    Five-Point Relative Pose Problem" by [Nister]_.
+    Five-Point Relative Pose Problem" by [Nister]_. The rotation and translation
+    returned are defined such that :math:`E=t_x * R` and :math:`y^\top * E * x =
+    0` where :math:`y` are points from image2 and :math:`x` are points from image1.
 
     ``image1_points``: Location of features on the image plane of image 1.
 
@@ -92,14 +80,12 @@ Five Point Relative Pose
     rotation and translation.
 
 
-.. _section-four_point:
+.. _section-four_point_homography:
 
 Four Point Algorithm for Homography
 ===================================
 
-  .. function:: bool FourPointHomography(const std::vector<Eigen::Vector3d>& image_1_points, const std::vector<Eigen::Vector3d>& image_2_points, Eigen::Matrix3d* homography)
-
-  .. function:: bool FourPointHomography(const int num_points, const double image_1_points[], const double image_2_points[], double homography[9])
+  .. function:: bool FourPointHomography(const std::vector<Eigen::Vector2d>& image_1_points, const std::vector<Eigen::Vector2d>& image_2_points, Eigen::Matrix3d* homography)
 
     Computes the 2D `homography
     <http://en.wikipedia.org/wiki/Homography_(computer_vision)>`_ mapping points
@@ -120,9 +106,7 @@ Four Point Algorithm for Homography
 Eight Point Algorithm for Fundamental Matrix
 ============================================
 
-  .. function:: bool NormalizedEightPoint(const std::vector<Eigen::Vector3d>& image_1_points, const std::vector<Eigen::Vector3d>& image_2_points, Eigen::Matrix3d* fundamental_matrix)
-
-  .. function:: bool NormalizedEightPoint(const int num_points, const double image_1_points[], const double image_2_points[], double fundamental_matrix[9])
+  .. function:: bool NormalizedEightPoint(const std::vector<Eigen::Vector2d>& image_1_points, const std::vector<Eigen::Vector2d>& image_2_points, Eigen::Matrix3d* fundamental_matrix)
 
     Computes the `fundamental matrix
     <http://en.wikipedia.org/wiki/Fundamental_matrix_(computer_vision)>`_ relating
@@ -142,9 +126,7 @@ Eight Point Algorithm for Fundamental Matrix
     ``returns:`` true on success, false on failure.
 
 
-  .. function:: bool GoldStandardEightPoint(const std::vector<Eigen::Vector3d>& image_1_points, const std::vector<Eigen::Vector3d>& image_2_points, Eigen::Matrix3d* fundamental_matrix)
-
-  .. function:: bool GoldStandardEightPoint(const int num_points, const double image_1_points[], const double image_2_points[], double fundamental_matrix[9])
+  .. function:: bool GoldStandardEightPoint(const std::vector<Eigen::Vector2d>& image_1_points, const std::vector<Eigen::Vector2d>& image_2_points, Eigen::Matrix3d* fundamental_matrix)
 
     Computes the `fundamental matrix
     <http://en.wikipedia.org/wiki/Fundamental_matrix_(computer_vision)>`_
@@ -171,24 +153,85 @@ Eight Point Algorithm for Fundamental Matrix
 Perspective N-Point
 ===================
 
-.. function:: void DlsPnp(const std::vector<Eigen::Vector3d>& image_ray, const std::vector<Eigen::Vector3d>& world_point, std::vector<Eigen::Quaterniond>* solution_rotation, std::vector<Eigen::Vector3d>* solution_translation)
+  .. function:: void DlsPnp(const std::vector<Eigen::Vector2d>& feature_position, const std::vector<Eigen::Vector3d>& world_point, std::vector<Eigen::Quaterniond>* solution_rotation, std::vector<Eigen::Vector3d>* solution_translation)
 
-  Computes the camera pose using the Perspective N-point method from "A Direct
-  Least-Squares (DLS) Method for PnP" by [Hesch]_ and Stergios
-  Roumeliotis. This method is extremely scalable and highly accurate for the PnP
-  problem. A minimum of 4 points are required, but there is no maximum number of
-  points allowed as this is a least-squared approach. Theoretically, up to 27
-  solutions may be returned, but in practice only 4 real solutions arise and in
-  almost all cases where n >= 6 there is only one solution which places the
-  observed points in front of the camera.
+    Computes the camera pose using the Perspective N-point method from "A Direct
+    Least-Squares (DLS) Method for PnP" by [Hesch]_ and Stergios Roumeliotis. This
+    method is extremely scalable and highly accurate for the PnP problem. A
+    minimum of 4 points are required, but there is no maximum number of points
+    allowed as this is a least-squared approach. Theoretically, up to 27 solutions
+    may be returned, but in practice only 4 real solutions arise and in almost all
+    cases where n >= 6 there is only one solution which places the observed points
+    in front of the camera. The returned rotation and translations are
+    world-to-camera transformations.
 
-  ``image_ray``: Normalized image rays corresponding to model points. Must
-  contain at least 4 points.
+    ``feature_position``: Normalized image rays corresponding to model points. Must
+    contain at least 4 points.
 
-  ``points_3d``: 3D location of features. Must correspond to the image_ray of
-  the same index. Must contain the same number of points as image_ray, and at
-  least 4.
+    ``points_3d``: 3D location of features. Must correspond to the image_ray of
+    the same index. Must contain the same number of points as image_ray, and at
+    least 4.
 
-  ``solution_rotation``: the rotation quaternion of the candidate solutions
+    ``solution_rotation``: the rotation quaternion of the candidate solutions
 
-  ``solution_translation``: the translation of the candidate solutions
+    ``solution_translation``: the translation of the candidate solutions
+
+
+.. _section-four_point_focal_length:
+
+Four Point Focal Length
+=======================
+
+  .. function:: int FourPointPoseAndFocalLength(const std::vector<Eigen::Vector2d>& feature_positions, const std::vector<Eigen::Vector3d>& world_points, std::vector<Eigen::Matrix<double, 3, 4> >* projection_matrices)
+
+    Computes the camera pose and unknown focal length of an image given four 2D-3D
+    correspondences, following the method of [Bujnak]_. This method involves
+    computing a grobner basis from a modified constraint of the focal length and
+    pose projection.
+
+    ``feature_position``: Normalized image rays corresponding to model points. Must
+    contain at least 4 points.
+
+    ``points_3d``: 3D location of features. Must correspond to the image_ray of
+    the same index. Must contain the same number of points as image_ray, and at
+    least 4.
+
+    ``projection_matrices``: The solution world-to-camera projection matrices,
+    inclusive of the unknown focal length. For a focal length f and a camera
+    calibration matrix :math:`K=diag(f, f, 1)`, the projection matrices returned
+    are of the form :math:`P = K * [R | t]`.
+
+
+.. _section-five_point_focal_length_radial_distortion:
+
+Five Point Focal Length and Radial Distortion
+=============================================
+
+  .. function:: bool FivePointFocalLengthRadialDistortion(const std::vector<Eigen::Vector2d>& feature_positions, const std::vector<Eigen::Vector3d>& world_points, const int num_radial_distortion_params, std::vector<Eigen::Matrix<double, 3, 4> >* projection_matrices, std::vector<std::vector<double> >* radial_distortions)
+
+    Compute the absolute pose, focal length, and radial distortion of a camera
+    using five 3D-to-2D correspondences [Kukelova]_. The method solves for the
+    projection matrix (up to scale) by using a cross product constraint on the
+    standard projection equation. This allows for simple solution to the first two
+    rows of the projection matrix, and the third row (which contains the focal
+    length and distortion parameters) can then be solved with SVD on the remaining
+    constraint equations from the first row of the projection matrix. See the
+    paper for more details.
+
+    ``feature_positions``: the 2D location of image features. Exactly five
+    features must be passed in.
+
+    ``world_points``: 3D world points corresponding to the features
+    observed. Exactly five points must be passed in.
+
+    ``num_radial_distortion_params``: The number of radial distortion paramters to
+	solve for. Must be 1, 2, or 3.
+
+    ``projection_matrices``: Camera projection matrices (that encapsulate focal
+	length). These solutions are only valid up to scale.
+
+    ``radial_distortions``: Each entry of this vector contains a vector with the
+    radial distortion parameters (up to 3, but however many were specified in
+    ``num_radial_distortion_params``).
+
+    ``return``: true if successful, false if not.

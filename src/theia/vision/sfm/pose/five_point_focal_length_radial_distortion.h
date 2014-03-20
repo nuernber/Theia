@@ -55,8 +55,8 @@ namespace theia {
 // the projection matrix. See the paper for more details.
 //
 // Input:
-//   featureVectors: 5 3-vectors with image positions.
-//   worldPoints: 5 3-vectors with corresponding 3D world points
+//   feature_positions: feature positions (must be 5 features).
+//   world_points: 5 3-vectors with corresponding 3D world points
 //   num_radial_distortion_params: The number of radial distortion paramters to
 //     solve for. Must be 1, 2, or 3. Experiments by cmsweeney showed that the
 //     solution method is unstable when no radial distortion is solved for.
@@ -65,7 +65,7 @@ namespace theia {
 // Output: true if success, false if not.
 
 bool FivePointFocalLengthRadialDistortion(
-    const std::vector<Eigen::Vector2d>& feature_vectors,
+    const std::vector<Eigen::Vector2d>& feature_positions,
     const std::vector<Eigen::Vector3d>& world_points,
     const int num_radial_distortion_params,
     std::vector<Eigen::Matrix<double, 3, 4> >* projection_matrices,

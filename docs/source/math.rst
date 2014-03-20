@@ -50,62 +50,15 @@ have implemented solvers for these cases.
 Generic Polynomial Solver
 =========================
 
-For polynomials of degree > 4 there are no easy closed-form solutions, making the problem of finding roots much more difficult. However, we have implemented a generic :class:`Polynomial` class that is templated on the degree of the polynomial. Because it is templated, the methods are generated at compile-time, so solving the polynomial ends up being extremely fast compared to non-templated methods (with relative few tradeoffs in terms of usability).
+For polynomials of degree > 4 there are no easy closed-form solutions, making the problem of finding roots much more difficult. However, we have implemented a function that will solve for all roots of a polynomial by constructing a companion matrix and solving with an eigenvalue decomposition.
 
-.. class:: Polynomial
+.. function:: std::vector<std::complex<double> > GetPolynomialRoots(const Eigen::VectorXd& coeffs)
+.. function:: std::vector<double> GetRealPolynomialRoots(const Eigen::VectorXd& coeffs)
 
-  .. code-block:: c++
-
-    template<int degree>
-    class Polynomial {
-     public:
-      explicit Polynomial(const std::vector<double> coeffs);
-      explicit Polynomial(const double coeffs[]);
-      ~Polynomial() {}
-
-      int GetDegree() const { return degree; }
-      double EvalAt(const double x) const;
-
-      template<int degree2>
-      Polynomial Add(const Polynomial<degree2>& poly) const;
-
-      template<int degree2>
-      Polynomial Subtract(const Polynomial<degree2>& poly) const;
-
-      template<int degree2>
-      Polynomial<degree + degree2> Multiply(const Polynomial<degree2>& poly) const;
-
-      // Returns the quotient polynomial and the remainder polynomial.
-      template<int degree2>
-      std::pair<Polynomial<degree - degree2>, Polynomial<degree2 - 1> > Divide(
-	  const Polynomial<degree2>& poly) const;
-
-      Polynomial<degree - 1> Differentiate() const;
-      std::vector<double> RealRoots() const;
-      std::vector<std::complex<double> > Roots() const;
-    };
-
-  The :class:`Polynomial` class allows for all basic polynomial operations, as
-  well as some more advances operations (e.g. polynomial division,
-  differentiation, etc.). The functions are particular note are the roots functions:
-
-  .. function:: std::vector<std::complex<double> > Roots() const
-
-    These methods calculate the roots of the polynomial (up to roughly degree
-    100) efficiently by building a companion matrix and solving for the
-    eigenvalues. This method has been shown to be very efficient, and also takes
-    advantages of the underlying data structure (Eigen3 matrix). In order to
-    increase the stability, we first balance the companion matrix by rearranging
-    and scaling so that the changes in magnitude amongst matrix entries is not
-    drastic.
-
-  .. function:: std::vector<double> RealRoots() const
-
-    Same as the above method, but only returns the real roots. That is, only the
-    roots that have complex values < epsilon distance from 0. Note, this is
-    different than only returning the real values of the solutions
-    (i.e. ignoring the imaginary component).
-
+  These methods take in polynomial coefficients such that the highest degree
+  coefficient is the first element, and the lowest degree coefficient
+  (correspondening to degree 0) is the last element. Real or complex roots are
+  returned depending on the method called.
 
 .. _section-gauss_jordan:
 

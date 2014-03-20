@@ -88,33 +88,37 @@ compatibility with other libraries.</p>
 </div>
 <div class="section" id="projection-matrix">
 <h2>Projection Matrix<a class="headerlink" href="#projection-matrix" title="Permalink to this headline">¶</a></h2>
-<p>We provide two convenience matrices that are commonly used in multiview geometry. The first is a <tt class="xref py py-class docutils literal"><span class="pre">TransformationMatrix</span></tt> which is an affine transformation matrix composed of rotation and translation of the form: <span class="math">\(\left[R | t\right]\)</span>, i.e., the extrinsic parameters of a camera. The <tt class="xref py py-class docutils literal"><span class="pre">TransformationMatrix</span></tt> is merely a typedef of the Eigen affine transformation matrix. Similarly, a <tt class="xref py py-class docutils literal"><span class="pre">ProjectionMatrix</span></tt> class is defined that representsthe intrinsic and extrinsic parameters, nameley matrices of the form: <span class="math">\(K\left[R | t \right]\)</span> where <span class="math">\(K\)</span> is a 3x3 matrix of the camera intrinsics (e.g., focal length, principle point, and radial distortion). The <tt class="xref py py-class docutils literal"><span class="pre">ProjectionMatrix</span></tt> is merely a typedef of an Eigen 3x4 matrix.</p>
+<p>We provide two convenience matrices that are commonly used in multiview geometry. The first is a <tt class="xref cpp cpp-class docutils literal"><span class="pre">TransformationMatrix</span></tt> which is an affine transformation matrix composed of rotation and translation of the form: <span class="math">\(\left[R | t\right]\)</span>, i.e., the extrinsic parameters of a camera. The <tt class="xref cpp cpp-class docutils literal"><span class="pre">TransformationMatrix</span></tt> is merely a typedef of the Eigen affine transformation matrix. Similarly, a <tt class="xref cpp cpp-class docutils literal"><span class="pre">ProjectionMatrix</span></tt> class is defined that representsthe intrinsic and extrinsic parameters, nameley matrices of the form: <span class="math">\(K\left[R | t \right]\)</span> where <span class="math">\(K\)</span> is a 3x3 matrix of the camera intrinsics (e.g., focal length, principle point, and radial distortion). The <tt class="xref cpp cpp-class docutils literal"><span class="pre">ProjectionMatrix</span></tt> is merely a typedef of an Eigen 3x4 matrix.</p>
 </div>
 <div class="section" id="view-triangulation">
 <h2>2-View Triangulation<a class="headerlink" href="#view-triangulation" title="Permalink to this headline">¶</a></h2>
-<p>Triangulation in structure from motion calculates the 3D position of an image
+<blockquote>
+<div><p>Triangulation in structure from motion calculates the 3D position of an image
 coordinate that has been tracked through several, if not many, images.</p>
 <dl class="function">
-<dt>
-<tt class="descname">Eigen::Vector4d Triangulate(const ProjectionMatrix&amp; pose_left, const ProjectionMatrix&amp; pose_right, const Eigen::Vector3d&amp; point_left, const Eigen::Vector3d&amp; point_right)</tt></dt>
-<dd><p>2-view triangulation using the DLT method described in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>.</p>
+<dt id="Triangulate__ProjectionMatrixCR.ProjectionMatrixCR.Eigen::Vector2dCR.Eigen::Vector2dCR.Eigen::Vector3dP">
+bool <tt class="descname">Triangulate</tt><big>(</big>const ProjectionMatrix&amp; <em>pose_left</em>, const ProjectionMatrix&amp; <em>pose_right</em>, const Eigen::Vector2d&amp; <em>point_left</em>, const Eigen::Vector2d&amp; <em>point_right</em>, Eigen::Vector3d* <em>triangulated_point</em><big>)</big><a class="headerlink" href="#Triangulate__ProjectionMatrixCR.ProjectionMatrixCR.Eigen::Vector2dCR.Eigen::Vector2dCR.Eigen::Vector3dP" title="Permalink to this definition">¶</a></dt>
+<dd><p>2-view triangulation using the DLT method described in
+<a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>. The poses are the (potentially calibrated) poses of the
+two cameras, and the points are the 2D image points of the matched features
+that will be used to triangulate the 3D point. If there was an error computing
+the triangulation (e.g., the point is found to be at infinity) then <tt class="docutils literal"><span class="pre">false</span></tt>
+is returned. On successful triangulation, <tt class="docutils literal"><span class="pre">true</span></tt> is returned.</p>
 </dd></dl>
 
+</div></blockquote>
 </div>
 <div class="section" id="n-view-triangulation">
 <h2>N-View Triangulation<a class="headerlink" href="#n-view-triangulation" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt>
-<tt class="descname">Eigen::Vector4d TriangulateNViewSVD(const std::vector&lt;ProjectionMatrix&gt;&amp; poses,</tt></dt>
-<dt>
-<tt class="descname">const std::vector&lt;Eigen::Vector3d&gt;&amp; points);</tt></dt>
+<blockquote>
+<div><dl class="function">
+<dt id="TriangulateNViewSVD__std::vector:ProjectionMatrix:CR.std::vector:Eigen::Vector2d:CR.Eigen::Vector3dP">
+bool <tt class="descname">TriangulateNViewSVD</tt><big>(</big>const std::vector&lt;ProjectionMatrix&gt;&amp; <em>poses</em>, const std::vector&lt;Eigen::Vector2d&gt;&amp; <em>points</em>, Eigen::Vector3d* <em>triangulated_point</em><big>)</big><a class="headerlink" href="#TriangulateNViewSVD__std::vector:ProjectionMatrix:CR.std::vector:Eigen::Vector2d:CR.Eigen::Vector3dP" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt>
-<tt class="descname">Eigen::Vector4d TriangulateNView(const std::vector&lt;ProjectionMatrix&gt;&amp; poses,</tt></dt>
-<dt>
-<tt class="descname">const std::vector&lt;Eigen::Vector3d&gt;&amp; points);</tt></dt>
+<dt id="TriangulateNView__std::vector:ProjectionMatrix:CR.std::vector:Eigen::Vector2d:CR.Eigen::Vector3dP">
+bool <tt class="descname">TriangulateNView</tt><big>(</big>const std::vector&lt;ProjectionMatrix&gt;&amp; <em>poses</em>, const std::vector&lt;Eigen::Vector2d&gt;&amp; <em>points</em>, Eigen::Vector3d* <em>triangulated_point</em><big>)</big><a class="headerlink" href="#TriangulateNView__std::vector:ProjectionMatrix:CR.std::vector:Eigen::Vector2d:CR.Eigen::Vector3dP" title="Permalink to this definition">¶</a></dt>
 <dd><p>We provide two N-view triangluation methods that minimizes an algebraic
 approximation of the geometric error. The first is the classic SVD method
 presented in <a class="reference internal" href="bibliography.html#hartleyzisserman">[HartleyZisserman]</a>. The second is a custom algebraic
@@ -142,29 +146,33 @@ can be extracted efficiently by noting that it is equivalent to the nullspace
 of <span class="math">\(A^\top A\)</span>, which is a 4x4 matrix.</p>
 </dd></dl>
 
+</div></blockquote>
 </div>
 <div class="section" id="icp">
 <h2>ICP<a class="headerlink" href="#icp" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt>
-<tt class="descname">void AlignPointCloudsICP(const int num_points, const double left[], const double right[], double rotation[3 * 3], double translation[3]);</tt></dt>
+<blockquote>
+<div><dl class="function">
+<dt id="AlignPointCloudsICP__iC.doubleCA.doubleCA.doubleA.doubleA">
+void <tt class="descname">AlignPointCloudsICP</tt><big>(</big>const int <em>num_points</em>, const double <em>left</em>[], const double <em>right</em>[], double <em>rotation</em>[3 * 3], double <em>translation</em>[3]<big>)</big><a class="headerlink" href="#AlignPointCloudsICP__iC.doubleCA.doubleCA.doubleA.doubleA" title="Permalink to this definition">¶</a></dt>
 <dd><p>We implement ICP for point clouds. We use Besl-McKay registration to align
 point clouds. We use SVD decomposition to find the rotation, as this is much
 more likely to find the global minimum as compared to traditional ICP, which
 is only guaranteed to find a local minimum. Our goal is to find the
 transformation from the left to the right coordinate system. We assume that
-the left and right models have the same number of points, and that the points
-are aligned by correspondence (i.e. left[i] corresponds to right[i]).</p>
+the left and right models have the same number of points, and that the
+points are aligned by correspondence (i.e. left[i] corresponds to right[i]).</p>
 </dd></dl>
 
 <dl class="function">
-<dt>
-<tt class="descname">AlignPointCloudsUmeyama(const int num_points, const double left[], const doubel right[], double rotation[3 * 3], double translation[3], double* scale);</tt></dt>
+<dt id="AlignPointCloudsUmeyama__iC.doubleCA.doubleCA.doubleA.doubleA.doubleP">
+void <tt class="descname">AlignPointCloudsUmeyama</tt><big>(</big>const int <em>num_points</em>, const double <em>left</em>[], const double <em>right</em>[], double <em>rotation</em>[3 * 3], double <em>translation</em>[3], double* <em>scale</em><big>)</big><a class="headerlink" href="#AlignPointCloudsUmeyama__iC.doubleCA.doubleCA.doubleA.doubleA.doubleP" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function estimates the 3D similiarty transformation using the least
-squares method of [Umeyeama]. The returned rotation, translation, and scale
-align the left points to the right such that <span class="math">\(Right = s * R * Left + t\)</span>.</p>
+squares method of <a class="reference internal" href="bibliography.html#umeyama">[Umeyama]</a>. The returned rotation, translation, and scale
+align the left points to the right such that <span class="math">\(Right = s * R * Left +
+t\)</span>.</p>
 </dd></dl>
 
+</div></blockquote>
 </div>
 </div>
 
@@ -237,7 +245,7 @@ align the left points to the right such that <span class="math">\(Right = s * R 
       </ul>
     </div>
 <div class="footer">
-    &copy; Copyright 2013, Chris Sweeney.
+    &copy; Copyright 2014, Chris Sweeney.
 </div>
 
 

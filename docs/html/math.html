@@ -125,64 +125,19 @@ int <tt class="descname">SolveQuartic</tt><big>(</big>double <em>a</em>, double 
 </div>
 <div class="section" id="generic-polynomial-solver">
 <span id="section-generic-poly"></span><h2>Generic Polynomial Solver<a class="headerlink" href="#generic-polynomial-solver" title="Permalink to this headline">¶</a></h2>
-<p>For polynomials of degree &gt; 4 there are no easy closed-form solutions, making the problem of finding roots much more difficult. However, we have implemented a generic <a class="reference internal" href="#Polynomial" title="Polynomial"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Polynomial</span></tt></a> class that is templated on the degree of the polynomial. Because it is templated, the methods are generated at compile-time, so solving the polynomial ends up being extremely fast compared to non-templated methods (with relative few tradeoffs in terms of usability).</p>
-<dl class="class">
-<dt id="Polynomial">
-<em class="property">class </em><tt class="descname">Polynomial</tt><a class="headerlink" href="#Polynomial" title="Permalink to this definition">¶</a></dt>
-<dd><div class="highlight-c++"><div class="highlight"><pre><span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree</span><span class="o">&gt;</span>
-<span class="k">class</span> <span class="nc">Polynomial</span> <span class="p">{</span>
- <span class="k">public</span><span class="o">:</span>
-  <span class="k">explicit</span> <span class="n">Polynomial</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">coeffs</span><span class="p">);</span>
-  <span class="k">explicit</span> <span class="n">Polynomial</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">coeffs</span><span class="p">[]);</span>
-  <span class="o">~</span><span class="n">Polynomial</span><span class="p">()</span> <span class="p">{}</span>
-
-  <span class="kt">int</span> <span class="n">GetDegree</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">degree</span><span class="p">;</span> <span class="p">}</span>
-  <span class="kt">double</span> <span class="n">EvalAt</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
-
-  <span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree2</span><span class="o">&gt;</span>
-  <span class="n">Polynomial</span> <span class="n">Add</span><span class="p">(</span><span class="k">const</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span><span class="o">&gt;&amp;</span> <span class="n">poly</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
-
-  <span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree2</span><span class="o">&gt;</span>
-  <span class="n">Polynomial</span> <span class="n">Subtract</span><span class="p">(</span><span class="k">const</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span><span class="o">&gt;&amp;</span> <span class="n">poly</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
-
-  <span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree2</span><span class="o">&gt;</span>
-  <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree</span> <span class="o">+</span> <span class="n">degree2</span><span class="o">&gt;</span> <span class="n">Multiply</span><span class="p">(</span><span class="k">const</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span><span class="o">&gt;&amp;</span> <span class="n">poly</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
-
-  <span class="c1">// Returns the quotient polynomial and the remainder polynomial.</span>
-  <span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">degree2</span><span class="o">&gt;</span>
-  <span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree</span> <span class="o">-</span> <span class="n">degree2</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">Divide</span><span class="p">(</span>
-      <span class="k">const</span> <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree2</span><span class="o">&gt;&amp;</span> <span class="n">poly</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
-
-  <span class="n">Polynomial</span><span class="o">&lt;</span><span class="n">degree</span> <span class="o">-</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="n">Differentiate</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
-  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">RealRoots</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
-  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">complex</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">Roots</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
-<span class="p">};</span>
-</pre></div>
-</div>
-<p>The <a class="reference internal" href="#Polynomial" title="Polynomial"><tt class="xref cpp cpp-class docutils literal"><span class="pre">Polynomial</span></tt></a> class allows for all basic polynomial operations, as
-well as some more advances operations (e.g. polynomial division,
-differentiation, etc.). The functions are particular note are the roots functions:</p>
+<p>For polynomials of degree &gt; 4 there are no easy closed-form solutions, making the problem of finding roots much more difficult. However, we have implemented a function that will solve for all roots of a polynomial by constructing a companion matrix and solving with an eigenvalue decomposition.</p>
 <dl class="function">
-<dt id="Polynomial::RootsC">
-std::vector&lt;std::complex&lt;double&gt;&gt; <tt class="descname">Roots</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#Polynomial::RootsC" title="Permalink to this definition">¶</a></dt>
-<dd><p>These methods calculate the roots of the polynomial (up to roughly degree
-100) efficiently by building a companion matrix and solving for the
-eigenvalues. This method has been shown to be very efficient, and also takes
-advantages of the underlying data structure (Eigen3 matrix). In order to
-increase the stability, we first balance the companion matrix by rearranging
-and scaling so that the changes in magnitude amongst matrix entries is not
-drastic.</p>
-</dd></dl>
+<dt id="GetPolynomialRoots__Eigen::VectorXdCR">
+std::vector&lt;std::complex&lt;double&gt;&gt; <tt class="descname">GetPolynomialRoots</tt><big>(</big>const Eigen::VectorXd&amp; <em>coeffs</em><big>)</big><a class="headerlink" href="#GetPolynomialRoots__Eigen::VectorXdCR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
-<dt id="Polynomial::RealRootsC">
-std::vector&lt;double&gt; <tt class="descname">RealRoots</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#Polynomial::RealRootsC" title="Permalink to this definition">¶</a></dt>
-<dd><p>Same as the above method, but only returns the real roots. That is, only the
-roots that have complex values &lt; epsilon distance from 0. Note, this is
-different than only returning the real values of the solutions
-(i.e. ignoring the imaginary component).</p>
-</dd></dl>
-
+<dt id="GetRealPolynomialRoots__Eigen::VectorXdCR">
+std::vector&lt;double&gt; <tt class="descname">GetRealPolynomialRoots</tt><big>(</big>const Eigen::VectorXd&amp; <em>coeffs</em><big>)</big><a class="headerlink" href="#GetRealPolynomialRoots__Eigen::VectorXdCR" title="Permalink to this definition">¶</a></dt>
+<dd><p>These methods take in polynomial coefficients such that the highest degree
+coefficient is the first element, and the lowest degree coefficient
+(correspondening to degree 0) is the last element. Real or complex roots are
+returned depending on the method called.</p>
 </dd></dl>
 
 </div>
@@ -298,7 +253,7 @@ details.</p>
       </ul>
     </div>
 <div class="footer">
-    &copy; Copyright 2013, Chris Sweeney.
+    &copy; Copyright 2014, Chris Sweeney.
 </div>
 
 
