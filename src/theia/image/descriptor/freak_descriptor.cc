@@ -31,6 +31,40 @@
 //
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
+//
+//  License of original FREAK code:
+//
+//	Copyright (C) 2011-2012  Signal processing laboratory 2, EPFL,
+//	Kirell Benzi (kirell.benzi@epfl.ch),
+//	Raphael Ortiz (raphael.ortiz@a3.epfl.ch)
+//	Alexandre Alahi (alexandre.alahi@epfl.ch)
+//	and Pierre Vandergheynst (pierre.vandergheynst@epfl.ch)
+//
+//  Redistribution and use in source and binary forms, with or without
+//  modification, are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright
+//     notice, this list of conditions and the following disclaimer in the
+//     documentation and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote
+//     products derived from this software without specific prior written
+//     permission.
+//
+//  This software is provided by the copyright holders and contributors "as is"
+//  and any express or implied warranties, including, but not limited to, the
+//  implied warranties of merchantability and fitness for a particular purpose
+//  are disclaimed.  In no event shall the Intel Corporation or contributors be
+//  liable for any direct, indirect, incidental, special, exemplary, or
+//  consequential damages (including, but not limited to, procurement of
+//  substitute goods or services; loss of use, data, or profits; or business
+//  interruption) however caused and on any theory of liability, whether in
+//  contract, strict liability, or tort (including negligence or otherwise)
+//  arising in any way out of the use of this software, even if advised of the
+//  possibility of such damage.
 
 #include "theia/image/descriptor/freak_descriptor.h"
 
@@ -152,7 +186,6 @@ bool FreakDescriptorExtractor::Initialize() {
               static_cast<double>(kNumOrientation);
       int pointIdx = 0;
 
-      PatternPoint* pattern_lookup_Ptr = &pattern_lookup_[0];
       for (size_t i = 0; i < 8; ++i) {
         for (int k = 0; k < n[i]; ++k) {
           // orientation offset so that groups of points on each circles are
@@ -162,8 +195,8 @@ bool FreakDescriptorExtractor::Initialize() {
 
           // add the point to the look-up table
           PatternPoint& point =
-              pattern_lookup_Ptr[scaleIdx * kNumOrientation * kNumPoints +
-                                 orientationIdx * kNumPoints + pointIdx];
+              pattern_lookup_[scaleIdx * kNumOrientation * kNumPoints +
+                              orientationIdx * kNumPoints + pointIdx];
           point.x = static_cast<float>(radius[i] * cos(alpha) * scalingFactor *
                                        pattern_scale_);
           point.y = static_cast<float>(radius[i] * sin(alpha) * scalingFactor *
@@ -490,7 +523,7 @@ uchar FreakDescriptorExtractor::MeanIntensity(
     ret_val = r_x_1 * r_y * image[y + 1][x];
     // return the rounded mean
     ret_val += 2 * 1024 * 1024;
-    return ret_val / (4 * 1024 * 1024);
+    return static_cast<uchar>(ret_val / (4 * 1024 * 1024));
   }
 
   // expected case:
@@ -500,8 +533,8 @@ uchar FreakDescriptorExtractor::MeanIntensity(
   const int y_top = static_cast<int>(yf - radius + 0.5);
   // TODO(cmsweeney): decide whether this should be 0.5 or 1.5 because of the
   // integral image.
-  const int x_right = static_cast<int>(xf + radius + 0.5);
-  const int y_bottom = static_cast<int>(yf + radius + 0.5);
+  const int x_right = static_cast<int>(xf + radius + 1.5);
+  const int y_bottom = static_cast<int>(yf + radius + 1.5);
 
   // bottom right corner
   int ret_val = integral[y_bottom][x_right];

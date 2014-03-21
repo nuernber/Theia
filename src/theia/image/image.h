@@ -166,7 +166,8 @@ template <typename T> class Image : public SubImage<T> {
   Image<T> TwoThirdsSample() const;
 
   // Compute the integral image where pixel (x, y) is equal to the sum of all
-  // values in the rectangle from (0, 0) to (x, y).
+  // values in the rectangle from (0, 0) to (x, y) non-inclusive. This means
+  // that the first row and column are all zeros.
   template <typename D = T> Image<D> Integrate() const;
 
   // Resize using a Lanczos 3 filter.
@@ -348,7 +349,11 @@ template <typename T> Image<T> Image<T>::TwoThirdsSample() const {
 template <typename T>
 template <typename D>
 Image<D> Image<T>::Integrate() const {
-  CVD::Image<D> integral_image = CVD::integral_image(image_);
+  CVD::Image<D> integral_image(
+      CVD::ImageRef(this->Cols() + 1, this->Rows() + 1));
+  CVD::SubImage<D> subintegral_image = integral_image.sub_image(
+      CVD::ImageRef(1, 1), CVD::ImageRef(this->Cols(), this->Rows()));
+  CVD::integral_image(image_, subintegral_image);
   return Image<D>(integral_image);
 }
 
