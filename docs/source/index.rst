@@ -7,7 +7,7 @@
 Theia
 =====
 
-Theia is a computer vision library aimed at providing efficient and reliable
+Theia is a computer vision library developed by `Chris Sweeney <http://cs.ucsb.edu/~cmsweeney>`_ aimed at providing efficient and reliable
 algorithms for Structure from Motion (SfM) and Simultaneous Localization and
 Mapping (SLAM) systems. The goal of this library is to provide researchers with an out of the box tool for multi-view reconstruction that can be easily extended. Many common algorithms for pose, feature detection and description, matching, and reconstruction have been implemented. All contain simple interfaces, limited dependencies, and extensive documentation.
 
@@ -16,6 +16,7 @@ Mapping (SLAM) systems. The goal of this library is to provide researchers with 
 
 * Read the :ref:`chapter-documentation` and the :ref:`chapter-tutorials` guide
 
+* If you have questions, please email the `Theia mailing list <http://groups.google.com/group/theia-vision-library>`_.
 
 
 .. toctree::
