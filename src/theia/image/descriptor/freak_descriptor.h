@@ -80,17 +80,15 @@ class FreakDescriptorExtractor : public BinaryDescriptorExtractor {
                           std::vector<Eigen::Vector2d>* feature_positions,
                           std::vector<Eigen::BinaryVectorX>* descriptors);
 
-  enum {
-    kNumScales_ = 64,
-    kNumPairs_ = 512,
-    kNumOrientationPairs_ = 45
-  };
-
  private:
   uchar MeanIntensity(const Image<uchar>& image, const Image<uchar>& integral,
                       const float kp_x, const float kp_y,
                       const unsigned int scale, const unsigned int rot,
                       const unsigned int point) const;
+
+  static const int kNumScales_ = 64;
+  static const int kNumPairs_ = 512;
+  static const int kNumOrientationPairs_ = 45;
 
   bool rotation_invariant_;
   bool scale_invariant_;
@@ -134,11 +132,6 @@ class FreakDescriptorExtractor : public BinaryDescriptorExtractor {
   int pattern_sizes_[kNumScales_];
   DescriptionPair description_pairs_[kNumPairs_];
   OrientationPair orientation_pairs_[kNumOrientationPairs_];
-
-  inline void SetOrientationPair(int arr, unsigned char i, unsigned char j) {
-    orientation_pairs_[arr].i = i;
-    orientation_pairs_[arr].j = j;
-  }
 
   DISALLOW_COPY_AND_ASSIGN(FreakDescriptorExtractor);
 };

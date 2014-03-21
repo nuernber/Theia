@@ -217,55 +217,100 @@ bool FreakDescriptorExtractor::Initialize() {
   }
 
   // build the list of orientation pairs
-  SetOrientationPair(0, 0, 3);
-  SetOrientationPair(1, 1, 4);
-  SetOrientationPair(2, 2, 5);
-  SetOrientationPair(3, 0, 2);
-  SetOrientationPair(4, 1, 3);
-  SetOrientationPair(5, 2, 4);
-  SetOrientationPair(6, 3, 5);
-  SetOrientationPair(7, 4, 0);
-  SetOrientationPair(8, 5, 1);
+  orientation_pairs_[0].i = 0;
+  orientation_pairs_[0].j = 3;
+  orientation_pairs_[1].i = 1;
+  orientation_pairs_[1].j = 4;
+  orientation_pairs_[2].i = 2;
+  orientation_pairs_[2].j = 5;
+  orientation_pairs_[3].i = 0;
+  orientation_pairs_[3].j = 2;
+  orientation_pairs_[4].i = 1;
+  orientation_pairs_[4].j = 3;
+  orientation_pairs_[5].i = 2;
+  orientation_pairs_[5].j = 4;
+  orientation_pairs_[6].i = 3;
+  orientation_pairs_[6].j = 5;
+  orientation_pairs_[7].i = 4;
+  orientation_pairs_[7].j = 0;
+  orientation_pairs_[8].i = 5;
+  orientation_pairs_[8].j = 1;
 
-  SetOrientationPair(9, 6, 9);
-  SetOrientationPair(10, 7, 10);
-  SetOrientationPair(11, 8, 11);
-  SetOrientationPair(12, 6, 8);
-  SetOrientationPair(13, 7, 9);
-  SetOrientationPair(14, 8, 10);
-  SetOrientationPair(15, 9, 11);
-  SetOrientationPair(16, 10, 6);
-  SetOrientationPair(17, 11, 7);
+  orientation_pairs_[9].i = 6;
+  orientation_pairs_[9].j = 9;
+  orientation_pairs_[10].i = 7;
+  orientation_pairs_[10].j = 10;
+  orientation_pairs_[11].i = 8;
+  orientation_pairs_[11].j = 11;
+  orientation_pairs_[12].i = 6;
+  orientation_pairs_[12].j = 8;
+  orientation_pairs_[13].i = 7;
+  orientation_pairs_[13].j = 9;
+  orientation_pairs_[14].i = 8;
+  orientation_pairs_[14].j = 10;
+  orientation_pairs_[15].i = 9;
+  orientation_pairs_[15].j = 11;
+  orientation_pairs_[16].i = 10;
+  orientation_pairs_[16].j = 6;
+  orientation_pairs_[17].i = 11;
+  orientation_pairs_[17].j = 7;
 
-  SetOrientationPair(18, 12, 15);
-  SetOrientationPair(19, 13, 16);
-  SetOrientationPair(20, 14, 17);
-  SetOrientationPair(21, 12, 14);
-  SetOrientationPair(22, 13, 15);
-  SetOrientationPair(23, 14, 16);
-  SetOrientationPair(24, 15, 17);
-  SetOrientationPair(25, 16, 12);
-  SetOrientationPair(26, 17, 13);
+  orientation_pairs_[18].i = 12;
+  orientation_pairs_[18].j = 15;
+  orientation_pairs_[19].i = 13;
+  orientation_pairs_[19].j = 16;
+  orientation_pairs_[20].i = 14;
+  orientation_pairs_[20].j = 17;
+  orientation_pairs_[21].i = 12;
+  orientation_pairs_[21].j = 14;
+  orientation_pairs_[22].i = 13;
+  orientation_pairs_[22].j = 15;
+  orientation_pairs_[23].i = 14;
+  orientation_pairs_[23].j = 16;
+  orientation_pairs_[24].i = 15;
+  orientation_pairs_[24].j = 17;
+  orientation_pairs_[25].i = 16;
+  orientation_pairs_[25].j = 12;
+  orientation_pairs_[26].i = 17;
+  orientation_pairs_[26].j = 13;
 
-  SetOrientationPair(27, 18, 21);
-  SetOrientationPair(28, 19, 22);
-  SetOrientationPair(29, 20, 23);
-  SetOrientationPair(30, 18, 20);
-  SetOrientationPair(31, 19, 21);
-  SetOrientationPair(32, 20, 22);
-  SetOrientationPair(33, 21, 23);
-  SetOrientationPair(34, 22, 18);
-  SetOrientationPair(35, 23, 19);
+  orientation_pairs_[27].i = 18;
+  orientation_pairs_[27].j = 21;
+  orientation_pairs_[28].i = 19;
+  orientation_pairs_[28].j = 22;
+  orientation_pairs_[29].i = 20;
+  orientation_pairs_[29].j = 23;
+  orientation_pairs_[30].i = 18;
+  orientation_pairs_[30].j = 20;
+  orientation_pairs_[31].i = 19;
+  orientation_pairs_[31].j = 21;
+  orientation_pairs_[32].i = 20;
+  orientation_pairs_[32].j = 22;
+  orientation_pairs_[33].i = 21;
+  orientation_pairs_[33].j = 23;
+  orientation_pairs_[34].i = 22;
+  orientation_pairs_[34].j = 18;
+  orientation_pairs_[35].i = 23;
+  orientation_pairs_[35].j = 19;
 
-  SetOrientationPair(36, 24, 27);
-  SetOrientationPair(37, 25, 28);
-  SetOrientationPair(38, 26, 29);
-  SetOrientationPair(39, 30, 33);
-  SetOrientationPair(40, 31, 34);
-  SetOrientationPair(41, 32, 35);
-  SetOrientationPair(42, 36, 39);
-  SetOrientationPair(43, 37, 40);
-  SetOrientationPair(44, 38, 41);
+  orientation_pairs_[36].i = 24;
+  orientation_pairs_[36].j = 27;
+  orientation_pairs_[37].i = 25;
+  orientation_pairs_[37].j = 28;
+  orientation_pairs_[38].i = 26;
+  orientation_pairs_[38].j = 29;
+  orientation_pairs_[39].i = 30;
+  orientation_pairs_[39].j = 33;
+  orientation_pairs_[40].i = 31;
+  orientation_pairs_[40].j = 34;
+  orientation_pairs_[41].i = 32;
+  orientation_pairs_[41].j = 35;
+  orientation_pairs_[42].i = 36;
+  orientation_pairs_[42].j = 39;
+  orientation_pairs_[43].i = 37;
+  orientation_pairs_[43].j = 40;
+  orientation_pairs_[44].i = 38;
+  orientation_pairs_[44].j = 41;
 
   for (unsigned m = kNumOrientationPairs_; m--;) {
     const float dx = pattern_lookup_[orientation_pairs_[m].i].x -
@@ -493,7 +538,7 @@ bool FreakDescriptorExtractor::ComputeDescriptors(
   return true;
 }
 
-// Simply take average on a square patch, not even gaussian approx.
+// Simply take average on a square patch, not evengaussian approx.
 uchar FreakDescriptorExtractor::MeanIntensity(
     const Image<uchar>& image, const Image<uchar>& integral, const float kp_x,
     const float kp_y, const unsigned int scale, const unsigned int rot,
