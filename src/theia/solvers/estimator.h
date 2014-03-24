@@ -81,6 +81,11 @@ template <class Datum, class Model> class Estimator {
   // this function appropriately for the task being solved.
   virtual double Error(const Datum& data, const Model& model) const = 0;
 
+  // Compute the residuals of many data points. By default this is just a loop
+  // that calls Error() on each data point, but this function can be useful if
+  // the errors of multiple points may be estimated simultanesously (e.g.,
+  // matrix multiplication to compute the reprojection error of many points at
+  // once).
   virtual std::vector<double> Residuals(const std::vector<Datum>& data,
                                         const Model& model) const {
     std::vector<double> residuals(data.size());

@@ -262,18 +262,6 @@ bool SampleConsensusEstimator<Datum, Model>::Estimate(
     }
   }
 
-  // Grab inliers to refine the model.
-  std::vector<bool> temp_inlier_set =
-      estimator.GetInliers(data, *best_model, ransac_params_.error_thresh);
-  std::vector<Datum> temp_consensus_set;
-  for (int i = 0; i < temp_inlier_set.size(); i++) {
-    if (temp_inlier_set[i]) {
-      temp_consensus_set.push_back(data[i]);
-    }
-  }
-
-  // Refine the model based on all current inliers.
-  estimator.RefineModel(temp_consensus_set, best_model);
   num_inliers_ =
       estimator.GetNumInliers(data, *best_model, ransac_params_.error_thresh);
   return true;
