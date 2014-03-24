@@ -54,6 +54,7 @@ SET(THEIA_SRC
   math/probability/sequential_probability_ratio.cc
   util/random.cc
   util/stringprintf.cc
+  vision/sfm/camera/camera_pose.cc
   vision/sfm/pose/dls_impl.cc
   vision/sfm/pose/dls_pnp.cc
   vision/sfm/pose/eight_point_fundamental_matrix.cc
@@ -134,6 +135,7 @@ IF (BUILD_TESTING)
   GTEST(solvers/prosac)
   GTEST(solvers/ransac)
   GTEST(vision/matching/distance)
+  GTEST(vision/sfm/camera/camera_pose)
   GTEST(vision/sfm/pose/dls_pnp)
   GTEST(vision/sfm/pose/eight_point_fundamental_matrix)
   GTEST(vision/sfm/pose/five_point_focal_length_radial_distortion)
