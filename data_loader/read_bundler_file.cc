@@ -354,9 +354,12 @@ bool ReadBundlerFile(const std::string& bundler_file,
           << ") = " << image_list[camera_index] << " num views = " << num_views
           << "\n view list = " << view_list;
 
-      // Update the feature position to Bundler coordinates.
-      camera->at(camera_index).feature_position_2D_[sift_key_index].x() = x_pos;
-      camera->at(camera_index).feature_position_2D_[sift_key_index].y() = y_pos;
+      // Undistort the feature location according the the radial distortion
+      // params.
+      camera->at(camera_index).pose_.UndistortImagePoint(
+          camera->at(camera_index)
+              .feature_position_2D_distorted_[sift_key_index],
+          &(camera->at(camera_index).feature_position_2D_[sift_key_index]));
 
       // Set the 3D id to the corresponding world point.
       camera->at(camera_index).feature_3D_ids_[sift_key_index] = i;
