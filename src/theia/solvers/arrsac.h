@@ -73,17 +73,13 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
   // Params:
   //   min_sample_size: The minimum number of samples needed to estimate a
   //     model.
-  //   error_thresh: Error threshold for determining inliers vs. outliers. i.e.
-  //     if the error is below this, the data point is an inlier.
   //   max_candidate_hyps: Maximum number of hypotheses in the initial
   //     hypothesis set
   //   block_size: Number of data points a hypothesis is evaluated against
   //     before preemptive ordering is used.
-  Arrsac(int min_sample_size, double error_thresh, int max_candidate_hyps = 500,
+  Arrsac(int min_sample_size, int max_candidate_hyps = 500,
          int block_size = 100)
       : SampleConsensusEstimator<Datum, Model>(min_sample_size),
-        min_sample_size_(min_sample_size),
-        error_thresh_(error_thresh),
         max_candidate_hyps_(max_candidate_hyps),
         block_size_(block_size),
         sigma_(0.05),
@@ -125,12 +121,6 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
                                    std::vector<Model>* accepted_hypotheses);
 
  private:
-  // Minimum sample size to generate a model.
-  int min_sample_size_;
-
-  // Threshold for determining inliers.
-  double error_thresh_;
-
   // Maximum candidate hypotheses to consider at any time.
   int max_candidate_hyps_;
 
@@ -147,9 +137,6 @@ class Arrsac : public SampleConsensusEstimator<Datum, Model> {
 
   // Confidence that there exists at least one set with no outliers.
   double inlier_confidence_;
-
-  // Inliners from the recent data. Only valid if Estimate has been called!
-  std::vector<bool> inliers_;
 };
 
 // -------------------------- Implementation -------------------------- //
@@ -179,8 +166,8 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
   double rejected_accum_inlier_ratio = 0;
 
   // RandomSampler and PROSAC Sampler.
-  RandomSampler<Datum> random_sampler(min_sample_size_);
-  ProsacSampler<Datum> prosac_sampler(min_sample_size_);
+  RandomSampler<Datum> random_sampler(this->min_sample_size_);
+  ProsacSampler<Datum> prosac_sampler(this->min_sample_size_);
   random_sampler.Initialize();
   prosac_sampler.Initialize();
 
@@ -213,8 +200,8 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
       std::vector<double> residuals =
           estimator.Residuals(data_input, hypothesis);
       bool sprt_test = SequentialProbabilityRatioTest(
-          residuals, error_thresh_, sigma_, epsilon_, decision_threshold,
-          &num_tested_points, &observed_inlier_ratio);
+          residuals, this->ransac_params_.error_thresh, sigma_, epsilon_,
+          decision_threshold, &num_tested_points, &observed_inlier_ratio);
 
       // If the model was rejected by the SPRT test.
       if (!sprt_test) {
@@ -241,7 +228,8 @@ int Arrsac<Datum, Model>::GenerateInitialHypothesisSet(
         // Set U_in = support of hypothesis h(k).
         data.clear();
         for (int i = 0; i < data_input.size(); i++) {
-          if (estimator.Error(data_input[i], hypothesis) < error_thresh_)
+          if (estimator.Error(data_input[i], hypothesis) <
+              this->ransac_params_.error_thresh)
             data.push_back(data_input[i]);
         }
 
@@ -277,12 +265,13 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
     hypotheses[i] = ScoredData<Model>(initial_hypotheses[i], 0.0);
     // Calculate inlier score for the hypothesis.
     for (int j = 0; j <= block_size_; j++) {
-      if (estimator.Error(data[j], hypotheses[i].data) < error_thresh_)
+      if (estimator.Error(data[j], hypotheses[i].data) <
+          this->ransac_params_.error_thresh)
         hypotheses[i].score += 1.0;
     }
   }
 
-  RandomSampler<Datum> random_sampler(min_sample_size_);
+  RandomSampler<Datum> random_sampler(this->min_sample_size_);
   random_sampler.Initialize();
 
   // Preemptive Evaluation
@@ -303,8 +292,9 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
 
     // Score the hypotheses using data point i.
     for (int j = 0; j < hypotheses.size(); j++) {
-      if (estimator.Error(data[i], hypotheses[j].data) < error_thresh_)
-        hypotheses[i].score += 1.0;
+      if (estimator.Error(data[i], hypotheses[j].data) <
+          this->ransac_params_.error_thresh)
+        hypotheses[j].score += 1.0;
     }
 
     if (i % block_size_ == 0) {
@@ -343,7 +333,8 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
             ScoredData<Model> new_hypothesis(estimated_model, 0.0);
             // Score the newly generated model.
             for (int l = 0; l < i; l++)
-              if (estimator.Error(data[l], new_hypothesis.data) < error_thresh_)
+              if (estimator.Error(data[l], new_hypothesis.data) <
+                  this->ransac_params_.error_thresh)
                 new_hypothesis.score += 1.0;
             // Add newly generated model to the hypothesis set.
             hypotheses.push_back(new_hypothesis);
@@ -365,11 +356,8 @@ bool Arrsac<Datum, Model>::Estimate(const std::vector<Datum>& data,
   }
 
   // Grab inliers to refine the model.
-  InlierSupport quality_measurement(error_thresh_);
-  quality_measurement.Initialize();
-  std::vector<double> residuals = estimator.Residuals(data, *best_model);
-  std::vector<bool> temp_inlier_set(data.size());
-  quality_measurement.Calculate(residuals);
+  this->num_inliers_ = estimator
+      .GetNumInliers(data, *best_model, this->ransac_params_.error_thresh);
 
   return true;
 }

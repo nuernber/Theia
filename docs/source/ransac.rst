@@ -261,11 +261,9 @@ constructor. The constructors for each method are specified as follows
   pursuing only the models which are most likely to lead to high quality
   results. This results in a very fast method which can be used for real-time applications.
 
-  .. function:: Arrsac(int min_sample_size, double error_thresh, int max_candidate_hyps = 500, int block_size = 100)
+  .. function:: Arrsac(int min_sample_size, int max_candidate_hyps = 500, int block_size = 100)
 
      ``min_sample_size``: The minimum number of samples needed to estimate a model.
-
-     ``error_thresh``: Error threshold for determining inliers vs. outliers. i.e. if the error is below this, the data point is an inlier.
 
      ``max_candidate_hyps``: Maximum number of hypotheses in the initial hypothesis set
 

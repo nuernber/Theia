@@ -338,10 +338,9 @@ generated hypotheses at once. This allows for a bounded running time while
 pursuing only the models which are most likely to lead to high quality
 results. This results in a very fast method which can be used for real-time applications.</p>
 <dl class="function">
-<dt id="Arrsac::Arrsac__i.double.i.i">
- <tt class="descname">Arrsac</tt><big>(</big>int <em>min_sample_size</em>, double <em>error_thresh</em>, int <em>max_candidate_hyps</em><em>=500</em>, int <em>block_size</em><em>=100</em><big>)</big><a class="headerlink" href="#Arrsac::Arrsac__i.double.i.i" title="Permalink to this definition">¶</a></dt>
+<dt id="Arrsac::Arrsac__i.i.i">
+ <tt class="descname">Arrsac</tt><big>(</big>int <em>min_sample_size</em>, int <em>max_candidate_hyps</em><em>=500</em>, int <em>block_size</em><em>=100</em><big>)</big><a class="headerlink" href="#Arrsac::Arrsac__i.i.i" title="Permalink to this definition">¶</a></dt>
 <dd><p><tt class="docutils literal"><span class="pre">min_sample_size</span></tt>: The minimum number of samples needed to estimate a model.</p>
-<p><tt class="docutils literal"><span class="pre">error_thresh</span></tt>: Error threshold for determining inliers vs. outliers. i.e. if the error is below this, the data point is an inlier.</p>
 <p><tt class="docutils literal"><span class="pre">max_candidate_hyps</span></tt>: Maximum number of hypotheses in the initial hypothesis set</p>
 <p><tt class="docutils literal"><span class="pre">block_size</span></tt>: Number of data points a hypothesis is evaluated against before preemptive ordering is used.</p>
 </dd></dl>

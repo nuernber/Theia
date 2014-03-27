@@ -51,10 +51,9 @@ namespace {
 template <class Datum, class Model>
 class TestableArrsac : public Arrsac<Datum, Model> {
  public:
-  TestableArrsac(int min_sample_size, double error_thresh,
-                 int max_candidate_hyps = 500, int block_size = 100)
-      : Arrsac<Datum, Model>(min_sample_size, error_thresh, max_candidate_hyps,
-                             block_size) {}
+  TestableArrsac(int min_sample_size, int max_candidate_hyps = 500,
+                 int block_size = 100)
+      : Arrsac<Datum, Model>(min_sample_size, max_candidate_hyps, block_size) {}
   using Arrsac<Datum, Model>::GenerateInitialHypothesisSet;
 };
 
@@ -112,9 +111,11 @@ TEST(ArrsacTest, InitializeHypothesisSet) {
   vector<double> input_quality(input_points.size(), 0.0);
 
   LineEstimator estimator;
-
   vector<Line> initial_hypothesis;
-  TestableArrsac<Point, Line> arrsac_line(2, 1.0);
+  TestableArrsac<Point, Line> arrsac_line(2);
+  RansacParameters params;
+  params.error_thresh = 1.0;
+  arrsac_line.Initialize(params);
   int num_iterations = arrsac_line.GenerateInitialHypothesisSet(
       input_points, estimator, &initial_hypothesis);
   ASSERT_GT(num_iterations, 0);
@@ -133,9 +134,11 @@ TEST(ArrsacTest, Estimate) {
     input_points.push_back(Point(i + noise_x, i + noise_y));
   }
   LineEstimator estimator;
-
   Line fitted_line;
-  TestableArrsac<Point, Line> arrsac_line(2, 1.0);
+  TestableArrsac<Point, Line> arrsac_line(2);
+  RansacParameters params;
+  params.error_thresh = 1.0;
+  arrsac_line.Initialize(params);
   CHECK(arrsac_line.Estimate(input_points, estimator, &fitted_line));
   ASSERT_NEAR(fitted_line.m, 1.0, 0.1);
 }
@@ -160,7 +163,10 @@ TEST(ArrsacTest, EstimateWithQuality) {
   LineEstimator estimator;
 
   Line fitted_line;
-  TestableArrsac<Point, Line> arrsac_line(2, 1.0);
+  TestableArrsac<Point, Line> arrsac_line(2);
+  RansacParameters params;
+  params.error_thresh = 1.0;
+  arrsac_line.Initialize(params);
   CHECK(arrsac_line.Estimate(input_points, estimator, &fitted_line));
   ASSERT_NEAR(fitted_line.m, 1.0, 0.02);
 }
