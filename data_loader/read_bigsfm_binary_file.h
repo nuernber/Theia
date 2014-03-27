@@ -32,33 +32,21 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
+#ifndef THEIA_DATA_LOADER_READ_BIGSFM_BINARY_FILE_H_
+#define THEIA_DATA_LOADER_READ_BIGSFM_BINARY_FILE_H_
+
 #include <Eigen/Core>
-#include <glog/logging.h>
-#include <gflags/gflags.h>
 #include <string>
+#include <theia/theia.h>
 #include <vector>
 
-#include "theia/alignment/alignment.h"
-#include "theia/vision/sfm/camera.h"
+// Loads a bigsfm dataset from a binary file. This file should contain 3D
+// points, camera poses, camera internal params, feature locations and
+// descriptors, and 2D-3D correspondences. The binary file should be generated
+// with the convert_bigsfm_to_binary.cc file distributed with Theia.
+bool ReadBigSfMBinary(const std::string& binary_file,
+                      std::vector<theia::Camera>* cameras,
+                      std::vector<Eigen::Vector3d>* world_points,
+                      std::vector<Eigen::Vector3f>* world_points_color);
 
-DEFINE_STRING(bundler_file, "", "Filepath of the bundler.out file.");
-DEFINE_STRING(list_file, "",
-              "Filepath of the image lists used in the reconstruction.");
-DEFINE_STRING(
-    sift_key_dir, "",
-    "Base directory for the sift key files, as specified by the list file.");
-
-bool ReadListsFile(const std::string& list_file,
-                   std::vector<string>* image_names,
-                   std::vector<double>* focal_length) {}
-
-int main(int argc, char *argv[]) {
-  google::ParseCommandLineFlags(&argc, &argv, true);
-  google::InitGoogleLogging(argv[0]);
-
-  // Read lists file.
-
-  // Read bundler file.
-
-  return 0;
-}
+#endif  // THEIA_DATA_LOADER_READ_BIGSFM_BINARY_FILE_H_
