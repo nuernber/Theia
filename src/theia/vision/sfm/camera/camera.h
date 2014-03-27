@@ -31,6 +31,7 @@
 //
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
+//         Torsten Sattler (sattlert@inf.ethz.ch)
 
 #ifndef THEIA_VISION_SFM_CAMERA_CAMERA_H_
 #define THEIA_VISION_SFM_CAMERA_CAMERA_H_
@@ -46,16 +47,11 @@ namespace theia {
 // Base class for all cameras. This class (or derived classes) should include
 // things like the camera pose, features, descriptors, sensor measurements,
 // etc.
-class Camera {
- public:
+struct Camera {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   Camera() {}
   explicit Camera(const CameraPose& pose) : pose_(pose) {}
 
-  virtual ~Camera();
-
- protected:
   // The camera pose describing the position, orientation, and intrinsics of the
   // camera.
   CameraPose pose_;
@@ -65,7 +61,9 @@ class Camera {
   // Height of the camera in pixels.
   int height_;
 
-  // Feature positions.
+  // Original measured feature positions.
+  std::vector<Eigen::Vector2d> feature_position_2D_distorted_;
+  // Feature positions after correcting for radial distortion.
   std::vector<Eigen::Vector2d> feature_position_2D_;
 
   // Descriptors.
@@ -79,7 +77,7 @@ class Camera {
 
   // If the 3D positions are stored locally, then we can keep them in a
   // container here.
-  std::vector<Vector3d> features_positions_3D_;
+  std::vector<Eigen::Vector3d> feature_positions_3D_;
 };
 
 }  // namespace theia
