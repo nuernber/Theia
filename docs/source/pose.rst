@@ -69,8 +69,9 @@ Five Point Relative Pose
     Computes the relative pose between two cameras using 5 corresponding
     points. Algorithm is implemented based on "An Efficient Solution to the
     Five-Point Relative Pose Problem" by [Nister]_. The rotation and translation
-    returned are defined such that :math:`E=t_x * R` and :math:`y^\top * E * x =
-    0` where :math:`y` are points from image2 and :math:`x` are points from image1.
+    returned are defined such that :math:`E=[t]_{\times} * R` and
+    :math:`y^\top * E * x = 0` where :math:`y` are points from image2 and
+    :math:`x` are points from image1.
 
     ``image1_points``: Location of features on the image plane of image 1.
 

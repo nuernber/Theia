@@ -128,8 +128,9 @@ bool <tt class="descname">FivePointRelativePose</tt><big>(</big>const Eigen::Vec
 <dd><p>Computes the relative pose between two cameras using 5 corresponding
 points. Algorithm is implemented based on &#8220;An Efficient Solution to the
 Five-Point Relative Pose Problem&#8221; by <a class="reference internal" href="bibliography.html#nister">[Nister]</a>. The rotation and translation
-returned are defined such that <span class="math">\(E=t_x * R\)</span> and <span class="math">\(y^\top * E * x =
-0\)</span> where <span class="math">\(y\)</span> are points from image2 and <span class="math">\(x\)</span> are points from image1.</p>
+returned are defined such that <span class="math">\(E=[t]_{\times} * R\)</span> and
+<span class="math">\(y^\top * E * x = 0\)</span> where <span class="math">\(y\)</span> are points from image2 and
+<span class="math">\(x\)</span> are points from image1.</p>
 <p><tt class="docutils literal"><span class="pre">image1_points</span></tt>: Location of features on the image plane of image 1.</p>
 <p><tt class="docutils literal"><span class="pre">image2_points</span></tt>: Location of features on the image plane of image 2.</p>
 <p><tt class="docutils literal"><span class="pre">returns</span></tt>: Output the number of poses computed as well as the relative
