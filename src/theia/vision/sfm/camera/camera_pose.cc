@@ -224,8 +224,9 @@ void CameraPose::UndistortImagePoint(
   Eigen::Map<const Eigen::Matrix<double, 2, Eigen::Dynamic> > distorted_map(
       distorted_point[0].data(), 2, distorted_point.size());
   Eigen::ArrayXd radius = distorted_map.colwise().squaredNorm();
-  radius = 1.0 + radius * k1_ + radius * radius * k2_ +
-           radius * radius * radius * k3_ + radius * radius * radius * k4_;
+  radius =
+      1.0 + radius * k1_ + radius * radius * k2_ +
+      radius * radius * radius * k3_ + radius * radius * radius * radius * k4_;
 
   Eigen::Map<Eigen::Matrix<double, 2, Eigen::Dynamic> > undistorted_map(
       (*undistorted_point)[0].data(), 2, undistorted_point->size());

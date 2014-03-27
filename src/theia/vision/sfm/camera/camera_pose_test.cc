@@ -337,13 +337,13 @@ TEST_F(CameraPoseTest, WorldToImageManyPointsWorks) {
   }
 }
 
-TEST_F(CameraPoseTest, UndistortImagePoint) {
+TEST_F(CameraPoseTest, OneParameterUndistortImagePoint) {
   Matrix3d R(Matrix3d::Identity());
   Vector3d t(Vector3d::Zero());
   CameraPose pose;
   pose.InitializePose(R, t, calibration_matrix_, 1.0, 0.0, 0.0, 0.0);
 
-  Vector2d p_u(1.0, 1.0);
+  Vector2d p_u;
   pose.UndistortImagePoint(Vector2d(0.0, 0.0), &p_u);
   ASSERT_NEAR(0.0, p_u[0], 1e-6);
   ASSERT_NEAR(0.0, p_u[1], 1e-6);
@@ -362,7 +362,7 @@ TEST_F(CameraPoseTest, UndistortImagePoint) {
   ASSERT_NEAR(3.0 / (-339.0), p_u[1], 1e-6);
 }
 
-TEST_F(CameraPoseTest, UndistortImagePointManyPoints) {
+TEST_F(CameraPoseTest, OneParameterUndistortImagePointManyPoints) {
   Matrix3d R(Matrix3d::Identity());
   Vector3d t(Vector3d::Zero());
   CameraPose pose;
@@ -389,6 +389,67 @@ TEST_F(CameraPoseTest, UndistortImagePointManyPoints) {
   gt_undistorted_points = { Vector2d(0.0, 0.0),
                             Vector2d(1.0 / -9.0, 2.0 / -9.0),
                             Vector2d(-5.0 / -67.0, 3.0 / -67.0) };
+  pose.UndistortImagePoint(distorted_points, &undistorted_points);
+  ASSERT_EQ(undistorted_points.size(), distorted_points.size());
+  for (int i = 0; i < distorted_points.size(); i++) {
+    ASSERT_DOUBLE_EQ(undistorted_points[i].x(), gt_undistorted_points[i].x());
+    ASSERT_DOUBLE_EQ(undistorted_points[i].y(), gt_undistorted_points[i].y());
+  }
+}
+
+TEST_F(CameraPoseTest, FourParameterUndistortImagePoint) {
+  Matrix3d R(Matrix3d::Identity());
+  Vector3d t(Vector3d::Zero());
+  CameraPose pose;
+  pose.InitializePose(R, t, calibration_matrix_, 1.0, 0.0, 0.0, 1.0);
+
+  Vector2d p_u;
+  pose.UndistortImagePoint(Vector2d(0.0, 0.0), &p_u);
+  ASSERT_NEAR(0.0, p_u[0], 1e-6);
+  ASSERT_NEAR(0.0, p_u[1], 1e-6);
+
+  pose.UndistortImagePoint(Vector2d(1.0, 2.0), &p_u);
+  ASSERT_NEAR(1.0 / 631.0, p_u[0], 1e-6);
+  ASSERT_NEAR(2.0 / 631.0, p_u[1], 1e-6);
+
+  pose.InitializePose(R, t, calibration_matrix_, -10.0, 0.2, 0.03, -0.001);
+  pose.UndistortImagePoint(Vector2d(0.0, 0.0), &p_u);
+  ASSERT_NEAR(0.0, p_u[0], 1e-6);
+  ASSERT_NEAR(0.0, p_u[1], 1e-6);
+
+  pose.UndistortImagePoint(Vector2d(5.0, 3.0), &p_u);
+  ASSERT_NEAR(5.0 / (-265.016), p_u[0], 1e-6);
+  ASSERT_NEAR(3.0 / (-265.016), p_u[1], 1e-6);
+}
+
+TEST_F(CameraPoseTest, FourParameterUndistortImagePointManyPoints) {
+  Matrix3d R(Matrix3d::Identity());
+  Vector3d t(Vector3d::Zero());
+  CameraPose pose;
+  pose.InitializePose(R, t, calibration_matrix_, 1.0, 0.0, 0.0, 0.1);
+
+  std::vector<Vector2d> distorted_points = { Vector2d(0.0, 0.0),
+                                             Vector2d(1.0, 2.0),
+                                             Vector2d(-5.0, 3.0) };
+  std::vector<Vector2d> gt_undistorted_points(distorted_points.size());
+  for (int i = 0; i < distorted_points.size(); i++) {
+    pose.UndistortImagePoint(distorted_points[i], &(gt_undistorted_points[i]));
+  }
+
+  std::vector<Vector2d> undistorted_points;
+  pose.UndistortImagePoint(distorted_points, &undistorted_points);
+  ASSERT_EQ(undistorted_points.size(), distorted_points.size());
+  for (int i = 0; i < distorted_points.size(); i++) {
+    ASSERT_DOUBLE_EQ(undistorted_points[i].x(), gt_undistorted_points[i].x());
+    ASSERT_DOUBLE_EQ(undistorted_points[i].y(), gt_undistorted_points[i].y());
+  }
+
+
+  pose.InitializePose(R, t, calibration_matrix_, -2.0, 1.07, 0.03, 0.004);
+  for (int i = 0; i < distorted_points.size(); i++) {
+    pose.UndistortImagePoint(distorted_points[i], &(gt_undistorted_points[i]));
+  }
+
   pose.UndistortImagePoint(distorted_points, &undistorted_points);
   ASSERT_EQ(undistorted_points.size(), distorted_points.size());
   for (int i = 0; i < distorted_points.size(); i++) {
