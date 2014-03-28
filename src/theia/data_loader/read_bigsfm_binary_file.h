@@ -36,9 +36,12 @@
 #define THEIA_DATA_LOADER_READ_BIGSFM_BINARY_FILE_H_
 
 #include <Eigen/Core>
-#include <theia/theia.h>
 #include <string>
 #include <vector>
+
+#include "theia/vision/sfm/camera/camera.h"
+
+namespace theia {
 
 // Loads a bigsfm dataset from a binary file. This file should contain 3D
 // points, camera poses, camera internal params, feature locations and
@@ -48,5 +51,7 @@ bool ReadBigSfMBinary(const std::string& binary_file,
                       std::vector<theia::Camera>* cameras,
                       std::vector<Eigen::Vector3d>* world_points,
                       std::vector<Eigen::Vector3f>* world_points_color);
+
+}  // namespace theia
 
 #endif  // THEIA_DATA_LOADER_READ_BIGSFM_BINARY_FILE_H_

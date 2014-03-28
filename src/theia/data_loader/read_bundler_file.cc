@@ -32,7 +32,7 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include "read_bundler_file.h"
+#include "theia/data_loader/read_bundler_file.h"
 
 #include <Eigen/Core>
 #include <theia/theia.h>
@@ -40,6 +40,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+
+namespace theia {
 
 // Description of the list files from the Big SfM website:
 // http://www.cs.cornell.edu/projects/p2f/README_Dubrovnik6K.txt
@@ -195,11 +197,10 @@ bool ReadSiftKeyfile(const std::string& sift_key_file,
 // the image, and (w/2, h/2) is the top-right corner (where w and h are the
 // width and height of the image).
 bool ReadBundlerFile(const std::string& bundler_file,
-                     const std::string& sift_key_dir,
-                     const std::vector<std::string>& image_list,
                      std::vector<theia::Camera>* camera,
                      std::vector<Eigen::Vector3d>* world_points,
-                     std::vector<Eigen::Vector3f>* world_points_color) {
+                     std::vector<Eigen::Vector3f>* world_points_color,
+                     std::vector<BundlerViewList>* view_list) {
   // Read in num cameras, num points.
   std::ifstream ifs(bundler_file.c_str(), std::ios::in);
   if (!ifs.is_open()) {
@@ -218,42 +219,9 @@ bool ReadBundlerFile(const std::string& bundler_file,
   p = p2;
   const int num_points = strtol(p, &p2, 10);
 
-  CHECK_LE(num_cameras, image_list.size());
-
   // Allocate the proper number of cameras.
   camera->clear();
   camera->resize(num_cameras);
-
-  // First, load all SIFT descriptors into memory.
-  for (int i = 0; i < image_list.size(); i++) {
-    // Get image file and trim the .jpg off
-    std::string sift_key_file = image_list[i];
-    static const std::string extension = ".jpg";
-    const size_t ext_loc = sift_key_file.rfind(extension);
-    if (ext_loc != std::string::npos) {
-      sift_key_file = sift_key_dir + sift_key_file.substr(0, ext_loc) + ".key";
-    } else {
-      LOG(ERROR) << "could not parse the image filename properly!";
-      return false;
-    }
-    if ((i + 1) % 100 == 0 || i == image_list.size() - 1) {
-      std::cout << "\r Loading sift features for camera " << i + 1 << " / "
-                << image_list.size() << std::flush;
-    }
-
-    CHECK(ReadSiftKeyfile(sift_key_file,
-                          &(camera->at(i).feature_position_2D_distorted_),
-                          &(camera->at(i).descriptors_)));
-
-    // Set the size of the 3d position IDs to equal the 2d position size.
-    camera->at(i).feature_3D_ids_
-        .resize(camera->at(i).feature_position_2D_distorted_.size());
-    // Resize the undistorted feature positions to equal the distorted position
-    // size.
-    camera->at(i).feature_position_2D_
-        .resize(camera->at(i).feature_position_2D_distorted_.size());
-  }
-  std::cout << std::endl;
 
   // Read in the camera params.
   for (int i = 0; i < num_cameras; i++) {
@@ -267,7 +235,6 @@ bool ReadBundlerFile(const std::string& bundler_file,
     p = p2;
     const double k2 = strtod(p, &p2);
     p = p2;
-
 
     const Eigen::Matrix3d calibration_matrix =
         Eigen::DiagonalMatrix<double, 3>(focal_length, focal_length, 1.0);
@@ -307,6 +274,9 @@ bool ReadBundlerFile(const std::string& bundler_file,
   world_points->resize(num_points);
   world_points_color->clear();
   world_points_color->resize(num_points);
+  view_list->clear();
+  view_list->resize(num_points);
+
   for (int i = 0; i < num_points; i++) {
     // Read position.
     std::string position;
@@ -327,13 +297,16 @@ bool ReadBundlerFile(const std::string& bundler_file,
       p = p2;
     }
 
-
     // Read viewlist.
-    std::string view_list;
-    std::getline(ifs, view_list);
-    p = view_list.c_str();
+    std::string view_list_string;
+    std::getline(ifs, view_list_string);
+    p = view_list_string.c_str();
     const int num_views = strtol(p, &p2, 10);
     p = p2;
+
+    // Reserve the view list for this 3D point.
+    view_list->at(i).reserve(num_views);
+
     for (int j = 0; j < num_views; j++) {
       // Camera key x y
       const int camera_index = strtol(p, &p2, 10);
@@ -347,22 +320,11 @@ bool ReadBundlerFile(const std::string& bundler_file,
       CHECK_EQ(x_pos, 0.0);
       CHECK_EQ(y_pos, 0.0);
 
-      CHECK_LT(camera_index, camera->size()) << "string = " << view_list;
-      CHECK_LT(sift_key_index,
-               camera->at(camera_index).feature_position_2D_.size())
-          << "Sift key failure! camera(" << camera_index
-          << ") = " << image_list[camera_index] << " num views = " << num_views
-          << "\n view list = " << view_list;
+      CHECK_LT(camera_index, camera->size()) << "string = " << view_list_string;
 
-      // Undistort the feature location according the the radial distortion
-      // params.
-      camera->at(camera_index).pose_.UndistortImagePoint(
-          camera->at(camera_index)
-              .feature_position_2D_distorted_[sift_key_index],
-          &(camera->at(camera_index).feature_position_2D_[sift_key_index]));
-
-      // Set the 3D id to the corresponding world point.
-      camera->at(camera_index).feature_3D_ids_[sift_key_index] = i;
+      // Push the sift key correspondence to the view list.
+      view_list->at(i).push_back(
+          BundlerSiftKeyReference(camera_index, sift_key_index, x_pos, y_pos));
     }
 
     if ((i + 1) % 100 == 0 || i == num_points - 1) {
@@ -370,8 +332,10 @@ bool ReadBundlerFile(const std::string& bundler_file,
                 << std::flush;
     }
   }
-
+  std::cout << std::endl;
   ifs.close();
 
   return true;
 }
+
+}  // namespace theia

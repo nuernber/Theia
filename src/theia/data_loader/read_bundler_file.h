@@ -40,6 +40,23 @@
 #include <string>
 #include <vector>
 
+namespace theia {
+
+// Utility struct to help contain the view list information that Bundler files
+// provide.
+struct BundlerSiftKeyReference {
+  BundlerSiftKeyReference(const int ci, const int ski, const float xp,
+                          const float yp)
+      : camera_index(ci), sift_key_index(ski), x_pos(xp), y_pos(yp) {}
+  int camera_index;
+  int sift_key_index;
+  float x_pos;
+  float y_pos;
+};
+
+// A set of sift key reference is referred to as a BundlerViewList.
+typedef std::vector<BundlerSiftKeyReference> BundlerViewList;
+
 // Loads the list of image names from the given bundler list file. Sets the
 // focal length value to the given EXIF value if provided, and 0 otherwise.
 bool ReadListsFile(const std::string& list_filename,
@@ -53,30 +70,27 @@ bool ReadSiftKeyfile(const std::string& sift_key_file,
                      std::vector<Eigen::VectorXf>* descriptor);
 
 // Loads all information from a bundler file. The bundler file includes 3D
-// points, camera poses, camera intrinsics, descriptors, and 2D-3D matches. As
-// such, this method will load the SIFT descriptors from the corresponding SIFT
-// key files.
+// points, camera poses, camera intrinsics, descriptors, and 2D-3D matches. This
+// method will not load the descriptors from the sift key files, it will only
+// store the "references" to them in the view list.
 //
 // Input params are as follows:
 //   bundler_file: the file output by bundler containing the 3D reconstruction,
 //       camera poses, feature locations, and correspondences. Usually the file
 //       is named bundle.out
-//   sift_key_dir: The directory containing the sift keys used in the
-//       reconstruction. Typically this is the base dir of the dataset. This
-//       string should include a trailing slash.
-//   image_list: A list of image filepaths that can be appeneded to sift_key_dir
-//       to get the sift key file. The order should be the same as the order of
-//       cameras in the bundler file. This is usually read from lists.txt
 //   camera: A vector of theia::Camera objects that contain pose information,
 //       descriptor information, and 2D-3D correspondences. The 3D point ids
 //       stored correspond to the position in the world_points vector.
 //   world_points: The 3D points from the reconstruction.
 //   world_points_color: The RGB color of the world points (0 to 1 float).
+//   view_list: The view list for each 3D point. The view list is a container
+//       where each element has a camera index, sift key index, and x,y pos.
 bool ReadBundlerFile(const std::string& bundler_file,
-                     const std::string& sift_key_dir,
-                     const std::vector<std::string>& image_list,
                      std::vector<theia::Camera>* camera,
                      std::vector<Eigen::Vector3d>* world_points,
-                     std::vector<Eigen::Vector3f>* world_points_color);
+                     std::vector<Eigen::Vector3f>* world_points_color,
+                     std::vector<BundlerViewList>* view_list);
+
+}  // namespace theia
 
 #endif  // THEIA_DATA_LOADER_READ_BUNDLER_FILE_H_

@@ -55,8 +55,6 @@
 #include <GL/glut.h>
 #endif
 
-#include "read_bigsfm_binary_file.h"
-
 DEFINE_string(bigsfm_binary, "", "Filepath for the bigsfm binary file to be "
                                  "read. This file may be massive!");
 
@@ -318,8 +316,8 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
 
   // Output as a binary file.
-  CHECK(ReadBigSfMBinary(FLAGS_bigsfm_binary, &cameras, &world_points,
-                         &world_points_color));
+  CHECK(theia::ReadBigSfMBinary(FLAGS_bigsfm_binary, &cameras, &world_points,
+                                &world_points_color));
 
   // Set up opengl and glut.
   glutInit(&argc, argv);

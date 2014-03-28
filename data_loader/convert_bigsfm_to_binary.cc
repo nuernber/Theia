@@ -42,11 +42,10 @@
 #include <string>
 #include <vector>
 
-#include "read_bundler_file.h"
-
 DEFINE_string(bundler_file, "", "Filepath of the bundler.out file.");
 DEFINE_string(list_file, "",
               "Filepath of the image lists used in the reconstruction.");
+
 DEFINE_string(
     sift_key_dir, "",
     "Base directory for the sift key files, as specified by the list file.");
@@ -175,6 +174,70 @@ bool OutputBinaryFile(const std::vector<theia::Camera>& cameras,
   return true;
 }
 
+// Given the view list from the Bundler file, this function will load the sift
+// descriptors from the key files and store them with the cameras.
+bool LoadSiftCorrespondences(
+    const std::vector<std::string>& image_list, const std::string& sift_key_dir,
+    const std::vector<theia::BundlerViewList>& view_list,
+    std::vector<theia::Camera>* camera) {
+  // First, load all SIFT descriptors into memory.
+  for (int i = 0; i < image_list.size(); i++) {
+    // Get image file and trim the .jpg off
+    std::string sift_key_file = image_list[i];
+    static const std::string extension = ".jpg";
+    const size_t ext_loc = sift_key_file.rfind(extension);
+    if (ext_loc != std::string::npos) {
+      sift_key_file = sift_key_dir + sift_key_file.substr(0, ext_loc) + ".key";
+    } else {
+      LOG(ERROR) << "could not parse the image filename properly!";
+      return false;
+    }
+
+    CHECK(theia::ReadSiftKeyfile(
+        sift_key_file, &(camera->at(i).feature_position_2D_distorted_),
+        &(camera->at(i).descriptors_)));
+
+    // Set the size of the 3d position IDs to equal the 2d position size.
+    camera->at(i).feature_3D_ids_
+        .resize(camera->at(i).feature_position_2D_distorted_.size());
+
+    // Undistort the image points and add them to the camera.
+    camera->at(i).pose_
+        .UndistortImagePoint(camera->at(i).feature_position_2D_distorted_,
+                             &(camera->at(i).feature_position_2D_));
+
+    // Update progress
+    if ((i + 1) % 100 == 0 || i == image_list.size() - 1) {
+      std::cout << "\r Loading sift features for camera " << i + 1 << " / "
+                << image_list.size() << std::flush;
+    }
+  }
+  std::cout << std::endl;
+
+  // Go through the view list and add the 2D-3D correspondences.
+  for (int i = 0; i < view_list.size(); i++) {
+    for (int j = 0; j < view_list[i].size(); j++) {
+      const int camera_index = view_list[i][j].camera_index;
+      const int sift_key_index = view_list[i][j].sift_key_index;
+
+      CHECK_LT(camera_index, camera->size());
+      CHECK_LT(sift_key_index,
+               camera->at(camera_index).feature_position_2D_.size())
+          << "Sift key failure! camera(" << camera_index
+          << ") = " << image_list[camera_index];
+
+        camera->at(camera_index).feature_3D_ids_[sift_key_index] = i;
+    }
+    // Update progress
+    if ((i + 1) % 100 == 0 || i == view_list.size() - 1) {
+      std::cout << "\r Loading correspondences for point " << i + 1 << " / "
+                << view_list.size() << std::flush;
+    }
+  }
+  std::cout << std::endl;
+  return true;
+}
+
 int main(int argc, char* argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
@@ -182,14 +245,19 @@ int main(int argc, char* argv[]) {
   // Read lists file.
   std::vector<std::string> image_name;
   std::vector<double> exif_focal_length;
-  CHECK(ReadListsFile(FLAGS_list_file, &image_name, &exif_focal_length));
+  CHECK(theia::ReadListsFile(FLAGS_list_file, &image_name, &exif_focal_length));
 
   // Read bundler file.
   std::vector<theia::Camera> cameras;
   std::vector<Eigen::Vector3d> world_points;
   std::vector<Eigen::Vector3f> world_points_color;
-  CHECK(ReadBundlerFile(FLAGS_bundler_file, FLAGS_sift_key_dir, image_name,
-                        &cameras, &world_points, &world_points_color));
+  std::vector<theia::BundlerViewList> view_list;
+  CHECK(theia::ReadBundlerFile(FLAGS_bundler_file, &cameras, &world_points,
+                               &world_points_color, &view_list));
+
+  // Load the SIFT descriptors into the cameras.
+  CHECK(LoadSiftCorrespondences(image_name, FLAGS_sift_key_dir, view_list,
+                                &cameras));
 
   // Output as a binary file.
   CHECK(OutputBinaryFile(cameras, world_points, world_points_color,

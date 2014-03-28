@@ -35,11 +35,13 @@
 #ifndef THEIA_SFM_H_
 #define THEIA_SFM_H_
 
-#include "theia/vision/transformation/align_point_clouds.h"
+#include "theia/data_loader/read_bigsfm_binary_file.h"
+#include "theia/data_loader/read_bundler_file.h"
 #include "theia/pose.h"
-#include "theia/vision/sfm/camera/camera_pose.h"
 #include "theia/vision/sfm/camera/camera.h"
+#include "theia/vision/sfm/camera/camera_pose.h"
 #include "theia/vision/sfm/projection_matrix.h"
 #include "theia/vision/sfm/triangulation/triangulation.h"
+#include "theia/vision/transformation/align_point_clouds.h"
 
 #endif  // THEIA_SFM_H_

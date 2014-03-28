@@ -37,6 +37,8 @@ FILE(GLOB THEIA_HDRS *.h)
 
 # Add sources
 SET(THEIA_SRC
+  data_loader/read_bigsfm_binary_file.cc
+  data_loader/read_bundler_file.cc
   image/descriptor/brisk_descriptor.cc
   image/descriptor/descriptor_extractor.cc
   image/descriptor/freak_descriptor.cc

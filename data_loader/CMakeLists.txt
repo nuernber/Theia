@@ -1,7 +1,3 @@
-SET(DATALOADER_SRCS
-  read_bundler_file.cc
-  read_bigsfm_binary_file.cc)
-
 # Converts the "raw" bigsfm dataset to a binary file that is much faster to load.
 ADD_EXECUTABLE(convert_bigsfm_to_binary convert_bigsfm_to_binary.cc ${DATALOADER_SRCS})
 TARGET_LINK_LIBRARIES(convert_bigsfm_to_binary theia ${GFLAGS_LIBRARIES})

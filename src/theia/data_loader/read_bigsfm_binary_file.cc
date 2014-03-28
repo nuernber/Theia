@@ -32,11 +32,16 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#include <Eigen/Core>
-#include <theia/theia.h>
+#include "theia/data_loader/read_bigsfm_binary_file.h"
 
+#include <Eigen/Core>
+#include <glog/logging.h>
+#include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
+
+namespace theia {
 
 // Loads Big SfM reconstruction data from a binary file. The original Big SfM
 // datasets can be found here: http://www.cs.cornell.edu/projects/bigsfm/#data
@@ -173,3 +178,5 @@ bool ReadBigSfMBinary(const std::string& binary_file,
   ifs.close();
   return true;
 }
+
+}  // namespace theia
