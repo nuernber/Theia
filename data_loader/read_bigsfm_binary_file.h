@@ -1,4 +1,4 @@
-// Copyright (C) 2013 The Regents of the University of California (Regents).
+// Copyright (C) 2014 The Regents of the University of California (Regents).
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,14 +32,21 @@
 // Please contact the author of this library if you have any questions.
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
-#ifndef THEIA_MATH_H_
-#define THEIA_MATH_H_
+#ifndef THEIA_DATA_LOADER_READ_BIGSFM_BINARY_FILE_H_
+#define THEIA_DATA_LOADER_READ_BIGSFM_BINARY_FILE_H_
 
-#include "theia/math/closed_form_polynomial_solver.h"
-#include "theia/math/distribution.h"
-#include "theia/math/matrix/gauss_jordan.h"
-#include "theia/math/polynomial.h"
-#include "theia/math/probability/sequential_probability_ratio.h"
-#include "theia/math/util.h"
+#include <Eigen/Core>
+#include <theia/theia.h>
+#include <string>
+#include <vector>
 
-#endif  // THEIA_MATH_H_
+// Loads a bigsfm dataset from a binary file. This file should contain 3D
+// points, camera poses, camera internal params, feature locations and
+// descriptors, and 2D-3D correspondences. The binary file should be generated
+// with the convert_bigsfm_to_binary.cc file distributed with Theia.
+bool ReadBigSfMBinary(const std::string& binary_file,
+                      std::vector<theia::Camera>* cameras,
+                      std::vector<Eigen::Vector3d>* world_points,
+                      std::vector<Eigen::Vector3f>* world_points_color);
+
+#endif  // THEIA_DATA_LOADER_READ_BIGSFM_BINARY_FILE_H_

@@ -37,6 +37,8 @@
 
 #include "theia/vision/transformation/align_point_clouds.h"
 #include "theia/pose.h"
+#include "theia/vision/sfm/camera/camera_pose.h"
+#include "theia/vision/sfm/camera/camera.h"
 #include "theia/vision/sfm/projection_matrix.h"
 #include "theia/vision/sfm/triangulation/triangulation.h"
 
