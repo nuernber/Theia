@@ -33,13 +33,14 @@
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
 #include <Eigen/Core>
-#include <fstream>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
 #include <stdint.h>
+#include <theia/theia.h>
+
+#include <fstream>
 #include <string>
 #include <vector>
-#include <theia/theia.h>
 
 #include "read_bundler_file.h"
 
@@ -168,7 +169,6 @@ bool OutputBinaryFile(const std::vector<theia::Camera>& cameras,
       std::cout << "\r Writing parameters for camera " << cam_index + 1 << " / "
                 << num_cameras << std::flush;
     }
-
   }
   std::cout << std::endl;
   ofs.close();

@@ -33,8 +33,9 @@
 // Author: Chris Sweeney (cmsweeney@cs.ucsb.edu)
 
 #include <Eigen/Core>
-#include <string>
 #include <theia/theia.h>
+
+#include <string>
 #include <vector>
 
 // Loads Big SfM reconstruction data from a binary file. The original Big SfM
@@ -134,7 +135,7 @@ bool ReadBigSfMBinary(const std::string& binary_file,
     // Resize feature containers appropriately.
     camera.feature_position_2D_distorted_
         .resize(num_features, Eigen::Vector2d::Zero());
-    camera.feature_position_2D_.resize(num_features,Eigen::Vector2d::Zero());
+    camera.feature_position_2D_.resize(num_features, Eigen::Vector2d::Zero());
     camera.feature_3D_ids_.resize(num_features);
     Eigen::VectorXf zero_desc(128);
     zero_desc.setZero();
@@ -167,7 +168,6 @@ bool ReadBigSfMBinary(const std::string& binary_file,
       std::cout << "\r Reading parameters for camera " << cam_index + 1 << " / "
                 << num_cameras << std::flush;
     }
-
   }
   std::cout << std::endl;
   ifs.close();

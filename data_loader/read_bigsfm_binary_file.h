@@ -36,8 +36,8 @@
 #define THEIA_DATA_LOADER_READ_BIGSFM_BINARY_FILE_H_
 
 #include <Eigen/Core>
-#include <string>
 #include <theia/theia.h>
+#include <string>
 #include <vector>
 
 // Loads a bigsfm dataset from a binary file. This file should contain 3D

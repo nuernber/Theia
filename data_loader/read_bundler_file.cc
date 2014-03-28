@@ -34,11 +34,11 @@
 
 #include "read_bundler_file.h"
 
-#include <cstdlib>
 #include <Eigen/Core>
+#include <theia/theia.h>
+#include <cstdlib>
 #include <fstream>
 #include <string>
-#include <theia/theia.h>
 #include <vector>
 
 // Description of the list files from the Big SfM website:
@@ -236,7 +236,7 @@ bool ReadBundlerFile(const std::string& bundler_file,
       LOG(ERROR) << "could not parse the image filename properly!";
       return false;
     }
-    if ( (i+1) % 100 == 0 || i == image_list.size() - 1) {
+    if ((i + 1) % 100 == 0 || i == image_list.size() - 1) {
       std::cout << "\r Loading sift features for camera " << i + 1 << " / "
                 << image_list.size() << std::flush;
     }
@@ -295,7 +295,7 @@ bool ReadBundlerFile(const std::string& bundler_file,
     camera->at(i).pose_.InitializePose(rotation, translation,
                                        calibration_matrix, k1, k2, 0.0, 0.0);
 
-    if ( (i+1) % 100 == 0 || i == num_cameras - 1) {
+    if ((i + 1) % 100 == 0 || i == num_cameras - 1) {
       std::cout << "\r Loading parameters for camera " << i + 1 << " / "
                 << num_cameras << std::flush;
     }
@@ -365,7 +365,7 @@ bool ReadBundlerFile(const std::string& bundler_file,
       camera->at(camera_index).feature_3D_ids_[sift_key_index] = i;
     }
 
-    if ( (i+1) % 100 == 0 || i == num_points - 1) {
+    if ((i + 1) % 100 == 0 || i == num_points - 1) {
       std::cout << "\r Loading 3D points " << i + 1 << " / " << num_points
                 << std::flush;
     }

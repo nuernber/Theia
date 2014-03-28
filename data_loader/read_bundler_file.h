@@ -36,8 +36,8 @@
 #define THEIA_DATA_LOADER_READ_BUNDLER_FILE_H_
 
 #include <Eigen/Core>
-#include <string>
 #include <theia/theia.h>
+#include <string>
 #include <vector>
 
 // Loads the list of image names from the given bundler list file. Sets the
