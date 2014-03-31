@@ -38,7 +38,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "theia/image/descriptor/descriptor.h"
 #include "theia/util/map_util.h"
 #include "theia/util/util.h"
 #include "theia/vision/matching/matcher.h"

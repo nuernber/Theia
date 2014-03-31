@@ -39,7 +39,7 @@
 #include "gtest/gtest.h"
 
 #include "theia/math/util.h"
-#include "theia/vision/pose/util.h"
+#include "theia/vision/sfm/pose/util.h"
 #include "theia/vision/sfm/projection_matrix.h"
 #include "theia/test/benchmark.h"
 #include "theia/test/test_utils.h"

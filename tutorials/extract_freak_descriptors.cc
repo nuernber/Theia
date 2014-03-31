@@ -44,7 +44,6 @@ DEFINE_string(input_image, "input", "Directory of two input images.");
 DEFINE_string(output_dir, ".", "Name of output image dir.");
 
 using theia::BriskDetector;
-using theia::Descriptor;
 using theia::FreakDescriptorExtractor;
 using theia::GrayImage;
 using theia::ImageCanvas;

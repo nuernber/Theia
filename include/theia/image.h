@@ -42,7 +42,6 @@
 // Descriptors.
 #include "theia/alignment/alignment.h"
 #include "theia/image/descriptor/brisk_descriptor.h"
-#include "theia/image/descriptor/descriptor.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
 #include "theia/image/descriptor/freak_descriptor.h"
 #include "theia/image/descriptor/patch_descriptor.h"

@@ -38,7 +38,6 @@
 #include <vector>
 
 #include "theia/alignment/alignment.h"
-#include "theia/image/descriptor/descriptor.h"
 #include "theia/image/descriptor/descriptor_extractor.h"
 #include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/util/util.h"

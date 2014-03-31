@@ -47,7 +47,6 @@ DEFINE_string(output_dir, ".", "Name of output image file.");
 using theia::GrayImage;
 using theia::ImageCanvas;
 using theia::Keypoint;
-using theia::Descriptor;
 using theia::SiftDescriptorExtractor;
 using theia::SiftDetector;
 

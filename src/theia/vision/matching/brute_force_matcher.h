@@ -39,7 +39,6 @@
 #include <utility>
 #include <vector>
 
-#include "theia/image/descriptor/descriptor.h"
 #include "theia/vision/matching/matcher.h"
 #include "theia/util/util.h"
 

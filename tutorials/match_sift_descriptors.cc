@@ -43,7 +43,6 @@ DEFINE_string(img_input_dir, "input", "Directory of two input images.");
 DEFINE_string(img_output_dir, "output", "Name of output image file.");
 
 using theia::BruteForceImageMatcher;
-using theia::Descriptor;
 using theia::GrayImage;
 using theia::ImageCanvas;
 using theia::Keypoint;
