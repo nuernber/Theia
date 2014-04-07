@@ -437,19 +437,22 @@ bool FivePointRelativePose(const Vector2d image1_points[5],
                             MultiplyPoly(p3, b33);
 
   // Step 5. Extract real roots of the 10th degree polynomial.
-  std::vector<double> roots = GetRealPolynomialRoots(n.transpose());
+  Eigen::VectorXd roots;
+  FindRealPolynomialRoots(n.transpose().reverse(), &roots);
+
   rotation->reserve(roots.size());
   translation->reserve(roots.size());
   static const double kTolerance = 1e-12;
   for (int i = 0; i < roots.size(); i++) {
     // We only want non-zero roots
-    if (fabs(roots[i]) < kTolerance )
+    if (fabs(roots(i)) < kTolerance)
       continue;
-    double x = EvaluatePoly(p1, roots[i]) / EvaluatePoly(p3, roots[i]);
-    double y = EvaluatePoly(p2, roots[i]) / EvaluatePoly(p3, roots[i]);
+
+    double x = EvaluatePoly(p1, roots(i)) / EvaluatePoly(p3, roots(i));
+    double y = EvaluatePoly(p2, roots(i)) / EvaluatePoly(p3, roots(i));
     Matrix<double, 9, 1> temp_sum =
         x * null_space.col(0) + y * null_space.col(1) +
-        roots[i] * null_space.col(2) + null_space.col(3);
+        roots(i) * null_space.col(2) + null_space.col(3);
     // Need to do it like this because temp_sum is a row vector and recasting
     // it as a 3x3 will load it column-major.
     Matrix3d candidate_essential_mat;

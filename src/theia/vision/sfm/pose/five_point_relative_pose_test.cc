@@ -106,15 +106,6 @@ void TestFivePointResultWithNoise(const Vector3d points_3d[5],
   // expected translation and rotation.
   bool matched_transform = false;
   for (int n = 0; n < soln_rotations.size(); ++n) {
-    Matrix3d essential_matrix = CrossProductMatrix(soln_translations[n]) *
-                                soln_rotations[n];
-    for (int i = 0; i < 5; ++i) {
-      const double sampson_dist = SampsonDistance(
-          essential_matrix, view_one_points[i], view_two_points[i]);
-      EXPECT_NEAR(sampson_dist, 0.0, 1e-8)
-          << "3d point = " << points_3d[i].transpose();
-    }
-
     double rotation_difference =
         RotationAngularDistance(expected_rotation, soln_rotations[n]);
 
@@ -152,8 +143,8 @@ void BasicTest() {
       AngleAxisd(Radians(13.0), Vector3d(0.0, 0.0, 1.0))).toRotationMatrix();
   const Vector3d soln_translation(1.0, 1.0, 1.0);
   const double kNoise = 0.0 / 512.0;
-  const double kMaxAllowedRotationDifference = 1e-5;
-  const double kMaxAllowedAngleBetweenTranslations = 1e-5;
+  const double kMaxAllowedRotationDifference = Radians(1e-2);
+  const double kMaxAllowedAngleBetweenTranslations = Radians(1e-2);
 
   TestFivePointResultWithNoise(points_3d,
                                kNoise,
