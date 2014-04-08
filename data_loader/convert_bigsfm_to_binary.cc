@@ -160,8 +160,9 @@ bool OutputBinaryFile(const std::vector<theia::Camera>& cameras,
                 sizeof(feature_3D_id));
 
       // SIFT descriptor.
-      ofs.write(reinterpret_cast<const char*>(camera.descriptors_[i].data()),
-                sizeof(camera.descriptors_[i]));
+      ofs.write(
+          reinterpret_cast<const char*>(camera.descriptors_[i].data()),
+          camera.descriptors_[i].size() * sizeof(camera.descriptors_[i][0]));
     }
 
     if ((cam_index + 1) % 100 == 0 || cam_index == num_cameras - 1) {

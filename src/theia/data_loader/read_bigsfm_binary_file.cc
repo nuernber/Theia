@@ -165,8 +165,9 @@ bool ReadBigSfMBinary(const std::string& binary_file,
       camera.feature_3D_ids_[i] = feature_3D_id;
 
       // SIFT descriptor.
-      ifs.read(reinterpret_cast<char*>(camera.descriptors_[i].data()),
-                sizeof(camera.descriptors_[i]));
+      ifs.read(
+          reinterpret_cast<char*>(camera.descriptors_[i].data()),
+          camera.descriptors_[i].size() * sizeof(camera.descriptors_[i][0]));
     }
 
     if ((cam_index + 1) % 100 == 0 || cam_index == num_cameras - 1) {
