@@ -5,8 +5,5 @@ ENDIF (${BUILD_TESTING})
 # Add Agast keypoint detector
 ADD_SUBDIRECTORY(agast)
 
-# Add Flann
-ADD_SUBDIRECTORY(flann)
-
 # Add VLFeat
 ADD_SUBDIRECTORY(vlfeat)
