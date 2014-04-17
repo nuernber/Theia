@@ -35,6 +35,7 @@
 # Check if SSE instructions are available on the machine where
 # the project is compiled.
 
+macro(FindSSE)
 IF(CMAKE_SYSTEM_NAME MATCHES "Linux")
    EXEC_PROGRAM(cat ARGS "/proc/cpuinfo" OUTPUT_VARIABLE CPUINFO)
 
@@ -136,3 +137,4 @@ if(NOT SSE4_1_FOUND)
 endif(NOT SSE4_1_FOUND)
 
 mark_as_advanced(SSE2_FOUND SSE3_FOUND SSSE3_FOUND SSE4_1_FOUND)
+endmacro(FindSSE)

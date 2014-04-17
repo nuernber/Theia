@@ -264,7 +264,7 @@ ELSE ()
 ENDIF ()
 
 # This "exports" all targets which have been put into the export set
-# "CeresExport". This means that CMake generates a file with the given
+# "TheiaExport". This means that CMake generates a file with the given
 # filename, which can later on be loaded by projects using this package.
 # This file contains ADD_LIBRARY(bar IMPORTED) statements for each target
 # in the export set, so when loaded later on CMake will create "imported"
