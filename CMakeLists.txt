@@ -211,7 +211,7 @@ INCLUDE_DIRECTORIES(
   ${agast_SOURCE_DIR})
 
 INCLUDE("${CMAKE_MODULE_PATH}/OptimizeTheiaCompilerFlags.cmake")
-OptimizeCompilerFlags()
+OptimizeTheiaCompilerFlags()
 
 ADD_SUBDIRECTORY(src/theia)
 ADD_SUBDIRECTORY(data_loader)
