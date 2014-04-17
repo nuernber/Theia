@@ -50,6 +50,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#define GL_GLEXT_PROTOTYPES 1
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
@@ -187,13 +188,22 @@ void RenderScene() {
   glPointParameterf(GL_POINT_SIZE_MIN, 0.0);
 
   glPointSize(point_size);
+  glPointParameterf(GL_POINT_SIZE_MIN, 0.1f);
+  glPointParameterf(GL_POINT_SIZE_MAX,8.0f);
+
+  //the coordinates for calcluting point atenuation:
+  GLfloat point_size_coords[3];
+  point_size_coords[0] = 1.0f;
+  point_size_coords[1] = 0.055f;
+  point_size_coords[2] = 0.0f;
+  glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, point_size_coords);
+
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
   glVertexPointer(3, GL_DOUBLE, sizeof(Eigen::Vector3d),
                   world_points[0].data());
   glColorPointer(3, GL_FLOAT, sizeof(Eigen::Vector3f),
                  world_points_color[0].data());
-  glPointSize(3.0);
   glDrawArrays(GL_POINTS, 0, world_points.size());
   glDisableClientState(GL_VERTEX_ARRAY);
   glDisableClientState(GL_COLOR_ARRAY);
@@ -240,10 +250,6 @@ void MouseMove(int x, int y) {
 }
 
 void Keyboard(unsigned char key, int x, int y) {
-  static const GLfloat constant[3] = { 1.0, 0.0, 0.0 };
-  static const GLfloat linear[3] = { 0.0, 0.5, 0.0 };
-  static const GLfloat quadratic[3] = { 0.0, 0.0, 0.5 };
-
   switch (key) {
     case 'r':  // reset viewpoint
       distance = 100.0f;
@@ -258,18 +264,6 @@ void Keyboard(unsigned char key, int x, int y) {
       break;
     case 'z':
       distance *= 1.2f;
-      break;
-    case 'c':
-      glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, constant);
-      glutPostRedisplay();
-      break;
-    case 'l':
-      glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, linear);
-      glutPostRedisplay();
-      break;
-    case 'q':
-      glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, quadratic);
-      glutPostRedisplay();
       break;
     case 'p':
       point_size /= 1.2;
