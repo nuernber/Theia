@@ -86,8 +86,11 @@ also help avoid duplicate work by somebody else who may be working on the same
 feature.</p>
 <div class="section" id="style-and-testing">
 <h2>Style and Testing<a class="headerlink" href="#style-and-testing" title="Permalink to this headline">¶</a></h2>
-<p>We follow Google&#8217;s <a class="reference external" href="http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml">C++ Style Guide</a> and use git for version control. We use <a class="reference external" href="https://code.google.com/p/gerrit/">Gerrit</a> to
-review changes before commits. The git repository has been set up with <a class="reference external" href="http://gerrithub.io/">GerritHub</a> so that the repository lives in GitHub, but all reviews are performed with Gerrit.</p>
+<p>We follow Google&#8217;s <a class="reference external" href="http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml">C++ Style Guide</a> and use git
+for version control. We use <a class="reference external" href="https://code.google.com/p/gerrit/">Gerrit</a> to
+review changes before commits. The git repository has been set up with
+<a class="reference external" href="http://gerrithub.io/">GerritHub</a> so that the repository lives in GitHub, but
+all reviews are performed with Gerrit.</p>
 <p>When contributing substantial new code or bug fixes, please add unit tests to
 ensure the usage of the code (or to prove the bug is fixed!).</p>
 </div>
@@ -100,7 +103,9 @@ unit test!).</p>
 </div>
 <div class="section" id="developing-for-theia">
 <h2>Developing for Theia<a class="headerlink" href="#developing-for-theia" title="Permalink to this headline">¶</a></h2>
-<p>Much of the instructions that follow in this section were borrowed and modified from the <a class="reference external" href="http://homes.cs.washington.edu/~sagarwal/ceres-solver/stable/contributing.html">Ceres Solver</a> project.</p>
+<p>Much of the instructions that follow in this section were borrowed and modified
+from the <a class="reference external" href="http://homes.cs.washington.edu/~sagarwal/ceres-solver/stable/contributing.html">Ceres Solver</a>
+project.</p>
 <ol class="arabic">
 <li><p class="first">Download and configure <tt class="docutils literal"><span class="pre">git</span></tt>.</p>
 <ul class="simple">
@@ -119,6 +124,15 @@ unit test!).</p>
 </li>
 <li><p class="first">Build Theia, following the instructions in
 <a class="reference internal" href="building.html#chapter-building"><em>Building Theia Library</em></a>.</p>
+<p>On Mac and Linux, the <tt class="docutils literal"><span class="pre">CMake</span></tt> build will download and enable
+the Gerrit pre-commit hook automatically. This pre-submit hook
+creates <cite>Change-Id: ...</cite> lines in your commits.</p>
+<p>If this does not work OR you are on Windows, execute the
+following in the root directory of the local <tt class="docutils literal"><span class="pre">git</span></tt> repository:</p>
+<div class="highlight-bash"><div class="highlight"><pre>curl -o .git/hooks/commit-msg http://cs.ucsb.edu/~cmsweeney/theia/commit-msg
+chmod +x .git/hooks/commit-msg
+</pre></div>
+</div>
 </li>
 </ol>
 </div>
