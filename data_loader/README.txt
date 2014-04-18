@@ -15,7 +15,7 @@ query. The db contains a reconstruction of *only* the db images with no links to
 the query images. The query images provide 2D descriptors along with ground truth
 pose provided for comparison.
 
-NOTE: The "orig" component of the datasets ar not consistent with the query
+NOTE: The "orig" component of the datasets are not consistent with the query
 descriptors. The orig component uses query images with higher resolution than
 the query images provided with the dataset. As such, more descriptors per query
 image were used in the reconstruction and the true 2D-3D correspondences are
