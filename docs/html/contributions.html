@@ -86,15 +86,78 @@ also help avoid duplicate work by somebody else who may be working on the same
 feature.</p>
 <div class="section" id="style-and-testing">
 <h2>Style and Testing<a class="headerlink" href="#style-and-testing" title="Permalink to this headline">¶</a></h2>
-<p>We follow Google&#8217;s <a class="reference external" href="http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml">C++ Style Guide</a> and use git
-for version control. We use the GitHub fork and &#8220;pull request&#8221; feature to add
-code to the main branch.</p>
+<p>We follow Google&#8217;s <a class="reference external" href="http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml">C++ Style Guide</a> and use git for version control. We use <a class="reference external" href="https://code.google.com/p/gerrit/">Gerrit</a> to
+review changes before commits. The git repository has been set up with <a class="reference external" href="http://gerrithub.io/">GerritHub</a> so that the repository lives in GitHub, but all reviews are performed with Gerrit.</p>
 <p>When contributing substantial new code or bug fixes, please add unit tests to
 ensure the usage of the code (or to prove the bug is fixed!).</p>
 </div>
 <div class="section" id="cmake">
 <h2>CMake<a class="headerlink" href="#cmake" title="Permalink to this headline">¶</a></h2>
-<p>We use CMake to generate makefiles for Theia to maximize the cross-platform usability. If you need to add a new library or a new file to Theia, you will likely need to add that file to the CMakeLists.txt in src/theia (along with a unit test!).</p>
+<p>We use CMake to generate makefiles for Theia to maximize the cross-platform
+usability. If you need to add a new library or a new file to Theia, you will
+likely need to add that file to the CMakeLists.txt in src/theia (along with a
+unit test!).</p>
+</div>
+<div class="section" id="developing-for-theia">
+<h2>Developing for Theia<a class="headerlink" href="#developing-for-theia" title="Permalink to this headline">¶</a></h2>
+<p>Much of the instructions that follow in this section were borrowed and modified from the <a class="reference external" href="http://homes.cs.washington.edu/~sagarwal/ceres-solver/stable/contributing.html">Ceres Solver</a> project.</p>
+<ol class="arabic">
+<li><p class="first">Download and configure <tt class="docutils literal"><span class="pre">git</span></tt>.</p>
+<ul class="simple">
+<li>Mac <tt class="docutils literal"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">git</span></tt>.</li>
+<li>Linux <tt class="docutils literal"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">git</span></tt>.</li>
+<li>Windows. Download <a class="reference external" href="https://code.google.com/p/msysgit/">msysgit</a>, which includes a minimal
+<a class="reference external" href="http://www.cygwin.com/">Cygwin</a> install.</li>
+</ul>
+</li>
+<li><p class="first">Sign up for a <a class="reference external" href="http://github.com">GitHub</a> account. Accounts are free to register.</p>
+</li>
+<li><p class="first">Clone the Theia <tt class="docutils literal"><span class="pre">git</span></tt> repository from GerritHub.</p>
+<div class="highlight-bash"><div class="highlight"><pre>git clone https://review.gerrithub.io/kip622/Theia
+</pre></div>
+</div>
+</li>
+<li><p class="first">Build Theia, following the instructions in
+<a class="reference internal" href="building.html#chapter-building"><em>Building Theia Library</em></a>.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="submitting-a-change-to-theia">
+<h2>Submitting a change to Theia<a class="headerlink" href="#submitting-a-change-to-theia" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Make your changes against master or whatever branch you like. Commit your
+changes as one patch. This is critical for the review process; if you submit
+a change with multiple commits, each commit will become a separate review in
+Gerrit.</p>
+</li>
+<li><p class="first">Push your changes to the Theia GerritHub instance:</p>
+<div class="highlight-bash"><div class="highlight"><pre>git push origin HEAD:refs/for/master
+</pre></div>
+</div>
+<p>When the push succeeds, the console will display a URL showing the address of
+the review. Go to the URL and add reviewers; at this point this is only Chris.</p>
+</li>
+<li><p class="first">Wait for a review.</p>
+</li>
+<li><p class="first">Once review comments come in, address them. Please reply to each
+comment in Gerrit, which makes the re-review process easier. After
+modifying the code in your <tt class="docutils literal"><span class="pre">git</span></tt> instance, <em>don&#8217;t make a new
+commit</em>. Instead, update the last commit using a command like the
+following:</p>
+<div class="highlight-bash"><div class="highlight"><pre>git commit --amend -a
+</pre></div>
+</div>
+<p>This will update the last commit, so that it has both the original
+patch and your updates as a single commit. You will have a chance
+to edit the commit message as well. Push the new commit to Gerrit
+as before.</p>
+<p>Gerrit will use the <tt class="docutils literal"><span class="pre">Change-Id:</span></tt> to match the previous commit
+with the new one. The review interface retains your original patch,
+but also shows the new patch.</p>
+<p>Publish your responses to the comments, and wait for a new round
+of reviews.</p>
+</li>
+</ol>
 </div>
 </div>
 
@@ -116,6 +179,8 @@ ensure the usage of the code (or to prove the bug is fixed!).</p>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Contributing to Theia</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#style-and-testing">Style and Testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#cmake">CMake</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#developing-for-theia">Developing for Theia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submitting-a-change-to-theia">Submitting a change to Theia</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>

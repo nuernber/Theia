@@ -40,6 +40,33 @@ ENDIF (COMMAND cmake_policy)
 PROJECT(THEIA C CXX)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 
+# Set up the git hook to make Gerrit Change-Id: lines in commit messages.
+SET (LOCAL_GIT_DIRECTORY)
+IF (EXISTS ${CMAKE_SOURCE_DIR}/.git)
+  # .git directory can be found on Unix based system, or on Windows with
+  # Git Bash (shipped with msysgit)
+  SET (LOCAL_GIT_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+ELSE (EXISTS ${CMAKE_SOURCE_DIR}/.git)
+  # TODO(keir) Add proper Windows support
+ENDIF (EXISTS ${CMAKE_SOURCE_DIR}/.git)
+
+IF (EXISTS ${LOCAL_GIT_DIRECTORY})
+  IF (NOT EXISTS ${LOCAL_GIT_DIRECTORY}/hooks/commit-msg)
+    # Download the hook only if it is not already present. We borrow the hook
+    # hosted by Ceres because it is not specific to the project.
+    FILE(DOWNLOAD http://cs.ucsb.edu/~cmsweeney/theia/commit-msg
+         ${CMAKE_BINARY_DIR}/commit-msg)
+
+    # Make the downloaded file executable, since it is not by default.
+    FILE(COPY ${CMAKE_BINARY_DIR}/commit-msg
+         DESTINATION ${LOCAL_GIT_DIRECTORY}/hooks/
+         FILE_PERMISSIONS
+           OWNER_READ OWNER_WRITE OWNER_EXECUTE
+           GROUP_READ GROUP_WRITE GROUP_EXECUTE
+           WORLD_READ WORLD_EXECUTE)
+  ENDIF (NOT EXISTS ${LOCAL_GIT_DIRECTORY}/hooks/commit-msg)
+ENDIF (EXISTS ${LOCAL_GIT_DIRECTORY})
+
 # ==============================================================================
 # Additional cmake find modules
 # ==============================================================================
