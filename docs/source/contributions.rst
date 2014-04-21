@@ -74,6 +74,14 @@ project.
       curl -o .git/hooks/commit-msg http://cs.ucsb.edu/~cmsweeney/theia/commit-msg
       chmod +x .git/hooks/commit-msg
 
+5. Configure your GerritHub password.
+
+  Sign into `https://review.gerrithub.io <https://review.gerrithub.io>`_, go to
+  ``Settings`` then ``HTTP Password``. If no password exists, select ``Generate
+  Password``. The username and password listed on this page will need to be
+  entered when pushing your changes to the repo for review (see instructions
+  below).
+
 Submitting a change to Theia
 ============================
 
@@ -88,8 +96,9 @@ Submitting a change to Theia
 
       git push origin HEAD:refs/for/master
 
-   When the push succeeds, the console will display a URL showing the address of
-   the review. Go to the URL and add reviewers; at this point this is only Chris.
+   You will likely have to enter your GerritHub username and password. When the
+   push succeeds, the console will display a URL showing the address of the
+   review. Go to the URL and add reviewers; at this point this is only Chris.
 
 3. Wait for a review.
 

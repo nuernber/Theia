@@ -17,8 +17,11 @@ Style and Testing
 =================
 
 We follow Google's `C++ Style Guide
-<http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml>`_ and use git for version control. We use `Gerrit <https://code.google.com/p/gerrit/>`_ to
-review changes before commits. The git repository has been set up with `GerritHub <http://gerrithub.io/>`_ so that the repository lives in GitHub, but all reviews are performed with Gerrit.
+<http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml>`_ and use git
+for version control. We use `Gerrit <https://code.google.com/p/gerrit/>`_ to
+review changes before commits. The git repository has been set up with
+`GerritHub <http://gerrithub.io/>`_ so that the repository lives in GitHub, but
+all reviews are performed with Gerrit.
 
 When contributing substantial new code or bug fixes, please add unit tests to
 ensure the usage of the code (or to prove the bug is fixed!).
@@ -34,7 +37,10 @@ unit test!).
 Developing for Theia
 ====================
 
-Much of the instructions that follow in this section were borrowed and modified from the `Ceres Solver <http://homes.cs.washington.edu/~sagarwal/ceres-solver/stable/contributing.html>`_ project.
+Much of the instructions that follow in this section were borrowed and modified
+from the `Ceres Solver
+<http://homes.cs.washington.edu/~sagarwal/ceres-solver/stable/contributing.html>`_
+project.
 
 1. Download and configure ``git``.
 
@@ -55,6 +61,18 @@ Much of the instructions that follow in this section were borrowed and modified 
 
 4. Build Theia, following the instructions in
    :ref:`chapter-building`.
+
+   On Mac and Linux, the ``CMake`` build will download and enable
+   the Gerrit pre-commit hook automatically. This pre-submit hook
+   creates `Change-Id: ...` lines in your commits.
+
+   If this does not work OR you are on Windows, execute the
+   following in the root directory of the local ``git`` repository:
+
+   .. code-block:: bash
+
+      curl -o .git/hooks/commit-msg http://cs.ucsb.edu/~cmsweeney/theia/commit-msg
+      chmod +x .git/hooks/commit-msg
 
 Submitting a change to Theia
 ============================
