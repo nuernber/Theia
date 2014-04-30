@@ -37,6 +37,8 @@
 
 #include <vector>
 
+#include <cvd/image.h>
+#include <cvd/byte.h>
 #include "theia/image/keypoint_detector/keypoint.h"
 #include "theia/image/keypoint_detector/keypoint_detector.h"
 #include "theia/util/util.h"
@@ -59,6 +61,12 @@ class FastDetector : public KeypointDetector {
   ~FastDetector() {}
 
   bool DetectKeypoints(const GrayImage& image,
+                       std::vector<Keypoint>* keypoints);
+
+  bool DetectKeypoints(const Image<CVD::byte>& image,
+                       std::vector<Keypoint>* keypoints);
+
+  bool DetectKeypoints(const CVD::Image<CVD::byte>& image,
                        std::vector<Keypoint>* keypoints);
 
  private:

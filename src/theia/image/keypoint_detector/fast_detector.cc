@@ -45,8 +45,17 @@
 namespace theia {
 bool FastDetector::DetectKeypoints(const GrayImage& image,
                                    std::vector<Keypoint>* keypoints) {
-  CVD::Image<CVD::byte> cvd_img = CVD::convert_image(image.GetCVDImage());
+  return DetectKeypoints(CVD::convert_image(image.GetCVDImage()), keypoints);
+}
 
+bool FastDetector::DetectKeypoints(const Image<CVD::byte>& image,
+                                   std::vector<Keypoint>* keypoints) {
+  return DetectKeypoints(image.GetCVDImage(), keypoints);
+}
+
+
+bool FastDetector::DetectKeypoints(const CVD::Image<CVD::byte>& cvd_img,
+                                   std::vector<Keypoint>* keypoints) {
   std::vector<CVD::ImageRef> fast_corners;
   if (nonmax_suppression_) {
     CVD::fast_corner_detect_9_nonmax(cvd_img, fast_corners, threshold_);
